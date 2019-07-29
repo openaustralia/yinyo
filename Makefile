@@ -1,8 +1,11 @@
 all: run
 
 run: image
-	# TODO: Mount cache directory as volume as well
-	docker run --rm -v `pwd`/test-scrapers/ruby:/tmp/app openaustralia/herokuish /bin/run.sh
+	docker run --rm -v `pwd`/cache:/tmp/cache -v `pwd`/test-scrapers/ruby:/tmp/app openaustralia/herokuish /bin/run.sh
+
+# Clean the cache
+clean:
+	rm -rf cache
 
 # If you want an interactive shell in the container
 shell: image
