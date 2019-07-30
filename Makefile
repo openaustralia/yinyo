@@ -1,7 +1,7 @@
 all: run
 
 run: image
-	docker run --rm -v `pwd`/cache:/tmp/cache -v `pwd`/test-scrapers/ruby:/tmp/app openaustralia/herokuish /bin/run.sh
+	docker run --rm -v `pwd`/cache:/tmp/cache openaustralia/herokuish /bin/run.sh
 
 # Clean the cache
 clean:
@@ -9,7 +9,7 @@ clean:
 
 # If you want an interactive shell in the container
 shell: image
-	docker run --rm -i -t -v `pwd`/cache:/tmp/cache -v `pwd`/test-scrapers/ruby:/tmp/app openaustralia/herokuish /bin/bash
+	docker run --rm -i -t -v `pwd`/cache:/tmp/cache openaustralia/herokuish /bin/bash
 
 image:
 	docker build -t openaustralia/herokuish .
