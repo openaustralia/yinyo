@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: scraper
+spec:
+  template:
+    spec:
+      containers:
+      - name: scraper
+        image: openaustralia/herokuish
+        command: ["/bin/run.sh", "morph-test-scrapers/test-ruby"]
+        # Doing this so that we use the local image while we're developing
+        imagePullPolicy: Never
+      restartPolicy: Never

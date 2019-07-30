@@ -20,3 +20,7 @@ lint:
 shellcheck:
 	# This assumes OS X for the time being
 	brew install shellcheck
+
+# This runs the scraper on kubernetes
+kubernetes:
+	kubectl apply -f job.yaml
