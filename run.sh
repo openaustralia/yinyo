@@ -8,7 +8,6 @@ if [ $# == 0 ]; then
 fi
 
 # TODO: Allow this script to be quit with control C
-# TODO: Check with shellcheck
 
 SCRAPER_NAME=$1
 
@@ -17,7 +16,7 @@ SCRAPER_NAME=$1
 
 # Checkout latest revision of the source code of scraper into import directory
 # TODO: Probably don't want to do this as root
-git clone --depth 1 https://github.com/$SCRAPER_NAME.git /tmp/app
+git clone --depth 1 "https://github.com/$SCRAPER_NAME.git" /tmp/app
 
 # This is where we would recognise the code as being ruby and add the Procfile.
 # Alternatively we could add a standard Procfile that runs a script that recognises

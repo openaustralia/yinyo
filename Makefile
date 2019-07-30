@@ -13,3 +13,10 @@ shell: image
 
 image:
 	docker build -t openaustralia/herokuish .
+
+lint:
+	shellcheck run.sh
+
+shellcheck:
+	# This assumes OS X for the time being
+	brew install shellcheck
