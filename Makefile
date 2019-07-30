@@ -1,7 +1,7 @@
 all: run
 
 run: image
-	docker run --rm -v `pwd`/cache:/tmp/cache openaustralia/herokuish /bin/run.sh
+	docker run --rm -v `pwd`/cache:/tmp/cache openaustralia/herokuish /bin/run.sh morph-test-scrapers/test-ruby
 
 # Clean the cache
 clean:
