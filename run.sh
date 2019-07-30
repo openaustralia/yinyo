@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Turns on debugging output in herokuish
 # export TRACE=true
