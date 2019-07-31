@@ -12,7 +12,7 @@
 
 In their words [MinIO](https://min.io/) is "The 100% Open Source, Enterprise-Grade,
 Amazon S3 Compatible Object Storage". We'll be using it to store sqlite databases,
-caches for compiling scrapers, and backups.
+caches for compiling scrapers, buildpack resources (mirroring S3) and backups.
 
 If we end up deploying this whole thing to AWS then of course we could just use S3
 instead but at least by taking this approach at the outset we're not locking
