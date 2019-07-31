@@ -22,5 +22,5 @@ shellcheck:
 	brew install shellcheck
 
 # This runs the scraper on kubernetes
-kubernetes:
+kubernetes: image
 	kubectl apply -f job.yaml
