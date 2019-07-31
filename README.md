@@ -8,9 +8,9 @@
 * [Helm](https://github.com/helm/helm#install)
 * MinIO - `helm install stable/minio`
 
-### What is the purpose of Minio?
+### What is the purpose of MinIO?
 
-In their words [Minio](https://min.io/) is "The 100% Open Source, Enterprise-Grade,
+In their words [MinIO](https://min.io/) is "The 100% Open Source, Enterprise-Grade,
 Amazon S3 Compatible Object Storage". We'll be using it to store sqlite databases,
 caches for compiling scrapers, and backups.
 
