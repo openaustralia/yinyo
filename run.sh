@@ -26,4 +26,17 @@ git clone --depth 1 "https://github.com/$SCRAPER_NAME.git" /tmp/app
 cp /usr/local/lib/Procfile-ruby /tmp/app/Procfile
 
 /bin/herokuish buildpack build
+
+# This is where we save away the result of the build cache for future compiles
+# For the time being we're just writing directly to the blob store (which has
+# no authentication setup) but in future we'll do it by using an authentication
+# token (available via an environment variable) which is only valid for the
+# period of this scraper run and it can only be used for updating things
+# during this scraper run. To make this work it will probably be necessary to
+# create an API service which authenticates our request and proxies the request
+# to the blob store.
+
+tar zcPf /tmp/cache.tar.gz /tmp/cache/
+# TODO: Actually upload the cache to the blob store
+
 /bin/herokuish procfile start scraper
