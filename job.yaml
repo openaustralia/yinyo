@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
       - name: scraper
-        image: openaustralia/herokuish
+        image: morph-ng
         command: ["/bin/run.sh", "morph-test-scrapers/test-ruby"]
         # Doing this so that we use the local image while we're developing
         imagePullPolicy: Never
