@@ -5,8 +5,7 @@
 * Docker
 * https://github.com/mlandauer/herokuish/tree/only_copy_to_app_path_on_build - this is a fork of https://github.com/gliderlabs/herokuish - to build local docker dev image run `make build`.
 * Kubernetes
-* [Helm](https://github.com/helm/helm#install)
-* MinIO - `helm install stable/minio`
+* MinIO - Install by `make minio`
 
 ### What is the purpose of MinIO?
 
@@ -17,3 +16,5 @@ caches for compiling scrapers, buildpack resources (mirroring S3) and backups.
 If we end up deploying this whole thing to AWS then of course we could just use S3
 instead but at least by taking this approach at the outset we're not locking
 ourselves in to a particular bit of proprietary software.
+
+Once Minio is up and running on Kubernetes by running `make minio` you can access the web UI via http://localhost:9000.

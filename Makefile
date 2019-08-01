@@ -29,3 +29,6 @@ kubernetes: image
 	kubectl logs -f -l job-name=scraper
 	# Clean up manually
 	kubectl delete -f job.yaml
+
+minio:
+	kubectl apply -f minio-deployment.yaml
