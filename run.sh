@@ -30,6 +30,11 @@ cp /usr/local/lib/Procfile-ruby /tmp/app/Procfile
 # Use local minio for getting buildpack binaries
 export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 
+# Copy across a save cache
+# TODO: Handle situation where the cache doesn't yet exist
+mc cp "minio/morph/$SCRAPER_NAME/cache.tgz" /tmp/
+tar xf /tmp/cache.tgz
+
 /bin/herokuish buildpack build
 
 # This is where we save away the result of the build cache for future compiles
