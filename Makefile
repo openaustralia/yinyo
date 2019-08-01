@@ -24,3 +24,8 @@ shellcheck:
 # This runs the scraper on kubernetes
 kubernetes: image
 	kubectl apply -f job.yaml
+	# Wait for the pod to be up and running and then stream the logs
+	kubectl wait --for condition=Ready -l job-name=scraper pods
+	kubectl logs -f -l job-name=scraper
+	# Clean up manually
+	kubectl delete -f job.yaml
