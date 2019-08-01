@@ -15,3 +15,10 @@ RUN chmod +x /bin/mc
 
 ADD run.sh /bin
 RUN chmod +x /bin/run.sh
+
+# Override heroku ruby buildpack with patched version that allows us
+# to get all binary assets from a local S3 rather than defaulting to
+# the heroku S3 bucket for some (but not all) binary assets
+
+RUN rm -rf /tmp/buildpacks/01_buildpack-ruby
+RUN herokuish buildpack install https://github.com/mlandauer/heroku-buildpack-ruby.git consistent_buildpack_vendor_url_override

@@ -25,6 +25,9 @@ git clone --depth 1 "https://github.com/$SCRAPER_NAME.git" /tmp/app
 # For the time being just assume it's Ruby
 cp /usr/local/lib/Procfile-ruby /tmp/app/Procfile
 
+# Use local minio for getting buildpack binaries
+export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
+
 /bin/herokuish buildpack build
 
 # This is where we save away the result of the build cache for future compiles
