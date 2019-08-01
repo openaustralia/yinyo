@@ -48,7 +48,7 @@ spec:
         - name: MINIO_ACCESS_KEY
           value: "admin"
         - name: MINIO_SECRET_KEY
-          value: "80GaQKibTqxh5tbSPknr"
+          value: "changeme"
         ports:
         - containerPort: 9000
         # Mount the volume into the pod
