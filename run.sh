@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mc config host add minio http://minio-service:9000 admin changeme
+
 if [ $# == 0 ]; then
     echo "Downloads a scraper from Github, compiles it and runs it"
     echo "Usage: $0 scraper_name"
@@ -39,7 +41,7 @@ export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 # create an API service which authenticates our request and proxies the request
 # to the blob store.
 
-tar zcPf /tmp/cache.tar.gz /tmp/cache/
-# TODO: Actually upload the cache to the blob store
+tar zcPf /tmp/cache.tgz /tmp/cache/
+mc cp /tmp/cache.tgz "minio/morph/$SCRAPER_NAME/"
 
 /bin/herokuish procfile start scraper
