@@ -33,7 +33,7 @@ export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 # Copy across a save cache
 # TODO: Handle situation where the cache doesn't yet exist
 mc cp "minio/morph/$SCRAPER_NAME/cache.tgz" /tmp/
-tar xf /tmp/cache.tgz
+tar xPf /tmp/cache.tgz
 
 /bin/herokuish buildpack build
 
