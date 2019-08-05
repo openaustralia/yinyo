@@ -2,16 +2,20 @@
 
 scraper_name = morph-test-scrapers/test-ruby
 
+sed_escaped_scraper_name = $(shell echo $(scraper_name) | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')
+
 all: run
 
 # This runs the scraper on kubernetes
 run: image copy-code
+	sed "s/{{ SCRAPER_NAME }}/$(sed_escaped_scraper_name)/g" kubernetes/job-template.yaml > kubernetes/job.yaml
 	kubectl apply -f kubernetes/job.yaml
 	# Wait for the pod to be up and running and then stream the logs
 	kubectl wait --for condition=Ready -l job-name=scraper pods
 	kubectl logs -f -l job-name=scraper
 	# Clean up manually
 	kubectl delete -f kubernetes/job.yaml
+	rm kubernetes/job.yaml
 
 # This checks out code from a scraper on github and plops it into the local blob storage
 copy-code:

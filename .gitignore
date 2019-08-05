@@ -1,3 +1,4 @@
 cache
 app
 app.tgz
+kubernetes/job.yaml
