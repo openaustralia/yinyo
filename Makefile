@@ -1,5 +1,7 @@
 .PHONY: image
 
+scraper_name = morph-test-scrapers/test-ruby
+
 all: run
 
 # This runs the scraper on kubernetes
@@ -10,6 +12,14 @@ run: image
 	kubectl logs -f -l job-name=scraper
 	# Clean up manually
 	kubectl delete -f kubernetes/job.yaml
+
+# This checks out code from a scraper on github and plops it into the local blob storage
+copy-code:
+	rm -rf code code.tgz
+	git clone --depth 1 https://github.com/$(scraper_name).git code
+	tar --exclude .git -zcf code.tgz code
+	mc cp code.tgz "minio/morph/$(scraper_name)/"
+	rm -rf code code.tgz
 
 # Clean the cache
 clean:
