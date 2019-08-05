@@ -9,6 +9,7 @@ if [ $# == 0 ]; then
     echo ""
     echo "COMMANDS:"
     echo "  copy DIRECTORY SCRAPER_NAMESPACE SCRAPER_NAME   Copy code and any data to the scraper"
+    echo "  start SCRAPER_NAMESPACE SCRAPER_NAME            Start the scraper"
     echo ""
     echo "e.g. $0 copy app morph-test-scrapers/test-ruby"
     exit 1
@@ -23,4 +24,12 @@ if [ "$COMMAND" = "copy" ]; then
 
     # TODO: Check that $DIRECTORY exists
     tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/$SCRAPER_NAMESPACE/$SCRAPER_NAME/app.tgz"
+elif [ "$COMMAND" = "start" ]; then
+    SCRAPER_NAMESPACE=$2
+    SCRAPER_NAME=$3
+
+    # If namespace already exists, the following command errors, but continues
+    kubectl create namespace "clay-$SCRAPER_NAMESPACE" || true
+    sed "s/{{ SCRAPER_NAMESPACE }}/$SCRAPER_NAMESPACE/g; s/{{ SCRAPER_NAME }}/$SCRAPER_NAME/g" kubernetes/job-template.yaml > kubernetes/job.yaml
+    kubectl apply -f kubernetes/job.yaml
 fi

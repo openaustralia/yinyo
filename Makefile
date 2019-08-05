@@ -7,10 +7,7 @@ all: run
 
 # This runs the scraper on kubernetes
 run: image copy-code
-	# If namespace already exists, the following command errors, but continues
-	-kubectl create namespace clay-$(scraper_namespace)
-	sed "s/{{ SCRAPER_NAMESPACE }}/$(scraper_namespace)/g; s/{{ SCRAPER_NAME }}/$(scraper_name)/g" kubernetes/job-template.yaml > kubernetes/job.yaml
-	kubectl apply -f kubernetes/job.yaml
+	./clay.sh start $(scraper_namespace) $(scraper_name)
 	# Wait for the pod to be up and running and then stream the logs
 	kubectl wait --for condition=Ready -l job-name=$(scraper_name) --namespace=clay-$(scraper_namespace) pods
 	kubectl logs -f -l job-name=$(scraper_name) --namespace=clay-$(scraper_namespace)
