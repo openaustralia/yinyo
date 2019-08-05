@@ -22,7 +22,7 @@ run: image copy-code
 copy-code:
 	rm -rf app
 	git clone --depth 1 https://github.com/$(scraper_namespace)/$(scraper_name).git app
-	./clay.sh copy app $(scraper_namespace)/$(scraper_name)
+	./clay.sh copy app $(scraper_namespace) $(scraper_name)
 	rm -rf app
 
 # If you want an interactive shell in the container

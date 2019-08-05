@@ -8,7 +8,7 @@ if [ $# == 0 ]; then
     echo "  $0 COMMAND"
     echo ""
     echo "COMMANDS:"
-    echo "  copy DIRECTORY SCRAPER_NAME   Copy code and any data to the scraper"
+    echo "  copy DIRECTORY SCRAPER_NAMESPACE SCRAPER_NAME   Copy code and any data to the scraper"
     echo ""
     echo "e.g. $0 copy app morph-test-scrapers/test-ruby"
     exit 1
@@ -18,8 +18,9 @@ COMMAND=$1
 
 if [ "$COMMAND" = "copy" ]; then
     DIRECTORY=$2
-    SCRAPER_NAME=$3
+    SCRAPER_NAMESPACE=$3
+    SCRAPER_NAME=$4
 
     # TODO: Check that $DIRECTORY exists
-    tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/$SCRAPER_NAME/app.tgz"
+    tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/$SCRAPER_NAMESPACE/$SCRAPER_NAME/app.tgz"
 fi
