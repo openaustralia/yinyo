@@ -15,11 +15,10 @@ run: image copy-code
 
 # This checks out code from a scraper on github and plops it into the local blob storage
 copy-code:
-	rm -rf app app.tgz
+	rm -rf app
 	git clone --depth 1 https://github.com/$(scraper_name).git app
-	tar --exclude .git -zcf app.tgz app
-	mc cp app.tgz "minio/morph/$(scraper_name)/"
-	rm -rf app app.tgz
+	tar --exclude .git -zcf - app | mc pipe "minio/morph/$(scraper_name)/app.tgz"
+	rm -rf app
 
 # Clean the cache
 clean:
