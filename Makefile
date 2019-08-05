@@ -20,10 +20,10 @@ copy-code:
 
 # If you want an interactive shell in the container
 shell: image
-	docker run --rm -i -t morph-ng /bin/bash
+	docker run --rm -i -t clay /bin/bash
 
 image:
-	docker build -t morph-ng image
+	docker build -t clay image
 
 lint:
 	shellcheck image/run.sh
