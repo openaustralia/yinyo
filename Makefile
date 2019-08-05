@@ -2,8 +2,14 @@
 
 all: run
 
+# This runs the scraper on kubernetes
 run: image
-	docker run --rm -v `pwd`/cache:/tmp/cache morph-ng /bin/run.sh morph-test-scrapers/test-ruby
+	kubectl apply -f kubernetes/job.yaml
+	# Wait for the pod to be up and running and then stream the logs
+	kubectl wait --for condition=Ready -l job-name=scraper pods
+	kubectl logs -f -l job-name=scraper
+	# Clean up manually
+	kubectl delete -f kubernetes/job.yaml
 
 # Clean the cache
 clean:
@@ -11,7 +17,7 @@ clean:
 
 # If you want an interactive shell in the container
 shell: image
-	docker run --rm -i -t -v `pwd`/cache:/tmp/cache morph-ng /bin/bash
+	docker run --rm -i -t morph-ng /bin/bash
 
 image:
 	docker build -t morph-ng image
@@ -23,14 +29,6 @@ shellcheck:
 	# This assumes OS X for the time being
 	brew install shellcheck
 
-# This runs the scraper on kubernetes
-kubernetes: image
-	kubectl apply -f kubernetes/job.yaml
-	# Wait for the pod to be up and running and then stream the logs
-	kubectl wait --for condition=Ready -l job-name=scraper pods
-	kubectl logs -f -l job-name=scraper
-	# Clean up manually
-	kubectl delete -f kubernetes/job.yaml
 
 minio:
 	kubectl apply -f kubernetes/minio-deployment.yaml
