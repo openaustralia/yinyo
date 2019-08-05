@@ -1,7 +1,6 @@
 .PHONY: image
 
 scraper_name = morph-test-scrapers/test-ruby
-bucket_clay = minio/clay
 
 all: run
 
@@ -18,7 +17,7 @@ run: image copy-code
 copy-code:
 	rm -rf app
 	git clone --depth 1 https://github.com/$(scraper_name).git app
-	tar --exclude .git -zcf - app | mc pipe "$(bucket_clay)/$(scraper_name)/app.tgz"
+	./clay.sh copy app $(scraper_name)
 	rm -rf app
 
 # If you want an interactive shell in the container
