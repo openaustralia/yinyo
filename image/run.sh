@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mc config host add minio http://minio-service:9000 admin changeme
+mc config host add minio http://minio-service.default:9000 admin changeme
 
 if [ $# == 0 ]; then
     echo "Downloads a scraper from Github, compiles it and runs it"
@@ -34,7 +34,7 @@ mc cat "$BUCKET/$SCRAPER_NAMESPACE/$SCRAPER_NAME/app.tgz" | tar xzf -
 cp /usr/local/lib/Procfile-ruby /tmp/app/Procfile
 
 # Use local minio for getting buildpack binaries
-export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
+export BUILDPACK_VENDOR_URL=http://minio-service.default:9000/heroku-buildpack-ruby
 
 # Copy across a save cache
 # TODO: Handle situation where the cache doesn't yet exist
