@@ -1,6 +1,7 @@
 .PHONY: image
 
 scraper_name = morph-test-scrapers/test-ruby
+bucket_clay = minio/clay
 
 all: run
 
@@ -17,7 +18,7 @@ run: image copy-code
 copy-code:
 	rm -rf app
 	git clone --depth 1 https://github.com/$(scraper_name).git app
-	tar --exclude .git -zcf - app | mc pipe "minio/morph/$(scraper_name)/app.tgz"
+	tar --exclude .git -zcf - app | mc pipe "$(bucket_clay)/$(scraper_name)/app.tgz"
 	rm -rf app
 
 # Clean the cache
