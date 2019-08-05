@@ -8,9 +8,7 @@ all: run
 # This runs the scraper on kubernetes
 run: image copy-code
 	./clay.sh start $(scraper_namespace) $(scraper_name)
-	# Wait for the pod to be up and running and then stream the logs
-	kubectl wait --for condition=Ready -l job-name=$(scraper_name) --namespace=clay-$(scraper_namespace) pods
-	kubectl logs -f -l job-name=$(scraper_name) --namespace=clay-$(scraper_namespace)
+	./clay.sh logs $(scraper_namespace) $(scraper_name)
 	# Clean up manually
 	kubectl delete -f kubernetes/job.yaml
 	rm kubernetes/job.yaml
