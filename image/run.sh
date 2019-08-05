@@ -22,7 +22,7 @@ BUCKET="minio/clay"
 # We do this because we don't want to assume that the code comes from Github.
 # TODO: Probably don't want to do this as root
 
-cd /tmp
+cd /tmp || exit
 mc cat "$BUCKET/$SCRAPER_NAME/app.tgz" | tar xzf -
 
 # This is where we would recognise the code as being ruby and add the Procfile.

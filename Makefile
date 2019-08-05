@@ -29,7 +29,7 @@ image:
 	docker build -t morph-ng image
 
 lint:
-	shellcheck run.sh
+	shellcheck image/run.sh
 
 shellcheck:
 	# This assumes OS X for the time being
