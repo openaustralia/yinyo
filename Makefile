@@ -1,3 +1,5 @@
+.PHONY: image
+
 all: run
 
 run: image
@@ -12,7 +14,7 @@ shell: image
 	docker run --rm -i -t -v `pwd`/cache:/tmp/cache morph-ng /bin/bash
 
 image:
-	docker build -t morph-ng .
+	docker build -t morph-ng image
 
 lint:
 	shellcheck run.sh
