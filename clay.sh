@@ -11,6 +11,7 @@ if [ $# == 0 ]; then
     echo "  copy DIRECTORY SCRAPER_NAMESPACE SCRAPER_NAME   Copy code and any data to the scraper"
     echo "  start SCRAPER_NAMESPACE SCRAPER_NAME            Start the scraper"
     echo "  logs SCRAPER_NAMESPACE SCRAPER_NAME             Stream the logs"
+    echo "  cleanup SCRAPER_NAMESPACE SCRAPER_NAME          Cleanup after everything has finished"
     echo ""
     echo "e.g. $0 copy app morph-test-scrapers/test-ruby"
     exit 1
@@ -41,4 +42,9 @@ elif [ "$COMMAND" = "logs" ]; then
     # Wait for the pod to be up and running and then stream the logs
     kubectl wait --for condition=Ready -l job-name="$SCRAPER_NAME" --namespace="clay-$SCRAPER_NAMESPACE" pods
     kubectl logs -f -l job-name="$SCRAPER_NAME" --namespace="clay-$SCRAPER_NAMESPACE"
+elif [ "$COMMAND" = "cleanup" ]; then
+    SCRAPER_NAMESPACE=$2
+    SCRAPER_NAME=$3
+
+    kubectl delete jobs/$SCRAPER_NAME --namespace=clay-$SCRAPER_NAMESPACE
 fi
