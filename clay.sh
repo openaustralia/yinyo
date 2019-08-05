@@ -33,6 +33,7 @@ elif [ "$COMMAND" = "start" ]; then
     kubectl create namespace "clay-$SCRAPER_NAMESPACE" || true
     sed "s/{{ SCRAPER_NAMESPACE }}/$SCRAPER_NAMESPACE/g; s/{{ SCRAPER_NAME }}/$SCRAPER_NAME/g" kubernetes/job-template.yaml > kubernetes/job.yaml
     kubectl apply -f kubernetes/job.yaml
+    rm kubernetes/job.yaml
 elif [ "$COMMAND" = "logs" ]; then
     SCRAPER_NAMESPACE=$2
     SCRAPER_NAME=$3

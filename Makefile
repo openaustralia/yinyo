@@ -10,8 +10,7 @@ run: image copy-code
 	./clay.sh start $(scraper_namespace) $(scraper_name)
 	./clay.sh logs $(scraper_namespace) $(scraper_name)
 	# Clean up manually
-	kubectl delete -f kubernetes/job.yaml
-	rm kubernetes/job.yaml
+	kubectl delete jobs/$(scraper_name) --namespace=clay-$(scraper_namespace)
 
 # This checks out code from a scraper on github and plops it into the local blob storage
 copy-code:
