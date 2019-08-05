@@ -5,7 +5,7 @@ scraper_name = morph-test-scrapers/test-ruby
 all: run
 
 # This runs the scraper on kubernetes
-run: image
+run: image copy-code
 	kubectl apply -f kubernetes/job.yaml
 	# Wait for the pod to be up and running and then stream the logs
 	kubectl wait --for condition=Ready -l job-name=scraper pods
