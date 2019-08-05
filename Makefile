@@ -21,10 +21,6 @@ copy-code:
 	tar --exclude .git -zcf - app | mc pipe "$(bucket_clay)/$(scraper_name)/app.tgz"
 	rm -rf app
 
-# Clean the cache
-clean:
-	rm -rf cache
-
 # If you want an interactive shell in the container
 shell: image
 	docker run --rm -i -t morph-ng /bin/bash
