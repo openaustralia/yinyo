@@ -1,14 +1,13 @@
 .PHONY: image
 
-scraper_name = morph-test-scrapers/test-ruby
-
-sed_escaped_scraper_name = $(shell echo $(scraper_name) | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')
+scraper_namespace = morph-test-scrapers
+scraper_name = test-ruby
 
 all: run
 
 # This runs the scraper on kubernetes
 run: image copy-code
-	sed "s/{{ SCRAPER_NAME }}/$(sed_escaped_scraper_name)/g" kubernetes/job-template.yaml > kubernetes/job.yaml
+	sed "s/{{ SCRAPER_NAMESPACE }}/$(scraper_namespace)/g; s/{{ SCRAPER_NAME }}/$(scraper_name)/g" kubernetes/job-template.yaml > kubernetes/job.yaml
 	kubectl apply -f kubernetes/job.yaml
 	# Wait for the pod to be up and running and then stream the logs
 	kubectl wait --for condition=Ready -l job-name=scraper pods
@@ -20,8 +19,8 @@ run: image copy-code
 # This checks out code from a scraper on github and plops it into the local blob storage
 copy-code:
 	rm -rf app
-	git clone --depth 1 https://github.com/$(scraper_name).git app
-	./clay.sh copy app $(scraper_name)
+	git clone --depth 1 https://github.com/$(scraper_namespace)/$(scraper_name).git app
+	./clay.sh copy app $(scraper_namespace)/$(scraper_name)
 	rm -rf app
 
 # If you want an interactive shell in the container
