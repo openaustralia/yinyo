@@ -16,9 +16,15 @@ SCRAPER_NAME=$1
 # Turns on debugging output in herokuish
 # export TRACE=true
 
-# Checkout latest revision of the source code of scraper into import directory
+# Get the source code of scraper into import directory. This needs to have
+# already been copied to the appropriate place in the blob store.
+# We do this because we don't want to assume that the code comes from Github.
 # TODO: Probably don't want to do this as root
-git clone --depth 1 "https://github.com/$SCRAPER_NAME.git" /tmp/app
+
+cd /tmp
+mc cp "minio/morph/$SCRAPER_NAME/app.tgz" .
+tar xf app.tgz
+rm app.tgz
 
 # This is where we would recognise the code as being ruby and add the Procfile.
 # Alternatively we could add a standard Procfile that runs a script that recognises
