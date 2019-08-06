@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit when any command fails
+set -e
+
 # Give admin access to the local blob store. Only doing this for ease
 # of development.
 # TODO: REMOVE THIS AS SOON AS POSSIBLE
