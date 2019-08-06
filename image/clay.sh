@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eo pipefail
+
 BUCKET_CLAY="minio/clay"
 
 if [ $# == 0 ]; then
@@ -97,7 +99,7 @@ elif [ "$COMMAND" = "cache" ]; then
       DIRECTORY=$4
 
       cd "$DIRECTORY" || exit
-      storage get "$SCRAPER_NAME" cache tgz | tar xzf -
+      (storage get "$SCRAPER_NAME" cache tgz | tar xzf -) || true
     else
       echo "Unknown subcommand: $SUBCOMMAND"
       exit 1
