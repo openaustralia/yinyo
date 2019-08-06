@@ -58,6 +58,10 @@ if [ "$COMMAND" = "app" ]; then
       # TODO: Check that $DIRECTORY exists
       tar -zcf - "$DIRECTORY" | storage put "$SCRAPER_NAME" app tgz
     elif [ "$SUBCOMMAND" = "get" ]; then
+      # Get the source code of scraper into import directory. This needs to have
+      # already been copied to the appropriate place in the blob store.
+      # We do this because we don't want to assume that the code comes from Github.
+
       # TODO: Make get and put work so that the directory in each case is the same
       SCRAPER_NAME=$3
       DIRECTORY=$4
@@ -72,6 +76,15 @@ elif [ "$COMMAND" = "cache" ]; then
     # TODO: Extract common code out of app and cache command
     SUBCOMMAND=$2
     if [ "$SUBCOMMAND" = "put" ]; then
+      # This is where we save away the result of the build cache for future compiles
+      # For the time being we're just writing directly to the blob store (which has
+      # no authentication setup) but in future we'll do it by using an authentication
+      # token (available via an environment variable) which is only valid for the
+      # period of this scraper run and it can only be used for updating things
+      # during this scraper run. To make this work it will probably be necessary to
+      # create an API service which authenticates our request and proxies the request
+      # to the blob store.
+
       DIRECTORY=$3
       SCRAPER_NAME=$4
 

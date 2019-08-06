@@ -20,9 +20,6 @@ SCRAPER_OUTPUT=$2
 # Turns on debugging output in herokuish
 # export TRACE=true
 
-# Get the source code of scraper into import directory. This needs to have
-# already been copied to the appropriate place in the blob store.
-# We do this because we don't want to assume that the code comes from Github.
 # TODO: Probably don't want to do this as root
 
 cd /tmp || exit
@@ -42,15 +39,6 @@ export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 /bin/clay.sh cache get "$SCRAPER_NAME" /tmp
 
 /bin/herokuish buildpack build
-
-# This is where we save away the result of the build cache for future compiles
-# For the time being we're just writing directly to the blob store (which has
-# no authentication setup) but in future we'll do it by using an authentication
-# token (available via an environment variable) which is only valid for the
-# period of this scraper run and it can only be used for updating things
-# during this scraper run. To make this work it will probably be necessary to
-# create an API service which authenticates our request and proxies the request
-# to the blob store.
 
 /bin/clay.sh cache put cache "$SCRAPER_NAME"
 
