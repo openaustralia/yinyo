@@ -57,7 +57,7 @@ elif [ "$COMMAND" = "cache" ]; then
       SCRAPER_NAME=$4
 
       # TODO: Check that $DIRECTORY exists
-      tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/cache/$SCRAPER_NAME.tgz"
+      tar -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/cache/$SCRAPER_NAME.tgz"
     elif [ "$SUBCOMMAND" = "get" ]; then
       # TODO: Handle situation where the cache doesn't yet exist
       # TODO: Make get and put work so that the directory in each case is the same
