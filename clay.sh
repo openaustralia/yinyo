@@ -8,12 +8,16 @@ if [ $# == 0 ]; then
     echo "  $0 COMMAND"
     echo ""
     echo "COMMANDS:"
-    echo "  copy DIRECTORY SCRAPER_NAMESPACE SCRAPER_NAME   Copy code and any data to the scraper"
-    echo "  start SCRAPER_NAMESPACE SCRAPER_NAME            Start the scraper"
-    echo "  logs SCRAPER_NAMESPACE SCRAPER_NAME             Stream the logs"
-    echo "  cleanup SCRAPER_NAMESPACE SCRAPER_NAME          Cleanup after everything has finished"
+    echo "  copy DIRECTORY SCRAPER_NAME    Copy code and any data to the scraper"
+    echo "  start SCRAPER_NAME             Start the scraper"
+    echo "  logs SCRAPER_NAME              Stream the logs"
+    echo "  cleanup SCRAPER_NAME           Cleanup after everything has finished"
     echo ""
-    echo "e.g. $0 copy app morph-test-scrapers/test-ruby"
+    echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
+    echo "lower case alphanumeric characters and '-' up to maximum length"
+    echo "of 253 characters."
+    echo ""
+    echo "e.g. $0 copy app morph-test-scrapers-test-ruby"
     exit 1
 fi
 
@@ -21,30 +25,24 @@ COMMAND=$1
 
 if [ "$COMMAND" = "copy" ]; then
     DIRECTORY=$2
-    SCRAPER_NAMESPACE=$3
-    SCRAPER_NAME=$4
-
-    # TODO: Check that $DIRECTORY exists
-    tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/$SCRAPER_NAMESPACE/$SCRAPER_NAME/app.tgz"
-elif [ "$COMMAND" = "start" ]; then
-    SCRAPER_NAMESPACE=$2
     SCRAPER_NAME=$3
 
-    # If namespace already exists, the following command errors, but continues
-    kubectl create namespace "clay-$SCRAPER_NAMESPACE" || true
-    sed "s/{{ SCRAPER_NAMESPACE }}/$SCRAPER_NAMESPACE/g; s/{{ SCRAPER_NAME }}/$SCRAPER_NAME/g" kubernetes/job-template.yaml > kubernetes/job.yaml
+    # TODO: Check that $DIRECTORY exists
+    tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/$SCRAPER_NAME/app.tgz"
+elif [ "$COMMAND" = "start" ]; then
+    SCRAPER_NAME=$2
+
+    sed "s/{{ SCRAPER_NAME }}/$SCRAPER_NAME/g" kubernetes/job-template.yaml > kubernetes/job.yaml
     kubectl apply -f kubernetes/job.yaml
     rm kubernetes/job.yaml
 elif [ "$COMMAND" = "logs" ]; then
-    SCRAPER_NAMESPACE=$2
-    SCRAPER_NAME=$3
+    SCRAPER_NAME=$2
 
     # Wait for the pod to be up and running and then stream the logs
-    kubectl wait --for condition=Ready -l job-name="$SCRAPER_NAME" --namespace="clay-$SCRAPER_NAMESPACE" pods
-    kubectl logs -f -l job-name="$SCRAPER_NAME" --namespace="clay-$SCRAPER_NAMESPACE"
+    kubectl wait --for condition=Ready -l job-name="$SCRAPER_NAME" pods
+    kubectl logs -f -l job-name="$SCRAPER_NAME"
 elif [ "$COMMAND" = "cleanup" ]; then
-    SCRAPER_NAMESPACE=$2
-    SCRAPER_NAME=$3
+    SCRAPER_NAME=$2
 
-    kubectl delete jobs/$SCRAPER_NAME --namespace=clay-$SCRAPER_NAMESPACE
+    kubectl delete jobs/$SCRAPER_NAME
 fi

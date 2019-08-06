@@ -1,7 +1,6 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  namespace: clay-{{ SCRAPER_NAMESPACE }}
   name: {{ SCRAPER_NAME }}
 spec:
   template:
@@ -9,7 +8,7 @@ spec:
       containers:
       - name: {{ SCRAPER_NAME }}
         image: clay
-        command: ["/bin/run.sh", "{{ SCRAPER_NAMESPACE }}", "{{ SCRAPER_NAME }}"]
+        command: ["/bin/run.sh", "{{ SCRAPER_NAME }}"]
         # Doing this so that we use the local image while we're developing
         imagePullPolicy: Never
       restartPolicy: Never

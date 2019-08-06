@@ -3,19 +3,22 @@
 scraper_namespace = morph-test-scrapers
 scraper_name = test-ruby
 
+# TODO: Add a few characters from an md5 of the github path to ensure name is unique
+clay_scraper_name = "$(scraper_namespace)-$(scraper_name)"
+
 all: run
 
 # This runs the scraper on kubernetes
 run: image copy-code
-	./clay.sh start $(scraper_namespace) $(scraper_name)
-	./clay.sh logs $(scraper_namespace) $(scraper_name)
-	./clay.sh cleanup $(scraper_namespace) $(scraper_name)
+	./clay.sh start $(clay_scraper_name)
+	./clay.sh logs $(clay_scraper_name)
+	./clay.sh cleanup $(clay_scraper_name)
 
 # This checks out code from a scraper on github and plops it into the local blob storage
 copy-code:
 	rm -rf app
 	git clone --depth 1 https://github.com/$(scraper_namespace)/$(scraper_name).git app
-	./clay.sh copy app $(scraper_namespace) $(scraper_name)
+	./clay.sh copy app $(clay_scraper_name)
 	rm -rf app
 
 # If you want an interactive shell in the container
@@ -31,7 +34,6 @@ lint:
 shellcheck:
 	# This assumes OS X for the time being
 	brew install shellcheck
-
 
 minio:
 	kubectl apply -f kubernetes/minio-deployment.yaml
