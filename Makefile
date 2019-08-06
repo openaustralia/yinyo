@@ -1,15 +1,18 @@
 .PHONY: image
 
-scraper_namespace = morph-test-scrapers
-scraper_name = test-ruby
+morph_scraper_name = "morph-test-scrapers/test-ruby"
 
-# TODO: Add a few characters from an md5 of the github path to ensure name is unique
-clay_scraper_name = "$(scraper_namespace)-$(scraper_name)"
+# To use the morph scraper name as a unique id for clay we need to substitute
+# all non-alphanumeric characters with "-" and add a short bit of hash of the original
+# string on to the end to ensure uniqueness.
+# This way we get a name that is readable and close to the original and very likely unique.
+clay_scraper_name = $(shell echo $(morph_scraper_name) | sed -e "s/[^[:alpha:]]/-/g")-$(shell echo $(morph_scraper_name) | shasum | head -c5)
 
 all: run
 
 # This runs the scraper on kubernetes
 run: image copy-code
+	echo $(sha)
 	./clay.sh start $(clay_scraper_name)
 	./clay.sh logs $(clay_scraper_name)
 	./clay.sh cleanup $(clay_scraper_name)
@@ -17,7 +20,7 @@ run: image copy-code
 # This checks out code from a scraper on github and plops it into the local blob storage
 copy-code:
 	rm -rf app
-	git clone --depth 1 https://github.com/$(scraper_namespace)/$(scraper_name).git app
+	git clone --depth 1 https://github.com/$(morph_scraper_name).git app
 	./clay.sh copy app $(clay_scraper_name)
 	rm -rf app
 
