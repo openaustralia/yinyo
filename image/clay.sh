@@ -15,6 +15,8 @@ if [ $# == 0 ]; then
     echo ""
     echo "COMMANDS (private - used by containers):"
     echo "  app get SCRAPER_NAME DIRECTORY    Get the code and data for the scraper"
+    echo "  cache put DIRECTORY SCRAPER_NAME  Save away the build cache"
+    echo "  cache get SCRAPER_NAME DIRECTORY  Retrieve the build cache"
     echo ""
     echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
     echo "lower case alphanumeric characters and '-' up to maximum length"
@@ -41,6 +43,27 @@ if [ "$COMMAND" = "app" ]; then
 
       cd $DIRECTORY || exit
       mc cat "$BUCKET_CLAY/app/$SCRAPER_NAME.tgz" | tar xzf -
+    else
+      echo "Unknown subcommand: $SUBCOMMAND"
+      exit 1
+    fi
+elif [ "$COMMAND" = "cache" ]; then
+    # TODO: Extract common code out of app and cache command
+    SUBCOMMAND=$2
+    if [ "$SUBCOMMAND" = "put" ]; then
+      DIRECTORY=$3
+      SCRAPER_NAME=$4
+
+      # TODO: Check that $DIRECTORY exists
+      tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/cache/$SCRAPER_NAME.tgz"
+    elif [ "$SUBCOMMAND" = "get" ]; then
+      # TODO: Handle situation where the cache doesn't yet exist
+      # TODO: Make get and put work so that the directory in each case is the same
+      SCRAPER_NAME=$3
+      DIRECTORY=$4
+
+      cd $DIRECTORY || exit
+      mc cat "$BUCKET_CLAY/cache/$SCRAPER_NAME.tgz" | tar xzf -
     else
       echo "Unknown subcommand: $SUBCOMMAND"
       exit 1

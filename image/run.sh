@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Give admin access to the local blob store. Only doing this for ease
+# of development.
+# TODO: REMOVE THIS AS SOON AS POSSIBLE
 mc config host add minio http://minio-service:9000 admin changeme
 
 if [ $# == 0 ]; then
@@ -12,7 +15,6 @@ fi
 # TODO: Allow this script to be quit with control C
 
 SCRAPER_NAME=$1
-BUCKET="minio/clay"
 
 # Turns on debugging output in herokuish
 # export TRACE=true
@@ -36,10 +38,7 @@ cp /usr/local/lib/Procfile-ruby /tmp/app/Procfile
 # Use local minio for getting buildpack binaries
 export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 
-# Copy across a save cache
-# TODO: Handle situation where the cache doesn't yet exist
-# TODO: Move this to clay.sh tool
-mc cat "$BUCKET/cache/$SCRAPER_NAME.tgz" | tar xzf -
+/bin/clay.sh cache get "$SCRAPER_NAME" /tmp
 
 /bin/herokuish buildpack build
 
@@ -52,7 +51,6 @@ mc cat "$BUCKET/cache/$SCRAPER_NAME.tgz" | tar xzf -
 # create an API service which authenticates our request and proxies the request
 # to the blob store.
 
-# TODO: Move this to clay.sh tool
-tar -zcf - cache | mc pipe "$BUCKET/cache/$SCRAPER_NAME.tgz"
+/bin/clay.sh cache put cache "$SCRAPER_NAME"
 
 /bin/herokuish procfile start scraper
