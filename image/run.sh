@@ -26,12 +26,7 @@ cd /tmp || exit
 
 /bin/clay.sh app get "$SCRAPER_NAME" /tmp
 
-# This is where we would recognise the code as being ruby and add the Procfile.
-# Alternatively we could add a standard Procfile that runs a script that recognises
-# the language and runs the correct command
-
-# For the time being just assume it's Ruby
-cp /usr/local/lib/Procfile-ruby /tmp/app/Procfile
+cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 # Use local minio for getting buildpack binaries
 export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby

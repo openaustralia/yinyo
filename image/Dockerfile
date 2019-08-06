@@ -7,16 +7,14 @@ RUN apt-get update && apt-get install -y libsqlite3-dev
 ADD prerun.rb /usr/local/lib/prerun.rb
 
 # Add standard Procfiles
-ADD Procfile-ruby /usr/local/lib
+ADD Procfile /usr/local/lib
 
 # Add MinIO client
 RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /bin/mc
 RUN chmod +x /bin/mc
 
-ADD run.sh /bin
-ADD clay.sh /bin
-RUN chmod +x /bin/run.sh
-RUN chmod +x /bin/clay.sh
+ADD run.sh start.sh clay.sh /bin/
+RUN chmod +x /bin/run.sh /bin/start.sh /bin/clay.sh
 
 # Override heroku ruby buildpack with patched version that allows us
 # to get all binary assets from a local S3 rather than defaulting to
