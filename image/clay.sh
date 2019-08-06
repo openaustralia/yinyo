@@ -56,14 +56,14 @@ if [ "$COMMAND" = "app" ]; then
       SCRAPER_NAME=$4
 
       # TODO: Check that $DIRECTORY exists
-      tar -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/app/$SCRAPER_NAME.tgz"
+      tar -zcf - "$DIRECTORY" | storage put "$SCRAPER_NAME" app tgz
     elif [ "$SUBCOMMAND" = "get" ]; then
       # TODO: Make get and put work so that the directory in each case is the same
       SCRAPER_NAME=$3
       DIRECTORY=$4
 
       cd $DIRECTORY || exit
-      mc cat "$BUCKET_CLAY/app/$SCRAPER_NAME.tgz" | tar xzf -
+      storage get "$SCRAPER_NAME" app tgz | tar xzf -
     else
       echo "Unknown subcommand: $SUBCOMMAND"
       exit 1
@@ -76,7 +76,7 @@ elif [ "$COMMAND" = "cache" ]; then
       SCRAPER_NAME=$4
 
       # TODO: Check that $DIRECTORY exists
-      tar -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/cache/$SCRAPER_NAME.tgz"
+      tar -zcf - "$DIRECTORY" | storage put "$SCRAPER_NAME" cache tgz
     elif [ "$SUBCOMMAND" = "get" ]; then
       # TODO: Handle situation where the cache doesn't yet exist
       # TODO: Make get and put work so that the directory in each case is the same
@@ -84,7 +84,7 @@ elif [ "$COMMAND" = "cache" ]; then
       DIRECTORY=$4
 
       cd $DIRECTORY || exit
-      mc cat "$BUCKET_CLAY/cache/$SCRAPER_NAME.tgz" | tar xzf -
+      storage get "$SCRAPER_NAME" cache tgz | tar xzf -
     else
       echo "Unknown subcommand: $SUBCOMMAND"
       exit 1
