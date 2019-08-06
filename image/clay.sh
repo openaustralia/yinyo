@@ -28,6 +28,25 @@ if [ $# == 0 ]; then
     exit 1
 fi
 
+storage () {
+    local action=$1
+    local scraper_name=$2
+    # TODO: Check that file_name is one of app, cache, output
+    local file_name=$3
+    local file_extension=$4
+
+    local path="$BUCKET_CLAY/$file_name/$scraper_name.$file_extension"
+
+    if [ "$action" = "get" ]; then
+        mc cat "$path"
+    elif [ "$action" = "put" ]; then
+        mc pipe "$path"
+    else
+        echo "Unknown action: $action"
+        exit 1
+    fi
+}
+
 COMMAND=$1
 
 if [ "$COMMAND" = "app" ]; then
@@ -76,9 +95,9 @@ elif [ "$COMMAND" = "output" ]; then
     FILE_EXTENSION=$4
 
     if [ "$SUBCOMMAND" = "put" ]; then
-      mc pipe "$BUCKET_CLAY/output/$SCRAPER_NAME.$FILE_EXTENSION"
+      storage put $SCRAPER_NAME output $FILE_EXTENSION
     elif [ "$SUBCOMMAND" = "get" ]; then
-      mc cat "$BUCKET_CLAY/output/$SCRAPER_NAME.$FILE_EXTENSION"
+      storage get $SCRAPER_NAME output $FILE_EXTENSION
     else
       echo "Unknown subcommand: $SUBCOMMAND"
       exit 1
