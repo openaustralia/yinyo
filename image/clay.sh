@@ -8,15 +8,17 @@ if [ $# == 0 ]; then
     echo "  $0 COMMAND"
     echo ""
     echo "COMMANDS (public):"
-    echo "  app put DIRECTORY SCRAPER_NAME    Copy code and any data to the scraper"
-    echo "  start SCRAPER_NAME                Start the scraper"
-    echo "  logs SCRAPER_NAME                 Stream the logs"
-    echo "  cleanup SCRAPER_NAME              Cleanup after everything has finished"
+    echo "  app put DIRECTORY SCRAPER_NAME      Copy code and any data to the scraper"
+    echo "  start SCRAPER_NAME SCRAPER_OUTPUT   Start the scraper"
+    echo "  logs SCRAPER_NAME                   Stream the logs"
+    echo "  output get SCRAPER_NAME             Get the file output for the scraper and send to stdout"
+    echo "  cleanup SCRAPER_NAME                Cleanup after everything has finished"
     echo ""
     echo "COMMANDS (private - used by containers):"
-    echo "  app get SCRAPER_NAME DIRECTORY    Get the code and data for the scraper"
-    echo "  cache put DIRECTORY SCRAPER_NAME  Save away the build cache"
-    echo "  cache get SCRAPER_NAME DIRECTORY  Retrieve the build cache"
+    echo "  app get SCRAPER_NAME DIRECTORY      Get the code and data for the scraper"
+    echo "  cache get SCRAPER_NAME DIRECTORY    Retrieve the build cache"
+    echo "  cache put DIRECTORY SCRAPER_NAME    Save away the build cache"
+    echo "  output put SCRAPER_NAME             Take stdin and save it away"
     echo ""
     echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
     echo "lower case alphanumeric characters and '-' up to maximum length"
@@ -68,10 +70,24 @@ elif [ "$COMMAND" = "cache" ]; then
       echo "Unknown subcommand: $SUBCOMMAND"
       exit 1
     fi
+elif [ "$COMMAND" = "output" ]; then
+    # TODO: Add file extension
+    SUBCOMMAND=$2
+    SCRAPER_NAME=$3
+
+    if [ "$SUBCOMMAND" = "put" ]; then
+      mc pipe "$BUCKET_CLAY/output/$SCRAPER_NAME"
+    elif [ "$SUBCOMMAND" = "get" ]; then
+      mc cat "$BUCKET_CLAY/output/$SCRAPER_NAME"
+    else
+      echo "Unknown subcommand: $SUBCOMMAND"
+      exit 1
+    fi
 elif [ "$COMMAND" = "start" ]; then
     SCRAPER_NAME=$2
+    SCRAPER_OUTPUT=$3
 
-    sed "s/{{ SCRAPER_NAME }}/$SCRAPER_NAME/g" kubernetes/job-template.yaml > kubernetes/job.yaml
+    sed "s/{{ SCRAPER_NAME }}/$SCRAPER_NAME/g; s/{{ SCRAPER_OUTPUT }}/$SCRAPER_OUTPUT/g" kubernetes/job-template.yaml > kubernetes/job.yaml
     kubectl apply -f kubernetes/job.yaml
     rm kubernetes/job.yaml
 elif [ "$COMMAND" = "logs" ]; then

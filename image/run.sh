@@ -15,6 +15,7 @@ fi
 # TODO: Allow this script to be quit with control C
 
 SCRAPER_NAME=$1
+SCRAPER_OUTPUT=$2
 
 # Turns on debugging output in herokuish
 # export TRACE=true
@@ -54,3 +55,7 @@ export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 /bin/clay.sh cache put cache "$SCRAPER_NAME"
 
 /bin/herokuish procfile start scraper
+
+# Now take the filename given in $SCRAPER_OUTPUT and save that away
+cd /app || exit
+cat "$SCRAPER_OUTPUT" | /bin/clay.sh output put "$SCRAPER_NAME"

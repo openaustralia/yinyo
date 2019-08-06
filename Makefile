@@ -12,8 +12,7 @@ all: run
 
 # This runs the scraper on kubernetes
 run: image copy-code
-	echo $(sha)
-	./image/clay.sh start $(clay_scraper_name)
+	./image/clay.sh start $(clay_scraper_name) data.sqlite
 	./image/clay.sh logs $(clay_scraper_name)
 	./image/clay.sh cleanup $(clay_scraper_name)
 
