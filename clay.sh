@@ -28,7 +28,7 @@ if [ "$COMMAND" = "copy" ]; then
     SCRAPER_NAME=$3
 
     # TODO: Check that $DIRECTORY exists
-    tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/$SCRAPER_NAME/app.tgz"
+    tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/app/$SCRAPER_NAME.tgz"
 elif [ "$COMMAND" = "start" ]; then
     SCRAPER_NAME=$2
 
