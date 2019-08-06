@@ -58,4 +58,4 @@ export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 
 # Now take the filename given in $SCRAPER_OUTPUT and save that away
 cd /app || exit
-cat "$SCRAPER_OUTPUT" | /bin/clay.sh output put "$SCRAPER_NAME" ${SCRAPER_OUTPUT##*.}
+/bin/clay.sh output put "$SCRAPER_NAME" "${SCRAPER_OUTPUT##*.}" < "$SCRAPER_OUTPUT"

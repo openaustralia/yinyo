@@ -36,7 +36,7 @@ image:
 	docker build -t clay image
 
 lint:
-	shellcheck image/run.sh
+	shellcheck image/run.sh image/clay.sh
 
 shellcheck:
 	# This assumes OS X for the time being

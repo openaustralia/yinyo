@@ -62,7 +62,7 @@ if [ "$COMMAND" = "app" ]; then
       SCRAPER_NAME=$3
       DIRECTORY=$4
 
-      cd $DIRECTORY || exit
+      cd "$DIRECTORY" || exit
       storage get "$SCRAPER_NAME" app tgz | tar xzf -
     else
       echo "Unknown subcommand: $SUBCOMMAND"
@@ -83,7 +83,7 @@ elif [ "$COMMAND" = "cache" ]; then
       SCRAPER_NAME=$3
       DIRECTORY=$4
 
-      cd $DIRECTORY || exit
+      cd "$DIRECTORY" || exit
       storage get "$SCRAPER_NAME" cache tgz | tar xzf -
     else
       echo "Unknown subcommand: $SUBCOMMAND"
@@ -95,9 +95,9 @@ elif [ "$COMMAND" = "output" ]; then
     FILE_EXTENSION=$4
 
     if [ "$SUBCOMMAND" = "put" ]; then
-      storage put $SCRAPER_NAME output $FILE_EXTENSION
+      storage put "$SCRAPER_NAME" output "$FILE_EXTENSION"
     elif [ "$SUBCOMMAND" = "get" ]; then
-      storage get $SCRAPER_NAME output $FILE_EXTENSION
+      storage get "$SCRAPER_NAME" output "$FILE_EXTENSION"
     else
       echo "Unknown subcommand: $SUBCOMMAND"
       exit 1
@@ -118,7 +118,7 @@ elif [ "$COMMAND" = "logs" ]; then
 elif [ "$COMMAND" = "cleanup" ]; then
     SCRAPER_NAME=$2
 
-    kubectl delete jobs/$SCRAPER_NAME
+    kubectl delete "jobs/$SCRAPER_NAME"
 else
     echo "Unknown command: $COMMAND"
     exit 1
