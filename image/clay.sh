@@ -56,7 +56,7 @@ if [ "$COMMAND" = "app" ]; then
       SCRAPER_NAME=$4
 
       # TODO: Check that $DIRECTORY exists
-      tar --exclude .git -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/app/$SCRAPER_NAME.tgz"
+      tar -zcf - "$DIRECTORY" | mc pipe "$BUCKET_CLAY/app/$SCRAPER_NAME.tgz"
     elif [ "$SUBCOMMAND" = "get" ]; then
       # TODO: Make get and put work so that the directory in each case is the same
       SCRAPER_NAME=$3
