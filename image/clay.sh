@@ -8,17 +8,17 @@ if [ $# == 0 ]; then
     echo "  $0 COMMAND"
     echo ""
     echo "COMMANDS (public):"
-    echo "  app put DIRECTORY SCRAPER_NAME      Copy code and any data to the scraper"
-    echo "  start SCRAPER_NAME SCRAPER_OUTPUT   Start the scraper"
-    echo "  logs SCRAPER_NAME                   Stream the logs"
-    echo "  output get SCRAPER_NAME             Get the file output for the scraper and send to stdout"
-    echo "  cleanup SCRAPER_NAME                Cleanup after everything has finished"
+    echo "  app put DIRECTORY SCRAPER_NAME            Copy code and any data to the scraper"
+    echo "  start SCRAPER_NAME SCRAPER_OUTPUT         Start the scraper"
+    echo "  logs SCRAPER_NAME                         Stream the logs"
+    echo "  output get SCRAPER_NAME FILE_EXTENSION    Get the file output for the scraper and send to stdout"
+    echo "  cleanup SCRAPER_NAME                      Cleanup after everything has finished"
     echo ""
     echo "COMMANDS (private - used by containers):"
-    echo "  app get SCRAPER_NAME DIRECTORY      Get the code and data for the scraper"
-    echo "  cache get SCRAPER_NAME DIRECTORY    Retrieve the build cache"
-    echo "  cache put DIRECTORY SCRAPER_NAME    Save away the build cache"
-    echo "  output put SCRAPER_NAME             Take stdin and save it away"
+    echo "  app get SCRAPER_NAME DIRECTORY            Get the code and data for the scraper"
+    echo "  cache get SCRAPER_NAME DIRECTORY          Retrieve the build cache"
+    echo "  cache put DIRECTORY SCRAPER_NAME          Save away the build cache"
+    echo "  output put SCRAPER_NAME FILE_EXTENSION    Take stdin and save it away"
     echo ""
     echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
     echo "lower case alphanumeric characters and '-' up to maximum length"
@@ -71,14 +71,14 @@ elif [ "$COMMAND" = "cache" ]; then
       exit 1
     fi
 elif [ "$COMMAND" = "output" ]; then
-    # TODO: Add file extension
     SUBCOMMAND=$2
     SCRAPER_NAME=$3
+    FILE_EXTENSION=$4
 
     if [ "$SUBCOMMAND" = "put" ]; then
-      mc pipe "$BUCKET_CLAY/output/$SCRAPER_NAME"
+      mc pipe "$BUCKET_CLAY/output/$SCRAPER_NAME.$FILE_EXTENSION"
     elif [ "$SUBCOMMAND" = "get" ]; then
-      mc cat "$BUCKET_CLAY/output/$SCRAPER_NAME"
+      mc cat "$BUCKET_CLAY/output/$SCRAPER_NAME.$FILE_EXTENSION"
     else
       echo "Unknown subcommand: $SUBCOMMAND"
       exit 1
