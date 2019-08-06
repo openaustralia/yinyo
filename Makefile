@@ -23,7 +23,7 @@ copy-code:
 	git clone --depth 1 https://github.com/$(morph_scraper_name).git app
 	rm -rf app/.git app/.gitignore
 	# Add the sqlite database
-	./image/clay.sh output get $(clay_scraper_name) sqlite > app/data.sqlite
+	-./image/clay.sh output get $(clay_scraper_name) sqlite > app/data.sqlite
 	# And upload it to clay
 	./image/clay.sh app put app $(clay_scraper_name)
 	rm -rf app
