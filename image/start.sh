@@ -6,7 +6,7 @@ elif [ -f "scraper.php" ]; then
   php -d include_path=.:/app/vendor/openaustralia/scraperwiki scraper.php
 elif [ -f "scraper.py" ]; then
   # -u turns off buffering for stdout and stderr
-  python: "python -u scraper.py",
+  python -u scraper.py
 elif [ -f "scraper.pl" ]; then
   perl -Mlib=/app/local/lib/perl5 scraper.pl
 elif [ -f "scraper.js" ]; then
