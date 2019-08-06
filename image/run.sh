@@ -23,8 +23,8 @@ BUCKET="minio/clay"
 # TODO: Probably don't want to do this as root
 
 cd /tmp || exit
-# TODO: Move this clay.sh tool
-mc cat "$BUCKET/app/$SCRAPER_NAME.tgz" | tar xzf -
+
+/bin/clay.sh app get "$SCRAPER_NAME" /tmp
 
 # This is where we would recognise the code as being ruby and add the Procfile.
 # Alternatively we could add a standard Procfile that runs a script that recognises

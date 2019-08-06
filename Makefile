@@ -13,15 +13,15 @@ all: run
 # This runs the scraper on kubernetes
 run: image copy-code
 	echo $(sha)
-	./clay.sh start $(clay_scraper_name)
-	./clay.sh logs $(clay_scraper_name)
-	./clay.sh cleanup $(clay_scraper_name)
+	./image/clay.sh start $(clay_scraper_name)
+	./image/clay.sh logs $(clay_scraper_name)
+	./image/clay.sh cleanup $(clay_scraper_name)
 
 # This checks out code from a scraper on github and plops it into the local blob storage
 copy-code:
 	rm -rf app
 	git clone --depth 1 https://github.com/$(morph_scraper_name).git app
-	./clay.sh copy app $(clay_scraper_name)
+	./image/clay.sh app put app $(clay_scraper_name)
 	rm -rf app
 
 # If you want an interactive shell in the container
