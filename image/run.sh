@@ -32,7 +32,9 @@ cd /tmp || exit
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 # Use local minio for getting buildpack binaries
-export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
+# This setting only works for the ruby buildpack. You need a different setting
+# for each buildpack. So, it's disabled until we have a better way of doing this.
+# export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 
 /bin/clay.sh cache get "$SCRAPER_NAME" /tmp
 
