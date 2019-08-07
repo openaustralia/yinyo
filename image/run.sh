@@ -46,4 +46,4 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 # Now take the filename given in $SCRAPER_OUTPUT and save that away
 cd /app || exit
-/bin/clay.sh output put "$SCRAPER_NAME" "${SCRAPER_OUTPUT##*.}" < "$SCRAPER_OUTPUT"
+/bin/clay.sh output put "$SCRAPER_NAME" < "$SCRAPER_OUTPUT"
