@@ -4,6 +4,8 @@ metadata:
   name: {{ SCRAPER_NAME }}
 spec:
   backoffLimit: 0
+  # Let this run for a maximum of 24 hours
+  activeDeadlineSeconds: 86400
   template:
     spec:
       containers:
