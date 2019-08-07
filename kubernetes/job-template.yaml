@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: {{ SCRAPER_NAME }}
 spec:
+  backoffLimit: 0
   template:
     spec:
       containers:
