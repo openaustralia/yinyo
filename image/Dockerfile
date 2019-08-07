@@ -22,3 +22,6 @@ RUN chmod +x /bin/run.sh /bin/start.sh /bin/clay.sh
 
 RUN rm -rf /tmp/buildpacks/01_buildpack-ruby
 RUN herokuish buildpack install https://github.com/mlandauer/heroku-buildpack-ruby.git consistent_buildpack_vendor_url_override
+
+# Add perl buildpack
+RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpack-perl.git 2da7480a8339f01968ce3979655555a0ade20564
