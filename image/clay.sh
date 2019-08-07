@@ -138,6 +138,9 @@ elif [ "$COMMAND" = "cleanup" ]; then
     SCRAPER_NAME=$2
 
     kubectl delete "jobs/$SCRAPER_NAME"
+    # Also clear out code and output files
+    storage delete "$SCRAPER_NAME" app tgz
+    storage delete "$SCRAPER_NAME" output
 else
     echo "Unknown command: $COMMAND"
     exit 1

@@ -1,6 +1,7 @@
 .PHONY: image
 
-morph_scraper_name = "morph-test-scrapers/test-ruby"
+morph_scraper_name = morph-test-scrapers/test-ruby
+morph_bucket = minio/morph
 
 # To use the morph scraper name as a unique id for clay we need to substitute
 # all non-alphanumeric characters with "-" and add a short bit of hash of the original
@@ -14,6 +15,8 @@ all: run
 run: image copy-code
 	./image/clay.sh start $(clay_scraper_name) data.sqlite
 	./image/clay.sh logs $(clay_scraper_name)
+	# Get the sqlite database from clay and save it away in a morph bucket
+	./image/clay.sh output get $(clay_scraper_name) | mc pipe $(morph_bucket)/$(morph_scraper_name).sqlite
 	./image/clay.sh cleanup $(clay_scraper_name)
 
 # This checks out code from a scraper on github and plops it into the local blob storage
@@ -23,7 +26,7 @@ copy-code:
 	git clone --depth 1 https://github.com/$(morph_scraper_name).git app
 	rm -rf app/.git app/.gitignore
 	# Add the sqlite database
-	-./image/clay.sh output get $(clay_scraper_name) sqlite > app/data.sqlite
+	-mc cat $(morph_bucket)/$(morph_scraper_name).sqlite > app/data.sqlite
 	# And upload it to clay
 	./image/clay.sh app put app $(clay_scraper_name)
 	rm -rf app
