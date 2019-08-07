@@ -131,8 +131,14 @@ elif [ "$COMMAND" = "start" ]; then
 elif [ "$COMMAND" = "logs" ]; then
     SCRAPER_NAME=$2
 
-    # Wait for the pod to be up and running and then stream the logs
-    kubectl wait --for condition=Ready -l job-name="$SCRAPER_NAME" pods
+    # If $type is not empty that means the jobs has finished or completed
+    type=$(kubectl get "jobs/$SCRAPER_NAME" -o=jsonpath="{.status.conditions[0].type}")
+    # If job is starting or running
+    if [ -z "$type" ]; then
+      # Then wait for the pod to be ready
+      kubectl wait --for condition=Ready -l job-name="$SCRAPER_NAME" pods
+    fi
+    # Only then start streaming the logs
     kubectl logs -f -l job-name="$SCRAPER_NAME"
 elif [ "$COMMAND" = "cleanup" ]; then
     SCRAPER_NAME=$2
