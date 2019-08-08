@@ -45,8 +45,12 @@ shellcheck:
 	# This assumes OS X for the time being
 	brew install shellcheck
 
-install:
+install: install-minio install-logging
+
+install-minio:
 	kubectl apply -f kubernetes/minio-deployment.yaml
+
+install-logging:
 	# The following can't be run multiple times
 	# TODO: Make this more sensible
 	kubectl create namespace logging
