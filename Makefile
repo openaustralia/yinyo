@@ -53,16 +53,15 @@ install-minio:
 install-logging:
 	# The following can't be run multiple times
 	# TODO: Make this more sensible
-	# TODO: Put the logging stuff in a "logging" namespace
-	helm repo add elastic https://helm.elastic.co
-	# Setting specific values to keep elasticsearch happy on mac
-	helm install --name elasticsearch elastic/elasticsearch --values helm-values/elasticsearch-docker-for-mac.yaml
-	# helm install --name kibana elastic/kibana --set ingress=true
-	# kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-service-account.yaml
-	# kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role.yaml
-	# kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role-binding.yaml
-	# kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/output/elasticsearch/fluent-bit-configmap.yaml
-	# kubectl apply -f kubernetes/fluent-bit-ds.yaml
+	kubectl create namespace logging
+	# TODO: Use oss image for elasticsearch & kibana
+	helm install --name elasticsearch stable/elasticsearch --namespace logging
+	helm install --name kibana stable/kibana --set env.ELASTICSEARCH_HOSTS=http://elasticsearch-client:9200 --namespace logging
+	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-service-account.yaml
+	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role.yaml
+	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role-binding.yaml
+	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/output/elasticsearch/fluent-bit-configmap.yaml
+	kubectl apply -f kubernetes/fluent-bit-ds.yaml
 
 # Populate local bucket with copy of some of what's in the Heroku bucket
 heroku-buildpack-ruby:
