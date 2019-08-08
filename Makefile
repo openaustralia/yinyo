@@ -45,8 +45,18 @@ shellcheck:
 	# This assumes OS X for the time being
 	brew install shellcheck
 
-minio:
+install:
 	kubectl apply -f kubernetes/minio-deployment.yaml
+	# The following can't be run multiple times
+	# TODO: Make this more sensible
+	kubectl create namespace logging
+	helm install --name elasticsearch stable/elasticsearch --namespace logging
+	helm install --name kibana stable/kibana --set env.ELASTICSEARCH_URL=http://elasticsearch-client:9200 --namespace logging
+	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-service-account.yaml
+	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role.yaml
+	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role-binding.yaml
+	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/output/elasticsearch/fluent-bit-configmap.yaml
+	kubectl apply -f kubernetes/fluent-bit-ds.yaml
 
 # Populate local bucket with copy of some of what's in the Heroku bucket
 heroku-buildpack-ruby:
