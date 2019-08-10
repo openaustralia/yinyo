@@ -54,100 +54,114 @@ storage () {
   fi
 }
 
-COMMAND=$1
+command-app-put () {
+  local directory=$1
+  local scraper_name=$2
 
-if [ "$COMMAND" = "app" ]; then
-  SUBCOMMAND=$2
-  if [ "$SUBCOMMAND" = "put" ]; then
-    DIRECTORY=$3
-    SCRAPER_NAME=$4
+  # TODO: Check that $directory exists
+  tar -zcf - "$directory" | storage put "$scraper_name" app tgz
+}
 
-    # TODO: Check that $DIRECTORY exists
-    tar -zcf - "$DIRECTORY" | storage put "$SCRAPER_NAME" app tgz
-  elif [ "$SUBCOMMAND" = "get" ]; then
-    # Get the source code of scraper into import directory. This needs to have
-    # already been copied to the appropriate place in the blob store.
-    # We do this because we don't want to assume that the code comes from Github.
+# Get the source code of scraper into import directory. This needs to have
+# already been copied to the appropriate place in the blob store.
+# We do this because we don't want to assume that the code comes from Github.
+# TODO: Make get and put work so that the directory in each case is the same
+command-app-get () {
+  local scraper_name=$1
+  local directory=$2
 
-    # TODO: Make get and put work so that the directory in each case is the same
-    SCRAPER_NAME=$3
-    DIRECTORY=$4
+  cd "$directory" || exit
+  storage get "$scraper_name" app tgz | tar xzf -
+}
 
-    cd "$DIRECTORY" || exit
-    storage get "$SCRAPER_NAME" app tgz | tar xzf -
-  else
-    echo "Unknown subcommand: $SUBCOMMAND"
-    exit 1
-  fi
-elif [ "$COMMAND" = "cache" ]; then
-  # TODO: Extract common code out of app and cache command
-  SUBCOMMAND=$2
-  if [ "$SUBCOMMAND" = "put" ]; then
-    # This is where we save away the result of the build cache for future compiles
-    # For the time being we're just writing directly to the blob store (which has
-    # no authentication setup) but in future we'll do it by using an authentication
-    # token (available via an environment variable) which is only valid for the
-    # period of this scraper run and it can only be used for updating things
-    # during this scraper run. To make this work it will probably be necessary to
-    # create an API service which authenticates our request and proxies the request
-    # to the blob store.
+# This is where we save away the result of the build cache for future compiles
+# For the time being we're just writing directly to the blob store (which has
+# no authentication setup) but in future we'll do it by using an authentication
+# token (available via an environment variable) which is only valid for the
+# period of this scraper run and it can only be used for updating things
+# during this scraper run. To make this work it will probably be necessary to
+# create an API service which authenticates our request and proxies the request
+# to the blob store.
+command-cache-put () {
+  local directory=$1
+  local scraper_name=$2
 
-    DIRECTORY=$3
-    SCRAPER_NAME=$4
+  # TODO: Check that $directory exists
+  tar -zcf - "$directory" | storage put "$scraper_name" cache tgz
+}
 
-    # TODO: Check that $DIRECTORY exists
-    tar -zcf - "$DIRECTORY" | storage put "$SCRAPER_NAME" cache tgz
-  elif [ "$SUBCOMMAND" = "get" ]; then
-    # TODO: Handle situation where the cache doesn't yet exist
-    # TODO: Make get and put work so that the directory in each case is the same
-    SCRAPER_NAME=$3
-    DIRECTORY=$4
+# TODO: Make get and put work so that the directory in each case is the same
+command-cache-get () {
+  local scraper_name=$1
+  local directory=$2
 
-    cd "$DIRECTORY" || exit
-    (storage get "$SCRAPER_NAME" cache tgz | tar xzf -) || true
-  else
-    echo "Unknown subcommand: $SUBCOMMAND"
-    exit 1
-  fi
-elif [ "$COMMAND" = "output" ]; then
-  SUBCOMMAND=$2
-  SCRAPER_NAME=$3
+  cd "$directory" || exit
+  (storage get "$scraper_name" cache tgz | tar xzf -) || true
+}
 
-  if [ "$SUBCOMMAND" = "put" ]; then
-    storage put "$SCRAPER_NAME" output
-  elif [ "$SUBCOMMAND" = "get" ]; then
-    storage get "$SCRAPER_NAME" output
-  else
-    echo "Unknown subcommand: $SUBCOMMAND"
-    exit 1
-  fi
-elif [ "$COMMAND" = "start" ]; then
-  SCRAPER_NAME=$2
-  SCRAPER_OUTPUT=$3
+command-output-put () {
+  local scraper_name=$1
 
-  sed "s/{{ SCRAPER_NAME }}/$SCRAPER_NAME/g; s/{{ SCRAPER_OUTPUT }}/$SCRAPER_OUTPUT/g" kubernetes/job-template.yaml > kubernetes/job.yaml
+  storage put "$scraper_name" output
+}
+
+command-output-get () {
+  local scraper_name=$1
+
+  storage get "$scraper_name" output
+}
+
+command-start () {
+  local scraper_name=$1
+  local scraper_output=$2
+
+  sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ SCRAPER_OUTPUT }}/$scraper_output/g" kubernetes/job-template.yaml > kubernetes/job.yaml
   kubectl apply -f kubernetes/job.yaml
   rm kubernetes/job.yaml
-elif [ "$COMMAND" = "logs" ]; then
-  SCRAPER_NAME=$2
+}
+
+command-logs () {
+  local scraper_name=$1
 
   # If $type is not empty that means the jobs has finished or completed
-  type=$(kubectl get "jobs/$SCRAPER_NAME" -o=jsonpath="{.status.conditions[0].type}")
+  type=$(kubectl get "jobs/$scraper_name" -o=jsonpath="{.status.conditions[0].type}")
   # If job is starting or running
   if [ -z "$type" ]; then
     # Then wait for the pod to be ready
-    kubectl wait --for condition=Ready -l job-name="$SCRAPER_NAME" pods
+    kubectl wait --for condition=Ready -l job-name="$scraper_name" pods
   fi
   # Only then start streaming the logs
-  kubectl logs -f -l job-name="$SCRAPER_NAME"
-elif [ "$COMMAND" = "cleanup" ]; then
-  SCRAPER_NAME=$2
+  kubectl logs -f -l job-name="$scraper_name"
+}
 
-  kubectl delete "jobs/$SCRAPER_NAME"
+command-cleanup () {
+  local scraper_name=$1
+
+  kubectl delete "jobs/$scraper_name"
   # Also clear out code and output files
-  storage delete "$SCRAPER_NAME" app tgz
-  storage delete "$SCRAPER_NAME" output
+  storage delete "$scraper_name" app tgz
+  storage delete "$scraper_name" output
+}
+
+if [ "$1" = "app" ] && [ "$2" = "put" ]; then
+  command-app-put "$3" "$4"
+elif [ "$1" = "app" ] && [ "$2" = "get" ]; then
+  command-app-get "$3" "$4"
+elif [ "$1" = "cache" ] && [ "$2" = "put" ]; then
+  command-cache-put "$3" "$4"
+elif [ "$1" = "cache" ] && [ "$2" = "get" ]; then
+  command-cache-get "$3" "$4"
+elif [ "$1" = "output" ] && [ "$2" = "put" ]; then
+  command-output-put "$3"
+elif [ "$1" = "output" ] && [ "$2" = "get" ]; then
+  command-output-get "$3"
+elif [ "$1" = "start" ]; then
+  command-start "$2" "$3"
+elif [ "$1" = "logs" ]; then
+  command-logs "$2"
+elif [ "$1" = "cleanup" ]; then
+  command-cleanup "$2"
 else
-  echo "Unknown command: $COMMAND"
+  echo "Unknown command"
   exit 1
 fi
