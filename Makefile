@@ -12,24 +12,23 @@ clay_scraper_name = $(shell echo $(morph_scraper_name) | sed -e "s/[^[:alpha:]]/
 all: run
 
 # This runs the scraper on kubernetes
-run: image copy-code
+run: image get-code-and-data
+	./image/clay.sh app put app $(clay_scraper_name)
+	rm -rf app
 	./image/clay.sh start $(clay_scraper_name) data.sqlite
 	./image/clay.sh logs $(clay_scraper_name)
 	# Get the sqlite database from clay and save it away in a morph bucket
 	./image/clay.sh output get $(clay_scraper_name) | mc pipe $(morph_bucket)/$(morph_scraper_name).sqlite
 	./image/clay.sh cleanup $(clay_scraper_name)
 
-# This checks out code from a scraper on github and plops it into the local blob storage
-copy-code:
+get-code-and-data:
 	rm -rf app
 	# Checkout the code from github
 	git clone --depth 1 https://github.com/$(morph_scraper_name).git app
 	rm -rf app/.git app/.gitignore
 	# Add the sqlite database
 	-mc cat $(morph_bucket)/$(morph_scraper_name).sqlite > app/data.sqlite
-	# And upload it to clay
-	./image/clay.sh app put app $(clay_scraper_name)
-	rm -rf app
+
 
 # If you want an interactive shell in the container
 shell: image
