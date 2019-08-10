@@ -2,3 +2,4 @@ cache
 app
 app.tgz
 kubernetes/job.yaml
+kubernetes/secret.yaml

@@ -110,6 +110,10 @@ command-run () {
   # TODO: Check that $directory exists
   tar -zcf - "$directory" | storage put "$scraper_name" app tgz
 
+  local run_token=$(openssl rand -hex 32)
+  sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ RUN_TOKEN }}/$run_token/g" kubernetes/secret-template.yaml > kubernetes/secret.yaml
+  kubectl apply -f kubernetes/secret.yaml
+  rm kubernetes/secret.yaml
   sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ SCRAPER_OUTPUT }}/$scraper_output/g" kubernetes/job-template.yaml > kubernetes/job.yaml
   kubectl apply -f kubernetes/job.yaml
   rm kubernetes/job.yaml
@@ -133,6 +137,7 @@ command-cleanup () {
   local scraper_name=$1
 
   kubectl delete "jobs/$scraper_name"
+  kubectl delete "secrets/$scraper_name"
   # Also clear out code and output files
   storage delete "$scraper_name" app tgz
   storage delete "$scraper_name" output
