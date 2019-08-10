@@ -9,10 +9,10 @@ set -e
 mc config host add minio http://minio-service:9000 admin changeme
 
 if [ $# == 0 ]; then
-    echo "Downloads a scraper from Github, compiles it and runs it"
-    echo "Usage: $0 scraper_name scraper_output"
-    echo "e.g. $0 morph-test-scrapers-test-ruby"
-    exit 1
+  echo "Downloads a scraper from Github, compiles it and runs it"
+  echo "Usage: $0 scraper_name scraper_output"
+  echo "e.g. $0 morph-test-scrapers-test-ruby"
+  exit 1
 fi
 
 # TODO: Allow this script to be quit with control C
