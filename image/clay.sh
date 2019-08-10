@@ -10,17 +10,16 @@ if [ $# == 0 ]; then
   echo "  $0 COMMAND"
   echo ""
   echo "COMMANDS (public):"
-  echo "  app put DIRECTORY SCRAPER_NAME            Copy code and any data to the scraper"
-  echo "  start SCRAPER_NAME SCRAPER_OUTPUT         Start the scraper"
-  echo "  logs SCRAPER_NAME                         Stream the logs"
-  echo "  output get SCRAPER_NAME                   Get the file output for the scraper and send to stdout"
-  echo "  cleanup SCRAPER_NAME                      Cleanup after everything has finished"
+  echo "  run DIRECTORY SCRAPER_NAME SCRAPER_OUTPUT    Upload code and data and run the scraper"
+  echo "  logs SCRAPER_NAME                            Stream the logs"
+  echo "  output get SCRAPER_NAME                      Get the file output for the scraper and send to stdout"
+  echo "  cleanup SCRAPER_NAME                         Cleanup after everything has finished"
   echo ""
   echo "COMMANDS (private - used by containers):"
-  echo "  app get SCRAPER_NAME DIRECTORY            Get the code and data for the scraper"
-  echo "  cache get SCRAPER_NAME DIRECTORY          Retrieve the build cache"
-  echo "  cache put DIRECTORY SCRAPER_NAME          Save away the build cache"
-  echo "  output put SCRAPER_NAME                   Take stdin and save it away"
+  echo "  app get SCRAPER_NAME DIRECTORY               Get the code and data for the scraper"
+  echo "  cache get SCRAPER_NAME DIRECTORY             Retrieve the build cache"
+  echo "  cache put DIRECTORY SCRAPER_NAME             Save away the build cache"
+  echo "  output put SCRAPER_NAME                      Take stdin and save it away"
   echo ""
   echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
   echo "lower case alphanumeric characters and '-' up to maximum length"
@@ -52,14 +51,6 @@ storage () {
     echo "Unknown action: $action"
     exit 1
   fi
-}
-
-command-app-put () {
-  local directory=$1
-  local scraper_name=$2
-
-  # TODO: Check that $directory exists
-  tar -zcf - "$directory" | storage put "$scraper_name" app tgz
 }
 
 # Get the source code of scraper into import directory. This needs to have
@@ -111,9 +102,13 @@ command-output-get () {
   storage get "$scraper_name" output
 }
 
-command-start () {
-  local scraper_name=$1
-  local scraper_output=$2
+command-run () {
+  local directory=$1
+  local scraper_name=$2
+  local scraper_output=$3
+
+  # TODO: Check that $directory exists
+  tar -zcf - "$directory" | storage put "$scraper_name" app tgz
 
   sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ SCRAPER_OUTPUT }}/$scraper_output/g" kubernetes/job-template.yaml > kubernetes/job.yaml
   kubectl apply -f kubernetes/job.yaml
@@ -143,9 +138,7 @@ command-cleanup () {
   storage delete "$scraper_name" output
 }
 
-if [ "$1" = "app" ] && [ "$2" = "put" ]; then
-  command-app-put "$3" "$4"
-elif [ "$1" = "app" ] && [ "$2" = "get" ]; then
+if [ "$1" = "app" ] && [ "$2" = "get" ]; then
   command-app-get "$3" "$4"
 elif [ "$1" = "cache" ] && [ "$2" = "put" ]; then
   command-cache-put "$3" "$4"
@@ -155,8 +148,8 @@ elif [ "$1" = "output" ] && [ "$2" = "put" ]; then
   command-output-put "$3"
 elif [ "$1" = "output" ] && [ "$2" = "get" ]; then
   command-output-get "$3"
-elif [ "$1" = "start" ]; then
-  command-start "$2" "$3"
+elif [ "$1" = "run" ]; then
+  command-run "$2" "$3" "$4"
 elif [ "$1" = "logs" ]; then
   command-logs "$2"
 elif [ "$1" = "cleanup" ]; then
