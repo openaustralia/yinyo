@@ -14,4 +14,10 @@ spec:
         command: ["/bin/run.sh", "{{ SCRAPER_NAME }}", "{{ SCRAPER_OUTPUT }}"]
         # Doing this so that we use the local image while we're developing
         imagePullPolicy: Never
+        env:
+          - name: CLAY_RUN_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ SCRAPER_NAME }}
+                key: run_token
       restartPolicy: Never
