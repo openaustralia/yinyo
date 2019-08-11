@@ -124,12 +124,22 @@ command-run () {
   echo "$run_token"
 }
 
+# base64 has different command line options on OS X and Linux
+# So, make a little cross platform wrapper
+decode-base64 () {
+  if [ $(uname) = "Darwin" ]; then
+    base64 -D
+  else
+    base64 -d
+  fi
+}
+
 check-run-token () {
   local scraper_name=$1
   local run_token=$2
 
   local actual_run_token
-  actual_run_token=$(kubectl get "secret/$scraper_name" -o=jsonpath="{.data.run_token}" | base64 -D)
+  actual_run_token=$(kubectl get "secret/$scraper_name" -o=jsonpath="{.data.run_token}" | decode-base64)
 
   if [ "$run_token" != "$actual_run_token" ]; then
     echo "Invalid run token"
