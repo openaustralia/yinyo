@@ -121,11 +121,10 @@ command-run () {
   echo "$run_token"
 }
 
-command-logs () {
+check-run-token () {
   local scraper_name=$1
   local run_token=$2
 
-  # Check that run_token is valid
   local actual_run_token
   actual_run_token=$(kubectl get "secret/$scraper_name" -o=jsonpath="{.data.run_token}" | base64 -D)
 
@@ -133,6 +132,13 @@ command-logs () {
     echo "Invalid run token"
     exit 1
   fi
+}
+
+command-logs () {
+  local scraper_name=$1
+  local run_token=$2
+
+  check-run-token "$scraper_name" "$run_token"
 
   # If $type is not empty that means the jobs has finished or completed
   type=$(kubectl get "jobs/$scraper_name" -o=jsonpath="{.status.conditions[0].type}")
