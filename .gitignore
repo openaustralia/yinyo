@@ -3,3 +3,4 @@ app
 app.tgz
 kubernetes/job.yaml
 kubernetes/secret.yaml
+server/server
