@@ -13,7 +13,7 @@ if [ $# == 0 ]; then
   echo "  run DIRECTORY SCRAPER_NAME SCRAPER_OUTPUT    Upload code and data and run the scraper. Returns token"
   echo "  logs SCRAPER_NAME RUN_TOKEN                  Stream the logs"
   echo "  output get SCRAPER_NAME RUN_TOKEN            Get the file output for the scraper and send to stdout"
-  echo "  cleanup SCRAPER_NAME                         Cleanup after everything has finished"
+  echo "  cleanup SCRAPER_NAME RUN_TOKEN               Cleanup after everything has finished"
   echo ""
   echo "COMMANDS (private - used by containers):"
   echo "  app get SCRAPER_NAME DIRECTORY               Get the code and data for the scraper"
@@ -156,6 +156,9 @@ command-logs () {
 
 command-cleanup () {
   local scraper_name=$1
+  local run_token=$2
+
+  check-run-token "$scraper_name" "$run_token"
 
   kubectl delete "jobs/$scraper_name"
   kubectl delete "secrets/$scraper_name"
@@ -179,7 +182,7 @@ elif [ "$1" = "run" ]; then
 elif [ "$1" = "logs" ]; then
   command-logs "$2" "$3"
 elif [ "$1" = "cleanup" ]; then
-  command-cleanup "$2"
+  command-cleanup "$2" "$3"
 else
   echo "Unknown command"
   exit 1
