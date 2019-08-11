@@ -110,7 +110,8 @@ command-run () {
   # TODO: Check that $directory exists
   tar -zcf - "$directory" | storage put "$scraper_name" app tgz
 
-  local run_token=$(openssl rand -hex 32)
+  local run_token
+  run_token=$(openssl rand -hex 32)
   sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ RUN_TOKEN }}/$run_token/g" kubernetes/secret-template.yaml > kubernetes/secret.yaml
   kubectl apply -f kubernetes/secret.yaml
   rm kubernetes/secret.yaml
