@@ -12,7 +12,7 @@ if [ $# == 0 ]; then
   echo "COMMANDS (public):"
   echo "  run DIRECTORY SCRAPER_NAME SCRAPER_OUTPUT    Upload code and data and run the scraper. Returns token"
   echo "  logs SCRAPER_NAME RUN_TOKEN                  Stream the logs"
-  echo "  output get SCRAPER_NAME                      Get the file output for the scraper and send to stdout"
+  echo "  output get SCRAPER_NAME RUN_TOKEN            Get the file output for the scraper and send to stdout"
   echo "  cleanup SCRAPER_NAME                         Cleanup after everything has finished"
   echo ""
   echo "COMMANDS (private - used by containers):"
@@ -98,6 +98,9 @@ command-output-put () {
 
 command-output-get () {
   local scraper_name=$1
+  local run_token=$2
+
+  check-run-token "$scraper_name" "$run_token"
 
   storage get "$scraper_name" output
 }
@@ -170,7 +173,7 @@ elif [ "$1" = "cache" ] && [ "$2" = "get" ]; then
 elif [ "$1" = "output" ] && [ "$2" = "put" ]; then
   command-output-put "$3"
 elif [ "$1" = "output" ] && [ "$2" = "get" ]; then
-  command-output-get "$3"
+  command-output-get "$3" "$4"
 elif [ "$1" = "run" ]; then
   command-run "$2" "$3" "$4"
 elif [ "$1" = "logs" ]; then
