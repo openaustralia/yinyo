@@ -113,11 +113,12 @@ command-run () {
   local run_token
   run_token=$(openssl rand -hex 32)
   sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ RUN_TOKEN }}/$run_token/g" kubernetes/secret-template.yaml > kubernetes/secret.yaml
-  kubectl apply -f kubernetes/secret.yaml
+  kubectl apply -f kubernetes/secret.yaml > /dev/null
   rm kubernetes/secret.yaml
   sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ SCRAPER_OUTPUT }}/$scraper_output/g" kubernetes/job-template.yaml > kubernetes/job.yaml
-  kubectl apply -f kubernetes/job.yaml
+  kubectl apply -f kubernetes/job.yaml > /dev/null
   rm kubernetes/job.yaml
+  echo "$run_token"
 }
 
 command-logs () {

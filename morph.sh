@@ -29,7 +29,7 @@ rm -rf app/.git app/.gitignore
 # Add the sqlite database
 (mc cat "$morph_bucket/$morph_scraper_name.sqlite" > app/data.sqlite) || true
 
-./image/clay.sh run app "$clay_scraper_name" data.sqlite
+run_token=$(./image/clay.sh run app "$clay_scraper_name" data.sqlite)
 rm -rf app
 ./image/clay.sh logs "$clay_scraper_name"
 # Get the sqlite database from clay and save it away in a morph bucket
