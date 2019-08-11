@@ -16,10 +16,10 @@ if [ $# == 0 ]; then
   echo "  cleanup SCRAPER_NAME RUN_TOKEN               Cleanup after everything has finished"
   echo ""
   echo "COMMANDS (private - used by containers):"
-  echo "  app get SCRAPER_NAME DIRECTORY               Get the code and data for the scraper"
-  echo "  cache get SCRAPER_NAME DIRECTORY             Retrieve the build cache"
-  echo "  cache put DIRECTORY SCRAPER_NAME             Save away the build cache"
-  echo "  output put SCRAPER_NAME                      Take stdin and save it away"
+  echo "  app get SCRAPER_NAME DIRECTORY RUN_TOKEN     Get the code and data for the scraper"
+  echo "  cache get SCRAPER_NAME DIRECTORY RUN_TOKEN   Retrieve the build cache"
+  echo "  cache put DIRECTORY SCRAPER_NAME RUN_TOKEN   Save away the build cache"
+  echo "  output put SCRAPER_NAME RUN_TOKEN            Take stdin and save it away"
   echo ""
   echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
   echo "lower case alphanumeric characters and '-' up to maximum length"
@@ -60,6 +60,9 @@ storage () {
 command-app-get () {
   local scraper_name=$1
   local directory=$2
+  local run_token=$3
+
+  check-run-token "$scraper_name" "$run_token"
 
   cd "$directory" || exit
   storage get "$scraper_name" app tgz | tar xzf -
@@ -76,6 +79,9 @@ command-app-get () {
 command-cache-put () {
   local directory=$1
   local scraper_name=$2
+  local run_token=$3
+
+  check-run-token "$scraper_name" "$run_token"
 
   # TODO: Check that $directory exists
   tar -zcf - "$directory" | storage put "$scraper_name" cache tgz
@@ -85,6 +91,9 @@ command-cache-put () {
 command-cache-get () {
   local scraper_name=$1
   local directory=$2
+  local run_token=$3
+
+  check-run-token "$scraper_name" "$run_token"
 
   cd "$directory" || exit
   (storage get "$scraper_name" cache tgz | tar xzf -) || true
@@ -92,6 +101,9 @@ command-cache-get () {
 
 command-output-put () {
   local scraper_name=$1
+  local run_token=$2
+
+  check-run-token "$scraper_name" "$run_token"
 
   storage put "$scraper_name" output
 }
@@ -178,13 +190,13 @@ command-cleanup () {
 }
 
 if [ "$1" = "app" ] && [ "$2" = "get" ]; then
-  command-app-get "$3" "$4"
+  command-app-get "$3" "$4" "$5"
 elif [ "$1" = "cache" ] && [ "$2" = "put" ]; then
-  command-cache-put "$3" "$4"
+  command-cache-put "$3" "$4" "$5"
 elif [ "$1" = "cache" ] && [ "$2" = "get" ]; then
-  command-cache-get "$3" "$4"
+  command-cache-get "$3" "$4" "$5"
 elif [ "$1" = "output" ] && [ "$2" = "put" ]; then
-  command-output-put "$3"
+  command-output-put "$3" "$4"
 elif [ "$1" = "output" ] && [ "$2" = "get" ]; then
   command-output-get "$3" "$4"
 elif [ "$1" = "run" ]; then

@@ -27,7 +27,7 @@ SCRAPER_OUTPUT=$2
 
 cd /tmp || exit
 
-/bin/clay.sh app get "$SCRAPER_NAME" /tmp
+/bin/clay.sh app get "$SCRAPER_NAME" /tmp "$CLAY_RUN_TOKEN"
 
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 
@@ -36,14 +36,14 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 # for each buildpack. So, it's disabled until we have a better way of doing this.
 # export BUILDPACK_VENDOR_URL=http://minio-service:9000/heroku-buildpack-ruby
 
-/bin/clay.sh cache get "$SCRAPER_NAME" /tmp
+/bin/clay.sh cache get "$SCRAPER_NAME" /tmp "$CLAY_RUN_TOKEN"
 
 /bin/herokuish buildpack build
 
-/bin/clay.sh cache put cache "$SCRAPER_NAME"
+/bin/clay.sh cache put cache "$SCRAPER_NAME" "$CLAY_RUN_TOKEN"
 
 /bin/herokuish procfile start scraper
 
 # Now take the filename given in $SCRAPER_OUTPUT and save that away
 cd /app || exit
-/bin/clay.sh output put "$SCRAPER_NAME" < "$SCRAPER_OUTPUT"
+/bin/clay.sh output put "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" < "$SCRAPER_OUTPUT"
