@@ -10,8 +10,8 @@ if [ $# == 0 ]; then
   echo "  $0 COMMAND"
   echo ""
   echo "COMMANDS (public):"
-  echo "  run DIRECTORY SCRAPER_NAME SCRAPER_OUTPUT    Upload code and data and run the scraper"
-  echo "  logs SCRAPER_NAME                            Stream the logs"
+  echo "  run DIRECTORY SCRAPER_NAME SCRAPER_OUTPUT    Upload code and data and run the scraper. Returns token"
+  echo "  logs SCRAPER_NAME RUN_TOKEN                  Stream the logs"
   echo "  output get SCRAPER_NAME                      Get the file output for the scraper and send to stdout"
   echo "  cleanup SCRAPER_NAME                         Cleanup after everything has finished"
   echo ""
@@ -123,6 +123,16 @@ command-run () {
 
 command-logs () {
   local scraper_name=$1
+  local run_token=$2
+
+  # Check that run_token is valid
+  local actual_run_token
+  actual_run_token=$(kubectl get "secret/$scraper_name" -o=jsonpath="{.data.run_token}" | base64 -D)
+
+  if [ "$run_token" != "$actual_run_token" ]; then
+    echo "Invalid run token"
+    exit 1
+  fi
 
   # If $type is not empty that means the jobs has finished or completed
   type=$(kubectl get "jobs/$scraper_name" -o=jsonpath="{.status.conditions[0].type}")
@@ -158,7 +168,7 @@ elif [ "$1" = "output" ] && [ "$2" = "get" ]; then
 elif [ "$1" = "run" ]; then
   command-run "$2" "$3" "$4"
 elif [ "$1" = "logs" ]; then
-  command-logs "$2"
+  command-logs "$2" "$3"
 elif [ "$1" = "cleanup" ]; then
   command-cleanup "$2"
 else

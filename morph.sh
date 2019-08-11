@@ -31,7 +31,7 @@ rm -rf app/.git app/.gitignore
 
 run_token=$(./image/clay.sh run app "$clay_scraper_name" data.sqlite)
 rm -rf app
-./image/clay.sh logs "$clay_scraper_name"
+./image/clay.sh logs "$clay_scraper_name" "$run_token"
 # Get the sqlite database from clay and save it away in a morph bucket
 ./image/clay.sh output get "$clay_scraper_name" | mc pipe "$morph_bucket/$morph_scraper_name.sqlite"
 ./image/clay.sh cleanup "$clay_scraper_name"
