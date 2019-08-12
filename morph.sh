@@ -30,6 +30,12 @@ rm -rf app/.git app/.gitignore
 (mc cat "$morph_bucket/$morph_scraper_name.sqlite" > app/data.sqlite) || true
 
 run_token=$(./image/clay.sh run app "$clay_scraper_name" data.sqlite)
+
+if [ "$run_token" = "" ]; then
+  echo "There was an error starting the scraper"
+  exit 1
+fi
+
 rm -rf app
 ./image/clay.sh logs "$clay_scraper_name" "$run_token"
 # Get the sqlite database from clay and save it away in a morph bucket
