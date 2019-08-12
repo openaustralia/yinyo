@@ -3,6 +3,7 @@ module clay
 go 1.12
 
 require (
+	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
 	github.com/gorilla/mux v1.7.3
 	github.com/minio/minio-go/v6 v6.0.33
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect

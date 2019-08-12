@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
 	"github.com/minio/minio-go/v6"
 	batchv1 "k8s.io/api/batch/v1"
@@ -43,6 +44,10 @@ func run(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+
+	// Generate random token
+	runToken := uniuri.NewLen(32)
+	fmt.Fprintln(w, "runToken: ", runToken)
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
