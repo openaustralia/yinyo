@@ -47,8 +47,6 @@ func run(w http.ResponseWriter, r *http.Request) {
 
 	// Generate random token
 	runToken := uniuri.NewLen(32)
-	// TODO: Return result as json
-	fmt.Fprintln(w, runToken)
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -118,10 +116,13 @@ func run(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err1)
 		panic(err1)
 	}
+
+	// TODO: Return result as json
+	fmt.Fprintln(w, runToken)
 }
 
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/scrapers/{id}/run", run).Methods("PUT")
+	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

@@ -122,17 +122,10 @@ command-run () {
   local scraper_name=$2
   local scraper_output=$3
 
-  # TODO: Check that $directory exists
-  tar -zcf - "$directory" | storage put "$scraper_name" app tgz
-
+  # Use clay server running on kubernetes to do the work
   local run_token
-  run_token=$(openssl rand -hex 32)
-  sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ RUN_TOKEN }}/$run_token/g" kubernetes/secret-template.yaml > kubernetes/secret.yaml
-  kubectl apply -f kubernetes/secret.yaml > /dev/null
-  rm kubernetes/secret.yaml
-  sed "s/{{ SCRAPER_NAME }}/$scraper_name/g; s/{{ SCRAPER_OUTPUT }}/$scraper_output/g" kubernetes/job-template.yaml > kubernetes/job.yaml
-  kubectl apply -f kubernetes/job.yaml > /dev/null
-  rm kubernetes/job.yaml
+  # TODO: Check that $directory exists
+  run_token=$(tar -zcf - "$directory" | curl -X POST -H "Clay-Scraper-Output: $scraper_output" --data-binary @- --no-buffer "localhost:8080/scrapers/$scraper_name/run")
   echo "$run_token"
 }
 
