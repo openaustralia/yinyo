@@ -47,7 +47,8 @@ func run(w http.ResponseWriter, r *http.Request) {
 
 	// Generate random token
 	runToken := uniuri.NewLen(32)
-	fmt.Fprintln(w, "runToken: ", runToken)
+	// TODO: Return result as json
+	fmt.Fprintln(w, runToken)
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -57,7 +58,24 @@ func run(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	secretsClient := clientset.CoreV1().Secrets("default")
+	secret := &apiv1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: scraperName,
+		},
+		StringData: map[string]string{
+			"run_token": runToken,
+		},
+	}
+	_, err = secretsClient.Create(secret)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
 	jobsClient := clientset.BatchV1().Jobs("default")
+
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: scraperName,
@@ -95,13 +113,11 @@ func run(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	}
-	result1, err1 := jobsClient.Create(job)
+	_, err1 := jobsClient.Create(job)
 	if err != nil {
 		fmt.Println(err1)
 		panic(err1)
 	}
-	fmt.Fprintf(w, "Created job %q.\n", result1)
-	// fmt.Fprintf(w, "scraperID: %s, outputFilename: %s", scraperID, outputFilename)
 }
 
 func main() {
