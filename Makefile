@@ -18,6 +18,9 @@ image:
 # The main problem is figuring out how to wait for the deployment to finish
 # After this run you can access the clay server at http://localhost:8080
 server:
+	# TODO: Use multi-stage docker build for go app
+	# TODO: Make minimal docker image
+	# TODO: Use https://skaffold.dev/ for development workflow
 	cd server; GOOS=linux go build -o ./app .
 	docker build -t clay-server server
 	kubectl replace -f kubernetes/clay-server.yaml --force
