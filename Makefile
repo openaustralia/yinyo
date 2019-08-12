@@ -1,4 +1,4 @@
-.PHONY: image
+.PHONY: image server
 
 morph_scraper_name = morph-test-scrapers/test-ruby
 
@@ -13,6 +13,14 @@ shell: image
 
 image:
 	docker build -t clay image
+
+# TODO: Figure out how to get this to run just before a scraper run every time
+# The main problem is figuring out how to wait for the deployment to finish
+# After this run you can access the clay server at http://localhost:8080
+server:
+	cd server; GOOS=linux go build -o ./app .
+	docker build -t clay server
+	kubectl replace -f kubernetes/clay.yaml --force
 
 lint:
 	shellcheck image/run.sh image/clay.sh morph.sh
