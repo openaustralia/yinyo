@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/minio/minio-go/v6"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,6 +22,27 @@ func int64Ptr(i int64) *int64 { return &i }
 func run(w http.ResponseWriter, r *http.Request) {
 	scraperName := mux.Vars(r)["id"]
 	scraperOutput := r.Header.Get("Clay-Scraper-Output")
+
+	minioClient, err := minio.New(
+		// TODO: Get access key and password from secret
+		"minio-service:9000", "admin", "changeme", false,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = minioClient.PutObject(
+		"clay",
+		"app/"+scraperName+".tgz",
+		r.Body,
+		r.ContentLength,
+		minio.PutObjectOptions{},
+	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
