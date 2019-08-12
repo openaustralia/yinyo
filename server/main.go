@@ -50,11 +50,13 @@ func run(w http.ResponseWriter, r *http.Request) {
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err)
+		return
 	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err)
+		return
 	}
 
 	secretsClient := clientset.CoreV1().Secrets("default")
@@ -69,7 +71,7 @@ func run(w http.ResponseWriter, r *http.Request) {
 	_, err = secretsClient.Create(secret)
 	if err != nil {
 		fmt.Println(err)
-		panic(err)
+		return
 	}
 
 	jobsClient := clientset.BatchV1().Jobs("default")
@@ -111,10 +113,11 @@ func run(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	}
-	_, err1 := jobsClient.Create(job)
+	_, err = jobsClient.Create(job)
 	if err != nil {
-		fmt.Println(err1)
-		panic(err1)
+		// TODO: Return error message to client
+		fmt.Println(err)
+		return
 	}
 
 	// TODO: Return result as json
