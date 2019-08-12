@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: clay-deployment
+  name: clay-server
   labels:
-    app: clay
+    app: clay-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: clay
+      app: clay-server
   template:
     metadata:
       labels:
-        app: clay
+        app: clay-server
     spec:
       containers:
-      - name: clay
-        image: clay
+      - name: clay-server
+        image: clay-server
         # Doing this so that we use the local image while we're developing
         imagePullPolicy: Never
         ports:
@@ -25,7 +25,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: clay-service
+  name: clay-server
 spec:
   type: LoadBalancer
   ports:
@@ -33,4 +33,4 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
-    app: clay
+    app: clay-server

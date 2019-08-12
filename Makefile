@@ -19,8 +19,8 @@ image:
 # After this run you can access the clay server at http://localhost:8080
 server:
 	cd server; GOOS=linux go build -o ./app .
-	docker build -t clay server
-	kubectl replace -f kubernetes/clay.yaml --force
+	docker build -t clay-server server
+	kubectl replace -f kubernetes/clay-server.yaml --force
 
 lint:
 	shellcheck image/run.sh image/clay.sh morph.sh
