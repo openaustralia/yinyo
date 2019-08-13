@@ -1,4 +1,4 @@
-package main
+package empty
 
 import (
 	_ "fmt"
@@ -14,6 +14,3 @@ import (
 	_ "k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/rest"
 )
-
-func main() {
-}
