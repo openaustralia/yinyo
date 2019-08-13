@@ -6,6 +6,7 @@
 * https://github.com/mlandauer/herokuish/tree/only_copy_to_app_path_on_build - this is a fork of https://github.com/gliderlabs/herokuish - to build local docker dev image run `make build`.
 * Kubernetes
 * MinIO - Install by `make minio`
+* [Skaffold](https://skaffold.dev/docs/getting-started/)
 
 ### What is the purpose of MinIO?
 

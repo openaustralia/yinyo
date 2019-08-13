@@ -1,3 +1,6 @@
+# TODO: Use multi-stage docker build for go app
+# TODO: Make minimal docker image
+
 FROM golang:1.12.7
 
 WORKDIR /go/src/app

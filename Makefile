@@ -4,26 +4,12 @@ morph_scraper_name = morph-test-scrapers/test-python
 
 all: run
 
-run: image
+run:
 	./morph.sh $(morph_scraper_name)
 
 # If you want an interactive shell in the container
-shell: image
+shell:
 	docker run --rm -i -t clay-scraper /bin/bash
-
-image:
-	docker build -t clay-scraper image
-
-# TODO: Figure out how to get this to run just before a scraper run every time
-# The main problem is figuring out how to wait for the deployment to finish
-# After this run you can access the clay server at http://localhost:8080
-server:
-	# TODO: Use multi-stage docker build for go app
-	# TODO: Make minimal docker image
-	# TODO: Use https://skaffold.dev/ for development workflow
-	cd server; GOOS=linux go build -o ./app .
-	docker build -t clay-server server
-	kubectl replace -f kubernetes/clay-server.yaml --force
 
 lint:
 	shellcheck image/run.sh image/clay.sh morph.sh
@@ -31,11 +17,6 @@ lint:
 shellcheck:
 	# This assumes OS X for the time being
 	brew install shellcheck
-
-install: install-minio install-logging
-
-install-minio:
-	kubectl apply -f kubernetes/minio-deployment.yaml
 
 install-logging:
 	# The following can't be run multiple times

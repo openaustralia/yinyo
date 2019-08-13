@@ -1,0 +1,13 @@
+apiVersion: skaffold/v1beta13
+kind: Config
+build:
+  artifacts:
+  - image: clay-server
+    context: server
+  - image: clay-scraper
+    context: image
+deploy:
+  kubectl:
+    manifests:
+    - kubernetes/clay-server.yaml
+    - kubernetes/minio-deployment.yaml
