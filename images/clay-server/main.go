@@ -131,6 +131,7 @@ func run(w http.ResponseWriter, r *http.Request) {
 	err = createJob(clientset, scraperName, scraperOutput)
 	if err != nil {
 		// TODO: Return error message to client
+		// TODO: Remove secret
 		fmt.Println(err)
 		return
 	}
