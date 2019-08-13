@@ -12,12 +12,12 @@ COPY go.sum .
 RUN go mod download
 
 # Compiles the dependencies of empty.go
-COPY empty.go .
+COPY empty/empty.go .
 RUN go build empty.go
 RUN rm empty.go
 
 # Compile the actual thing
 COPY main.go .
-RUN go install -v
+RUN go install
 
 CMD ["app"]
