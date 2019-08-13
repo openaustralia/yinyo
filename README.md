@@ -1,21 +1,37 @@
 ## Some tests on what a new morph.io might look like
 
-### Dependencies
+### Guide to getting up and running quickly
 
-* Docker
+#### Install dependencies
+
+* Docker - On OS X use [Docker Desktop](https://docs.docker.com/docker-for-mac/install/). On Linux install [Docker Engine](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
+* Kubernetes - On OS X Kubernetes comes with Docker Desktop. You just need to enable it. For Linux use something like [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
 * https://github.com/mlandauer/herokuish/tree/only_copy_to_app_path_on_build - this is a fork of https://github.com/gliderlabs/herokuish - to build local docker dev image run `make build`.
-* Kubernetes
-* MinIO - Install by `make minio`
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 
-### What is the purpose of MinIO?
+#### The main bit
 
-In their words [MinIO](https://min.io/) is "The 100% Open Source, Enterprise-Grade,
-Amazon S3 Compatible Object Storage". We'll be using it to store sqlite databases,
-caches for compiling scrapers, buildpack resources (mirroring S3) and backups.
+Run skaffold. This will build all the bits and pieces and deploy things to your local kubernetes for you. The first time it builds everything it it takes a few minutes. After that when you make any changes to the code it does everthing much faster.
+```
+skaffold dev --cache-artifacts=true
+```
 
-If we end up deploying this whole thing to AWS then of course we could just use S3
-instead but at least by taking this approach at the outset we're not locking
-ourselves in to a particular bit of proprietary software.
+One of things that's now running is [MinIO](https://min.io/). To access it go to http://localhost:9000. Login with username `admin` and password `changeme`.
 
-Once Minio is up and running on Kubernetes by running `make minio` you can access the web UI via http://localhost:9000. You'll need to use the access and secret keys listed in `kubernetes/minio-deployment.yaml`.
+Now, create a bucket called `clay` and a bucket called `morph`. You can do that from the control at the bottom right.
+
+Now you're ready to run your first scraper.
+
+```
+./morph.sh morph-test-scrapers/test-python
+```
+
+The first time you run this it will take a little while (and you'll probably see some messages about some keys not existing. You can ignore that). If you go back to MinIO you'll see that morph has saved an sqlite database and that clay has saved a cache of the build.
+
+Now, if you run the same scraper again
+
+```
+./morph.sh morph-test-scrapers/test-python
+```
+
+It should run significantly faster.
