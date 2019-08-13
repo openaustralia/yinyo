@@ -129,6 +129,7 @@ func whoAmI(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	fmt.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", whoAmI)
 	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
