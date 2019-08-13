@@ -20,6 +20,8 @@ One of things that's now running is [MinIO](https://min.io/). To access it go to
 
 Now, create a bucket called `clay` and a bucket called `morph`. You can do that from the control at the bottom right.
 
+You can also check that the clay server is up and running. Go to http://localhost:8080. You should see a message letting you know that all is well and good.
+
 Now you're ready to run your first scraper.
 
 ```
