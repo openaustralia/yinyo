@@ -101,6 +101,7 @@ func createJob(clientset *kubernetes.Clientset, scraperName string, scraperOutpu
 func run(w http.ResponseWriter, r *http.Request) {
 	scraperName := mux.Vars(r)["id"]
 	scraperOutput := r.Header.Get("Clay-Scraper-Output")
+	fmt.Println("run", scraperName)
 
 	err := saveScraperCodeAndData(r.Body, r.ContentLength, scraperName)
 	if err != nil {
