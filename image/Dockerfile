@@ -13,13 +13,6 @@ ADD Procfile /usr/local/lib
 RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /bin/mc
 RUN chmod +x /bin/mc
 
-# Override heroku ruby buildpack with patched version that allows us
-# to get all binary assets from a local S3 rather than defaulting to
-# the heroku S3 bucket for some (but not all) binary assets
-
-RUN rm -rf /tmp/buildpacks/01_buildpack-ruby
-RUN herokuish buildpack install https://github.com/mlandauer/heroku-buildpack-ruby.git consistent_buildpack_vendor_url_override
-
 # Add perl buildpack
 RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpack-perl.git 2da7480a8339f01968ce3979655555a0ade20564
 
