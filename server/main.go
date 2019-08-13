@@ -90,7 +90,7 @@ func run(w http.ResponseWriter, r *http.Request) {
 					Containers: []apiv1.Container{
 						{
 							Name:    scraperName,
-							Image:   "clay-scraper",
+							Image:   "clay-scraper:v1",
 							Command: []string{"/bin/run.sh", scraperName, scraperOutput},
 							// Doing this so that we use the local image while we're developing
 							ImagePullPolicy: "Never",

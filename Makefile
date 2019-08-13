@@ -9,7 +9,7 @@ run:
 
 # If you want an interactive shell in the container
 shell:
-	docker run --rm -i -t clay-scraper /bin/bash
+	docker run --rm -i -t clay-scraper:v1 /bin/bash
 
 lint:
 	shellcheck image/run.sh image/clay.sh morph.sh

@@ -1,6 +1,9 @@
 apiVersion: skaffold/v1beta13
 kind: Config
 build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.IMAGE_NAME}}:v1"
   artifacts:
   - image: clay-server
     context: server
