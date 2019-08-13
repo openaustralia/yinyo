@@ -16,6 +16,8 @@ Run skaffold. This will build all the bits and pieces and deploy things to your 
 skaffold dev --cache-artifacts=true
 ```
 
+Leave `skaffold dev` running and open a new terminal window.
+
 One of things that's now running is [MinIO](https://min.io/). To access it go to http://localhost:9000. Login with username `admin` and password `changeme`.
 
 Now, create a bucket called `clay` and a bucket called `morph`. You can do that from the control at the bottom right.
