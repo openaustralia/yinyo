@@ -124,8 +124,13 @@ func run(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, runToken)
 }
 
+func whoAmI(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Hello from Clay!")
+}
+
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", whoAmI)
 	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
