@@ -92,8 +92,6 @@ func run(w http.ResponseWriter, r *http.Request) {
 							Name:    scraperName,
 							Image:   "openaustralia/clay-scraper:v1",
 							Command: []string{"/bin/run.sh", scraperName, scraperOutput},
-							// Doing this so that we use the local image while we're developing
-							ImagePullPolicy: "Never",
 							Env: []apiv1.EnvVar{
 								{
 									Name: "CLAY_RUN_TOKEN",

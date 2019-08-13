@@ -17,8 +17,6 @@ spec:
       containers:
       - name: clay-server
         image: openaustralia/clay-server
-        # Doing this so that we use the local image while we're developing
-        imagePullPolicy: Never
         ports:
         - containerPort: 8080
 ---
