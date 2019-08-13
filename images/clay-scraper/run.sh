@@ -2,6 +2,7 @@
 
 # exit when any command fails
 set -e
+set -o pipefail
 
 # Give admin access to the local blob store. Only doing this for ease
 # of development.
@@ -31,7 +32,7 @@ cd /tmp || exit
 
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 
-/bin/clay.sh cache get "$SCRAPER_NAME" /tmp "$CLAY_RUN_TOKEN"
+(/bin/clay.sh cache get "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" | tar xzf -) || true
 
 /bin/herokuish buildpack build
 
