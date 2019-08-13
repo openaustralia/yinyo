@@ -6,9 +6,9 @@ build:
       template: "{{.IMAGE_NAME}}:v1"
   artifacts:
   - image: openaustralia/clay-server
-    context: server
+    context: images/clay-server
   - image: openaustralia/clay-scraper
-    context: image
+    context: images/clay-scraper
 deploy:
   kubectl:
     manifests:
