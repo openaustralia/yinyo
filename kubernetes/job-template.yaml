@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
       - name: {{ SCRAPER_NAME }}
-        image: clay
+        image: clay-scraper
         command: ["/bin/run.sh", "{{ SCRAPER_NAME }}", "{{ SCRAPER_OUTPUT }}"]
         # Doing this so that we use the local image while we're developing
         imagePullPolicy: Never

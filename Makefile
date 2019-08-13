@@ -9,10 +9,10 @@ run: image
 
 # If you want an interactive shell in the container
 shell: image
-	docker run --rm -i -t clay /bin/bash
+	docker run --rm -i -t clay-scraper /bin/bash
 
 image:
-	docker build -t clay image
+	docker build -t clay-scraper image
 
 # TODO: Figure out how to get this to run just before a scraper run every time
 # The main problem is figuring out how to wait for the deployment to finish
