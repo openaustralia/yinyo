@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -18,47 +19,28 @@ import (
 func int32Ptr(i int32) *int32 { return &i }
 func int64Ptr(i int64) *int64 { return &i }
 
-// The body of the request should contain the tarred & gzipped code
-// to be run
-func run(w http.ResponseWriter, r *http.Request) {
-	scraperName := mux.Vars(r)["id"]
-	scraperOutput := r.Header.Get("Clay-Scraper-Output")
-
+func saveScraperCodeAndData(reader io.Reader, objectSize int64, scraperName string) error {
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
 		"minio-service:9000", "admin", "changeme", false,
 	)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	_, err = minioClient.PutObject(
+		// TODO: Make bucket name configurable
 		"clay",
 		"app/"+scraperName+".tgz",
-		r.Body,
-		r.ContentLength,
+		reader,
+		objectSize,
 		minio.PutObjectOptions{},
 	)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
-	// Generate random token
-	runToken := uniuri.NewLen(32)
+	return err
+}
 
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken string) error {
 	secretsClient := clientset.CoreV1().Secrets("default")
 	secret := &apiv1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -68,12 +50,11 @@ func run(w http.ResponseWriter, r *http.Request) {
 			"run_token": runToken,
 		},
 	}
-	_, err = secretsClient.Create(secret)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	_, err := secretsClient.Create(secret)
+	return err
+}
 
+func createJob(clientset *kubernetes.Clientset, scraperName string, scraperOutput string) error {
 	jobsClient := clientset.BatchV1().Jobs("default")
 
 	job := &batchv1.Job{
@@ -111,7 +92,43 @@ func run(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	}
-	_, err = jobsClient.Create(job)
+	_, err := jobsClient.Create(job)
+	return err
+}
+
+// The body of the request should contain the tarred & gzipped code
+// to be run
+func run(w http.ResponseWriter, r *http.Request) {
+	scraperName := mux.Vars(r)["id"]
+	scraperOutput := r.Header.Get("Clay-Scraper-Output")
+
+	err := saveScraperCodeAndData(r.Body, r.ContentLength, scraperName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Generate random token
+	runToken := uniuri.NewLen(32)
+
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = createSecret(clientset, scraperName, runToken)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = createJob(clientset, scraperName, scraperOutput)
 	if err != nil {
 		// TODO: Return error message to client
 		fmt.Println(err)
