@@ -5,9 +5,9 @@ build:
     envTemplate:
       template: "{{.IMAGE_NAME}}:v1"
   artifacts:
-  - image: clay-server
+  - image: openaustralia/clay-server
     context: server
-  - image: clay-scraper
+  - image: openaustralia/clay-scraper
     context: image
 deploy:
   kubectl:
