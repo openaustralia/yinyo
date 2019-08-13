@@ -1,6 +1,6 @@
 .PHONY: image server
 
-morph_scraper_name = morph-test-scrapers/test-ruby
+morph_scraper_name = morph-test-scrapers/test-python
 
 all: run
 
