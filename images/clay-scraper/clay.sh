@@ -10,16 +10,17 @@ if [ $# == 0 ]; then
   echo "  $0 COMMAND"
   echo ""
   echo "COMMANDS (public):"
-  echo "  run DIRECTORY SCRAPER_NAME SCRAPER_OUTPUT    Upload code and data and run the scraper. Returns token"
-  echo "  logs SCRAPER_NAME RUN_TOKEN                  Stream the logs"
-  echo "  output get SCRAPER_NAME RUN_TOKEN            Get the file output for the scraper and send to stdout"
-  echo "  cleanup SCRAPER_NAME RUN_TOKEN               Cleanup after everything has finished"
+  echo "  create SCRAPER_NAME                                    Returns run token"
+  echo "  run DIRECTORY SCRAPER_NAME RUN_TOKEN SCRAPER_OUTPUT    Upload code and data and run the scraper. Returns token"
+  echo "  logs SCRAPER_NAME RUN_TOKEN                            Stream the logs"
+  echo "  output get SCRAPER_NAME RUN_TOKEN                      Get the file output for the scraper and send to stdout"
+  echo "  cleanup SCRAPER_NAME RUN_TOKEN                         Cleanup after everything has finished"
   echo ""
   echo "COMMANDS (private - used by containers):"
-  echo "  app get SCRAPER_NAME DIRECTORY RUN_TOKEN     Get the code and data for the scraper"
-  echo "  cache get SCRAPER_NAME RUN_TOKEN             Retrieve the build cache and send to stdout"
-  echo "  cache put DIRECTORY SCRAPER_NAME RUN_TOKEN   Save away the build cache"
-  echo "  output put SCRAPER_NAME RUN_TOKEN            Take stdin and save it away"
+  echo "  app get SCRAPER_NAME DIRECTORY RUN_TOKEN               Get the code and data for the scraper"
+  echo "  cache get SCRAPER_NAME RUN_TOKEN                       Retrieve the build cache and send to stdout"
+  echo "  cache put DIRECTORY SCRAPER_NAME RUN_TOKEN             Save away the build cache"
+  echo "  output put SCRAPER_NAME RUN_TOKEN                      Take stdin and save it away"
   echo ""
   echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
   echo "lower case alphanumeric characters and '-' up to maximum length"
@@ -115,15 +116,26 @@ command-output-get () {
   storage get "$scraper_name" output
 }
 
+command-create() {
+  local scraper_name=$1
+
+  # Use clay server running on kubernetes to do the work
+  local run_token
+  run_token=$(curl -X POST "localhost:8080/scrapers/$scraper_name/create")
+  echo "$run_token"
+}
+
 command-run () {
   local directory=$1
   local scraper_name=$2
-  local scraper_output=$3
+  local run_token=$3
+  local scraper_output=$4
 
   # Use clay server running on kubernetes to do the work
   local run_token
   # TODO: Check that $directory exists
-  run_token=$(tar -zcf - "$directory" | curl -X POST -H "Clay-Scraper-Output: $scraper_output" --data-binary @- --no-buffer "localhost:8080/scrapers/$scraper_name/run")
+  # TODO: Use more conventional basic auth
+  run_token=$(tar -zcf - "$directory" | curl -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" --data-binary @- --no-buffer "localhost:8080/scrapers/$scraper_name/run")
   echo "$run_token"
 }
 
@@ -190,8 +202,10 @@ elif [ "$1" = "output" ] && [ "$2" = "put" ]; then
   command-output-put "$3" "$4"
 elif [ "$1" = "output" ] && [ "$2" = "get" ]; then
   command-output-get "$3" "$4"
+elif [ "$1" = "create" ]; then
+  command-create "$2"
 elif [ "$1" = "run" ]; then
-  command-run "$2" "$3" "$4"
+  command-run "$2" "$3" "$4" "$5"
 elif [ "$1" = "logs" ]; then
   command-logs "$2" "$3"
 elif [ "$1" = "cleanup" ]; then

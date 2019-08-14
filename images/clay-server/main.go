@@ -96,22 +96,14 @@ func createJob(clientset *kubernetes.Clientset, scraperName string, scraperOutpu
 	return err
 }
 
-// The body of the request should contain the tarred & gzipped code
-// to be run
-func run(w http.ResponseWriter, r *http.Request) {
+func create(w http.ResponseWriter, r *http.Request) {
 	scraperName := mux.Vars(r)["id"]
-	scraperOutput := r.Header.Get("Clay-Scraper-Output")
-	fmt.Println("run", scraperName)
-
-	err := saveScraperCodeAndData(r.Body, r.ContentLength, scraperName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	fmt.Println("create", scraperName)
 
 	// Generate random token
 	runToken := uniuri.NewLen(32)
 
+	// TODO: Factor out k8s init of client code
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		fmt.Println(err)
@@ -128,6 +120,37 @@ func run(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	// TODO: Return result as json
+	fmt.Fprintln(w, runToken)
+}
+
+// The body of the request should contain the tarred & gzipped code
+// to be run
+func run(w http.ResponseWriter, r *http.Request) {
+	scraperName := mux.Vars(r)["id"]
+	scraperOutput := r.Header.Get("Clay-Scraper-Output")
+	// runToken := r.Header.Get("Clay-Run-Token")
+
+	fmt.Println("run", scraperName)
+
+	// TODO: Check that runToken is the correct one for scraperName
+
+	err := saveScraperCodeAndData(r.Body, r.ContentLength, scraperName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	err = createJob(clientset, scraperName, scraperOutput)
 	if err != nil {
@@ -136,9 +159,6 @@ func run(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-
-	// TODO: Return result as json
-	fmt.Fprintln(w, runToken)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +168,11 @@ func whoAmI(w http.ResponseWriter, r *http.Request) {
 func main() {
 	fmt.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
+
+	// TODO: Make url structure more RESTfull
+
 	router.HandleFunc("/", whoAmI)
+	router.HandleFunc("/scrapers/{id}/create", create).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
