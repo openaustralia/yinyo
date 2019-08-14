@@ -55,32 +55,21 @@ storage () {
   fi
 }
 
-# Get the source code of scraper into import directory. This needs to have
-# already been copied to the appropriate place in the blob store.
-# We do this because we don't want to assume that the code comes from Github.
-# TODO: Make get and put work so that the directory in each case is the same
-command-app-get () {
-  local scraper_name=$1
-  local run_token=$2
+command-store () {
+  local method=$1
+  local type=$2
+  local scraper_name=$3
+  local run_token=$4
 
   # TODO: Use more conventional basic auth
-  curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/app"
-}
-
-# This is where we save away the result of the build cache for future compiles
-# For the time being we're just writing directly to the blob store (which has
-# no authentication setup) but in future we'll do it by using an authentication
-# token (available via an environment variable) which is only valid for the
-# period of this scraper run and it can only be used for updating things
-# during this scraper run. To make this work it will probably be necessary to
-# create an API service which authenticates our request and proxies the request
-# to the blob store.
-command-cache-put () {
-  local scraper_name=$1
-  local run_token=$2
-
-  # TODO: Use more conventional basic auth
-  curl -s -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$scraper_name/cache"
+  if [ "$method" = "get" ]; then
+    curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/$type"
+  elif [ "$method" = "put" ]; then
+    curl -s -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$scraper_name/$type"
+  else
+    echo "Unexpected method: $method"
+    exit 1
+  fi
 }
 
 clay-host () {
@@ -92,44 +81,11 @@ clay-host () {
   fi
 }
 
-# TODO: Make get and put work so that the directory in each case is the same
-command-cache-get () {
-  local scraper_name=$1
-  local run_token=$2
-
-  # TODO: Use more conventional basic auth
-  curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/cache"
-}
-
-command-output-put () {
-  local scraper_name=$1
-  local run_token=$2
-
-  # TODO: Use more conventional basic auth
-  curl -s -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$scraper_name/output"
-}
-
-command-output-get () {
-  local scraper_name=$1
-  local run_token=$2
-
-  # TODO: Use more conventional basic auth
-  curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/output"
-}
-
 command-create() {
   local scraper_name=$1
 
   # Use clay server running on kubernetes to do the work
   curl -s -X POST "$(clay-host)/scrapers/$scraper_name/create"
-}
-
-command-app-put () {
-  local scraper_name=$1
-  local run_token=$2
-
-  # TODO: Use more conventional basic auth
-  curl -s -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$scraper_name/app"
 }
 
 command-run () {
@@ -197,18 +153,19 @@ command-cleanup () {
   storage delete "$scraper_name" cache tgz
 }
 
+
 if [ "$1" = "app" ] && [ "$2" = "put" ]; then
-  command-app-put "$3" "$4"
+  command-store "$2" "$1" "$3" "$4"
 elif [ "$1" = "app" ] && [ "$2" = "get" ]; then
-  command-app-get "$3" "$4" "$5"
+  command-store "$2" "$1" "$3" "$4"
 elif [ "$1" = "cache" ] && [ "$2" = "put" ]; then
-  command-cache-put "$3" "$4"
+  command-store "$2" "$1" "$3" "$4"
 elif [ "$1" = "cache" ] && [ "$2" = "get" ]; then
-  command-cache-get "$3" "$4"
+  command-store "$2" "$1" "$3" "$4"
 elif [ "$1" = "output" ] && [ "$2" = "put" ]; then
-  command-output-put "$3" "$4"
+  command-store "$2" "$1" "$3" "$4"
 elif [ "$1" = "output" ] && [ "$2" = "get" ]; then
-  command-output-get "$3" "$4"
+  command-store "$2" "$1" "$3" "$4"
 elif [ "$1" = "create" ]; then
   command-create "$2"
 elif [ "$1" = "run" ]; then
