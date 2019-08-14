@@ -137,14 +137,7 @@ command-cleanup () {
   local scraper_name=$1
   local run_token=$2
 
-  check-run-token "$scraper_name" "$run_token"
-
-  kubectl delete "jobs/$scraper_name"
-  kubectl delete "secrets/$scraper_name"
-  # Also clear out the temporary state stored on blob store
-  storage delete "$scraper_name" app tgz
-  storage delete "$scraper_name" output
-  storage delete "$scraper_name" cache tgz
+  curl -s -X POST -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/cleanup"
 }
 
 
