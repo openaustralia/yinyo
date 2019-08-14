@@ -27,7 +27,7 @@ rm -rf app
 git clone --depth 1 "https://github.com/$morph_scraper_name.git" app
 rm -rf app/.git app/.gitignore
 # Add the sqlite database
-(mc cat "$morph_bucket/$morph_scraper_name.sqlite" > app/data.sqlite) || true
+(mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite) || true
 
 run_token=$(./images/clay-scraper/clay.sh create "$clay_scraper_name")
 ./images/clay-scraper/clay.sh app put app "$clay_scraper_name" "$run_token"
@@ -41,5 +41,5 @@ fi
 rm -rf app
 ./images/clay-scraper/clay.sh logs "$clay_scraper_name" "$run_token"
 # Get the sqlite database from clay and save it away in a morph bucket
-./images/clay-scraper/clay.sh output get "$clay_scraper_name" "$run_token" | mc pipe "$morph_bucket/$morph_scraper_name.sqlite"
+./images/clay-scraper/clay.sh output get "$clay_scraper_name" "$run_token" | mc pipe "$morph_bucket/db/$morph_scraper_name.sqlite"
 ./images/clay-scraper/clay.sh cleanup "$clay_scraper_name" "$run_token"
