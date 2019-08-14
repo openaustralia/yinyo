@@ -12,6 +12,7 @@ if [ $# == 0 ]; then
   echo "COMMANDS (public):"
   echo "  create SCRAPER_NAME                          Returns run token"
   echo "  app put SCRAPER_NAME RUN_TOKEN               Take stdin and upload code and data"
+  echo "  cache put SCRAPER_NAME RUN_TOKEN             Take stdin and upload the build cache"
   echo "  run SCRAPER_NAME RUN_TOKEN SCRAPER_OUTPUT    Run the scraper"
   echo "  logs SCRAPER_NAME RUN_TOKEN                  Stream the logs"
   echo "  output get SCRAPER_NAME RUN_TOKEN            Get the file output for the scraper and send to stdout"
@@ -20,7 +21,6 @@ if [ $# == 0 ]; then
   echo ""
   echo "COMMANDS (private - used by containers):"
   echo "  app get SCRAPER_NAME RUN_TOKEN               Get the code and data for the scraper and send to stdout"
-  echo "  cache put SCRAPER_NAME RUN_TOKEN             Take stdin and save away the build cache"
   echo "  output put SCRAPER_NAME RUN_TOKEN            Take stdin and save it away"
   echo ""
   echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
@@ -191,9 +191,10 @@ command-cleanup () {
 
   kubectl delete "jobs/$scraper_name"
   kubectl delete "secrets/$scraper_name"
-  # Also clear out code and output files
+  # Also clear out the temporary state stored on blob store
   storage delete "$scraper_name" app tgz
   storage delete "$scraper_name" output
+  storage delete "$scraper_name" cache tgz
 }
 
 if [ "$1" = "app" ] && [ "$2" = "put" ]; then
