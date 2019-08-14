@@ -117,9 +117,7 @@ command-create() {
   local scraper_name=$1
 
   # Use clay server running on kubernetes to do the work
-  local run_token
-  run_token=$(curl -X POST "localhost:8080/scrapers/$scraper_name/create")
-  echo "$run_token"
+  curl -X POST "localhost:8080/scrapers/$scraper_name/create"
 }
 
 command-app-put () {
