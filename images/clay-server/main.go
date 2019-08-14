@@ -40,6 +40,27 @@ func saveScraperCodeAndData(reader io.Reader, objectSize int64, scraperName stri
 	return err
 }
 
+func saveCache(reader io.Reader, objectSize int64, scraperName string) error {
+	minioClient, err := minio.New(
+		// TODO: Get access key and password from secret
+		"minio-service:9000", "admin", "changeme", false,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = minioClient.PutObject(
+		// TODO: Make bucket name configurable
+		"clay",
+		"cache/"+scraperName+".tgz",
+		reader,
+		objectSize,
+		minio.PutObjectOptions{},
+	)
+
+	return err
+}
+
 func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken string) error {
 	secretsClient := clientset.CoreV1().Secrets("default")
 	secret := &apiv1.Secret{
@@ -159,6 +180,38 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// The body of the request should contain the tarred & gzipped code
+func cachePut(w http.ResponseWriter, r *http.Request) {
+	scraperName := mux.Vars(r)["id"]
+	runToken := r.Header.Get("Clay-Run-Token")
+
+	fmt.Println("cachePut", scraperName)
+
+	clientset, err := getClientSet()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	actualRunToken, err := actualRunToken(clientset, scraperName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if runToken != actualRunToken {
+		// TODO: proper error with error code
+		fmt.Println("Invalid run token")
+		return
+	}
+
+	err = saveCache(r.Body, r.ContentLength, scraperName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
 func actualRunToken(clientset *kubernetes.Clientset, scraperName string) (string, error) {
 	// First get the actual run token from the secret
 	secretsClient := clientset.CoreV1().Secrets("default")
@@ -219,6 +272,7 @@ func main() {
 	router.HandleFunc("/", whoAmI)
 	router.HandleFunc("/scrapers/{id}/create", create).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/app", appPut).Methods("POST")
+	router.HandleFunc("/scrapers/{id}/cache", cachePut).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

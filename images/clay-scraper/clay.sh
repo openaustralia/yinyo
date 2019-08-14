@@ -80,9 +80,14 @@ command-cache-put () {
   local scraper_name=$1
   local run_token=$2
 
-  check-run-token "$scraper_name" "$run_token"
-
-  storage put "$scraper_name" cache tgz
+  local host
+  if [ -z "$KUBERNETES_SERVICE_HOST" ]; then
+    host=localhost
+  else
+    host=clay-server
+  fi
+  # TODO: Use more conventional basic auth
+  curl -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$host:8080/scrapers/$scraper_name/cache"
 }
 
 # TODO: Make get and put work so that the directory in each case is the same
@@ -124,8 +129,6 @@ command-app-put () {
   local scraper_name=$1
   local run_token=$2
 
-  # Use clay server running on kubernetes to do the work
-  # TODO: Check that $directory exists
   # TODO: Use more conventional basic auth
   curl -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "localhost:8080/scrapers/$scraper_name/app"
 }
