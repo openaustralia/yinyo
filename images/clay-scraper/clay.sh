@@ -80,14 +80,17 @@ command-cache-put () {
   local scraper_name=$1
   local run_token=$2
 
+  # TODO: Use more conventional basic auth
+  curl -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$scraper_name/cache"
+}
+
+clay-host () {
   local host
   if [ -z "$KUBERNETES_SERVICE_HOST" ]; then
-    host=localhost
+    echo "localhost:8080"
   else
-    host=clay-server
+    echo "clay-server:8080"
   fi
-  # TODO: Use more conventional basic auth
-  curl -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$host:8080/scrapers/$scraper_name/cache"
 }
 
 # TODO: Make get and put work so that the directory in each case is the same
@@ -122,7 +125,7 @@ command-create() {
   local scraper_name=$1
 
   # Use clay server running on kubernetes to do the work
-  curl -X POST "localhost:8080/scrapers/$scraper_name/create"
+  curl -X POST "$(clay-host)/scrapers/$scraper_name/create"
 }
 
 command-app-put () {
@@ -130,7 +133,7 @@ command-app-put () {
   local run_token=$2
 
   # TODO: Use more conventional basic auth
-  curl -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "localhost:8080/scrapers/$scraper_name/app"
+  curl -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$scraper_name/app"
 }
 
 command-run () {
@@ -141,7 +144,7 @@ command-run () {
   # Use clay server running on kubernetes to do the work
   # TODO: Use more conventional basic auth
   # TODO: Put scraper output as a parameter in the url
-  curl -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "localhost:8080/scrapers/$scraper_name/run"
+  curl -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "$(clay-host)/scrapers/$scraper_name/run"
 }
 
 # base64 has different command line options on OS X and Linux
