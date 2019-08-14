@@ -9,10 +9,6 @@ ADD prerun.rb /usr/local/lib/prerun.rb
 # Add standard Procfiles
 ADD Procfile /usr/local/lib
 
-# Add MinIO client
-RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /bin/mc
-RUN chmod +x /bin/mc
-
 # Add perl buildpack
 RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpack-perl.git 2da7480a8339f01968ce3979655555a0ade20564
 

@@ -25,30 +25,6 @@ if [ $# == 0 ]; then
   exit 1
 fi
 
-storage () {
-  local action=$1
-  local scraper_name=$2
-  # TODO: Check that file_name is one of app, cache, output
-  local file_name=$3
-  local file_extension=$4
-
-  local path="$BUCKET_CLAY/$file_name/$scraper_name"
-  if [ -n "$file_extension" ]; then
-    path="$path.$file_extension"
-  fi
-
-  if [ "$action" = "get" ]; then
-    mc cat "$path"
-  elif [ "$action" = "put" ]; then
-    mc pipe "$path"
-  elif [ "$action" = "delete" ]; then
-    mc rm "$path"
-  else
-    echo "Unknown action: $action"
-    exit 1
-  fi
-}
-
 command-store () {
   local method=$1
   local type=$2

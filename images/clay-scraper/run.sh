@@ -4,11 +4,6 @@
 set -e
 set -o pipefail
 
-# Give admin access to the local blob store. Only doing this for ease
-# of development.
-# TODO: REMOVE THIS AS SOON AS POSSIBLE
-mc config host add minio http://minio-service:9000 admin changeme
-
 if [ $# == 0 ]; then
   echo "Downloads a scraper from Github, compiles it and runs it"
   echo "Usage: $0 scraper_name scraper_output"
