@@ -30,7 +30,7 @@ rm -rf app/.git app/.gitignore
 (mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite) || true
 
 run_token=$(./images/clay-scraper/clay.sh create "$clay_scraper_name")
-./images/clay-scraper/clay.sh app put app "$clay_scraper_name" "$run_token"
+tar -zcf - app | ./images/clay-scraper/clay.sh app put "$clay_scraper_name" "$run_token"
 ./images/clay-scraper/clay.sh run "$clay_scraper_name" "$run_token" data.sqlite
 
 if [ "$run_token" = "" ]; then
