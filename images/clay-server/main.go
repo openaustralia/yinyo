@@ -19,7 +19,7 @@ import (
 func int32Ptr(i int32) *int32 { return &i }
 func int64Ptr(i int64) *int64 { return &i }
 
-func saveScraperCodeAndData(reader io.Reader, objectSize int64, scraperName string) error {
+func saveToStore(reader io.Reader, objectSize int64, scraperName string, fileName string, fileExtension string) error {
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
 		"minio-service:9000", "admin", "changeme", false,
@@ -28,31 +28,15 @@ func saveScraperCodeAndData(reader io.Reader, objectSize int64, scraperName stri
 		return err
 	}
 
-	_, err = minioClient.PutObject(
-		// TODO: Make bucket name configurable
-		"clay",
-		"app/"+scraperName+".tgz",
-		reader,
-		objectSize,
-		minio.PutObjectOptions{},
-	)
-
-	return err
-}
-
-func saveCache(reader io.Reader, objectSize int64, scraperName string) error {
-	minioClient, err := minio.New(
-		// TODO: Get access key and password from secret
-		"minio-service:9000", "admin", "changeme", false,
-	)
-	if err != nil {
-		return err
+	path := fileName + "/" + scraperName
+	if fileExtension != "" {
+		path += "." + fileExtension
 	}
 
 	_, err = minioClient.PutObject(
 		// TODO: Make bucket name configurable
 		"clay",
-		"cache/"+scraperName+".tgz",
+		path,
 		reader,
 		objectSize,
 		minio.PutObjectOptions{},
@@ -148,12 +132,11 @@ func getClientSet() (*kubernetes.Clientset, error) {
 	return clientset, err
 }
 
-// The body of the request should contain the tarred & gzipped code
-func appPut(w http.ResponseWriter, r *http.Request) {
+func put(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
 	scraperName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("appPut", scraperName)
+	fmt.Println("put", fileName, scraperName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -173,7 +156,7 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = saveScraperCodeAndData(r.Body, r.ContentLength, scraperName)
+	err = saveToStore(r.Body, r.ContentLength, scraperName, fileName, fileExtension)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -181,35 +164,13 @@ func appPut(w http.ResponseWriter, r *http.Request) {
 }
 
 // The body of the request should contain the tarred & gzipped code
+func appPut(w http.ResponseWriter, r *http.Request) {
+	put(w, r, "app", "tgz")
+}
+
+// The body of the request should contain the tarred & gzipped cache
 func cachePut(w http.ResponseWriter, r *http.Request) {
-	scraperName := mux.Vars(r)["id"]
-	runToken := r.Header.Get("Clay-Run-Token")
-
-	fmt.Println("cachePut", scraperName)
-
-	clientset, err := getClientSet()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	actualRunToken, err := actualRunToken(clientset, scraperName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if runToken != actualRunToken {
-		// TODO: proper error with error code
-		fmt.Println("Invalid run token")
-		return
-	}
-
-	err = saveCache(r.Body, r.ContentLength, scraperName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	put(w, r, "cache", "tgz")
 }
 
 func actualRunToken(clientset *kubernetes.Clientset, scraperName string) (string, error) {
