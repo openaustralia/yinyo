@@ -28,7 +28,7 @@ SCRAPER_OUTPUT=$2
 
 cd /tmp || exit
 
-/bin/clay.sh app get "$SCRAPER_NAME" /tmp "$CLAY_RUN_TOKEN"
+/bin/clay.sh app get "$SCRAPER_NAME" "$CLAY_RUN_TOKEN"  | tar xzf -
 
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 

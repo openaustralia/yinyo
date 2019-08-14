@@ -19,7 +19,7 @@ if [ $# == 0 ]; then
   echo "  cleanup SCRAPER_NAME RUN_TOKEN               Cleanup after everything has finished"
   echo ""
   echo "COMMANDS (private - used by containers):"
-  echo "  app get SCRAPER_NAME DIRECTORY RUN_TOKEN     Get the code and data for the scraper"
+  echo "  app get SCRAPER_NAME RUN_TOKEN               Get the code and data for the scraper and send to stdout"
   echo "  cache put SCRAPER_NAME RUN_TOKEN             Take stdin and save away the build cache"
   echo "  output put SCRAPER_NAME RUN_TOKEN            Take stdin and save it away"
   echo ""
@@ -61,13 +61,11 @@ storage () {
 # TODO: Make get and put work so that the directory in each case is the same
 command-app-get () {
   local scraper_name=$1
-  local directory=$2
-  local run_token=$3
+  local run_token=$2
 
   check-run-token "$scraper_name" "$run_token"
 
-  cd "$directory" || exit
-  storage get "$scraper_name" app tgz | tar xzf -
+  storage get "$scraper_name" app tgz
 }
 
 # This is where we save away the result of the build cache for future compiles
