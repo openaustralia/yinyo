@@ -128,13 +128,11 @@ func getClientSet() (*kubernetes.Clientset, error) {
 }
 
 // The body of the request should contain the tarred & gzipped code
-// to be run
-func run(w http.ResponseWriter, r *http.Request) {
+func appPut(w http.ResponseWriter, r *http.Request) {
 	scraperName := mux.Vars(r)["id"]
-	scraperOutput := r.Header.Get("Clay-Scraper-Output")
 	// runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("run", scraperName)
+	fmt.Println("appPut", scraperName)
 
 	// TODO: Check that runToken is the correct one for scraperName
 
@@ -143,6 +141,16 @@ func run(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+}
+
+func run(w http.ResponseWriter, r *http.Request) {
+	scraperName := mux.Vars(r)["id"]
+	scraperOutput := r.Header.Get("Clay-Scraper-Output")
+	// runToken := r.Header.Get("Clay-Run-Token")
+
+	fmt.Println("run", scraperName)
+
+	// TODO: Check that runToken is the correct one for scraperName
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -171,6 +179,7 @@ func main() {
 
 	router.HandleFunc("/", whoAmI)
 	router.HandleFunc("/scrapers/{id}/create", create).Methods("POST")
+	router.HandleFunc("/scrapers/{id}/app", appPut).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

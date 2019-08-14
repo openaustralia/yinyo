@@ -11,7 +11,8 @@ if [ $# == 0 ]; then
   echo ""
   echo "COMMANDS (public):"
   echo "  create SCRAPER_NAME                                    Returns run token"
-  echo "  run DIRECTORY SCRAPER_NAME RUN_TOKEN SCRAPER_OUTPUT    Upload code and data and run the scraper. Returns token"
+  echo "  app put DIRECTORY SCRAPER_NAME RUN_TOKEN               Upload code and data"
+  echo "  run SCRAPER_NAME RUN_TOKEN SCRAPER_OUTPUT              Run the scraper"
   echo "  logs SCRAPER_NAME RUN_TOKEN                            Stream the logs"
   echo "  output get SCRAPER_NAME RUN_TOKEN                      Get the file output for the scraper and send to stdout"
   echo "  cleanup SCRAPER_NAME RUN_TOKEN                         Cleanup after everything has finished"
@@ -125,18 +126,26 @@ command-create() {
   echo "$run_token"
 }
 
-command-run () {
+command-app-put () {
   local directory=$1
   local scraper_name=$2
   local run_token=$3
-  local scraper_output=$4
 
   # Use clay server running on kubernetes to do the work
-  local run_token
   # TODO: Check that $directory exists
   # TODO: Use more conventional basic auth
-  run_token=$(tar -zcf - "$directory" | curl -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" --data-binary @- --no-buffer "localhost:8080/scrapers/$scraper_name/run")
-  echo "$run_token"
+  tar -zcf - "$directory" | curl -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "localhost:8080/scrapers/$scraper_name/app"
+}
+
+command-run () {
+  local scraper_name=$1
+  local run_token=$2
+  local scraper_output=$3
+
+  # Use clay server running on kubernetes to do the work
+  # TODO: Use more conventional basic auth
+  # TODO: Put scraper output as a parameter in the url
+  curl -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "localhost:8080/scrapers/$scraper_name/run"
 }
 
 # base64 has different command line options on OS X and Linux
@@ -192,7 +201,9 @@ command-cleanup () {
   storage delete "$scraper_name" output
 }
 
-if [ "$1" = "app" ] && [ "$2" = "get" ]; then
+if [ "$1" = "app" ] && [ "$2" = "put" ]; then
+  command-app-put "$3" "$4" "$5"
+elif [ "$1" = "app" ] && [ "$2" = "get" ]; then
   command-app-get "$3" "$4" "$5"
 elif [ "$1" = "cache" ] && [ "$2" = "put" ]; then
   command-cache-put "$3" "$4" "$5"
