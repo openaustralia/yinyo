@@ -107,9 +107,8 @@ command-output-put () {
   local scraper_name=$1
   local run_token=$2
 
-  check-run-token "$scraper_name" "$run_token"
-
-  storage put "$scraper_name" output
+  # TODO: Use more conventional basic auth
+  curl -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$scraper_name/output"
 }
 
 command-output-get () {

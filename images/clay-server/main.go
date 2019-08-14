@@ -173,6 +173,10 @@ func cachePut(w http.ResponseWriter, r *http.Request) {
 	put(w, r, "cache", "tgz")
 }
 
+func outputPut(w http.ResponseWriter, r *http.Request) {
+	put(w, r, "output", "")
+}
+
 func actualRunToken(clientset *kubernetes.Clientset, scraperName string) (string, error) {
 	// First get the actual run token from the secret
 	secretsClient := clientset.CoreV1().Secrets("default")
@@ -234,6 +238,7 @@ func main() {
 	router.HandleFunc("/scrapers/{id}/create", create).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/app", appPut).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/cache", cachePut).Methods("POST")
+	router.HandleFunc("/scrapers/{id}/output", outputPut).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
