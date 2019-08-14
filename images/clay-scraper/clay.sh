@@ -63,9 +63,8 @@ command-app-get () {
   local scraper_name=$1
   local run_token=$2
 
-  check-run-token "$scraper_name" "$run_token"
-
-  storage get "$scraper_name" app tgz
+  # TODO: Use more conventional basic auth
+  curl -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/app"
 }
 
 # This is where we save away the result of the build cache for future compiles

@@ -45,6 +45,29 @@ func saveToStore(reader io.Reader, objectSize int64, scraperName string, fileNam
 	return err
 }
 
+func retrieveFromStore(scraperName string, fileName string, fileExtension string, writer io.Writer) error {
+	minioClient, err := minio.New(
+		// TODO: Get access key and password from secret
+		"minio-service:9000", "admin", "changeme", false,
+	)
+	if err != nil {
+		return err
+	}
+
+	path := fileName + "/" + scraperName
+	if fileExtension != "" {
+		path += "." + fileExtension
+	}
+
+	// TODO: Make bucket name configurable
+	object, err := minioClient.GetObject("clay", path, minio.GetObjectOptions{})
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(writer, object)
+	return err
+}
+
 func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken string) error {
 	secretsClient := clientset.CoreV1().Secrets("default")
 	secret := &apiv1.Secret{
@@ -132,6 +155,37 @@ func getClientSet() (*kubernetes.Clientset, error) {
 	return clientset, err
 }
 
+func get(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
+	scraperName := mux.Vars(r)["id"]
+	runToken := r.Header.Get("Clay-Run-Token")
+
+	fmt.Println("get", fileName, scraperName)
+
+	clientset, err := getClientSet()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	actualRunToken, err := actualRunToken(clientset, scraperName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if runToken != actualRunToken {
+		// TODO: proper error with error code
+		fmt.Println("Invalid run token")
+		return
+	}
+
+	err = retrieveFromStore(scraperName, fileName, fileExtension, w)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
 func put(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
 	scraperName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
@@ -164,8 +218,12 @@ func put(w http.ResponseWriter, r *http.Request, fileName string, fileExtension 
 }
 
 // The body of the request should contain the tarred & gzipped code
-func appPut(w http.ResponseWriter, r *http.Request) {
-	put(w, r, "app", "tgz")
+func app(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		get(w, r, "app", "tgz")
+	} else {
+		put(w, r, "app", "tgz")
+	}
 }
 
 // The body of the request should contain the tarred & gzipped cache
@@ -236,7 +294,7 @@ func main() {
 
 	router.HandleFunc("/", whoAmI)
 	router.HandleFunc("/scrapers/{id}/create", create).Methods("POST")
-	router.HandleFunc("/scrapers/{id}/app", appPut).Methods("POST")
+	router.HandleFunc("/scrapers/{id}/app", app).Methods("POST", "GET")
 	router.HandleFunc("/scrapers/{id}/cache", cachePut).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/output", outputPut).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
