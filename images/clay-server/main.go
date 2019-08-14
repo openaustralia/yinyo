@@ -103,13 +103,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 	// Generate random token
 	runToken := uniuri.NewLen(32)
 
-	// TODO: Factor out k8s init of client code
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -122,6 +116,15 @@ func create(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO: Return result as json
 	fmt.Fprintln(w, runToken)
+}
+
+func getClientSet() (*kubernetes.Clientset, error) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	return clientset, err
 }
 
 // The body of the request should contain the tarred & gzipped code
@@ -141,12 +144,7 @@ func run(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
 		return
