@@ -36,7 +36,7 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 /bin/herokuish buildpack build
 
-/bin/clay.sh cache put cache "$SCRAPER_NAME" "$CLAY_RUN_TOKEN"
+tar -zcf - cache | /bin/clay.sh cache put "$SCRAPER_NAME" "$CLAY_RUN_TOKEN"
 
 /bin/herokuish procfile start scraper
 

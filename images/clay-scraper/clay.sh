@@ -20,7 +20,7 @@ if [ $# == 0 ]; then
   echo ""
   echo "COMMANDS (private - used by containers):"
   echo "  app get SCRAPER_NAME DIRECTORY RUN_TOKEN               Get the code and data for the scraper"
-  echo "  cache put DIRECTORY SCRAPER_NAME RUN_TOKEN             Save away the build cache"
+  echo "  cache put SCRAPER_NAME RUN_TOKEN                       Take stdin and save away the build cache"
   echo "  output put SCRAPER_NAME RUN_TOKEN                      Take stdin and save it away"
   echo ""
   echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
@@ -79,14 +79,12 @@ command-app-get () {
 # create an API service which authenticates our request and proxies the request
 # to the blob store.
 command-cache-put () {
-  local directory=$1
-  local scraper_name=$2
-  local run_token=$3
+  local scraper_name=$1
+  local run_token=$2
 
   check-run-token "$scraper_name" "$run_token"
 
-  # TODO: Check that $directory exists
-  tar -zcf - "$directory" | storage put "$scraper_name" cache tgz
+  storage put "$scraper_name" cache tgz
 }
 
 # TODO: Make get and put work so that the directory in each case is the same
@@ -206,7 +204,7 @@ if [ "$1" = "app" ] && [ "$2" = "put" ]; then
 elif [ "$1" = "app" ] && [ "$2" = "get" ]; then
   command-app-get "$3" "$4" "$5"
 elif [ "$1" = "cache" ] && [ "$2" = "put" ]; then
-  command-cache-put "$3" "$4" "$5"
+  command-cache-put "$3" "$4"
 elif [ "$1" = "cache" ] && [ "$2" = "get" ]; then
   command-cache-get "$3" "$4"
 elif [ "$1" = "output" ] && [ "$2" = "put" ]; then
