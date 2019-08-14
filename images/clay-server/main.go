@@ -130,33 +130,72 @@ func getClientSet() (*kubernetes.Clientset, error) {
 // The body of the request should contain the tarred & gzipped code
 func appPut(w http.ResponseWriter, r *http.Request) {
 	scraperName := mux.Vars(r)["id"]
-	// runToken := r.Header.Get("Clay-Run-Token")
+	runToken := r.Header.Get("Clay-Run-Token")
 
 	fmt.Println("appPut", scraperName)
-
-	// TODO: Check that runToken is the correct one for scraperName
-
-	err := saveScraperCodeAndData(r.Body, r.ContentLength, scraperName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-}
-
-func run(w http.ResponseWriter, r *http.Request) {
-	scraperName := mux.Vars(r)["id"]
-	scraperOutput := r.Header.Get("Clay-Scraper-Output")
-	// runToken := r.Header.Get("Clay-Run-Token")
-
-	fmt.Println("run", scraperName)
-
-	// TODO: Check that runToken is the correct one for scraperName
 
 	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
+	actualRunToken, err := actualRunToken(clientset, scraperName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if runToken != actualRunToken {
+		// TODO: proper error with error code
+		fmt.Println("Invalid run token")
+		return
+	}
+
+	err = saveScraperCodeAndData(r.Body, r.ContentLength, scraperName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
+func actualRunToken(clientset *kubernetes.Clientset, scraperName string) (string, error) {
+	// First get the actual run token from the secret
+	secretsClient := clientset.CoreV1().Secrets("default")
+	secret, err := secretsClient.Get(scraperName, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	actualRunToken := string(secret.Data["run_token"])
+	return actualRunToken, nil
+}
+
+func run(w http.ResponseWriter, r *http.Request) {
+	scraperName := mux.Vars(r)["id"]
+	scraperOutput := r.Header.Get("Clay-Scraper-Output")
+	runToken := r.Header.Get("Clay-Run-Token")
+
+	fmt.Println("run", scraperName)
+
+	clientset, err := getClientSet()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	actualRunToken, err := actualRunToken(clientset, scraperName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if runToken != actualRunToken {
+		// TODO: proper error with error code
+		fmt.Println("Invalid run token")
+		return
+	}
+
+	// TODO: Check that runToken is the correct one for scraperName
 
 	err = createJob(clientset, scraperName, scraperOutput)
 	if err != nil {
