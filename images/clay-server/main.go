@@ -155,11 +155,11 @@ func getClientSet() (*kubernetes.Clientset, error) {
 	return clientset, err
 }
 
-func get(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
+func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
 	scraperName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("get", fileName, scraperName)
+	fmt.Println(r.Method, fileName, scraperName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -179,38 +179,11 @@ func get(w http.ResponseWriter, r *http.Request, fileName string, fileExtension 
 		return
 	}
 
-	err = retrieveFromStore(scraperName, fileName, fileExtension, w)
-	if err != nil {
-		fmt.Println(err)
-		return
+	if r.Method == "GET" {
+		err = retrieveFromStore(scraperName, fileName, fileExtension, w)
+	} else {
+		err = saveToStore(r.Body, r.ContentLength, scraperName, fileName, fileExtension)
 	}
-}
-
-func put(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
-	scraperName := mux.Vars(r)["id"]
-	runToken := r.Header.Get("Clay-Run-Token")
-
-	fmt.Println("put", fileName, scraperName)
-
-	clientset, err := getClientSet()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	actualRunToken, err := actualRunToken(clientset, scraperName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if runToken != actualRunToken {
-		// TODO: proper error with error code
-		fmt.Println("Invalid run token")
-		return
-	}
-
-	err = saveToStore(r.Body, r.ContentLength, scraperName, fileName, fileExtension)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -219,20 +192,16 @@ func put(w http.ResponseWriter, r *http.Request, fileName string, fileExtension 
 
 // The body of the request should contain the tarred & gzipped code
 func app(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		get(w, r, "app", "tgz")
-	} else {
-		put(w, r, "app", "tgz")
-	}
+	store(w, r, "app", "tgz")
 }
 
 // The body of the request should contain the tarred & gzipped cache
-func cachePut(w http.ResponseWriter, r *http.Request) {
-	put(w, r, "cache", "tgz")
+func cache(w http.ResponseWriter, r *http.Request) {
+	store(w, r, "cache", "tgz")
 }
 
-func outputPut(w http.ResponseWriter, r *http.Request) {
-	put(w, r, "output", "")
+func output(w http.ResponseWriter, r *http.Request) {
+	store(w, r, "output", "")
 }
 
 func actualRunToken(clientset *kubernetes.Clientset, scraperName string) (string, error) {
@@ -295,8 +264,8 @@ func main() {
 	router.HandleFunc("/", whoAmI)
 	router.HandleFunc("/scrapers/{id}/create", create).Methods("POST")
 	router.HandleFunc("/scrapers/{id}/app", app).Methods("POST", "GET")
-	router.HandleFunc("/scrapers/{id}/cache", cachePut).Methods("POST")
-	router.HandleFunc("/scrapers/{id}/output", outputPut).Methods("POST")
+	router.HandleFunc("/scrapers/{id}/cache", cache).Methods("POST", "GET")
+	router.HandleFunc("/scrapers/{id}/output", output).Methods("POST", "GET")
 	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

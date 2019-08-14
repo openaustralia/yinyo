@@ -97,9 +97,8 @@ command-cache-get () {
   local scraper_name=$1
   local run_token=$2
 
-  check-run-token "$scraper_name" "$run_token"
-
-  storage get "$scraper_name" cache tgz
+  # TODO: Use more conventional basic auth
+  curl -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/cache"
 }
 
 command-output-put () {
@@ -114,9 +113,8 @@ command-output-get () {
   local scraper_name=$1
   local run_token=$2
 
-  check-run-token "$scraper_name" "$run_token"
-
-  storage get "$scraper_name" output
+  # TODO: Use more conventional basic auth
+  curl -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/output"
 }
 
 command-create() {
