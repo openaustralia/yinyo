@@ -2,8 +2,6 @@
 
 set -eo pipefail
 
-BUCKET_CLAY="minio/clay"
-
 if [ $# == 0 ]; then
   echo "$0 - Prototype of what the clay API methods could do"
   echo "USAGE:"
@@ -69,29 +67,6 @@ command-run () {
   curl -s -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "$(clay-host)/scrapers/$scraper_name/run"
 }
 
-# base64 has different command line options on OS X and Linux
-# So, make a little cross platform wrapper
-decode-base64 () {
-  if [ $(uname) = "Darwin" ]; then
-    base64 -D
-  else
-    base64 -d
-  fi
-}
-
-check-run-token () {
-  local scraper_name=$1
-  local run_token=$2
-
-  local actual_run_token
-  actual_run_token=$(kubectl get "secret/$scraper_name" -o=jsonpath="{.data.run_token}" | decode-base64)
-
-  if [ "$run_token" != "$actual_run_token" ]; then
-    echo "Invalid run token"
-    exit 1
-  fi
-}
-
 command-logs () {
   local scraper_name=$1
   local run_token=$2
@@ -105,7 +80,6 @@ command-cleanup () {
 
   curl -s -X POST -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/cleanup"
 }
-
 
 if [ "$1" = "put" ]; then
   command-store "$1" "$2" "$3" "$4"
