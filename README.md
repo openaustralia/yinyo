@@ -7,6 +7,12 @@
 * Docker - On OS X use [Docker Desktop](https://docs.docker.com/docker-for-mac/install/). On Linux install [Docker Engine](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
 * Kubernetes - On OS X Kubernetes comes with Docker Desktop. You just need to enable it. For Linux use something like [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
 * The [Go language](https://golang.org/doc/install) (For Ubuntu you can use [the PPA](https://github.com/golang/go/wiki/Ubuntu))
+  * You'll need at least v1.11. There's [a bug](https://github.com/golang/go/issues/27215) that needs to be worked around for now; it should be fixed when v1.13 lands. In the meantime, you'll need to install a few things by hand:
+  ````
+  go get github.com/jteeuwen/go-bindata/
+  go get github.com/progrium/gh-release/
+  go get github.com/progrium/basht/
+  ````
 * Clone https://github.com/mlandauer/herokuish; `git checkout -b only_copy_to_app_path_on_build origin/only_copy_to_app_path_on_build ` to switch to our patched branch. Run `make deps` followed by `make build`.
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 
