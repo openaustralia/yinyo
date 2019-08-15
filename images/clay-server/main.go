@@ -56,34 +56,19 @@ func create(w http.ResponseWriter, r *http.Request) {
 
 func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
 	runName := mux.Vars(r)["id"]
-	runToken := r.Header.Get("Clay-Run-Token")
-
-	clientset, err := getClientSet()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	actualRunToken, err := actualRunToken(clientset, runName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if runToken != actualRunToken {
-		// TODO: proper error with error code
-		fmt.Println("Invalid run token")
-		return
-	}
 
 	if r.Method == "GET" {
-		err = retrieveFromStore(runName, fileName, fileExtension, w)
+		err := retrieveFromStore(runName, fileName, fileExtension, w)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	} else {
-		err = saveToStore(r.Body, r.ContentLength, runName, fileName, fileExtension)
-	}
-	if err != nil {
-		fmt.Println(err)
-		return
+		err := saveToStore(r.Body, r.ContentLength, runName, fileName, fileExtension)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
 }
 
@@ -104,23 +89,10 @@ func output(w http.ResponseWriter, r *http.Request) {
 func start(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
 	runOutput := r.URL.Query()["output"][0]
-	runToken := r.Header.Get("Clay-Run-Token")
 
 	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
-		return
-	}
-
-	actualRunToken, err := actualRunToken(clientset, runName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if runToken != actualRunToken {
-		// TODO: proper error with error code
-		fmt.Println("Invalid run token")
 		return
 	}
 
@@ -135,23 +107,10 @@ func start(w http.ResponseWriter, r *http.Request) {
 
 func logs(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
-	runToken := r.Header.Get("Clay-Run-Token")
 
 	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
-		return
-	}
-
-	actualRunToken, err := actualRunToken(clientset, runName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if runToken != actualRunToken {
-		// TODO: proper error with error code
-		fmt.Println("Invalid run token")
 		return
 	}
 
@@ -164,23 +123,10 @@ func logs(w http.ResponseWriter, r *http.Request) {
 
 func delete(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
-	runToken := r.Header.Get("Clay-Run-Token")
 
 	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
-		return
-	}
-
-	actualRunToken, err := actualRunToken(clientset, runName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if runToken != actualRunToken {
-		// TODO: proper error with error code
-		fmt.Println("Invalid run token")
 		return
 	}
 
@@ -212,6 +158,35 @@ func logRequests(next http.Handler) http.Handler {
 	})
 }
 
+// Middleware function, which will be called for each request
+func authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		runName := mux.Vars(r)["id"]
+		runToken := r.Header.Get("Clay-Run-Token")
+
+		clientset, err := getClientSet()
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "Could not contact kubernetes", http.StatusInternalServerError)
+			return
+		}
+
+		actualRunToken, err := actualRunToken(clientset, runName)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "Could not contact kubernetes", http.StatusInternalServerError)
+			return
+		}
+
+		if runToken != actualRunToken {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	fmt.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
@@ -219,12 +194,15 @@ func main() {
 	// TODO: Use more conventional basic auth
 	router.HandleFunc("/", whoAmI)
 	router.HandleFunc("/runs", create).Methods("POST")
-	router.HandleFunc("/runs/{id}/app", app).Methods("PUT", "GET")
-	router.HandleFunc("/runs/{id}/cache", cache).Methods("PUT", "GET")
-	router.HandleFunc("/runs/{id}/output", output).Methods("PUT", "GET")
-	router.HandleFunc("/runs/{id}/start", start).Methods("POST")
-	router.HandleFunc("/runs/{id}/logs", logs).Methods("GET")
-	router.HandleFunc("/runs/{id}", delete).Methods("DELETE")
+
+	authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
+	authenticatedRouter.HandleFunc("/app", app).Methods("PUT", "GET")
+	authenticatedRouter.HandleFunc("/cache", cache).Methods("PUT", "GET")
+	authenticatedRouter.HandleFunc("/output", output).Methods("PUT", "GET")
+	authenticatedRouter.HandleFunc("/start", start).Methods("POST")
+	authenticatedRouter.HandleFunc("/logs", logs).Methods("GET")
+	authenticatedRouter.HandleFunc("/", delete).Methods("DELETE")
+	authenticatedRouter.Use(authenticate)
 	router.Use(logRequests)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
