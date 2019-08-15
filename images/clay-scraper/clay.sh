@@ -9,10 +9,10 @@ if [ $# == 0 ]; then
   echo ""
   echo "COMMANDS:"
   echo "  create SCRAPER_NAME                          Returns run name and run token"
-  echo "  put [app|cache|output] RUN_NAME RUN_TOKEN    Take stdin and upload"
+  echo "  put RUN_NAME RUN_TOKEN [app|cache|output]    Take stdin and upload"
   echo "  run RUN_NAME RUN_TOKEN SCRAPER_OUTPUT        Run the scraper"
   echo "  logs RUN_NAME RUN_TOKEN                      Stream the logs"
-  echo "  get [app|cache|output] RUN_NAME RUN_TOKEN    Retrieve and send to stdout"
+  echo "  get RUN_NAME RUN_TOKEN [app|cache|output]    Retrieve and send to stdout"
   echo "  cleanup RUN_NAME RUN_TOKEN                   Cleanup after everything has finished"
   echo ""
   echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
@@ -34,9 +34,9 @@ clay-host () {
 }
 
 if [ "$1" = "put" ]; then
-  curl -s -X PUT -H "Clay-Run-Token: $4" --data-binary @- --no-buffer "$(clay-host)/runs/$3/$2"
+  curl -s -X PUT -H "Clay-Run-Token: $3" --data-binary @- --no-buffer "$(clay-host)/runs/$2/$4"
 elif [ "$1" = "get" ]; then
-  curl -s -H "Clay-Run-Token: $4" "$(clay-host)/runs/$3/$2"
+  curl -s -H "Clay-Run-Token: $3" "$(clay-host)/runs/$2/$4"
 elif [ "$1" = "create" ]; then
   curl -s -G -X POST "$(clay-host)/runs" -d "scraper_name=$2"
 elif [ "$1" = "run" ]; then

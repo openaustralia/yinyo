@@ -34,8 +34,8 @@ rm -rf app/.git app/.gitignore
 create_result=$(./images/clay-scraper/clay.sh create "$clay_scraper_name")
 run_name=$(echo "$create_result" | jq -r ".run_name")
 run_token=$(echo "$create_result" | jq -r ".run_token")
-tar -zcf - app | ./images/clay-scraper/clay.sh put app "$run_name" "$run_token"
-(mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" | ./images/clay-scraper/clay.sh put cache "$run_name" "$run_token") || true
+tar -zcf - app | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" app
+(mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
 ./images/clay-scraper/clay.sh run "$run_name" "$run_token" data.sqlite
 
 if [ "$run_token" = "" ]; then
@@ -46,6 +46,6 @@ fi
 rm -rf app
 ./images/clay-scraper/clay.sh logs "$run_name" "$run_token"
 # Get the sqlite database from clay and save it away in a morph bucket
-./images/clay-scraper/clay.sh get output "$run_name" "$run_token" | mc pipe "$morph_bucket/db/$morph_scraper_name.sqlite"
-./images/clay-scraper/clay.sh get cache "$run_name" "$run_token" | mc pipe "$morph_bucket/cache/$morph_scraper_name.tgz"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" output | mc pipe "$morph_bucket/db/$morph_scraper_name.sqlite"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache | mc pipe "$morph_bucket/cache/$morph_scraper_name.tgz"
 ./images/clay-scraper/clay.sh cleanup "$run_name" "$run_token"

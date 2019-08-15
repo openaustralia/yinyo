@@ -23,18 +23,18 @@ SCRAPER_OUTPUT=$2
 
 cd /tmp || exit
 
-/bin/clay.sh get app "$SCRAPER_NAME" "$CLAY_RUN_TOKEN"  | tar xzf -
+/bin/clay.sh get "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" app | tar xzf -
 
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 
-(/bin/clay.sh get cache "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" | tar xzf -) || true
+(/bin/clay.sh get "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf -) || true
 
 /bin/herokuish buildpack build
 
-tar -zcf - cache | /bin/clay.sh put cache "$SCRAPER_NAME" "$CLAY_RUN_TOKEN"
+tar -zcf - cache | /bin/clay.sh put "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" cache
 
 /bin/herokuish procfile start scraper
 
 # Now take the filename given in $SCRAPER_OUTPUT and save that away
 cd /app || exit
-/bin/clay.sh put output "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" < "$SCRAPER_OUTPUT"
+/bin/clay.sh put "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" output < "$SCRAPER_OUTPUT"
