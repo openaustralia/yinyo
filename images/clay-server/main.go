@@ -269,12 +269,12 @@ func actualRunToken(clientset *kubernetes.Clientset, runName string) (string, er
 	return actualRunToken, nil
 }
 
-func run(w http.ResponseWriter, r *http.Request) {
+func start(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
 	scraperOutput := r.Header.Get("Clay-Scraper-Output")
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("run", runName)
+	fmt.Println("start", runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -388,11 +388,11 @@ func logs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func cleanup(w http.ResponseWriter, r *http.Request) {
+func delete(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("cleanup", runName)
+	fmt.Println("delete", runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -442,9 +442,9 @@ func main() {
 	router.HandleFunc("/runs/{id}/cache", cache).Methods("PUT", "GET")
 	router.HandleFunc("/runs/{id}/output", output).Methods("PUT", "GET")
 	// TODO: Put scraper output as a parameter in the url
-	router.HandleFunc("/runs/{id}/start", run).Methods("POST")
+	router.HandleFunc("/runs/{id}/start", start).Methods("POST")
 	router.HandleFunc("/runs/{id}/logs", logs).Methods("GET")
-	router.HandleFunc("/runs/{id}", cleanup).Methods("DELETE")
+	router.HandleFunc("/runs/{id}", delete).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

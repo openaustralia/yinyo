@@ -36,7 +36,7 @@ run_name=$(echo "$create_result" | jq -r ".run_name")
 run_token=$(echo "$create_result" | jq -r ".run_token")
 tar -zcf - app | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" app
 (mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
-./images/clay-scraper/clay.sh run "$run_name" "$run_token" data.sqlite
+./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite
 
 if [ "$run_token" = "" ]; then
   echo "There was an error starting the scraper"
@@ -48,4 +48,4 @@ rm -rf app
 # Get the sqlite database from clay and save it away in a morph bucket
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" output | mc pipe "$morph_bucket/db/$morph_scraper_name.sqlite"
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache | mc pipe "$morph_bucket/cache/$morph_scraper_name.tgz"
-./images/clay-scraper/clay.sh cleanup "$run_name" "$run_token"
+./images/clay-scraper/clay.sh delete "$run_name" "$run_token"
