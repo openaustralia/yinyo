@@ -16,9 +16,7 @@ if [ $# == 0 ]; then
   echo "  delete RUN_NAME RUN_TOKEN                    Cleanup after everything has finished"
   echo ""
   echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
-  echo "used as a base to generate the unique run name. However it must only contain"
-  echo "lower case alphanumeric characters and '-' up to maximum length"
-  echo "of 253 characters."
+  echo "used as a base to generate the unique run name."
   echo ""
   echo "e.g. $0 copy app morph-test-scrapers-test-ruby"
   exit 1

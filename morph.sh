@@ -19,10 +19,6 @@ fi
 morph_scraper_name=$1
 morph_bucket="minio/morph"
 
-# To use the morph scraper name in clay we need to substitute
-# all non-alphanumeric characters with "-"
-clay_scraper_name=$(echo "$morph_scraper_name" | sed -e "s/[^[:alpha:]]/-/g")
-
 # TODO: Use /tmp for the app
 rm -rf app
 # Checkout the code from github
@@ -31,7 +27,7 @@ rm -rf app/.git app/.gitignore
 # Add the sqlite database
 (mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite) || true
 
-create_result=$(./images/clay-scraper/clay.sh create "$clay_scraper_name")
+create_result=$(./images/clay-scraper/clay.sh create "$morph_scraper_name")
 run_name=$(echo "$create_result" | jq -r ".run_name")
 run_token=$(echo "$create_result" | jq -r ".run_token")
 tar -zcf - app | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" app
