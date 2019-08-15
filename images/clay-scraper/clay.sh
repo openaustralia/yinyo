@@ -32,9 +32,9 @@ command-store () {
 
   # TODO: Use more conventional basic auth
   if [ "$method" = "get" ]; then
-    curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$run_name/$type"
+    curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/runs/$run_name/$type"
   elif [ "$method" = "put" ]; then
-    curl -s -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$run_name/$type"
+    curl -s -X PUT -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/runs/$run_name/$type"
   else
     echo "Unexpected method: $method"
     exit 1
@@ -52,9 +52,7 @@ clay-host () {
 
 command-create() {
   local scraper_name=$1
-
-  # Use clay server running on kubernetes to do the work
-  curl -s -X POST "$(clay-host)/scrapers/$scraper_name/create"
+  curl -s -G -X POST "$(clay-host)/runs" -d "scraper_name=$scraper_name"
 }
 
 command-run () {
@@ -65,21 +63,21 @@ command-run () {
   # Use clay server running on kubernetes to do the work
   # TODO: Use more conventional basic auth
   # TODO: Put scraper output as a parameter in the url
-  curl -s -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "$(clay-host)/scrapers/$run_name/run"
+  curl -s -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "$(clay-host)/runs/$run_name/start"
 }
 
 command-logs () {
   local run_name=$1
   local run_token=$2
 
-  curl -s --no-buffer -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$run_name/logs"
+  curl -s --no-buffer -H "Clay-Run-Token: $run_token" "$(clay-host)/runs/$run_name/logs"
 }
 
 command-cleanup () {
   local run_name=$1
   local run_token=$2
 
-  curl -s -X POST -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$run_name/cleanup"
+  curl -s -X DELETE -H "Clay-Run-Token: $run_token" "$(clay-host)/runs/$run_name"
 }
 
 if [ "$1" = "put" ]; then

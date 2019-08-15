@@ -171,7 +171,10 @@ type createResult struct {
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
-	scraperName := mux.Vars(r)["id"]
+	// TODO: Make the scraper_name optional
+	// TODO: Do we make sure that there is only one scraper_name used?
+	scraperName := r.URL.Query()["scraper_name"][0]
+
 	fmt.Println("create", scraperName)
 
 	// Generate random token
@@ -432,16 +435,14 @@ func main() {
 	fmt.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
 
-	// TODO: Make url structure more RESTfull
-
 	router.HandleFunc("/", whoAmI)
-	router.HandleFunc("/scrapers/{id}/create", create).Methods("POST")
-	router.HandleFunc("/scrapers/{id}/app", app).Methods("POST", "GET")
-	router.HandleFunc("/scrapers/{id}/cache", cache).Methods("POST", "GET")
-	router.HandleFunc("/scrapers/{id}/output", output).Methods("POST", "GET")
-	router.HandleFunc("/scrapers/{id}/run", run).Methods("POST")
-	router.HandleFunc("/scrapers/{id}/logs", logs).Methods("GET")
-	router.HandleFunc("/scrapers/{id}/cleanup", cleanup).Methods("POST")
+	router.HandleFunc("/runs", create).Methods("POST")
+	router.HandleFunc("/runs/{id}/app", app).Methods("PUT", "GET")
+	router.HandleFunc("/runs/{id}/cache", cache).Methods("PUT", "GET")
+	router.HandleFunc("/runs/{id}/output", output).Methods("PUT", "GET")
+	router.HandleFunc("/runs/{id}/start", run).Methods("POST")
+	router.HandleFunc("/runs/{id}/logs", logs).Methods("GET")
+	router.HandleFunc("/runs/{id}", cleanup).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
