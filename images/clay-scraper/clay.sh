@@ -24,23 +24,6 @@ if [ $# == 0 ]; then
   exit 1
 fi
 
-command-store () {
-  local method=$1
-  local type=$2
-  local run_name=$3
-  local run_token=$4
-
-  # TODO: Use more conventional basic auth
-  if [ "$method" = "get" ]; then
-    curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/runs/$run_name/$type"
-  elif [ "$method" = "put" ]; then
-    curl -s -X PUT -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/runs/$run_name/$type"
-  else
-    echo "Unexpected method: $method"
-    exit 1
-  fi
-}
-
 clay-host () {
   local host
   if [ -z "$KUBERNETES_SERVICE_HOST" ]; then
@@ -50,48 +33,18 @@ clay-host () {
   fi
 }
 
-command-create() {
-  local scraper_name=$1
-  curl -s -G -X POST "$(clay-host)/runs" -d "scraper_name=$scraper_name"
-}
-
-command-run () {
-  local run_name=$1
-  local run_token=$2
-  local scraper_output=$3
-
-  # Use clay server running on kubernetes to do the work
-  # TODO: Use more conventional basic auth
-  # TODO: Put scraper output as a parameter in the url
-  curl -s -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "$(clay-host)/runs/$run_name/start"
-}
-
-command-logs () {
-  local run_name=$1
-  local run_token=$2
-
-  curl -s --no-buffer -H "Clay-Run-Token: $run_token" "$(clay-host)/runs/$run_name/logs"
-}
-
-command-cleanup () {
-  local run_name=$1
-  local run_token=$2
-
-  curl -s -X DELETE -H "Clay-Run-Token: $run_token" "$(clay-host)/runs/$run_name"
-}
-
 if [ "$1" = "put" ]; then
-  command-store "$1" "$2" "$3" "$4"
+  curl -s -X PUT -H "Clay-Run-Token: $4" --data-binary @- --no-buffer "$(clay-host)/runs/$3/$2"
 elif [ "$1" = "get" ]; then
-  command-store "$1" "$2" "$3" "$4"
+  curl -s -H "Clay-Run-Token: $4" "$(clay-host)/runs/$3/$2"
 elif [ "$1" = "create" ]; then
-  command-create "$2"
+  curl -s -G -X POST "$(clay-host)/runs" -d "scraper_name=$2"
 elif [ "$1" = "run" ]; then
-  command-run "$2" "$3" "$4" "$5"
+  curl -s -X POST -H "Clay-Run-Token: $3" -H "Clay-Scraper-Output: $4" "$(clay-host)/runs/$2/start"
 elif [ "$1" = "logs" ]; then
-  command-logs "$2" "$3"
+  curl -s --no-buffer -H "Clay-Run-Token: $3" "$(clay-host)/runs/$2/logs"
 elif [ "$1" = "cleanup" ]; then
-  command-cleanup "$2" "$3"
+  curl -s -X DELETE -H "Clay-Run-Token: $3" "$(clay-host)/runs/$2"
 else
   echo "Unknown command"
   exit 1

@@ -435,11 +435,13 @@ func main() {
 	fmt.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
 
+	// TODO: Use more conventional basic auth
 	router.HandleFunc("/", whoAmI)
 	router.HandleFunc("/runs", create).Methods("POST")
 	router.HandleFunc("/runs/{id}/app", app).Methods("PUT", "GET")
 	router.HandleFunc("/runs/{id}/cache", cache).Methods("PUT", "GET")
 	router.HandleFunc("/runs/{id}/output", output).Methods("PUT", "GET")
+	// TODO: Put scraper output as a parameter in the url
 	router.HandleFunc("/runs/{id}/start", run).Methods("POST")
 	router.HandleFunc("/runs/{id}/logs", logs).Methods("GET")
 	router.HandleFunc("/runs/{id}", cleanup).Methods("DELETE")
