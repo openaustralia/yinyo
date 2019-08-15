@@ -39,3 +39,14 @@ func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
 	})
 	return err
 }
+
+func actualRunToken(clientset *kubernetes.Clientset, runName string) (string, error) {
+	// First get the actual run token from the secret
+	secretsClient := clientset.CoreV1().Secrets("default")
+	secret, err := secretsClient.Get(runName, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	actualRunToken := string(secret.Data["run_token"])
+	return actualRunToken, nil
+}
