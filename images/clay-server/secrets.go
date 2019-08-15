@@ -3,13 +3,16 @@ package main
 import (
 	"regexp"
 
+	"github.com/dchest/uniuri"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
-// TODO: Generate the runToken in this method
-func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken string) (*apiv1.Secret, error) {
+func createSecret(clientset *kubernetes.Clientset, scraperName string) (string, string, error) {
+	// Generate random token
+	runToken := uniuri.NewLen(32)
+
 	// We need to convert the user-supplied scraperName to something that will
 	// work in k8s. That means only alpha numeric characters and "-".
 	// For instance no "/".
@@ -28,7 +31,8 @@ func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken 
 		},
 	}
 	created, err := secretsClient.Create(secret)
-	return created, err
+
+	return created.ObjectMeta.Name, runToken, err
 }
 
 func deleteSecret(clientset *kubernetes.Clientset, runName string) error {

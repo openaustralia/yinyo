@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -27,26 +26,24 @@ func create(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("create", scraperName)
 
-	// Generate random token
-	runToken := uniuri.NewLen(32)
-
 	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	secret, err := createSecret(clientset, scraperName, runToken)
+	runName, runToken, err := createSecret(clientset, scraperName)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	createResult := createResult{
-		RunName:  secret.ObjectMeta.Name,
+		RunName:  runName,
 		RunToken: runToken,
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(createResult)
 }
 
