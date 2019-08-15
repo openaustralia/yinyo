@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -12,7 +11,6 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
-	"github.com/minio/minio-go/v6"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,73 +20,6 @@ import (
 
 func int32Ptr(i int32) *int32 { return &i }
 func int64Ptr(i int64) *int64 { return &i }
-
-func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
-	minioClient, err := minio.New(
-		// TODO: Get access key and password from secret
-		"minio-service:9000", "admin", "changeme", false,
-	)
-	if err != nil {
-		return err
-	}
-
-	path := fileName + "/" + runName
-	if fileExtension != "" {
-		path += "." + fileExtension
-	}
-
-	_, err = minioClient.PutObject(
-		// TODO: Make bucket name configurable
-		"clay",
-		path,
-		reader,
-		objectSize,
-		minio.PutObjectOptions{},
-	)
-
-	return err
-}
-
-func retrieveFromStore(runName string, fileName string, fileExtension string, writer io.Writer) error {
-	minioClient, err := minio.New(
-		// TODO: Get access key and password from secret
-		"minio-service:9000", "admin", "changeme", false,
-	)
-	if err != nil {
-		return err
-	}
-
-	path := fileName + "/" + runName
-	if fileExtension != "" {
-		path += "." + fileExtension
-	}
-
-	// TODO: Make bucket name configurable
-	object, err := minioClient.GetObject("clay", path, minio.GetObjectOptions{})
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(writer, object)
-	return err
-}
-
-func deleteFromStore(runName string, fileName string, fileExtension string) error {
-	minioClient, err := minio.New(
-		// TODO: Get access key and password from secret
-		"minio-service:9000", "admin", "changeme", false,
-	)
-	if err != nil {
-		return err
-	}
-
-	path := fileName + "/" + runName
-	if fileExtension != "" {
-		path += "." + fileExtension
-	}
-
-	err = minioClient.RemoveObject("clay", path)
-	return err
-}
 
 // TODO: Generate the runToken in this method
 func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken string) (*apiv1.Secret, error) {

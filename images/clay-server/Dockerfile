@@ -17,7 +17,7 @@ RUN go build empty.go
 RUN rm empty.go
 
 # Compile the actual thing
-COPY main.go .
+COPY *.go ./
 RUN go install
 
 CMD ["app"]
