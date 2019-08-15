@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -183,6 +184,39 @@ func waitForPodToStart(clientset *kubernetes.Clientset, runName string) (string,
 	}
 }
 
+func streamAndCopyLogs(clientset *kubernetes.Clientset, runName string, w http.ResponseWriter) error {
+	podsClient := clientset.CoreV1().Pods("default")
+
+	podName, err := waitForPodToStart(clientset, runName)
+	if err != nil {
+		return err
+	}
+
+	req := podsClient.GetLogs(podName, &apiv1.PodLogOptions{
+		Follow: true,
+	})
+	podLogs, err := req.Stream()
+	if err != nil {
+		return err
+	}
+	defer podLogs.Close()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		return errors.New("Couldn't access the flusher")
+	}
+
+	scanner := bufio.NewScanner(podLogs)
+	for scanner.Scan() {
+		fmt.Fprintln(w, scanner.Text())
+		flusher.Flush()
+	}
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func logs(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
@@ -207,36 +241,8 @@ func logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	podsClient := clientset.CoreV1().Pods("default")
-
-	podName, err := waitForPodToStart(clientset, runName)
+	err = streamAndCopyLogs(clientset, runName, w)
 	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	req := podsClient.GetLogs(podName, &apiv1.PodLogOptions{
-		Follow: true,
-	})
-	podLogs, err := req.Stream()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer podLogs.Close()
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		fmt.Println("Couldn't access the flusher")
-		return
-	}
-
-	scanner := bufio.NewScanner(podLogs)
-	for scanner.Scan() {
-		fmt.Fprintln(w, scanner.Text())
-		flusher.Flush()
-	}
-	if err := scanner.Err(); err != nil {
 		fmt.Println(err)
 		return
 	}
