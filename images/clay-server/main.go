@@ -14,6 +14,15 @@ import (
 func int32Ptr(i int32) *int32 { return &i }
 func int64Ptr(i int64) *int64 { return &i }
 
+func getClientSet() (*kubernetes.Clientset, error) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	return clientset, err
+}
+
 type createResult struct {
 	RunName  string `json:"run_name"`
 	RunToken string `json:"run_token"`
@@ -45,15 +54,6 @@ func create(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(createResult)
-}
-
-func getClientSet() (*kubernetes.Clientset, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	return clientset, err
 }
 
 func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
