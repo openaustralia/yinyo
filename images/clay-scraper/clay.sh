@@ -96,17 +96,7 @@ command-logs () {
   local scraper_name=$1
   local run_token=$2
 
-  check-run-token "$scraper_name" "$run_token"
-
-  # If $type is not empty that means the jobs has finished or completed
-  type=$(kubectl get "jobs/$scraper_name" -o=jsonpath="{.status.conditions[0].type}")
-  # If job is starting or running
-  if [ -z "$type" ]; then
-    # Then wait for the pod to be ready
-    kubectl wait --for condition=Ready -l job-name="$scraper_name" pods
-  fi
-  # Only then start streaming the logs
-  kubectl logs -f -l job-name="$scraper_name"
+  curl -s --no-buffer -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/logs"
 }
 
 command-cleanup () {
