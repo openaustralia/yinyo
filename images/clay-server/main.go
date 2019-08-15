@@ -94,7 +94,7 @@ func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken 
 	secretsClient := clientset.CoreV1().Secrets("default")
 	secret := &apiv1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: scraperName,
+			GenerateName: scraperName + "-",
 		},
 		StringData: map[string]string{
 			"run_token": runToken,

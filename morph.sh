@@ -19,11 +19,9 @@ fi
 morph_scraper_name=$1
 morph_bucket="minio/morph"
 
-# To use the morph scraper name as a unique id for clay we need to substitute
-# all non-alphanumeric characters with "-" and add a short bit of hash of the original
-# string on to the end to ensure uniqueness.
-# This way we get a name that is readable and close to the original and very likely unique.
-clay_scraper_name=$(echo "$morph_scraper_name" | sed -e "s/[^[:alpha:]]/-/g")-$(echo "$morph_scraper_name" | shasum | head -c5)
+# To use the morph scraper name in clay we need to substitute
+# all non-alphanumeric characters with "-"
+clay_scraper_name=$(echo "$morph_scraper_name" | sed -e "s/[^[:alpha:]]/-/g")
 
 # TODO: Use /tmp for the app
 rm -rf app

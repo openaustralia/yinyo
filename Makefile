@@ -30,6 +30,3 @@ install-logging:
 	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role-binding.yaml
 	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/output/elasticsearch/fluent-bit-configmap.yaml
 	kubectl apply -f kubernetes/fluent-bit-ds.yaml
-
-cleanup:
-	kubectl delete jobs/morph-test-scrapers-test-python-0f2d5 secrets/morph-test-scrapers-test-python-0f2d5
