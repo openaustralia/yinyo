@@ -33,8 +33,6 @@ func create(w http.ResponseWriter, r *http.Request) {
 	// TODO: Do we make sure that there is only one scraper_name used?
 	scraperName := r.URL.Query()["scraper_name"][0]
 
-	fmt.Println("create", scraperName)
-
 	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
@@ -59,8 +57,6 @@ func create(w http.ResponseWriter, r *http.Request) {
 func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
 	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
-
-	fmt.Println(r.Method, fileName, runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -110,8 +106,6 @@ func start(w http.ResponseWriter, r *http.Request) {
 	scraperOutput := r.Header.Get("Clay-Scraper-Output")
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("start", runName)
-
 	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
@@ -143,8 +137,6 @@ func logs(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("logs", runName)
-
 	clientset, err := getClientSet()
 	if err != nil {
 		fmt.Println(err)
@@ -173,8 +165,6 @@ func logs(w http.ResponseWriter, r *http.Request) {
 func delete(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
-
-	fmt.Println("delete", runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -213,6 +203,15 @@ func whoAmI(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello from Clay!")
 }
 
+// Middleware that logs the request uri
+func logRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, r.RequestURI)
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	fmt.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
@@ -227,6 +226,7 @@ func main() {
 	router.HandleFunc("/runs/{id}/start", start).Methods("POST")
 	router.HandleFunc("/runs/{id}/logs", logs).Methods("GET")
 	router.HandleFunc("/runs/{id}", delete).Methods("DELETE")
+	router.Use(logRequests)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
