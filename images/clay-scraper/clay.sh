@@ -8,14 +8,15 @@ if [ $# == 0 ]; then
   echo "  $0 COMMAND"
   echo ""
   echo "COMMANDS:"
-  echo "  create SCRAPER_NAME                              Returns run token"
-  echo "  put [app|cache|output] SCRAPER_NAME RUN_TOKEN    Take stdin and upload"
-  echo "  run SCRAPER_NAME RUN_TOKEN SCRAPER_OUTPUT        Run the scraper"
-  echo "  logs SCRAPER_NAME RUN_TOKEN                      Stream the logs"
-  echo "  get [app|cache|output] SCRAPER_NAME RUN_TOKEN    Retrieve and send to stdout"
-  echo "  cleanup SCRAPER_NAME RUN_TOKEN                   Cleanup after everything has finished"
+  echo "  create SCRAPER_NAME                          Returns run name and run token"
+  echo "  put [app|cache|output] RUN_NAME RUN_TOKEN    Take stdin and upload"
+  echo "  run RUN_NAME RUN_TOKEN SCRAPER_OUTPUT        Run the scraper"
+  echo "  logs RUN_NAME RUN_TOKEN                      Stream the logs"
+  echo "  get [app|cache|output] RUN_NAME RUN_TOKEN    Retrieve and send to stdout"
+  echo "  cleanup RUN_NAME RUN_TOKEN                   Cleanup after everything has finished"
   echo ""
-  echo "SCRAPER_NAME is chosen by the user and must be unique and only contain"
+  echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
+  echo "used as a base to generate the unique run name. However it must only contain"
   echo "lower case alphanumeric characters and '-' up to maximum length"
   echo "of 253 characters."
   echo ""
@@ -26,14 +27,14 @@ fi
 command-store () {
   local method=$1
   local type=$2
-  local scraper_name=$3
+  local run_name=$3
   local run_token=$4
 
   # TODO: Use more conventional basic auth
   if [ "$method" = "get" ]; then
-    curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/$type"
+    curl -s -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$run_name/$type"
   elif [ "$method" = "put" ]; then
-    curl -s -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$scraper_name/$type"
+    curl -s -X POST -H "Clay-Run-Token: $run_token" --data-binary @- --no-buffer "$(clay-host)/scrapers/$run_name/$type"
   else
     echo "Unexpected method: $method"
     exit 1
@@ -57,28 +58,28 @@ command-create() {
 }
 
 command-run () {
-  local scraper_name=$1
+  local run_name=$1
   local run_token=$2
   local scraper_output=$3
 
   # Use clay server running on kubernetes to do the work
   # TODO: Use more conventional basic auth
   # TODO: Put scraper output as a parameter in the url
-  curl -s -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "$(clay-host)/scrapers/$scraper_name/run"
+  curl -s -X POST -H "Clay-Run-Token: $run_token" -H "Clay-Scraper-Output: $scraper_output" "$(clay-host)/scrapers/$run_name/run"
 }
 
 command-logs () {
-  local scraper_name=$1
+  local run_name=$1
   local run_token=$2
 
-  curl -s --no-buffer -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/logs"
+  curl -s --no-buffer -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$run_name/logs"
 }
 
 command-cleanup () {
-  local scraper_name=$1
+  local run_name=$1
   local run_token=$2
 
-  curl -s -X POST -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$scraper_name/cleanup"
+  curl -s -X POST -H "Clay-Run-Token: $run_token" "$(clay-host)/scrapers/$run_name/cleanup"
 }
 
 if [ "$1" = "put" ]; then

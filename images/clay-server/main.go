@@ -22,7 +22,7 @@ import (
 func int32Ptr(i int32) *int32 { return &i }
 func int64Ptr(i int64) *int64 { return &i }
 
-func saveToStore(reader io.Reader, objectSize int64, scraperName string, fileName string, fileExtension string) error {
+func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
 		"minio-service:9000", "admin", "changeme", false,
@@ -31,7 +31,7 @@ func saveToStore(reader io.Reader, objectSize int64, scraperName string, fileNam
 		return err
 	}
 
-	path := fileName + "/" + scraperName
+	path := fileName + "/" + runName
 	if fileExtension != "" {
 		path += "." + fileExtension
 	}
@@ -48,7 +48,7 @@ func saveToStore(reader io.Reader, objectSize int64, scraperName string, fileNam
 	return err
 }
 
-func retrieveFromStore(scraperName string, fileName string, fileExtension string, writer io.Writer) error {
+func retrieveFromStore(runName string, fileName string, fileExtension string, writer io.Writer) error {
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
 		"minio-service:9000", "admin", "changeme", false,
@@ -57,7 +57,7 @@ func retrieveFromStore(scraperName string, fileName string, fileExtension string
 		return err
 	}
 
-	path := fileName + "/" + scraperName
+	path := fileName + "/" + runName
 	if fileExtension != "" {
 		path += "." + fileExtension
 	}
@@ -71,7 +71,7 @@ func retrieveFromStore(scraperName string, fileName string, fileExtension string
 	return err
 }
 
-func deleteFromStore(scraperName string, fileName string, fileExtension string) error {
+func deleteFromStore(runName string, fileName string, fileExtension string) error {
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
 		"minio-service:9000", "admin", "changeme", false,
@@ -80,7 +80,7 @@ func deleteFromStore(scraperName string, fileName string, fileExtension string) 
 		return err
 	}
 
-	path := fileName + "/" + scraperName
+	path := fileName + "/" + runName
 	if fileExtension != "" {
 		path += "." + fileExtension
 	}
@@ -104,21 +104,21 @@ func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken 
 	return created, err
 }
 
-func deleteSecret(clientset *kubernetes.Clientset, scraperName string) error {
+func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
 	secretsClient := clientset.CoreV1().Secrets("default")
 	deletePolicy := metav1.DeletePropagationForeground
-	err := secretsClient.Delete(scraperName, &metav1.DeleteOptions{
+	err := secretsClient.Delete(runName, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 	return err
 }
 
-func createJob(clientset *kubernetes.Clientset, scraperName string, scraperOutput string) error {
+func createJob(clientset *kubernetes.Clientset, runName string, scraperOutput string) error {
 	jobsClient := clientset.BatchV1().Jobs("default")
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: scraperName,
+			Name: runName,
 		},
 		Spec: batchv1.JobSpec{
 			BackoffLimit: int32Ptr(0),
@@ -129,16 +129,16 @@ func createJob(clientset *kubernetes.Clientset, scraperName string, scraperOutpu
 					RestartPolicy: "Never",
 					Containers: []apiv1.Container{
 						{
-							Name:    scraperName,
+							Name:    runName,
 							Image:   "openaustralia/clay-scraper:v1",
-							Command: []string{"/bin/run.sh", scraperName, scraperOutput},
+							Command: []string{"/bin/run.sh", runName, scraperOutput},
 							Env: []apiv1.EnvVar{
 								{
 									Name: "CLAY_RUN_TOKEN",
 									ValueFrom: &apiv1.EnvVarSource{
 										SecretKeyRef: &apiv1.SecretKeySelector{
 											LocalObjectReference: apiv1.LocalObjectReference{
-												Name: scraperName,
+												Name: runName,
 											},
 											Key: "run_token",
 										},
@@ -155,11 +155,11 @@ func createJob(clientset *kubernetes.Clientset, scraperName string, scraperOutpu
 	return err
 }
 
-func deleteJob(clientset *kubernetes.Clientset, scraperName string) error {
+func deleteJob(clientset *kubernetes.Clientset, runName string) error {
 	jobsClient := clientset.BatchV1().Jobs("default")
 
 	deletePolicy := metav1.DeletePropagationForeground
-	err := jobsClient.Delete(scraperName, &metav1.DeleteOptions{
+	err := jobsClient.Delete(runName, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 	return err
@@ -207,10 +207,10 @@ func getClientSet() (*kubernetes.Clientset, error) {
 }
 
 func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
-	scraperName := mux.Vars(r)["id"]
+	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println(r.Method, fileName, scraperName)
+	fmt.Println(r.Method, fileName, runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -218,7 +218,7 @@ func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtensio
 		return
 	}
 
-	actualRunToken, err := actualRunToken(clientset, scraperName)
+	actualRunToken, err := actualRunToken(clientset, runName)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -231,9 +231,9 @@ func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtensio
 	}
 
 	if r.Method == "GET" {
-		err = retrieveFromStore(scraperName, fileName, fileExtension, w)
+		err = retrieveFromStore(runName, fileName, fileExtension, w)
 	} else {
-		err = saveToStore(r.Body, r.ContentLength, scraperName, fileName, fileExtension)
+		err = saveToStore(r.Body, r.ContentLength, runName, fileName, fileExtension)
 	}
 	if err != nil {
 		fmt.Println(err)
@@ -255,10 +255,10 @@ func output(w http.ResponseWriter, r *http.Request) {
 	store(w, r, "output", "")
 }
 
-func actualRunToken(clientset *kubernetes.Clientset, scraperName string) (string, error) {
+func actualRunToken(clientset *kubernetes.Clientset, runName string) (string, error) {
 	// First get the actual run token from the secret
 	secretsClient := clientset.CoreV1().Secrets("default")
-	secret, err := secretsClient.Get(scraperName, metav1.GetOptions{})
+	secret, err := secretsClient.Get(runName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -267,11 +267,11 @@ func actualRunToken(clientset *kubernetes.Clientset, scraperName string) (string
 }
 
 func run(w http.ResponseWriter, r *http.Request) {
-	scraperName := mux.Vars(r)["id"]
+	runName := mux.Vars(r)["id"]
 	scraperOutput := r.Header.Get("Clay-Scraper-Output")
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("run", scraperName)
+	fmt.Println("run", runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -279,7 +279,7 @@ func run(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actualRunToken, err := actualRunToken(clientset, scraperName)
+	actualRunToken, err := actualRunToken(clientset, runName)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -291,7 +291,7 @@ func run(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = createJob(clientset, scraperName, scraperOutput)
+	err = createJob(clientset, runName, scraperOutput)
 	if err != nil {
 		// TODO: Return error message to client
 		// TODO: Remove secret
@@ -301,12 +301,12 @@ func run(w http.ResponseWriter, r *http.Request) {
 }
 
 // Return pod name
-func waitForPodToStart(clientset *kubernetes.Clientset, scraperName string) (string, error) {
+func waitForPodToStart(clientset *kubernetes.Clientset, runName string) (string, error) {
 	podsClient := clientset.CoreV1().Pods("default")
 	// TODO: Don't wait forever
 	for {
 		list, err := podsClient.List(metav1.ListOptions{
-			LabelSelector: "job-name=" + scraperName,
+			LabelSelector: "job-name=" + runName,
 		})
 		if err != nil {
 			return "", err
@@ -327,10 +327,10 @@ func waitForPodToStart(clientset *kubernetes.Clientset, scraperName string) (str
 }
 
 func logs(w http.ResponseWriter, r *http.Request) {
-	scraperName := mux.Vars(r)["id"]
+	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("logs", scraperName)
+	fmt.Println("logs", runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -338,7 +338,7 @@ func logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actualRunToken, err := actualRunToken(clientset, scraperName)
+	actualRunToken, err := actualRunToken(clientset, runName)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -352,7 +352,7 @@ func logs(w http.ResponseWriter, r *http.Request) {
 
 	podsClient := clientset.CoreV1().Pods("default")
 
-	podName, err := waitForPodToStart(clientset, scraperName)
+	podName, err := waitForPodToStart(clientset, runName)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -386,10 +386,10 @@ func logs(w http.ResponseWriter, r *http.Request) {
 }
 
 func cleanup(w http.ResponseWriter, r *http.Request) {
-	scraperName := mux.Vars(r)["id"]
+	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("run", scraperName)
+	fmt.Println("run", runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
@@ -397,7 +397,7 @@ func cleanup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actualRunToken, err := actualRunToken(clientset, scraperName)
+	actualRunToken, err := actualRunToken(clientset, runName)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -409,19 +409,19 @@ func cleanup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = deleteJob(clientset, scraperName)
+	err = deleteJob(clientset, runName)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	err = deleteSecret(clientset, scraperName)
+	err = deleteSecret(clientset, runName)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	deleteFromStore(scraperName, "app", "tgz")
-	deleteFromStore(scraperName, "output", "")
-	deleteFromStore(scraperName, "cache", "tgz")
+	deleteFromStore(runName, "app", "tgz")
+	deleteFromStore(runName, "output", "")
+	deleteFromStore(runName, "cache", "tgz")
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) {
