@@ -392,7 +392,7 @@ func cleanup(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
 	runToken := r.Header.Get("Clay-Run-Token")
 
-	fmt.Println("run", runName)
+	fmt.Println("cleanup", runName)
 
 	clientset, err := getClientSet()
 	if err != nil {
