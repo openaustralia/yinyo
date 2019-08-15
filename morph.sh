@@ -1,6 +1,10 @@
 #!/bin/bash
 
 # Run a morph scraper using clay
+#
+# Dependencies:
+# jq - https://stedolan.github.io/jq/
+# mc - https://min.io/download
 
 # exit when any command fails
 set -e
@@ -29,7 +33,8 @@ rm -rf app/.git app/.gitignore
 # Add the sqlite database
 (mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite) || true
 
-run_token=$(./images/clay-scraper/clay.sh create "$clay_scraper_name")
+run_token=$(./images/clay-scraper/clay.sh create "$clay_scraper_name" | jq -r ".run_token")
+echo $run_token
 tar -zcf - app | ./images/clay-scraper/clay.sh put app "$clay_scraper_name" "$run_token"
 (mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" | ./images/clay-scraper/clay.sh put cache "$clay_scraper_name" "$run_token") || true
 ./images/clay-scraper/clay.sh run "$clay_scraper_name" "$run_token" data.sqlite

@@ -8,6 +8,8 @@
 * Kubernetes - On OS X Kubernetes comes with Docker Desktop. You just need to enable it. For Linux use something like [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
 * https://github.com/mlandauer/herokuish/tree/only_copy_to_app_path_on_build - this is a fork of https://github.com/gliderlabs/herokuish - to build local docker dev image run `make deps` followed by `make build`.
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
+* [jq](https://stedolan.github.io/jq/)
+* [MinIO client (mc)](https://min.io/download)
 
 #### The main bit
 

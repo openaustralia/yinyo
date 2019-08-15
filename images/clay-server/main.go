@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -163,6 +164,10 @@ func deleteJob(clientset *kubernetes.Clientset, scraperName string) error {
 	return err
 }
 
+type createResult struct {
+	RunToken string `json:"run_token"`
+}
+
 func create(w http.ResponseWriter, r *http.Request) {
 	scraperName := mux.Vars(r)["id"]
 	fmt.Println("create", scraperName)
@@ -181,8 +186,12 @@ func create(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	// TODO: Return result as json
-	fmt.Fprintln(w, runToken)
+
+	w.Header().Set("Content-Type", "application/json")
+	createResult := createResult{
+		RunToken: runToken,
+	}
+	json.NewEncoder(w).Encode(createResult)
 }
 
 func getClientSet() (*kubernetes.Clientset, error) {
