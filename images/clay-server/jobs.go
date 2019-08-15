@@ -7,7 +7,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func createJob(clientset *kubernetes.Clientset, runName string, scraperOutput string) error {
+func createJob(clientset *kubernetes.Clientset, runName string, runOutput string) error {
 	jobsClient := clientset.BatchV1().Jobs("default")
 
 	job := &batchv1.Job{
@@ -25,7 +25,7 @@ func createJob(clientset *kubernetes.Clientset, runName string, scraperOutput st
 						{
 							Name:    runName,
 							Image:   "openaustralia/clay-scraper:v1",
-							Command: []string{"/bin/run.sh", runName, scraperOutput},
+							Command: []string{"/bin/run.sh", runName, runOutput},
 							Env: []apiv1.EnvVar{
 								{
 									Name: "CLAY_RUN_TOKEN",

@@ -38,7 +38,7 @@ elif [ "$1" = "get" ]; then
 elif [ "$1" = "create" ]; then
   curl -s -G -X POST "$(clay-host)/runs" -d "scraper_name=$2"
 elif [ "$1" = "start" ]; then
-  curl -s -X POST -H "Clay-Run-Token: $3" -H "Clay-Scraper-Output: $4" "$(clay-host)/runs/$2/start"
+  curl -s -G -X POST -H "Clay-Run-Token: $3" "$(clay-host)/runs/$2/start" -d "output=$4"
 elif [ "$1" = "logs" ]; then
   curl -s --no-buffer -H "Clay-Run-Token: $3" "$(clay-host)/runs/$2/logs"
 elif [ "$1" = "delete" ]; then

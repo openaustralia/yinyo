@@ -103,7 +103,7 @@ func output(w http.ResponseWriter, r *http.Request) {
 
 func start(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
-	scraperOutput := r.Header.Get("Clay-Scraper-Output")
+	runOutput := r.URL.Query()["output"][0]
 	runToken := r.Header.Get("Clay-Run-Token")
 
 	clientset, err := getClientSet()
@@ -124,7 +124,7 @@ func start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = createJob(clientset, runName, scraperOutput)
+	err = createJob(clientset, runName, runOutput)
 	if err != nil {
 		// TODO: Return error message to client
 		// TODO: Remove secret
@@ -222,7 +222,6 @@ func main() {
 	router.HandleFunc("/runs/{id}/app", app).Methods("PUT", "GET")
 	router.HandleFunc("/runs/{id}/cache", cache).Methods("PUT", "GET")
 	router.HandleFunc("/runs/{id}/output", output).Methods("PUT", "GET")
-	// TODO: Put scraper output as a parameter in the url
 	router.HandleFunc("/runs/{id}/start", start).Methods("POST")
 	router.HandleFunc("/runs/{id}/logs", logs).Methods("GET")
 	router.HandleFunc("/runs/{id}", delete).Methods("DELETE")
