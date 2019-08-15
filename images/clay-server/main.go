@@ -309,7 +309,6 @@ func waitForPodToStart(clientset *kubernetes.Clientset, scraperName string) (str
 			if pod.Status.Phase != apiv1.PodPending {
 				return podName, nil
 			}
-			fmt.Println(pod.Status.Phase)
 		}
 		time.Sleep(1 * time.Second)
 	}
@@ -339,63 +338,39 @@ func logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// job, err := getJob(clientset, scraperName)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Println(job)
-	// // If conditions array is not empty that means the job has finished or completed
-	// if len(job.Status.Conditions) == 0 {
-	// 	// Then wait for the pod to be ready
-	//
-	// }
-	// fmt.Println(t)
-
 	podsClient := clientset.CoreV1().Pods("default")
 
-	// Wait until the pod for the job exists
-	// If this errors just assume the pod doesn't exist yet
-	// TODO: Do this properly
-	fmt.Println("About to wait on pod being created")
 	podName, err := waitForPodToStart(clientset, scraperName)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	fmt.Println("Pod looks to exist now")
-
-	// Now try logging the pod
 	req := podsClient.GetLogs(podName, &apiv1.PodLogOptions{
 		Follow: true,
 	})
 	podLogs, err := req.Stream()
 	if err != nil {
-		fmt.Println("Open the Stream", err)
+		fmt.Println(err)
 		return
 	}
 	defer podLogs.Close()
-	// For the time being just send the logs to stdout so we don't have to
-	// worry about the effects of buffering on the output
-	fmt.Println("Ready to stream the logs")
+
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		fmt.Println("Couldn't access the flusher")
 		return
 	}
-	flusher.Flush()
 
 	scanner := bufio.NewScanner(podLogs)
 	for scanner.Scan() {
-		fmt.Fprintln(w, scanner.Text()) // Println will add back the final '\n'
+		fmt.Fprintln(w, scanner.Text())
 		flusher.Flush()
 	}
 	if err := scanner.Err(); err != nil {
-		fmt.Println("reading standard input:", err)
+		fmt.Println(err)
 		return
 	}
-
 }
 
 func cleanup(w http.ResponseWriter, r *http.Request) {
@@ -438,18 +413,7 @@ func cleanup(w http.ResponseWriter, r *http.Request) {
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) {
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		http.NotFound(w, r)
-		return
-	}
-	flusher.Flush()
-
-	for i := 0; i < 3; i++ {
-		fmt.Fprintln(w, "Hello from Clay!")
-		flusher.Flush()
-		time.Sleep(1 * time.Second)
-	}
+	fmt.Fprintln(w, "Hello from Clay!")
 }
 
 func main() {
