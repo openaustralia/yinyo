@@ -33,11 +33,12 @@ rm -rf app/.git app/.gitignore
 # Add the sqlite database
 (mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite) || true
 
-run_token=$(./images/clay-scraper/clay.sh create "$clay_scraper_name" | jq -r ".run_token")
-echo $run_token
-tar -zcf - app | ./images/clay-scraper/clay.sh put app "$clay_scraper_name" "$run_token"
-(mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" | ./images/clay-scraper/clay.sh put cache "$clay_scraper_name" "$run_token") || true
-./images/clay-scraper/clay.sh run "$clay_scraper_name" "$run_token" data.sqlite
+create_result=$(./images/clay-scraper/clay.sh create "$clay_scraper_name")
+run_name=$(echo "$create_result" | jq -r ".run_name")
+run_token=$(echo "$create_result" | jq -r ".run_token")
+tar -zcf - app | ./images/clay-scraper/clay.sh put app "$run_name" "$run_token"
+(mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" | ./images/clay-scraper/clay.sh put cache "$run_name" "$run_token") || true
+./images/clay-scraper/clay.sh run "$run_name" "$run_token" data.sqlite
 
 if [ "$run_token" = "" ]; then
   echo "There was an error starting the scraper"
@@ -45,8 +46,8 @@ if [ "$run_token" = "" ]; then
 fi
 
 rm -rf app
-./images/clay-scraper/clay.sh logs "$clay_scraper_name" "$run_token"
+./images/clay-scraper/clay.sh logs "$run_name" "$run_token"
 # Get the sqlite database from clay and save it away in a morph bucket
-./images/clay-scraper/clay.sh get output "$clay_scraper_name" "$run_token" | mc pipe "$morph_bucket/db/$morph_scraper_name.sqlite"
-./images/clay-scraper/clay.sh get cache "$clay_scraper_name" "$run_token" | mc pipe "$morph_bucket/cache/$morph_scraper_name.tgz"
-./images/clay-scraper/clay.sh cleanup "$clay_scraper_name" "$run_token"
+./images/clay-scraper/clay.sh get output "$run_name" "$run_token" | mc pipe "$morph_bucket/db/$morph_scraper_name.sqlite"
+./images/clay-scraper/clay.sh get cache "$run_name" "$run_token" | mc pipe "$morph_bucket/cache/$morph_scraper_name.tgz"
+./images/clay-scraper/clay.sh cleanup "$run_name" "$run_token"

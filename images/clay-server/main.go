@@ -89,18 +89,19 @@ func deleteFromStore(scraperName string, fileName string, fileExtension string) 
 	return err
 }
 
-func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken string) error {
+// TODO: Generate the runToken in this method
+func createSecret(clientset *kubernetes.Clientset, scraperName string, runToken string) (*apiv1.Secret, error) {
 	secretsClient := clientset.CoreV1().Secrets("default")
 	secret := &apiv1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: scraperName,
+			GenerateName: scraperName,
 		},
 		StringData: map[string]string{
 			"run_token": runToken,
 		},
 	}
-	_, err := secretsClient.Create(secret)
-	return err
+	created, err := secretsClient.Create(secret)
+	return created, err
 }
 
 func deleteSecret(clientset *kubernetes.Clientset, scraperName string) error {
@@ -165,6 +166,7 @@ func deleteJob(clientset *kubernetes.Clientset, scraperName string) error {
 }
 
 type createResult struct {
+	RunName  string `json:"run_name"`
 	RunToken string `json:"run_token"`
 }
 
@@ -181,7 +183,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = createSecret(clientset, scraperName, runToken)
+	secret, err := createSecret(clientset, scraperName, runToken)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -189,6 +191,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	createResult := createResult{
+		RunName:  secret.ObjectMeta.Name,
 		RunToken: runToken,
 	}
 	json.NewEncoder(w).Encode(createResult)
