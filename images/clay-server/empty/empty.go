@@ -1,9 +1,12 @@
 package empty
 
 import (
+	_ "bufio"
 	_ "fmt"
+	_ "io"
 	_ "log"
 	_ "net/http"
+	_ "time"
 
 	_ "github.com/dchest/uniuri"
 	_ "github.com/gorilla/mux"
