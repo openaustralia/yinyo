@@ -14,7 +14,9 @@
   go get github.com/progrium/basht/
   ````
   * By default, on linux at least, go will be installing binaries into somewhere like `~/go/bin` or `/usr/local/go/bin` - the exact location depends on how you installed go. Find that location and add it to your path, if the installer didn't do it for you. `which go-bindata` should be able to find the `go-bindata` binary before you proceed.
-* Clone https://github.com/mlandauer/herokuish; `git checkout -b only_copy_to_app_path_on_build origin/only_copy_to_app_path_on_build ` to switch to our patched branch. Run `go-bindata include`, then `make deps`, then `make build`.
+* Clone https://github.com/mlandauer/herokuish; Change into the directory, then `git checkout -b only_copy_to_app_path_on_build origin/only_copy_to_app_path_on_build` to switch to our patched branch. 
+  * If you're using `minikube` you'll need to set your docker context to use the minikube daemon so that the images you're about to build end up there, rather than in your local docker daemon. Run `eval $(minikube docker-env)`.
+  * Run `go-bindata include`, then `make deps`, then `make build`.
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 
 #### The main bit
