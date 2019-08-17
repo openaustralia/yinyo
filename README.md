@@ -6,17 +6,9 @@
 
 * Docker - On OS X use [Docker Desktop](https://docs.docker.com/docker-for-mac/install/). On Linux install [Docker Engine](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
 * Kubernetes - On OS X Kubernetes comes with Docker Desktop. You just need to enable it. For Linux use something like [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
-* The [Go language](https://golang.org/doc/install) (For Ubuntu you can use [the PPA](https://github.com/golang/go/wiki/Ubuntu))
-  * You'll need at least v1.11. There's [a bug](https://github.com/golang/go/issues/27215) that needs to be worked around for now; it should be fixed when v1.13 lands. In the meantime, you'll need to install a few things by hand:
-  ````
-  go get github.com/jteeuwen/go-bindata/
-  go get github.com/progrium/gh-release/
-  go get github.com/progrium/basht/
-  ````
-  * By default, on linux at least, go will be installing binaries into somewhere like `~/go/bin` or `/usr/local/go/bin` - the exact location depends on how you installed go. Find that location and add it to your path, if the installer didn't do it for you. `which go-bindata` should be able to find the `go-bindata` binary before you proceed.
-* Clone https://github.com/mlandauer/herokuish; Change into the directory, then `git checkout -b only_copy_to_app_path_on_build origin/only_copy_to_app_path_on_build` to switch to our patched branch. 
+* Clone https://github.com/mlandauer/herokuish; Change into the directory, then `git checkout for-morph-ng` to switch to our patched branch.
   * If you're using `minikube` you'll need to set your docker context to use the minikube daemon so that the images you're about to build end up there, rather than in your local docker daemon. Run `eval $(minikube docker-env)`.
-  * Run `go-bindata include`, then `make deps`, then `make build`.
+  * Run `make build-in-docker`
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 * [jq](https://stedolan.github.io/jq/)
 * [MinIO client (mc)](https://min.io/download)
