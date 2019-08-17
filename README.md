@@ -2,16 +2,29 @@
 
 ### Guide to getting up and running quickly
 
-#### Install dependencies
+#### Main dependencies
 
 * Docker - On OS X use [Docker Desktop](https://docs.docker.com/docker-for-mac/install/). On Linux install [Docker Engine](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
 * Kubernetes - On OS X Kubernetes comes with Docker Desktop. You just need to enable it. For Linux use something like [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
-* Clone https://github.com/mlandauer/herokuish; Change into the directory, then `git checkout for-morph-ng` to switch to our patched branch.
-  * If you're using `minikube` you'll need to set your docker context to use the minikube daemon so that the images you're about to build end up there, rather than in your local docker daemon. Run `eval $(minikube docker-env)`.
-  * Run `make build-in-docker`
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 * [jq](https://stedolan.github.io/jq/)
 * [MinIO client (mc)](https://min.io/download)
+
+#### Install herokuish
+
+First checkout our patched branch of herokuish
+```
+git clone https://github.com/mlandauer/herokuish
+cd herokuish
+git checkout for-morph-ng
+```
+
+If you're using `minikube` you'll need to set your docker context to use the minikube daemon so that the images you're about to build end up there, rather than in your local docker daemon. Run `eval $(minikube docker-env)`.
+
+Then, build the `herokuish:dev` docker image with
+```
+make build-in-docker
+```
 
 #### The main bit
 
