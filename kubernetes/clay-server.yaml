@@ -1,3 +1,21 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: clay-server
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: clay-server
+# TODO: Give it more finely tuned permissions
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+- kind: ServiceAccount
+  name: clay-server
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,6 +32,7 @@ spec:
       labels:
         app: clay-server
     spec:
+      serviceAccountName: clay-server
       containers:
       - name: clay-server
         image: openaustralia/clay-server
