@@ -4,8 +4,7 @@
 
 #### Main dependencies
 
-* Docker - On OS X use [Docker Desktop](https://docs.docker.com/docker-for-mac/install/). On Linux install [Docker Engine](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
-* Kubernetes - On OS X Kubernetes comes with Docker Desktop. You just need to enable it. For Linux use something like [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
+* [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 * [jq](https://stedolan.github.io/jq/)
 * [MinIO client (mc)](https://min.io/download)
@@ -19,7 +18,10 @@ cd herokuish
 git checkout for-morph-ng
 ```
 
-If you're using `minikube` you'll need to set your docker context to use the minikube daemon so that the images you're about to build end up there, rather than in your local docker daemon. Run `eval $(minikube docker-env)`.
+Make your local docker client use the docker daemon on minikube
+```
+eval $(minikube docker-env)
+```
 
 Then, build the `herokuish:dev` docker image with
 ```
@@ -35,11 +37,19 @@ skaffold dev --cache-artifacts=true
 
 Leave `skaffold dev` running and open a new terminal window.
 
-One of things that's now running is [MinIO](https://min.io/). To access it go to http://localhost:9000. Login with username `admin` and password `changeme`.
+One of things that's now running is [MinIO](https://min.io/). To access it
+```
+minikube service minio-service
+```
+This will open your web browser at the url for Minio running on minikube. Login with the username `admin` and password `changeme`.
 
 Now, create a bucket called `clay` and a bucket called `morph`. You can do that from the control at the bottom right.
 
-You can also check that the clay server is up and running. Go to http://localhost:8080. You should see a message letting you know that all is well and good.
+You can also check that the clay server is up and running.
+```
+minikube service clay-server
+```
+You should see a message letting you know that all is well and good.
 
 Now you're ready to run your first scraper.
 

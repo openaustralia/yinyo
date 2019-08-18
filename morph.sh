@@ -19,6 +19,8 @@ fi
 morph_scraper_name=$1
 morph_bucket="minio/morph"
 
+mc config host add minio $(minikube service --url minio-service) admin changeme
+
 # TODO: Use /tmp for the app
 rm -rf app
 # Checkout the code from github

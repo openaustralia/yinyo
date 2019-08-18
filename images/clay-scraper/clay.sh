@@ -25,7 +25,7 @@ fi
 clay-host () {
   local host
   if [ -z "$KUBERNETES_SERVICE_HOST" ]; then
-    echo "localhost:8080"
+    minikube service --url clay-server
   else
     echo "clay-server:8080"
   fi
