@@ -21,6 +21,9 @@ morph_bucket="minio/morph"
 
 mc config host add minio $(minikube service --url minio-service) admin changeme
 
+# This environment variable is used by clay.sh
+export CLAY_SERVER_URL=$(minikube service --url clay-server)
+
 # TODO: Use /tmp for the app
 rm -rf app
 # Checkout the code from github
