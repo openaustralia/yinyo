@@ -22,6 +22,7 @@ Make your local docker client use the docker daemon on minikube
 ```
 eval $(minikube docker-env)
 ```
+(This command assumes you're using Bash as your shell)
 
 Then, build the `herokuish:dev` docker image with
 ```
@@ -37,19 +38,11 @@ skaffold dev
 
 Leave `skaffold dev` running and open a new terminal window.
 
-One of things that's now running is [MinIO](https://min.io/). To access it
+Now setup the storage buckets on Minio
 ```
-minikube service minio-service -n clay
+make buckets
 ```
-This will open your web browser at the url for Minio running on minikube. Login with the username `admin` and password `changeme`.
-
-Now, create a bucket called `clay` and a bucket called `morph`. You can do that from the control at the bottom right.
-
-You can also check that the clay server is up and running.
-```
-minikube service clay-server -n clay
-```
-You should see a message letting you know that all is well and good.
+This might not work immediately because Minio might not be ready
 
 Now you're ready to run your first scraper.
 
@@ -66,3 +59,17 @@ Now, if you run the same scraper again
 ```
 
 It should run significantly faster.
+
+### To see what's on the blob storage (Minio)
+
+```
+minikube service minio-service -n clay
+```
+This will open your web browser at the url for Minio running on minikube. Login with the username `admin` and password `changeme`.
+
+### To see what Kubernetes is doing
+
+```
+minikube dashboard
+```
+You'll want to look in the "clay" namespace

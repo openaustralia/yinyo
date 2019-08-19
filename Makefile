@@ -30,3 +30,8 @@ install-logging:
 	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role-binding.yaml
 	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/output/elasticsearch/fluent-bit-configmap.yaml
 	kubectl apply -f kubernetes/fluent-bit-ds.yaml
+
+buckets:
+	mc config host add minio $(shell minikube service --url minio-service -n clay) admin changeme
+	mc mb minio/clay
+	mc mb minio/morph
