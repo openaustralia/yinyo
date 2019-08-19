@@ -201,7 +201,7 @@ func main() {
 	authenticatedRouter.HandleFunc("/output", output).Methods("PUT", "GET")
 	authenticatedRouter.HandleFunc("/start", start).Methods("POST")
 	authenticatedRouter.HandleFunc("/logs", logs).Methods("GET")
-	authenticatedRouter.HandleFunc("/", delete).Methods("DELETE")
+	authenticatedRouter.HandleFunc("", delete).Methods("DELETE")
 	authenticatedRouter.Use(authenticate)
 	router.Use(logRequests)
 
