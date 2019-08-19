@@ -39,7 +39,7 @@ Leave `skaffold dev` running and open a new terminal window.
 
 One of things that's now running is [MinIO](https://min.io/). To access it
 ```
-minikube service minio-service
+minikube service minio-service -n clay
 ```
 This will open your web browser at the url for Minio running on minikube. Login with the username `admin` and password `changeme`.
 
@@ -47,7 +47,7 @@ Now, create a bucket called `clay` and a bucket called `morph`. You can do that 
 
 You can also check that the clay server is up and running.
 ```
-minikube service clay-server
+minikube service clay-server -n clay
 ```
 You should see a message letting you know that all is well and good.
 

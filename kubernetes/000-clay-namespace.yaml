@@ -1,0 +1,6 @@
+# Naming this file starting with 000 so it will get applied first
+# See https://github.com/GoogleContainerTools/skaffold/issues/2645
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: clay

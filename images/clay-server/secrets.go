@@ -21,7 +21,7 @@ func createSecret(clientset *kubernetes.Clientset, scraperName string) (string, 
 	re := regexp.MustCompile(`[^[:alnum:]]`)
 	convertedScraperName := re.ReplaceAllString(scraperName, "-")
 
-	secretsClient := clientset.CoreV1().Secrets("default")
+	secretsClient := clientset.CoreV1().Secrets("clay")
 	secret := &apiv1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: convertedScraperName + "-",
@@ -36,7 +36,7 @@ func createSecret(clientset *kubernetes.Clientset, scraperName string) (string, 
 }
 
 func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
-	secretsClient := clientset.CoreV1().Secrets("default")
+	secretsClient := clientset.CoreV1().Secrets("clay")
 	deletePolicy := metav1.DeletePropagationForeground
 	err := secretsClient.Delete(runName, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
@@ -46,7 +46,7 @@ func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
 
 func actualRunToken(clientset *kubernetes.Clientset, runName string) (string, error) {
 	// First get the actual run token from the secret
-	secretsClient := clientset.CoreV1().Secrets("default")
+	secretsClient := clientset.CoreV1().Secrets("clay")
 	secret, err := secretsClient.Get(runName, metav1.GetOptions{})
 	if err != nil {
 		return "", err

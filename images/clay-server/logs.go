@@ -14,7 +14,7 @@ import (
 
 // Return pod name
 func waitForPodToStart(clientset *kubernetes.Clientset, runName string) (string, error) {
-	podsClient := clientset.CoreV1().Pods("default")
+	podsClient := clientset.CoreV1().Pods("clay")
 	// TODO: Don't wait forever
 	for {
 		list, err := podsClient.List(metav1.ListOptions{
@@ -39,7 +39,7 @@ func waitForPodToStart(clientset *kubernetes.Clientset, runName string) (string,
 }
 
 func streamAndCopyLogs(clientset *kubernetes.Clientset, runName string, w http.ResponseWriter) error {
-	podsClient := clientset.CoreV1().Pods("default")
+	podsClient := clientset.CoreV1().Pods("clay")
 
 	podName, err := waitForPodToStart(clientset, runName)
 	if err != nil {

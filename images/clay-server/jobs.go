@@ -8,7 +8,7 @@ import (
 )
 
 func createJob(clientset *kubernetes.Clientset, runName string, runOutput string) error {
-	jobsClient := clientset.BatchV1().Jobs("default")
+	jobsClient := clientset.BatchV1().Jobs("clay")
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -50,7 +50,7 @@ func createJob(clientset *kubernetes.Clientset, runName string, runOutput string
 }
 
 func deleteJob(clientset *kubernetes.Clientset, runName string) error {
-	jobsClient := clientset.BatchV1().Jobs("default")
+	jobsClient := clientset.BatchV1().Jobs("clay")
 
 	deletePolicy := metav1.DeletePropagationForeground
 	err := jobsClient.Delete(runName, &metav1.DeleteOptions{

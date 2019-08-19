@@ -12,5 +12,6 @@ build:
 deploy:
   kubectl:
     manifests:
+    - kubernetes/000-clay-namespace.yaml
     - kubernetes/clay-server.yaml
     - kubernetes/minio-deployment.yaml

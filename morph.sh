@@ -19,10 +19,10 @@ fi
 morph_scraper_name=$1
 morph_bucket="minio/morph"
 
-mc config host add minio $(minikube service --url minio-service) admin changeme
+mc config host add minio $(minikube service --url minio-service -n clay) admin changeme
 
 # This environment variable is used by clay.sh
-export CLAY_SERVER_URL=$(minikube service --url clay-server)
+export CLAY_SERVER_URL=$(minikube service --url clay-server -n clay)
 
 # TODO: Use /tmp for the app
 rm -rf app
