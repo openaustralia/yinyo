@@ -32,6 +32,6 @@ install-logging:
 	kubectl apply -f kubernetes/fluent-bit-ds.yaml
 
 buckets:
-	mc config host add minio $(shell minikube service --url minio-service -n clay) admin changeme
+	mc config host add minio $(shell minikube service --url minio-service -n clay-system) admin changeme
 	mc mb minio/clay
 	mc mb minio/morph

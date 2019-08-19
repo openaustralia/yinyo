@@ -17,7 +17,7 @@ SCRAPER_NAME=$1
 SCRAPER_OUTPUT=$2
 
 # This environment variable is used by clay.sh
-export CLAY_SERVER_URL=clay-server:8080
+export CLAY_SERVER_URL=clay-server.clay-system:8080
 
 # Turns on debugging output in herokuish
 # export TRACE=true

@@ -8,7 +8,7 @@ import (
 )
 
 func createJob(clientset *kubernetes.Clientset, runName string, runOutput string) error {
-	jobsClient := clientset.BatchV1().Jobs("clay")
+	jobsClient := clientset.BatchV1().Jobs("clay-scrapers")
 
 	autoMountServiceAccountToken := false
 	job := &batchv1.Job{
@@ -52,7 +52,7 @@ func createJob(clientset *kubernetes.Clientset, runName string, runOutput string
 }
 
 func deleteJob(clientset *kubernetes.Clientset, runName string) error {
-	jobsClient := clientset.BatchV1().Jobs("clay")
+	jobsClient := clientset.BatchV1().Jobs("clay-scrapers")
 
 	deletePolicy := metav1.DeletePropagationForeground
 	err := jobsClient.Delete(runName, &metav1.DeleteOptions{
