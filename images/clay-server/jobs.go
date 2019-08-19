@@ -10,6 +10,7 @@ import (
 func createJob(clientset *kubernetes.Clientset, runName string, runOutput string) error {
 	jobsClient := clientset.BatchV1().Jobs("clay")
 
+	autoMountServiceAccountToken := false
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: runName,
@@ -20,7 +21,8 @@ func createJob(clientset *kubernetes.Clientset, runName string, runOutput string
 			ActiveDeadlineSeconds: int64Ptr(86400),
 			Template: apiv1.PodTemplateSpec{
 				Spec: apiv1.PodSpec{
-					RestartPolicy: "Never",
+					AutomountServiceAccountToken: &autoMountServiceAccountToken,
+					RestartPolicy:                "Never",
 					Containers: []apiv1.Container{
 						{
 							Name:    runName,
