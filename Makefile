@@ -25,10 +25,10 @@ install-logging:
 	# TODO: Use oss image for elasticsearch & kibana
 	helm install --name elasticsearch stable/elasticsearch --namespace logging
 	helm install --name kibana stable/kibana --set env.ELASTICSEARCH_HOSTS=http://elasticsearch-client:9200 --namespace logging
-	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-service-account.yaml
-	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role.yaml
-	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/fluent-bit-role-binding.yaml
-	kubectl apply -f https://raw.githubusercontent.com/fluent/fluent-bit-kubernetes-logging/master/output/elasticsearch/fluent-bit-configmap.yaml
+	kubectl apply -f kubernetes/fluent-bit-service-account.yaml
+	kubectl apply -f kubernetes/fluent-bit-role.yaml
+	kubectl apply -f kubernetes/fluent-bit-role-binding.yaml
+	kubectl apply -f kubernetes/fluent-bit-configmap.yaml
 	kubectl apply -f kubernetes/fluent-bit-ds.yaml
 
 buckets:
