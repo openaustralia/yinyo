@@ -6,15 +6,15 @@ set -o pipefail
 
 if [ $# == 0 ]; then
   echo "Downloads a scraper from Github, compiles it and runs it"
-  echo "Usage: $0 scraper_name scraper_output"
+  echo "Usage: $0 run_name run_output"
   echo "e.g. $0 morph-test-scrapers-test-ruby"
   exit 1
 fi
 
 # TODO: Allow this script to be quit with control C
 
-SCRAPER_NAME=$1
-SCRAPER_OUTPUT=$2
+RUN_NAME=$1
+RUN_OUTPUT=$2
 
 # This environment variable is used by clay.sh
 export CLAY_SERVER_URL=clay-server.clay-system:8080
@@ -26,19 +26,19 @@ export CLAY_SERVER_URL=clay-server.clay-system:8080
 
 cd /tmp || exit
 
-/bin/clay.sh get "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" app | tar xzf -
+/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" app | tar xzf -
 
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 
-(/bin/clay.sh get "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf -) || true
+(/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf -) || true
 
 # This fairly hideous construction pipes stdout and stderr to seperate commands
-{ /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" stderr
+{ /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
 
-tar -zcf - cache | /bin/clay.sh put "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" cache
+tar -zcf - cache | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 
-{ /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" stderr
+{ /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
 
-# Now take the filename given in $SCRAPER_OUTPUT and save that away
+# Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
-/bin/clay.sh put "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" output < "$SCRAPER_OUTPUT"
+/bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" output < "$RUN_OUTPUT"
