@@ -30,7 +30,7 @@ Now you're ready to run your first scraper.
 ./morph.sh morph-test-scrapers/test-python
 ```
 
-The first time you run this it will take a little while (and you'll probably see some messages about some keys not existing. You can ignore that). If you go back to MinIO you'll see that morph has saved an sqlite database and that clay has saved a cache of the build.
+The first time you run this it will take a little while (and you'll probably see some messages about some keys not existing. You can ignore that).
 
 Now, if you run the same scraper again
 
