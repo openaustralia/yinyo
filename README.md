@@ -4,33 +4,10 @@
 
 #### Main dependencies
 
-**NB:** Later instructions will assume that your code checkouts are under `$HOME`. If this is not the case for you, you'll have to modify instructions to suit.
-
 * [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
-  *Use `minikube start --mount --mount-string $HOME:$HOME` to create the minikube cluster.*
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 * [jq](https://stedolan.github.io/jq/)
 * [MinIO client (mc)](https://min.io/download)
-
-#### Install herokuish
-
-First checkout our patched branch of herokuish
-```
-git clone https://github.com/mlandauer/herokuish
-cd herokuish
-git checkout for-morph-ng
-```
-
-Make your local docker client use the docker daemon on minikube
-```
-eval $(minikube docker-env)
-```
-(This command assumes you're using Bash as your shell)
-
-Then, build the `herokuish:dev` docker image with
-```
-make build-in-docker
-```
 
 #### The main bit
 

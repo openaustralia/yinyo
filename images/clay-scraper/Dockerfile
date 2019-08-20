@@ -1,4 +1,4 @@
-FROM herokuish:dev
+FROM mlandauer/herokuish:for-morph-ng
 MAINTAINER Matthew Landauer <matthew@oaf.org.au>
 
 RUN apt-get update && apt-get install -y libsqlite3-dev
