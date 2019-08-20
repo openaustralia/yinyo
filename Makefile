@@ -12,7 +12,7 @@ shell:
 	docker run --rm -i -t openaustralia/clay-scraper:v1 /bin/bash
 
 lint:
-	shellcheck image/run.sh image/clay.sh morph.sh
+	shellcheck images/clay-scraper/run.sh images/clay-scraper/clay.sh morph.sh
 
 shellcheck:
 	# This assumes OS X for the time being
