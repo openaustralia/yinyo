@@ -11,14 +11,18 @@ func createJob(clientset *kubernetes.Clientset, runName string, runOutput string
 	jobsClient := clientset.BatchV1().Jobs("clay-scrapers")
 
 	autoMountServiceAccountToken := false
+	backOffLimit := int32(0)
+	// Let this run for a maximum of 24 hours
+	activeDeadlineSeconds := int64(86400)
+
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: runName,
 		},
 		Spec: batchv1.JobSpec{
-			BackoffLimit: int32Ptr(0),
+			BackoffLimit: &backOffLimit,
 			// Let this run for a maximum of 24 hours
-			ActiveDeadlineSeconds: int64Ptr(86400),
+			ActiveDeadlineSeconds: &activeDeadlineSeconds,
 			Template: apiv1.PodTemplateSpec{
 				Spec: apiv1.PodSpec{
 					AutomountServiceAccountToken: &autoMountServiceAccountToken,
