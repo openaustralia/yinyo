@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -114,10 +115,21 @@ func logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = streamAndCopyLogs(clientset, runName, w)
-	if err != nil {
-		fmt.Println(err)
-		return
+	if r.Method == "GET" {
+		err = streamAndCopyLogs(clientset, runName, w)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	} else {
+		// For the time being just show the results on stdout
+		// TODO: Send them to the user with an http POST
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		log.Printf("log: %q\n", string(b))
 	}
 }
 
@@ -200,7 +212,7 @@ func main() {
 	authenticatedRouter.HandleFunc("/cache", cache).Methods("PUT", "GET")
 	authenticatedRouter.HandleFunc("/output", output).Methods("PUT", "GET")
 	authenticatedRouter.HandleFunc("/start", start).Methods("POST")
-	authenticatedRouter.HandleFunc("/logs", logs).Methods("GET")
+	authenticatedRouter.HandleFunc("/logs", logs).Methods("POST", "GET")
 	authenticatedRouter.HandleFunc("", delete).Methods("DELETE")
 	authenticatedRouter.Use(authenticate)
 	router.Use(logRequests)

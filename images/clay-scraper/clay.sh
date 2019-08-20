@@ -15,6 +15,9 @@ if [ $# == 0 ]; then
   echo "  get RUN_NAME RUN_TOKEN [app|cache|output]    Retrieve and send to stdout"
   echo "  delete RUN_NAME RUN_TOKEN                    Cleanup after everything has finished"
   echo ""
+  echo "COMMANDS (only used from container):"
+  echo "  send-logs RUN_NAME RUN_TOKEN STREAM          Take stdin and send them as logs"
+  echo ""
   echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
   echo "used as a base to generate the unique run name."
   echo ""
@@ -39,6 +42,16 @@ elif [ "$1" = "logs" ]; then
   curl -s --no-buffer -H "Clay-Run-Token: $3" "$CLAY_SERVER_URL/runs/$2/logs"
 elif [ "$1" = "delete" ]; then
   curl -s -X DELETE -H "Clay-Run-Token: $3" "$CLAY_SERVER_URL/runs/$2"
+elif [ "$1" = "send-logs" ]; then
+  # Send each line of stdin as a separate POST
+  # TODO: Chunk up lines that get sent close together into one request
+  # TODO: Send STREAM
+  while IFS= read -r line ;
+  do
+     echo "$line" | curl -s -X POST -H "Clay-Run-Token: $3" --data-binary @- "$CLAY_SERVER_URL/runs/$2/logs"
+     # Also for the time being
+     echo "$line"
+  done
 else
   echo "Unknown command" >&2
   exit 1
