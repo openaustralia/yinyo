@@ -11,6 +11,11 @@
 
 #### The main bit
 
+Start Minikube if you haven't already
+```
+minikube start
+```
+
 Run skaffold. This will build all the bits and pieces and deploy things to your local kubernetes for you. The first time it builds everything it it takes a few minutes. After that when you make any changes to the code it does everything much faster.
 ```
 skaffold dev
