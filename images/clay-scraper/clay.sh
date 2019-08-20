@@ -48,9 +48,9 @@ elif [ "$1" = "send-logs" ]; then
   # TODO: Send STREAM
   while IFS= read -r line ;
   do
-     echo "$line" | curl -s -X POST -H "Clay-Run-Token: $3" --data-binary @- "$CLAY_SERVER_URL/runs/$2/logs"
-     # Also for the time being
-     echo "$line"
+    echo "$line" | curl -s -X POST -H "Clay-Run-Token: $3" --data-binary @- "$CLAY_SERVER_URL/runs/$2/logs"
+    # Also for the time being
+    echo "$line"
   done
 else
   echo "Unknown command" >&2
