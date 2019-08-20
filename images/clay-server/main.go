@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -106,6 +105,11 @@ func start(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type logMessage struct {
+	// TODO: Make the stream an enum
+	Log, Stream string
+}
+
 func logs(w http.ResponseWriter, r *http.Request) {
 	runName := mux.Vars(r)["id"]
 
@@ -124,12 +128,14 @@ func logs(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// For the time being just show the results on stdout
 		// TODO: Send them to the user with an http POST
-		b, err := ioutil.ReadAll(r.Body)
+		decoder := json.NewDecoder(r.Body)
+		var l logMessage
+		err := decoder.Decode(&l)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		log.Println("log", string(b))
+		log.Printf("log %s %q", l.Stream, l.Log)
 	}
 }
 
