@@ -18,19 +18,6 @@ shellcheck:
 	# This assumes OS X for the time being
 	brew install shellcheck
 
-install-logging:
-	# The following can't be run multiple times
-	# TODO: Make this more sensible
-	kubectl create namespace logging
-	# TODO: Use oss image for elasticsearch & kibana
-	helm install --name elasticsearch stable/elasticsearch --namespace logging
-	helm install --name kibana stable/kibana --set env.ELASTICSEARCH_HOSTS=http://elasticsearch-client:9200 --namespace logging
-	kubectl apply -f kubernetes/fluent-bit-service-account.yaml
-	kubectl apply -f kubernetes/fluent-bit-role.yaml
-	kubectl apply -f kubernetes/fluent-bit-role-binding.yaml
-	kubectl apply -f kubernetes/fluent-bit-configmap.yaml
-	kubectl apply -f kubernetes/fluent-bit-ds.yaml
-
 buckets:
 	mc config host add minio $(shell minikube service --url minio-service -n clay-system) admin changeme
 	mc mb minio/clay
