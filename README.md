@@ -4,7 +4,10 @@
 
 #### Main dependencies
 
+**NB:** Later instructions will assume that your code checkouts are under `$HOME`. If this is not the case for you, you'll have to modify instructions to suit.
+
 * [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
+  *Use `minikube start --mount --mount-string $HOME:$HOME` to create the minikube cluster.*
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 * [jq](https://stedolan.github.io/jq/)
 * [MinIO client (mc)](https://min.io/download)
