@@ -129,7 +129,7 @@ func logs(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 			return
 		}
-		log.Printf("log: %q\n", string(b))
+		log.Println("log", string(b))
 	}
 }
 

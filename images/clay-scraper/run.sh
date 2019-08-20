@@ -33,11 +33,11 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 (/bin/clay.sh get "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf -) || true
 
 # TODO: Send stderr to logs as well
-/bin/herokuish buildpack build | /bin/clay.sh send-logs "$SCRAPER_NAME" "$CLAY_RUN_TOKEN"
+/bin/herokuish buildpack build | /bin/clay.sh send-logs "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" stdout
 
 tar -zcf - cache | /bin/clay.sh put "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" cache
 
-/bin/herokuish procfile start scraper | /bin/clay.sh send-logs "$SCRAPER_NAME" "$CLAY_RUN_TOKEN"
+/bin/herokuish procfile start scraper | /bin/clay.sh send-logs "$SCRAPER_NAME" "$CLAY_RUN_TOKEN" stdout
 
 # Now take the filename given in $SCRAPER_OUTPUT and save that away
 cd /app || exit
