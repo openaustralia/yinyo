@@ -162,14 +162,14 @@ func authenticate(next http.Handler) http.Handler {
 		clientset, err := getClientSet()
 		if err != nil {
 			log.Println(err)
-			http.Error(w, "Could not contact kubernetes", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		actualRunToken, err := actualRunToken(clientset, runName)
 		if err != nil {
 			log.Println(err)
-			http.Error(w, "Could not contact kubernetes", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
@@ -188,7 +188,8 @@ type appHandler func(http.ResponseWriter, *http.Request) error
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := fn(w, r)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
