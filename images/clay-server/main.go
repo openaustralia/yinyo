@@ -25,21 +25,19 @@ type createResult struct {
 	RunToken string `json:"run_token"`
 }
 
-func create(w http.ResponseWriter, r *http.Request) {
+func create2(w http.ResponseWriter, r *http.Request) error {
 	// TODO: Make the scraper_name optional
 	// TODO: Do we make sure that there is only one scraper_name used?
 	scraperName := r.URL.Query()["scraper_name"][0]
 
 	clientset, err := getClientSet()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	runName, runToken, err := createSecret(clientset, scraperName)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	createResult := createResult{
@@ -49,6 +47,15 @@ func create(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(createResult)
+	return nil
+}
+
+func create(w http.ResponseWriter, r *http.Request) {
+	err := create2(w, r)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
