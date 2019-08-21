@@ -133,10 +133,15 @@ func delete(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	deleteFromStore(runName, "app", "tgz")
-	deleteFromStore(runName, "output", "")
-	deleteFromStore(runName, "cache", "tgz")
-	return nil
+	err = deleteFromStore(runName, "app", "tgz")
+	if err != nil {
+		return err
+	}
+	err = deleteFromStore(runName, "output", "")
+	if err != nil {
+		return err
+	}
+	return deleteFromStore(runName, "cache", "tgz")
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
