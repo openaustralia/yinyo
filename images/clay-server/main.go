@@ -199,7 +199,7 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fmt.Println("Clay is ready and waiting.")
+	log.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
 
 	// TODO: Use more conventional basic auth
