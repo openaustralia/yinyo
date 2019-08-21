@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"k8s.io/client-go/kubernetes"
@@ -158,11 +160,26 @@ func logRequests(next http.Handler) http.Handler {
 	})
 }
 
+func extractBearerToken(header http.Header) (string, error) {
+	const bearerPrefix = "Bearer "
+	authHeader := header.Get("Authorization")
+
+	if !strings.HasPrefix(authHeader, bearerPrefix) {
+		return "", errors.New("Expected Authorization header with bearer token")
+	}
+	return authHeader[len(bearerPrefix):], nil
+}
+
 // Middleware function, which will be called for each request
 func authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		runName := mux.Vars(r)["id"]
-		runToken := r.Header.Get("Clay-Run-Token")
+		runToken, err := extractBearerToken(r.Header)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
 
 		clientset, err := getClientSet()
 		if err != nil {
@@ -203,7 +220,6 @@ func main() {
 	log.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
 
-	// TODO: Use more conventional basic auth
 	router.Handle("/", appHandler(whoAmI))
 	router.Handle("/runs", appHandler(create)).Methods("POST")
 

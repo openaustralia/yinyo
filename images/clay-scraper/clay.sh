@@ -31,17 +31,17 @@ if [ -z "$CLAY_SERVER_URL" ]; then
 fi
 
 if [ "$1" = "put" ]; then
-  curl -s -X PUT -H "Clay-Run-Token: $3" --data-binary @- --no-buffer "$CLAY_SERVER_URL/runs/$2/$4"
+  curl -s -X PUT -H "Authorization: Bearer $3" --data-binary @- --no-buffer "$CLAY_SERVER_URL/runs/$2/$4"
 elif [ "$1" = "get" ]; then
-  curl -s -H "Clay-Run-Token: $3" "$CLAY_SERVER_URL/runs/$2/$4"
+  curl -s -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/$4"
 elif [ "$1" = "create" ]; then
   curl -s -G -X POST "$CLAY_SERVER_URL/runs" -d "scraper_name=$2"
 elif [ "$1" = "start" ]; then
-  curl -s -G -X POST -H "Clay-Run-Token: $3" "$CLAY_SERVER_URL/runs/$2/start" -d "output=$4"
+  curl -s -G -X POST -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/start" -d "output=$4"
 elif [ "$1" = "logs" ]; then
-  curl -s --no-buffer -H "Clay-Run-Token: $3" "$CLAY_SERVER_URL/runs/$2/logs"
+  curl -s --no-buffer -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/logs"
 elif [ "$1" = "delete" ]; then
-  curl -s -X DELETE -H "Clay-Run-Token: $3" "$CLAY_SERVER_URL/runs/$2"
+  curl -s -X DELETE -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2"
 elif [ "$1" = "send-logs" ]; then
   # Send each line of stdin as a separate POST
   # TODO: Chunk up lines that get sent close together into one request
@@ -49,7 +49,7 @@ elif [ "$1" = "send-logs" ]; then
   do
     # Send as json
     data=$(jq -c -n --arg log "$line" --arg stream "$4" '{log: $log, stream: $stream}')
-    curl -s -X POST -H "Clay-Run-Token: $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
+    curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
     # Also for the time being
     echo "$line"
   done
