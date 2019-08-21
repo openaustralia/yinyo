@@ -25,7 +25,7 @@ type createResult struct {
 	RunToken string `json:"run_token"`
 }
 
-func create2(w http.ResponseWriter, r *http.Request) error {
+func create(w http.ResponseWriter, r *http.Request) error {
 	// TODO: Make the scraper_name optional
 	// TODO: Do we make sure that there is only one scraper_name used?
 	scraperName := r.URL.Query()["scraper_name"][0]
@@ -50,63 +50,39 @@ func create2(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func create(w http.ResponseWriter, r *http.Request) {
-	err := create2(w, r)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-}
-
-func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) {
+func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) error {
 	runName := mux.Vars(r)["id"]
 
 	if r.Method == "GET" {
-		err := retrieveFromStore(runName, fileName, fileExtension, w)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-	} else {
-		err := saveToStore(r.Body, r.ContentLength, runName, fileName, fileExtension)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		return retrieveFromStore(runName, fileName, fileExtension, w)
 	}
+	return saveToStore(r.Body, r.ContentLength, runName, fileName, fileExtension)
 }
 
 // The body of the request should contain the tarred & gzipped code
-func app(w http.ResponseWriter, r *http.Request) {
-	store(w, r, "app", "tgz")
+func app(w http.ResponseWriter, r *http.Request) error {
+	return store(w, r, "app", "tgz")
 }
 
 // The body of the request should contain the tarred & gzipped cache
-func cache(w http.ResponseWriter, r *http.Request) {
-	store(w, r, "cache", "tgz")
+func cache(w http.ResponseWriter, r *http.Request) error {
+	return store(w, r, "cache", "tgz")
 }
 
-func output(w http.ResponseWriter, r *http.Request) {
-	store(w, r, "output", "")
+func output(w http.ResponseWriter, r *http.Request) error {
+	return store(w, r, "output", "")
 }
 
-func start(w http.ResponseWriter, r *http.Request) {
+func start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	runOutput := r.URL.Query()["output"][0]
 
 	clientset, err := getClientSet()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
-	err = createJob(clientset, runName, runOutput)
-	if err != nil {
-		// TODO: Return error message to client
-		// TODO: Remove secret
-		fmt.Println(err)
-		return
-	}
+	return createJob(clientset, runName, runOutput)
 }
 
 type logMessage struct {
@@ -114,20 +90,18 @@ type logMessage struct {
 	Log, Stream string
 }
 
-func logs(w http.ResponseWriter, r *http.Request) {
+func logs(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	clientset, err := getClientSet()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	if r.Method == "GET" {
 		err = streamAndCopyLogs(clientset, runName, w)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 	} else {
 		// For the time being just show the results on stdout
@@ -136,39 +110,38 @@ func logs(w http.ResponseWriter, r *http.Request) {
 		var l logMessage
 		err := decoder.Decode(&l)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return err
 		}
 		log.Printf("log %s %q", l.Stream, l.Log)
 	}
+	return nil
 }
 
-func delete(w http.ResponseWriter, r *http.Request) {
+func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	clientset, err := getClientSet()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	err = deleteJob(clientset, runName)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	err = deleteSecret(clientset, runName)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	deleteFromStore(runName, "app", "tgz")
 	deleteFromStore(runName, "output", "")
 	deleteFromStore(runName, "cache", "tgz")
+	return nil
 }
 
-func whoAmI(w http.ResponseWriter, r *http.Request) {
+func whoAmI(w http.ResponseWriter, r *http.Request) error {
 	fmt.Fprintln(w, "Hello from Clay!")
+	return nil
 }
 
 // Middleware that logs the request uri
@@ -209,21 +182,31 @@ func authenticate(next http.Handler) http.Handler {
 	})
 }
 
+type appHandler func(http.ResponseWriter, *http.Request) error
+
+// Error handling
+func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	err := fn(w, r)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func main() {
 	fmt.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
 
 	// TODO: Use more conventional basic auth
-	router.HandleFunc("/", whoAmI)
-	router.HandleFunc("/runs", create).Methods("POST")
+	router.Handle("/", appHandler(whoAmI))
+	router.Handle("/runs", appHandler(create)).Methods("POST")
 
 	authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
-	authenticatedRouter.HandleFunc("/app", app).Methods("PUT", "GET")
-	authenticatedRouter.HandleFunc("/cache", cache).Methods("PUT", "GET")
-	authenticatedRouter.HandleFunc("/output", output).Methods("PUT", "GET")
-	authenticatedRouter.HandleFunc("/start", start).Methods("POST")
-	authenticatedRouter.HandleFunc("/logs", logs).Methods("POST", "GET")
-	authenticatedRouter.HandleFunc("", delete).Methods("DELETE")
+	authenticatedRouter.Handle("/app", appHandler(app)).Methods("PUT", "GET")
+	authenticatedRouter.Handle("/cache", appHandler(cache)).Methods("PUT", "GET")
+	authenticatedRouter.Handle("/output", appHandler(output)).Methods("PUT", "GET")
+	authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
+	authenticatedRouter.Handle("/logs", appHandler(logs)).Methods("POST", "GET")
+	authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
 	authenticatedRouter.Use(authenticate)
 	router.Use(logRequests)
 
