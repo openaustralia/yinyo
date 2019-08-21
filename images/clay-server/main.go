@@ -179,6 +179,7 @@ func authenticate(next http.Handler) http.Handler {
 		}
 
 		if runToken != actualRunToken {
+			log.Println("Incorrect run token")
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
