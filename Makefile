@@ -19,6 +19,6 @@ shellcheck:
 	brew install shellcheck
 
 buckets:
-	mc config host add minio $(shell minikube service --url minio-service -n clay-system) admin changeme
+	mc config host add minio $(shell minikube service --url minio-service -n clay-system | cut -f 2 -d \ ) admin changeme
 	mc mb minio/clay
 	mc mb minio/morph
