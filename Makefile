@@ -20,5 +20,5 @@ shellcheck:
 
 buckets:
 	mc config host add minio $(shell minikube service --url minio-service -n clay-system) admin changeme
-	mc mb minio/clay
-	mc mb minio/morph
+	mc mb -p minio/clay
+	mc mb -p minio/morph
