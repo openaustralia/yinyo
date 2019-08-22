@@ -58,6 +58,7 @@ func retrieveFromStore(runName string, fileName string, fileExtension string, wr
 func deleteFromStore(runName string, fileName string, fileExtension string) error {
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
+		// TODO: This should only give it access to the one bucket
 		"minio-service:9000", "admin", "changeme", false,
 	)
 	if err != nil {
