@@ -48,9 +48,15 @@ spec:
         env:
         # MinIO access key and secret key
         - name: MINIO_ACCESS_KEY
-          value: "admin"
+          valueFrom:
+            secretKeyRef:
+              name: minio
+              key: access_key
         - name: MINIO_SECRET_KEY
-          value: "changeme"
+          valueFrom:
+            secretKeyRef:
+              name: minio
+              key: secret_key
         ports:
         - containerPort: 9000
         # Mount the volume into the pod

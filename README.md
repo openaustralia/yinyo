@@ -6,6 +6,7 @@
 
 * [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
+* [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
 * [jq](https://stedolan.github.io/jq/)
 * [MinIO client (mc)](https://min.io/download)
 

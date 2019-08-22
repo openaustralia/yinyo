@@ -10,8 +10,4 @@ build:
   - image: openaustralia/clay-scraper
     context: images/clay-scraper
 deploy:
-  kubectl:
-    manifests:
-    - kubernetes/000-clay-namespace.yaml
-    - kubernetes/clay-server.yaml
-    - kubernetes/minio-deployment.yaml
+  kustomize: {}

@@ -1,0 +1,9 @@
+resources:
+  - kubernetes/000-clay-namespace.yaml
+  - kubernetes/clay-server.yaml
+  - kubernetes/minio-deployment.yaml
+
+secretGenerator:
+- name: minio
+  namespace: clay-system
+  env: minio-secrets.env
