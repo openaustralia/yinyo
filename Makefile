@@ -18,7 +18,10 @@ shellcheck:
 	# This assumes OS X for the time being
 	brew install shellcheck
 
+minio_access_key = $(shell grep access_key minio-secrets.env | cut -d "=" -f 2)
+minio_secret_key = $(shell grep secret_key minio-secrets.env | cut -d "=" -f 2)
+
 buckets:
-	mc config host add minio $(shell minikube service --url minio-service -n clay-system) admin changeme
+	mc config host add minio $(shell minikube service --url minio-service -n clay-system) $(minio_access_key) $(minio_secret_key)
 	mc mb -p minio/clay
 	mc mb -p minio/morph
