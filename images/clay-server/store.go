@@ -7,14 +7,18 @@ import (
 	"github.com/minio/minio-go/v6"
 )
 
-func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
-	minioClient, err := minio.New(
+func minioClient() (*minio.Client, error) {
+	return minio.New(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
 		os.Getenv("STORE_ACCESS_KEY"),
 		os.Getenv("STORE_SECRET_KEY"),
 		false,
 	)
+}
+
+func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
+	minioClient, err := minioClient()
 	if err != nil {
 		return err
 	}
@@ -37,13 +41,7 @@ func saveToStore(reader io.Reader, objectSize int64, runName string, fileName st
 }
 
 func retrieveFromStore(runName string, fileName string, fileExtension string, writer io.Writer) error {
-	minioClient, err := minio.New(
-		// TODO: Get data store url for configmap
-		"minio-service:9000",
-		os.Getenv("STORE_ACCESS_KEY"),
-		os.Getenv("STORE_SECRET_KEY"),
-		false,
-	)
+	minioClient, err := minioClient()
 	if err != nil {
 		return err
 	}
@@ -63,13 +61,7 @@ func retrieveFromStore(runName string, fileName string, fileExtension string, wr
 }
 
 func deleteFromStore(runName string, fileName string, fileExtension string) error {
-	minioClient, err := minio.New(
-		// TODO: Get data store url for configmap
-		"minio-service:9000",
-		os.Getenv("STORE_ACCESS_KEY"),
-		os.Getenv("STORE_SECRET_KEY"),
-		false,
-	)
+	minioClient, err := minioClient()
 	if err != nil {
 		return err
 	}
