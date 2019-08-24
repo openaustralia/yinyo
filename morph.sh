@@ -20,7 +20,7 @@ morph_scraper_name=$1
 morph_bucket="minio/morph"
 
 # TODO: Use credentials that only give it access to morph bucket
-mc config host add minio "$(minikube service --url minio-service -n clay-system)" admin changeme
+mc config host add minio "$(minikube service --url minio-service -n clay-system)" admin changeme123
 
 # This environment variable is used by clay.sh
 CLAY_SERVER_URL=$(minikube service --url clay-server -n clay-system)

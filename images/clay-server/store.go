@@ -9,7 +9,7 @@ import (
 func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
-		"minio-service:9000", "admin", "changeme", false,
+		"minio-service:9000", "admin", "changeme123", false,
 	)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func saveToStore(reader io.Reader, objectSize int64, runName string, fileName st
 func retrieveFromStore(runName string, fileName string, fileExtension string, writer io.Writer) error {
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
-		"minio-service:9000", "admin", "changeme", false,
+		"minio-service:9000", "admin", "changeme123", false,
 	)
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func deleteFromStore(runName string, fileName string, fileExtension string) erro
 	minioClient, err := minio.New(
 		// TODO: Get access key and password from secret
 		// TODO: This should only give it access to the one bucket
-		"minio-service:9000", "admin", "changeme", false,
+		"minio-service:9000", "admin", "changeme123", false,
 	)
 	if err != nil {
 		return err
