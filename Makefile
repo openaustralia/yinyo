@@ -22,8 +22,8 @@ minio_access_key = $(shell grep access_key secrets-minio.env | cut -d "=" -f 2)
 minio_secret_key = $(shell grep secret_key secrets-minio.env | cut -d "=" -f 2)
 minio_clay_access_key = $(shell grep store_access_key secrets-clay-server.env | cut -d "=" -f 2)
 minio_clay_secret_key = $(shell grep store_secret_key secrets-clay-server.env | cut -d "=" -f 2)
-minio_morph_access_key = morph
-minio_morph_secret_key = changeme123
+minio_morph_access_key = $(shell grep store_access_key secrets-morph.env | cut -d "=" -f 2)
+minio_morph_secret_key = $(shell grep store_secret_key secrets-morph.env | cut -d "=" -f 2)
 
 buckets:
 	mc config host add minio $(shell minikube service --url minio-service -n clay-system) $(minio_access_key) $(minio_secret_key)

@@ -17,10 +17,13 @@ if [ $# == 0 ]; then
 fi
 
 morph_scraper_name=$1
-morph_bucket="minio/morph"
+morph_bucket="morph/morph"
 
-# TODO: Use credentials that only give it access to morph bucket
-mc config host add minio "$(minikube service --url minio-service -n clay-system)" admin changeme123
+store_access_key=$(grep store_access_key secrets-morph.env | cut -d "=" -f 2)
+store_secret_key=$(grep store_secret_key secrets-morph.env | cut -d "=" -f 2)
+
+# This command doesn't work with "-api s3v4". No idea why.
+mc config host add morph "$(minikube service --url minio-service -n clay-system)" "$store_access_key" "$store_secret_key" -api s3v4
 
 # This environment variable is used by clay.sh
 CLAY_SERVER_URL=$(minikube service --url clay-server -n clay-system)
