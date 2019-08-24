@@ -7,3 +7,6 @@ secretGenerator:
 - name: minio
   namespace: clay-system
   env: secrets-minio.env
+- name: clay-server
+  namespace: clay-system
+  env: secrets-clay-server.env

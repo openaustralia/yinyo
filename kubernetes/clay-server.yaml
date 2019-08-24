@@ -42,6 +42,18 @@ spec:
         image: openaustralia/clay-server
         ports:
         - containerPort: 8080
+        env:
+        - name: STORE_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: clay-server
+              key: store_access_key
+        - name: STORE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: clay-server
+              key: store_secret_key
+
 ---
 apiVersion: v1
 kind: Service

@@ -2,14 +2,18 @@ package main
 
 import (
 	"io"
+	"os"
 
 	"github.com/minio/minio-go/v6"
 )
 
 func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
 	minioClient, err := minio.New(
-		// TODO: Get access key and password from secret
-		"minio-service:9000", "clay", "changeme123", false,
+		// TODO: Get data store url for configmap
+		"minio-service:9000",
+		os.Getenv("STORE_ACCESS_KEY"),
+		os.Getenv("STORE_SECRET_KEY"),
+		false,
 	)
 	if err != nil {
 		return err
@@ -34,8 +38,11 @@ func saveToStore(reader io.Reader, objectSize int64, runName string, fileName st
 
 func retrieveFromStore(runName string, fileName string, fileExtension string, writer io.Writer) error {
 	minioClient, err := minio.New(
-		// TODO: Get access key and password from secret
-		"minio-service:9000", "clay", "changeme123", false,
+		// TODO: Get data store url for configmap
+		"minio-service:9000",
+		os.Getenv("STORE_ACCESS_KEY"),
+		os.Getenv("STORE_SECRET_KEY"),
+		false,
 	)
 	if err != nil {
 		return err
@@ -57,9 +64,11 @@ func retrieveFromStore(runName string, fileName string, fileExtension string, wr
 
 func deleteFromStore(runName string, fileName string, fileExtension string) error {
 	minioClient, err := minio.New(
-		// TODO: Get access key and password from secret
-		// TODO: This should only give it access to the one bucket
-		"minio-service:9000", "clay", "changeme123", false,
+		// TODO: Get data store url for configmap
+		"minio-service:9000",
+		os.Getenv("STORE_ACCESS_KEY"),
+		os.Getenv("STORE_SECRET_KEY"),
+		false,
 	)
 	if err != nil {
 		return err
