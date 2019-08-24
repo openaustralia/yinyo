@@ -17,21 +17,24 @@ func minioClient() (*minio.Client, error) {
 	)
 }
 
+func storagePath(runName string, fileName string, fileExtension string) string {
+	path := fileName + "/" + runName
+	if fileExtension != "" {
+		path += "." + fileExtension
+	}
+	return path
+}
+
 func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
 	minioClient, err := minioClient()
 	if err != nil {
 		return err
 	}
 
-	path := fileName + "/" + runName
-	if fileExtension != "" {
-		path += "." + fileExtension
-	}
-
 	_, err = minioClient.PutObject(
 		// TODO: Make bucket name configurable
 		"clay",
-		path,
+		storagePath(runName, fileName, fileExtension),
 		reader,
 		objectSize,
 		minio.PutObjectOptions{},
@@ -46,13 +49,12 @@ func retrieveFromStore(runName string, fileName string, fileExtension string, wr
 		return err
 	}
 
-	path := fileName + "/" + runName
-	if fileExtension != "" {
-		path += "." + fileExtension
-	}
-
 	// TODO: Make bucket name configurable
-	object, err := minioClient.GetObject("clay", path, minio.GetObjectOptions{})
+	object, err := minioClient.GetObject(
+		"clay",
+		storagePath(runName, fileName, fileExtension),
+		minio.GetObjectOptions{},
+	)
 	if err != nil {
 		return err
 	}
@@ -66,11 +68,9 @@ func deleteFromStore(runName string, fileName string, fileExtension string) erro
 		return err
 	}
 
-	path := fileName + "/" + runName
-	if fileExtension != "" {
-		path += "." + fileExtension
-	}
-
-	err = minioClient.RemoveObject("clay", path)
+	err = minioClient.RemoveObject(
+		"clay",
+		storagePath(runName, fileName, fileExtension),
+	)
 	return err
 }
