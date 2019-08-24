@@ -51,7 +51,7 @@ It should run significantly faster.
 ```
 minikube service minio-service -n clay-system
 ```
-This will open your web browser at the url for Minio running on minikube. Login with the username `admin` and password `changeme123`.
+This will open your web browser at the url for Minio running on minikube. Login with the credentials in the file `secrets-minio.env`.
 
 ### To see what Kubernetes is doing
 
