@@ -6,4 +6,4 @@ resources:
 secretGenerator:
 - name: minio
   namespace: clay-system
-  env: minio-secrets.env
+  env: secrets-minio.env
