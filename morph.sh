@@ -32,7 +32,7 @@ export CLAY_SERVER_URL
 # TODO: Use /tmp for the app
 rm -rf app
 # Checkout the code from github
-git clone --depth 1 "https://github.com/$morph_scraper_name.git" app
+git clone --quiet --depth 1 "https://github.com/$morph_scraper_name.git" app
 rm -rf app/.git app/.gitignore
 # Add the sqlite database
 (mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
