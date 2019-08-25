@@ -1,7 +1,11 @@
 # TODO: Use multi-stage docker build for go app
 # TODO: Make minimal docker image
 
-FROM golang:1.12.7
+FROM golang:1.12.9-alpine3.10
+
+# Install git.
+# Git is required for fetching the dependencies.
+RUN apk update && apk add --no-cache git
 
 WORKDIR /go/src/app
 ENV GO111MODULE on
