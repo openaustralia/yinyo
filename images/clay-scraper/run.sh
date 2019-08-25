@@ -37,7 +37,11 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 tar -zcf - cache | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 
+# TODO: Send return code and stats about run to clay server
 { /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
+
+exit_code=${PIPESTATUS[0]}
+echo "Exit code: $exit_code"
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
