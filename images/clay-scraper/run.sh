@@ -30,7 +30,7 @@ cd /tmp || exit
 
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 
-(/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf -) || true
+(/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf - 2> /dev/null) || true
 
 # This fairly hideous construction pipes stdout and stderr to seperate commands
 { /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr

@@ -35,13 +35,13 @@ rm -rf app
 git clone --depth 1 "https://github.com/$morph_scraper_name.git" app
 rm -rf app/.git app/.gitignore
 # Add the sqlite database
-(mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite) || true
+(mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
 
 create_result=$(./images/clay-scraper/clay.sh create "$morph_scraper_name")
 run_name=$(echo "$create_result" | jq -r ".run_name")
 run_token=$(echo "$create_result" | jq -r ".run_token")
 tar -zcf - app | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" app
-(mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
+(mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
 ./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite
 
 if [ "$run_token" = "" ]; then
