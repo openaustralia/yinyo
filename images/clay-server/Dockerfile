@@ -1,7 +1,4 @@
-# TODO: Use multi-stage docker build for go app
-# TODO: Make minimal docker image
-
-FROM golang:1.12.9-alpine3.10
+FROM golang:1.12.9-alpine3.10 as builder
 
 # Install git.
 # Git is required for fetching the dependencies.
@@ -22,6 +19,12 @@ RUN rm empty.go
 
 # Compile the actual thing
 COPY *.go ./
-RUN go install
+RUN CGO_ENABLED=0 go install
 
-CMD ["app"]
+# Now make the runtime image
+FROM scratch
+
+COPY --from=builder /go/bin/app /go/bin/app
+
+# TODO: Run this is an unprivileged user
+CMD ["/go/bin/app"]
