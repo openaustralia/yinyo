@@ -22,6 +22,13 @@ export CLAY_SERVER_URL=clay-server.clay-system:8080
 # Turns on debugging output in herokuish
 # export TRACE=true
 
+extract_value() {
+  local filename="$1"
+  local label="$2"
+  local line=$(grep "$label" "$filename")
+  echo "${line#*$label: }"
+}
+
 # TODO: Probably don't want to do this as root
 
 cd /tmp || exit
@@ -46,8 +53,12 @@ tar -zcf - cache | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 exit_code=${PIPESTATUS[0]}
 echo "Exit code: $exit_code"
 
-wall_time_line=$(grep "Elapsed (wall clock) time (h:mm:ss or m:ss)" /tmp/time_output_run.txt)
-wall_time_formatted=${wall_time_line#*Elapsed (wall clock) time (h:mm:ss or m:ss): }
+wall_time_formatted=$(extract_value /tmp/time_output_run.txt "Elapsed (wall clock) time (h:mm:ss or m:ss)")
+user_time=$(extract_value /tmp/time_output_run.txt "User time (seconds)")
+system_time=$(extract_value /tmp/time_output_run.txt "System time (seconds)")
+max_rss=$(extract_value /tmp/time_output_run.txt "Maximum resident set size (kbytes)")
+page_size=$(extract_value /tmp/time_output_run.txt "Page size (bytes)")
+
 part1=$(echo $wall_time_formatted | cut -d ':' -f 1)
 part2=$(echo $wall_time_formatted | cut -d ':' -f 2)
 part3=$(echo $wall_time_formatted | cut -d ':' -f 3)
@@ -61,20 +72,8 @@ else
 fi
 echo "wall_time (in seconds): $wall_time"
 
-user_time_line=$(grep "User time (seconds)" /tmp/time_output_run.txt)
-user_time=${user_time_line#*User time (seconds): }
-
-system_time_line=$(grep "System time (seconds)" /tmp/time_output_run.txt)
-system_time=${system_time_line#*System time (seconds): }
-
 cpu_time=$(echo "$user_time + $system_time" | bc)
 echo "cpu_time (in seconds): $cpu_time"
-
-max_rss_line=$(grep "Maximum resident set size (kbytes)" /tmp/time_output_run.txt)
-max_rss=${max_rss_line#*Maximum resident set size (kbytes): }
-
-page_size_line=$(grep "Page size (bytes)" /tmp/time_output_run.txt)
-page_size=${page_size_line#*Page size (bytes): }
 
 # There's a bug in GNU time 1.7 which wrongly reports the maximum resident
 # set size on the version of Ubuntu that we're using.
