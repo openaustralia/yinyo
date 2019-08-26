@@ -32,17 +32,56 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 (/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf - 2> /dev/null) || true
 
+# TODO: Collect separate stats (from the scraper run) for build process
 # This fairly hideous construction pipes stdout and stderr to seperate commands
 { /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
 
 tar -zcf - cache | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 
 # TODO: Send return code and stats about run to clay server
-{ /bin/docker-stats-on-exit-shim /tmp/stats.json /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
+{ /usr/bin/time -v -o /tmp/time_output_run.txt /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
+
+# TODO: Collect network in/out as well
 
 exit_code=${PIPESTATUS[0]}
 echo "Exit code: $exit_code"
-# cat /tmp/stats.json
+
+wall_time_line=$(grep "Elapsed (wall clock) time (h:mm:ss or m:ss)" /tmp/time_output_run.txt)
+wall_time_formatted=${wall_time_line#*Elapsed (wall clock) time (h:mm:ss or m:ss): }
+part1=$(echo $wall_time_formatted | cut -d ':' -f 1)
+part2=$(echo $wall_time_formatted | cut -d ':' -f 2)
+part3=$(echo $wall_time_formatted | cut -d ':' -f 3)
+
+# If part3 is empty (time is in m:ss)
+if [ -z "$part3" ]; then
+  wall_time=$(echo "$part1 * 60.0 + $part2" | bc)
+# Else time is in h:mm:ss
+else
+  wall_time=$(echo "($part1 * 60.0 + $part2) * 60.0 + $part3" | bc)
+fi
+echo "wall_time (in seconds): $wall_time"
+
+user_time_line=$(grep "User time (seconds)" /tmp/time_output_run.txt)
+user_time=${user_time_line#*User time (seconds): }
+
+system_time_line=$(grep "System time (seconds)" /tmp/time_output_run.txt)
+system_time=${system_time_line#*System time (seconds): }
+
+cpu_time=$(echo "$user_time + $system_time" | bc)
+echo "cpu_time (in seconds): $cpu_time"
+
+max_rss_line=$(grep "Maximum resident set size (kbytes)" /tmp/time_output_run.txt)
+max_rss=${max_rss_line#*Maximum resident set size (kbytes): }
+
+page_size_line=$(grep "Page size (bytes)" /tmp/time_output_run.txt)
+page_size=${page_size_line#*Page size (bytes): }
+
+# There's a bug in GNU time 1.7 which wrongly reports the maximum resident
+# set size on the version of Ubuntu that we're using.
+# See https://groups.google.com/forum/#!topic/gnu.utils.help/u1MOsHL4bhg
+# Let's fix it up
+max_rss=$(echo "$max_rss * 1024 / $page_size" | bc)
+echo "max_rss (in kbytes): $max_rss"
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
