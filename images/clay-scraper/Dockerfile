@@ -12,7 +12,7 @@ ADD Procfile /usr/local/lib
 # Add perl buildpack
 RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpack-perl.git 2da7480a8339f01968ce3979655555a0ade20564
 
-RUN apt-get install -y jq time bc
+RUN apt-get install -y jq time bc net-tools
 
 ADD run.sh start.sh clay.sh /bin/
 RUN chmod +x /bin/run.sh /bin/start.sh /bin/clay.sh

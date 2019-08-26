@@ -31,6 +31,8 @@ extract_value() {
 
 stats() {
   local filename="$1"
+  local rx_bytes="$2"
+  local tx_bytes="$3"
 
   local wall_time_formatted=$(extract_value "$filename" "Elapsed (wall clock) time (h:mm:ss or m:ss)")
   local user_time=$(extract_value "$filename" "User time (seconds)")
@@ -59,7 +61,7 @@ stats() {
   local max_rss=$(echo "$max_rss * 1024 / $page_size" | bc)
 
   # Returns result as JSON
-  echo "{\"wall_time\": $wall_time, \"cpu_time\": $cpu_time, \"max_rss\": $max_rss}"
+  echo "{\"wall_time\": $wall_time, \"cpu_time\": $cpu_time, \"max_rss\": $max_rss, \"network_in\": $rx_bytes, \"network_out\": $tx_bytes}"
 }
 
 # TODO: Probably don't want to do this as root
@@ -72,23 +74,41 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 (/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf - 2> /dev/null) || true
 
+snapshot=$(ip -s -j link show eth0)
+rx_bytes_before=$(echo "$snapshot" | jq ".[0].stats64.rx.bytes")
+tx_bytes_before=$(echo "$snapshot" | jq ".[0].stats64.tx.bytes")
+
 # This fairly hideous construction pipes stdout and stderr to seperate commands
 { /usr/bin/time -v -o /tmp/time_output_build.txt /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
+
+snapshot=$(ip -s -j link show eth0)
+rx_bytes_after=$(echo "$snapshot" | jq ".[0].stats64.rx.bytes")
+tx_bytes_after=$(echo "$snapshot" | jq ".[0].stats64.tx.bytes")
+rx_bytes_build=$(echo "$rx_bytes_after - $rx_bytes_before" | bc)
+tx_bytes_build=$(echo "$tx_bytes_after - $tx_bytes_before" | bc)
 
 # TODO: If the build fails then it shouldn't try to run the scraper but it should record stats
 
 tar -zcf - cache | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 
+snapshot=$(ip -s -j link show eth0)
+rx_bytes_before=$(echo "$snapshot" | jq ".[0].stats64.rx.bytes")
+tx_bytes_before=$(echo "$snapshot" | jq ".[0].stats64.tx.bytes")
+
 # TODO: Send return code and stats about run to clay server
 { /usr/bin/time -v -o /tmp/time_output_run.txt /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
 
-# TODO: Collect network in/out as well
+snapshot=$(ip -s -j link show eth0)
+rx_bytes_after=$(echo "$snapshot" | jq ".[0].stats64.rx.bytes")
+tx_bytes_after=$(echo "$snapshot" | jq ".[0].stats64.tx.bytes")
+rx_bytes_run=$(echo "$rx_bytes_after - $rx_bytes_before" | bc)
+tx_bytes_run=$(echo "$tx_bytes_after - $tx_bytes_before" | bc)
 
 exit_code=${PIPESTATUS[0]}
 
-build_statistics=$(stats /tmp/time_output_build.txt)
-run_statistics=$(stats /tmp/time_output_run.txt)
-overall_stats="{\"exit_code\": $exit_code, \"statistics\": {\"build\": $build_statistics, \"run\": $run_statistics}}"
+build_statistics=$(stats /tmp/time_output_build.txt $rx_bytes_build $tx_bytes_build)
+run_statistics=$(stats /tmp/time_output_run.txt $rx_bytes_run $tx_bytes_run)
+overall_stats="{\"exit_code\": $exit_code, \"usage\": {\"build\": $build_statistics, \"run\": $run_statistics}}"
 echo $overall_stats
 
 # Now take the filename given in $RUN_OUTPUT and save that away
