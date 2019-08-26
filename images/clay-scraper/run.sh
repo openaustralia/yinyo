@@ -29,6 +29,42 @@ extract_value() {
   echo "${line#*$label: }"
 }
 
+stats() {
+  local filename="$1"
+  local exit_code="$2"
+
+  echo "Exit code: $exit_code"
+
+  local wall_time_formatted=$(extract_value "$filename" "Elapsed (wall clock) time (h:mm:ss or m:ss)")
+  local user_time=$(extract_value "$filename" "User time (seconds)")
+  local system_time=$(extract_value "$filename" "System time (seconds)")
+  local max_rss=$(extract_value "$filename" "Maximum resident set size (kbytes)")
+  local page_size=$(extract_value "$filename" "Page size (bytes)")
+
+  local part1=$(echo $wall_time_formatted | cut -d ':' -f 1)
+  local part2=$(echo $wall_time_formatted | cut -d ':' -f 2)
+  local part3=$(echo $wall_time_formatted | cut -d ':' -f 3)
+
+  # If part3 is empty (time is in m:ss)
+  if [ -z "$part3" ]; then
+    local wall_time=$(echo "$part1 * 60.0 + $part2" | bc)
+  # Else time is in h:mm:ss
+  else
+    local wall_time=$(echo "($part1 * 60.0 + $part2) * 60.0 + $part3" | bc)
+  fi
+  echo "wall_time (in seconds): $wall_time"
+
+  local cpu_time=$(echo "$user_time + $system_time" | bc)
+  echo "cpu_time (in seconds): $cpu_time"
+
+  # There's a bug in GNU time 1.7 which wrongly reports the maximum resident
+  # set size on the version of Ubuntu that we're using.
+  # See https://groups.google.com/forum/#!topic/gnu.utils.help/u1MOsHL4bhg
+  # Let's fix it up
+  local max_rss=$(echo "$max_rss * 1024 / $page_size" | bc)
+  echo "max_rss (in kbytes): $max_rss"
+}
+
 # TODO: Probably don't want to do this as root
 
 cd /tmp || exit
@@ -51,36 +87,8 @@ tar -zcf - cache | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 # TODO: Collect network in/out as well
 
 exit_code=${PIPESTATUS[0]}
-echo "Exit code: $exit_code"
 
-wall_time_formatted=$(extract_value /tmp/time_output_run.txt "Elapsed (wall clock) time (h:mm:ss or m:ss)")
-user_time=$(extract_value /tmp/time_output_run.txt "User time (seconds)")
-system_time=$(extract_value /tmp/time_output_run.txt "System time (seconds)")
-max_rss=$(extract_value /tmp/time_output_run.txt "Maximum resident set size (kbytes)")
-page_size=$(extract_value /tmp/time_output_run.txt "Page size (bytes)")
-
-part1=$(echo $wall_time_formatted | cut -d ':' -f 1)
-part2=$(echo $wall_time_formatted | cut -d ':' -f 2)
-part3=$(echo $wall_time_formatted | cut -d ':' -f 3)
-
-# If part3 is empty (time is in m:ss)
-if [ -z "$part3" ]; then
-  wall_time=$(echo "$part1 * 60.0 + $part2" | bc)
-# Else time is in h:mm:ss
-else
-  wall_time=$(echo "($part1 * 60.0 + $part2) * 60.0 + $part3" | bc)
-fi
-echo "wall_time (in seconds): $wall_time"
-
-cpu_time=$(echo "$user_time + $system_time" | bc)
-echo "cpu_time (in seconds): $cpu_time"
-
-# There's a bug in GNU time 1.7 which wrongly reports the maximum resident
-# set size on the version of Ubuntu that we're using.
-# See https://groups.google.com/forum/#!topic/gnu.utils.help/u1MOsHL4bhg
-# Let's fix it up
-max_rss=$(echo "$max_rss * 1024 / $page_size" | bc)
-echo "max_rss (in kbytes): $max_rss"
+stats /tmp/time_output_run.txt "$exit_code"
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
