@@ -95,7 +95,6 @@ snapshot=$(ip -s -j link show eth0)
 rx_bytes_before=$(echo "$snapshot" | jq ".[0].stats64.rx.bytes")
 tx_bytes_before=$(echo "$snapshot" | jq ".[0].stats64.tx.bytes")
 
-# TODO: Send return code and stats about run to clay server
 { /usr/bin/time -v -o /tmp/time_output_run.txt /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
 
 snapshot=$(ip -s -j link show eth0)
@@ -109,7 +108,7 @@ exit_code=${PIPESTATUS[0]}
 build_statistics=$(stats /tmp/time_output_build.txt $rx_bytes_build $tx_bytes_build)
 run_statistics=$(stats /tmp/time_output_run.txt $rx_bytes_run $tx_bytes_run)
 overall_stats="{\"exit_code\": $exit_code, \"usage\": {\"build\": $build_statistics, \"run\": $run_statistics}}"
-echo $overall_stats
+echo $overall_stats | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" exit-data
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit

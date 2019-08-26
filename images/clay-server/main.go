@@ -75,6 +75,10 @@ func output(w http.ResponseWriter, r *http.Request) error {
 	return store(w, r, "output", "")
 }
 
+func exitData(w http.ResponseWriter, r *http.Request) error {
+	return store(w, r, "exit-data", "json")
+}
+
 func start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	runOutput := r.URL.Query()["output"][0]
@@ -140,6 +144,10 @@ func delete(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	err = deleteFromStore(runName, "output", "")
+	if err != nil {
+		return err
+	}
+	err = deleteFromStore(runName, "exit-data", "json")
 	if err != nil {
 		return err
 	}
@@ -227,6 +235,7 @@ func main() {
 	authenticatedRouter.Handle("/app", appHandler(app)).Methods("PUT", "GET")
 	authenticatedRouter.Handle("/cache", appHandler(cache)).Methods("PUT", "GET")
 	authenticatedRouter.Handle("/output", appHandler(output)).Methods("PUT", "GET")
+	authenticatedRouter.Handle("/exit-data", appHandler(exitData)).Methods("PUT", "GET")
 	authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
 	authenticatedRouter.Handle("/logs", appHandler(logs)).Methods("POST", "GET")
 	authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")

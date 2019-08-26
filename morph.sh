@@ -54,4 +54,6 @@ rm -rf app
 # Get the sqlite database from clay and save it away in a morph bucket
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" output | mc pipe "$morph_bucket/db/$morph_scraper_name.sqlite"
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache | mc pipe "$morph_bucket/cache/$morph_scraper_name.tgz"
+echo "exit data returned by clay:"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
 ./images/clay-scraper/clay.sh delete "$run_name" "$run_token"
