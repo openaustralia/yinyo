@@ -1,14 +1,3 @@
-# PART ONE
-FROM golang:1.12.9 as builder
-
-WORKDIR /go/src/docker-stats-on-exit-shim
-RUN git clone https://github.com/delcypher/docker-stats-on-exit-shim.git /go/src/docker-stats-on-exit-shim
-RUN git checkout 650e6e9c
-RUN git submodule init && git submodule update
-RUN go get .
-RUN go build
-
-# PART TWO
 FROM mlandauer/herokuish:for-morph-ng
 MAINTAINER Matthew Landauer <matthew@oaf.org.au>
 
@@ -27,5 +16,3 @@ RUN apt-get install -y jq time bc
 
 ADD run.sh start.sh clay.sh /bin/
 RUN chmod +x /bin/run.sh /bin/start.sh /bin/clay.sh
-
-COPY --from=builder /go/bin/docker-stats-on-exit-shim /bin/docker-stats-on-exit-shim
