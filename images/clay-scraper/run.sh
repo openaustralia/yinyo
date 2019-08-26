@@ -31,9 +31,6 @@ extract_value() {
 
 stats() {
   local filename="$1"
-  local exit_code="$2"
-
-  echo "Exit code: $exit_code"
 
   local wall_time_formatted=$(extract_value "$filename" "Elapsed (wall clock) time (h:mm:ss or m:ss)")
   local user_time=$(extract_value "$filename" "User time (seconds)")
@@ -52,17 +49,17 @@ stats() {
   else
     local wall_time=$(echo "($part1 * 60.0 + $part2) * 60.0 + $part3" | bc)
   fi
-  echo "wall_time (in seconds): $wall_time"
 
   local cpu_time=$(echo "$user_time + $system_time" | bc)
-  echo "cpu_time (in seconds): $cpu_time"
 
   # There's a bug in GNU time 1.7 which wrongly reports the maximum resident
   # set size on the version of Ubuntu that we're using.
   # See https://groups.google.com/forum/#!topic/gnu.utils.help/u1MOsHL4bhg
   # Let's fix it up
   local max_rss=$(echo "$max_rss * 1024 / $page_size" | bc)
-  echo "max_rss (in kbytes): $max_rss"
+
+  # Returns result as JSON
+  echo "{\"wall_time\": $wall_time, \"cpu_time\": $cpu_time, \"max_rss\": $max_rss}"
 }
 
 # TODO: Probably don't want to do this as root
@@ -75,9 +72,10 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 (/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf - 2> /dev/null) || true
 
-# TODO: Collect separate stats (from the scraper run) for build process
 # This fairly hideous construction pipes stdout and stderr to seperate commands
-{ /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
+{ /usr/bin/time -v -o /tmp/time_output_build.txt /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
+
+# TODO: If the build fails then it shouldn't try to run the scraper but it should record stats
 
 tar -zcf - cache | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 
@@ -88,7 +86,10 @@ tar -zcf - cache | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 
 exit_code=${PIPESTATUS[0]}
 
-stats /tmp/time_output_run.txt "$exit_code"
+build_statistics=$(stats /tmp/time_output_build.txt)
+run_statistics=$(stats /tmp/time_output_run.txt)
+overall_stats="{\"exit_code\": $exit_code, \"statistics\": {\"build\": $build_statistics, \"run\": $run_statistics}}"
+echo $overall_stats
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
