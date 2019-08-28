@@ -1,11 +1,9 @@
 .PHONY: image server
 
-morph_scraper_name = morph-test-scrapers/test-python
-
 all: run
 
 run:
-	./morph.sh $(morph_scraper_name)
+	./morph.sh -d morph-scrapers/test-python
 
 # If you want an interactive shell in the container
 shell:
