@@ -60,19 +60,6 @@ max_rss() {
   echo "$max_rss"
 }
 
-stats() {
-  local filename="$1"
-  local rx_bytes="$2"
-  local tx_bytes="$3"
-
-  local wall_time=$(wall_time "$filename")
-  local max_rss=$(max_rss "$filename")
-  local cpu_time=$(cpu_time "$filename")
-
-  # Returns result as JSON
-  echo "{\"wall_time\": $wall_time, \"cpu_time\": $cpu_time, \"max_rss\": $max_rss, \"network_in\": $rx_bytes, \"network_out\": $tx_bytes}"
-}
-
 filename=$1
 shift
 
@@ -88,5 +75,10 @@ tx_bytes_after=$(echo "$snapshot" | jq ".[0].stats64.tx.bytes")
 rx_bytes=$(echo "$rx_bytes_after - $rx_bytes_before" | bc)
 tx_bytes=$(echo "$tx_bytes_after - $tx_bytes_before" | bc)
 
-stats /tmp/time_output.txt $rx_bytes $tx_bytes > $filename
+wall_time=$(wall_time /tmp/time_output.txt)
+max_rss=$(max_rss /tmp/time_output.txt)
+cpu_time=$(cpu_time /tmp/time_output.txt)
+
+# Returns result as JSON
+echo "{\"wall_time\": $wall_time, \"cpu_time\": $cpu_time, \"max_rss\": $max_rss, \"network_in\": $rx_bytes, \"network_out\": $tx_bytes}" > $filename
 rm /tmp/time_output.txt
