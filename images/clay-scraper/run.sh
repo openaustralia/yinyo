@@ -112,4 +112,5 @@ echo $overall_stats | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" exit-data
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
+# TODO: Do nothing if the output file doesn't exist
 /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" output < "$RUN_OUTPUT"

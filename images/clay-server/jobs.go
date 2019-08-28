@@ -7,13 +7,46 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func createJob(clientset *kubernetes.Clientset, runName string, runOutput string) error {
+type envVariable struct {
+	Name  string
+	Value string
+}
+
+// TODO: Rename
+type startBody struct {
+	Output string
+	Env    []envVariable
+}
+
+func createJob(clientset *kubernetes.Clientset, runName string, runOptions startBody) error {
 	jobsClient := clientset.BatchV1().Jobs("clay-scrapers")
 
 	autoMountServiceAccountToken := false
 	backOffLimit := int32(0)
 	// Let this run for a maximum of 24 hours
 	activeDeadlineSeconds := int64(86400)
+
+	environment := []apiv1.EnvVar{
+		{
+			Name: "CLAY_RUN_TOKEN",
+			ValueFrom: &apiv1.EnvVarSource{
+				SecretKeyRef: &apiv1.SecretKeySelector{
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: runName,
+					},
+					Key: "run_token",
+				},
+			},
+		},
+	}
+	// TODO: Check that runOptions.Env isn't trying to set CLAY_RUN_TOKEN
+	// and warn the user if that is the case because the scraper will mysteriously not work
+	for _, env := range runOptions.Env {
+		environment = append(environment, apiv1.EnvVar{
+			Name:  env.Name,
+			Value: env.Value,
+		})
+	}
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -31,20 +64,8 @@ func createJob(clientset *kubernetes.Clientset, runName string, runOutput string
 						{
 							Name:    runName,
 							Image:   "openaustralia/clay-scraper:v1",
-							Command: []string{"/bin/run.sh", runName, runOutput},
-							Env: []apiv1.EnvVar{
-								{
-									Name: "CLAY_RUN_TOKEN",
-									ValueFrom: &apiv1.EnvVarSource{
-										SecretKeyRef: &apiv1.SecretKeySelector{
-											LocalObjectReference: apiv1.LocalObjectReference{
-												Name: runName,
-											},
-											Key: "run_token",
-										},
-									},
-								},
-							},
+							Command: []string{"/bin/run.sh", runName, runOptions.Output},
+							Env:     environment,
 						},
 					},
 				},

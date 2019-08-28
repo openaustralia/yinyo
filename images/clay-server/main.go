@@ -79,10 +79,6 @@ func exitData(w http.ResponseWriter, r *http.Request) error {
 	return store(w, r, "exit-data", "json")
 }
 
-type startBody struct {
-	Output string
-}
-
 func start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
@@ -94,14 +90,12 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	runOutput := l.Output
-
 	clientset, err := getClientSet()
 	if err != nil {
 		return err
 	}
 
-	return createJob(clientset, runName, runOutput)
+	return createJob(clientset, runName, l)
 }
 
 type logMessage struct {
