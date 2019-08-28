@@ -95,6 +95,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	// TODO: If the scraper has already been started let the user know rather than 500'ing
 	return createJob(clientset, runName, l)
 }
 
