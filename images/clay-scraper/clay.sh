@@ -37,7 +37,9 @@ elif [ "$1" = "get" ]; then
 elif [ "$1" = "create" ]; then
   curl -s -G -X POST "$CLAY_SERVER_URL/runs" -d "scraper_name=$2"
 elif [ "$1" = "start" ]; then
-  curl -s -G -X POST -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/start" -d "output=$4"
+  # Send as json
+  data=$(jq -c -n --arg output "$4" '{output: $output}')
+  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/start" -d "$data"
 elif [ "$1" = "logs" ]; then
   curl -s --no-buffer -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/logs"
 elif [ "$1" = "delete" ]; then

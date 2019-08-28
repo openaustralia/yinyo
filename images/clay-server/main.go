@@ -79,9 +79,22 @@ func exitData(w http.ResponseWriter, r *http.Request) error {
 	return store(w, r, "exit-data", "json")
 }
 
+type startBody struct {
+	Output string
+}
+
 func start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	runOutput := r.URL.Query()["output"][0]
+
+	// TODO: If json is not of the right form return an error code that isn't 500
+	decoder := json.NewDecoder(r.Body)
+	var l startBody
+	err := decoder.Decode(&l)
+	if err != nil {
+		return err
+	}
+
+	runOutput := l.Output
 
 	clientset, err := getClientSet()
 	if err != nil {
