@@ -5,7 +5,7 @@ set -e
 set -o pipefail
 
 if [ $# == 0 ]; then
-  echo "Downloads a scraper from Github, compiles it and runs it"
+  echo "Compiles and runs a scraper"
   echo "Usage: $0 run_name run_output"
   echo "e.g. $0 morph-test-scrapers-test-ruby"
   exit 1
