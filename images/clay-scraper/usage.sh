@@ -63,15 +63,16 @@ max_rss() {
 filename=$1
 shift
 
-snapshot=$(ip -s -j link show eth0)
-rx_bytes_before=$(echo "$snapshot" | jq ".[0].stats64.rx.bytes")
-tx_bytes_before=$(echo "$snapshot" | jq ".[0].stats64.tx.bytes")
+snapshot_before=$(ip -s -j link show eth0)
 
 /usr/bin/time -v -o /tmp/time_output.txt $@
 
-snapshot=$(ip -s -j link show eth0)
-rx_bytes_after=$(echo "$snapshot" | jq ".[0].stats64.rx.bytes")
-tx_bytes_after=$(echo "$snapshot" | jq ".[0].stats64.tx.bytes")
+snapshot_after=$(ip -s -j link show eth0)
+
+rx_bytes_before=$(echo "$snapshot_before" | jq ".[0].stats64.rx.bytes")
+tx_bytes_before=$(echo "$snapshot_before" | jq ".[0].stats64.tx.bytes")
+rx_bytes_after=$(echo "$snapshot_after" | jq ".[0].stats64.rx.bytes")
+tx_bytes_after=$(echo "$snapshot_after" | jq ".[0].stats64.tx.bytes")
 rx_bytes=$(echo "$rx_bytes_after - $rx_bytes_before" | bc)
 tx_bytes=$(echo "$tx_bytes_after - $tx_bytes_before" | bc)
 
