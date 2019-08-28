@@ -9,7 +9,7 @@
 # exit when any command fails
 set -e
 
-if [ $# == 0 ]; then
+usage() {
   echo "Runs a morph scraper using clay"
   echo "Usage: $0 [-d] scraper_name"
   echo ""
@@ -17,6 +17,10 @@ if [ $# == 0 ]; then
   echo "Otherwise interpret it as a name of a morph scraper stored on GitHub."
   echo "e.g. $0 morph-test-scrapers/test-ruby"
   exit 1
+}
+
+if [ $# == 0 ]; then
+  usage
 fi
 
 scraper_name_is_directory=false
@@ -25,6 +29,7 @@ while getopts 'd' c
 do
   case $c in
     d) scraper_name_is_directory=true ;;
+    *) usage ;;
   esac
 done
 
@@ -45,7 +50,7 @@ CLAY_SERVER_URL=$(minikube service --url clay-server -n clay-system)
 export CLAY_SERVER_URL
 
 if [ "$scraper_name_is_directory" = true ]; then
-  cp -R $morph_scraper_name app
+  cp -R "$morph_scraper_name" app
   # Prepend scraper name with something different so that it can be cached separately
   morph_scraper_name="local/$morph_scraper_name"
 else

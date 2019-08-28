@@ -46,7 +46,7 @@ exit_code=${PIPESTATUS[0]}
 build_statistics=$(cat /tmp/usage_build.json)
 run_statistics=$(cat /tmp/usage_run.json)
 overall_stats="{\"exit_code\": $exit_code, \"usage\": {\"build\": $build_statistics, \"run\": $run_statistics}}"
-echo $overall_stats | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" exit-data
+echo "$overall_stats" | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" exit-data
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
