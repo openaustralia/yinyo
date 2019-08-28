@@ -55,4 +55,4 @@ Point your web browser at http://localhost:9000. Login with the credentials in t
 ```
 minikube dashboard
 ```
-You'll want to look in the "clay" namespace
+You'll want to look in the "clay-system" and "clay-scrapers" namespaces.
