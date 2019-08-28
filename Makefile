@@ -12,10 +12,6 @@ shell:
 lint:
 	shellcheck images/clay-scraper/run.sh images/clay-scraper/clay.sh morph.sh
 
-shellcheck:
-	# This assumes OS X for the time being
-	brew install shellcheck
-
 minio_access_key = $(shell grep access_key secrets-minio.env | cut -d "=" -f 2)
 minio_secret_key = $(shell grep secret_key secrets-minio.env | cut -d "=" -f 2)
 minio_clay_access_key = $(shell grep store_access_key secrets-clay-server.env | cut -d "=" -f 2)
