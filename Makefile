@@ -20,7 +20,7 @@ minio_morph_access_key = $(shell grep store_access_key secrets-morph.env | cut -
 minio_morph_secret_key = $(shell grep store_secret_key secrets-morph.env | cut -d "=" -f 2)
 
 buckets:
-	mc config host add minio $(shell minikube service --url minio-service -n clay-system) $(minio_access_key) $(minio_secret_key)
+	mc config host add minio http://localhost:9000 $(minio_access_key) $(minio_secret_key)
 	mc admin user add minio $(minio_clay_access_key) $(minio_clay_secret_key)
 	mc admin user add minio $(minio_morph_access_key) $(minio_morph_secret_key)
 	mc admin policy add minio clay minio-clay-policy.json

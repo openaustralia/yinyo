@@ -43,10 +43,10 @@ store_access_key=$(grep store_access_key secrets-morph.env | cut -d "=" -f 2)
 store_secret_key=$(grep store_secret_key secrets-morph.env | cut -d "=" -f 2)
 
 # This command doesn't work with "-api s3v4". No idea why.
-mc config host add morph "$(minikube service --url minio-service -n clay-system)" "$store_access_key" "$store_secret_key" -api s3v4
+mc config host add morph http://localhost:9000 "$store_access_key" "$store_secret_key" -api s3v4
 
 # This environment variable is used by clay.sh
-CLAY_SERVER_URL=$(minikube service --url clay-server -n clay-system)
+CLAY_SERVER_URL=http://localhost:8080
 export CLAY_SERVER_URL
 
 rm -rf app
