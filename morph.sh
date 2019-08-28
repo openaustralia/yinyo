@@ -49,12 +49,12 @@ mc config host add morph "$(minikube service --url minio-service -n clay-system)
 CLAY_SERVER_URL=$(minikube service --url clay-server -n clay-system)
 export CLAY_SERVER_URL
 
+rm -rf app
 if [ "$scraper_name_is_directory" = true ]; then
   cp -R "$morph_scraper_name" app
   # Prepend scraper name with something different so that it can be cached separately
   morph_scraper_name="local/$morph_scraper_name"
 else
-  rm -rf app
   # Checkout the code from github
   git clone --quiet --depth 1 "https://github.com/$morph_scraper_name.git" app
   rm -rf app/.git app/.gitignore
@@ -66,8 +66,12 @@ create_result=$(./images/clay-scraper/clay.sh create "$morph_scraper_name")
 run_name=$(echo "$create_result" | jq -r ".run_name")
 run_token=$(echo "$create_result" | jq -r ".run_token")
 
-# TODO: Don't want to depend on tar directory being called app
-tar -zcf - app | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" app
+# We want the tar to have the scraper files at its root
+# Note that this doesn't include hidden files currently. Do we want this?
+dir=$(pwd)
+cd app
+tar -zcf - * | "$dir/images/clay-scraper/clay.sh" put "$run_name" "$run_token" app
+cd "$dir"
 rm -rf app
 
 (mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true

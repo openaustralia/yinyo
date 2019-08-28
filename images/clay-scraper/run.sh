@@ -26,7 +26,8 @@ export CLAY_SERVER_URL=clay-server.clay-system:8080
 
 cd /tmp || exit
 
-/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" app | tar xzf -
+mkdir app
+/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" app | tar xzf - -C app
 
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 
