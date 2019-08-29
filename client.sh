@@ -51,7 +51,7 @@ else
   git clone --quiet --depth 1 "https://github.com/$morph_scraper_name.git" app
   rm -rf app/.git app/.gitignore
   # Add the sqlite database
-  (cat "morph-storage/db/$morph_scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
+  (cat "client-storage/db/$morph_scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
   morph_scraper_name="github/$morph_scraper_name"
 fi
 
@@ -67,7 +67,7 @@ tar -zcf - * | "$dir/images/clay-scraper/clay.sh" put "$run_name" "$run_token" a
 cd "$dir"
 rm -rf app
 
-(cat "morph-storage/cache/$morph_scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
+(cat "client-storage/cache/$morph_scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
 ./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite MORPH_SCRAPER_NAME "$morph_scraper_name"
 
 if [ "$run_token" = "" ]; then
@@ -75,13 +75,13 @@ if [ "$run_token" = "" ]; then
   exit 1
 fi
 
-mkdir -p $(dirname "morph-storage/db/$morph_scraper_name")
-mkdir -p $(dirname "morph-storage/cache/$morph_scraper_name")
+mkdir -p $(dirname "client-storage/db/$morph_scraper_name")
+mkdir -p $(dirname "client-storage/cache/$morph_scraper_name")
 
 ./images/clay-scraper/clay.sh logs "$run_name" "$run_token"
 # Get the sqlite database from clay and save it away in a morph bucket
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "morph-storage/db/$morph_scraper_name.sqlite"
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "morph-storage/cache/$morph_scraper_name.tgz"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$morph_scraper_name.sqlite"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "client-storage/cache/$morph_scraper_name.tgz"
 echo "exit data returned by clay:"
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
 ./images/clay-scraper/clay.sh delete "$run_name" "$run_token"
