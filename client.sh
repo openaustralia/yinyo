@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Run a morph scraper using clay
+# Run a scraper using clay
 #
 # Dependencies:
 # jq - https://stedolan.github.io/jq/
@@ -9,11 +9,11 @@
 set -e
 
 usage() {
-  echo "Runs a morph scraper using clay"
+  echo "Runs a scraper using clay"
   echo "Usage: $0 [-d] scraper_name"
   echo ""
   echo "If -d is used interpret scraper_name as a path to a directory."
-  echo "Otherwise interpret it as a name of a morph scraper stored on GitHub."
+  echo "Otherwise interpret it as a name of a scraper stored on GitHub."
   echo "e.g. $0 morph-test-scrapers/test-ruby"
   exit 1
 }
