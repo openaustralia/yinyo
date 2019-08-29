@@ -22,7 +22,7 @@ if [ $# == 0 ]; then
   echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
   echo "used as a base to generate the unique run name."
   echo ""
-  echo "e.g. $0 copy app morph-test-scrapers-test-ruby"
+  echo "e.g. $0 create my-first-scraper"
   exit 1
 fi
 

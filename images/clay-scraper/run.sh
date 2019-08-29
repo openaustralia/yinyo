@@ -7,7 +7,7 @@ set -o pipefail
 if [ $# == 0 ]; then
   echo "Compiles and runs a scraper"
   echo "Usage: $0 run_name run_output"
-  echo "e.g. $0 morph-test-scrapers-test-ruby"
+  echo "e.g. $0 -d scrapers/test-python"
   exit 1
 fi
 

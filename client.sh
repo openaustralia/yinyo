@@ -14,7 +14,7 @@ usage() {
   echo ""
   echo "If -d is used interpret scraper_name as a path to a directory."
   echo "Otherwise interpret it as a name of a scraper stored on GitHub."
-  echo "e.g. $0 morph-test-scrapers/test-ruby"
+  echo "e.g. $0 -d scrapers/test-python"
   exit 1
 }
 
@@ -79,7 +79,7 @@ mkdir -p $(dirname "client-storage/db/$scraper_name")
 mkdir -p $(dirname "client-storage/cache/$scraper_name")
 
 ./images/clay-scraper/clay.sh logs "$run_name" "$run_token"
-# Get the sqlite database from clay and save it away in a morph bucket
+# Get the sqlite database from clay and save it away
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$scraper_name.sqlite"
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "client-storage/cache/$scraper_name.tgz"
 echo "exit data returned by clay:"
