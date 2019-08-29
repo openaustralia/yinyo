@@ -3,7 +3,7 @@
 all: run
 
 run:
-	./client.sh -d morph-scrapers/test-python
+	./client.sh -d scrapers/test-python
 
 # If you want an interactive shell in the container
 shell:
