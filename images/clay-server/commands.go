@@ -43,12 +43,36 @@ func commandCreate(scraperName string) (createResult, error) {
 	return createResult, err
 }
 
-func commandGetStore(runName string, fileName string, fileExtension string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, fileName, fileExtension, w)
+func commandGetApp(runName string, w io.Writer) error {
+	return retrieveFromStore(storeAccess, runName, "app", "tgz", w)
 }
 
-func commandPutStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, fileName, fileExtension)
+func commandPutApp(reader io.Reader, objectSize int64, runName string) error {
+	return saveToStore(storeAccess, reader, objectSize, runName, "app", "tgz")
+}
+
+func commandGetCache(runName string, w io.Writer) error {
+	return retrieveFromStore(storeAccess, runName, "cache", "tgz", w)
+}
+
+func commandPutCache(reader io.Reader, objectSize int64, runName string) error {
+	return saveToStore(storeAccess, reader, objectSize, runName, "cache", "tgz")
+}
+
+func commandGetOutput(runName string, w io.Writer) error {
+	return retrieveFromStore(storeAccess, runName, "output", "", w)
+}
+
+func commandPutOutput(reader io.Reader, objectSize int64, runName string) error {
+	return saveToStore(storeAccess, reader, objectSize, runName, "output", "")
+}
+
+func commandGetExitData(runName string, w io.Writer) error {
+	return retrieveFromStore(storeAccess, runName, "exit-data", "json", w)
+}
+
+func commandPutExitData(reader io.Reader, objectSize int64, runName string) error {
+	return saveToStore(storeAccess, reader, objectSize, runName, "exit-data", "json")
 }
 
 func commandStart(runName string, l startBody) error {

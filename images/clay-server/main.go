@@ -29,42 +29,42 @@ func create(w http.ResponseWriter, r *http.Request) error {
 
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetStore(runName, "app", "tgz", w)
+	return commandGetApp(runName, w)
 }
 
 func putApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutStore(r.Body, r.ContentLength, runName, "app", "tgz")
+	return commandPutApp(r.Body, r.ContentLength, runName)
 }
 
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetStore(runName, "cache", "tgz", w)
+	return commandGetCache(runName, w)
 }
 
 func putCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutStore(r.Body, r.ContentLength, runName, "cache", "tgz")
+	return commandPutCache(r.Body, r.ContentLength, runName)
 }
 
 func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetStore(runName, "output", "", w)
+	return commandGetOutput(runName, w)
 }
 
 func putOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutStore(r.Body, r.ContentLength, runName, "output", "")
+	return commandPutOutput(r.Body, r.ContentLength, runName)
 }
 
 func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetStore(runName, "exit-data", "json", w)
+	return commandGetExitData(runName, w)
 }
 
 func putExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutStore(r.Body, r.ContentLength, runName, "exit-data", "json")
+	return commandPutExitData(r.Body, r.ContentLength, runName)
 }
 
 func start(w http.ResponseWriter, r *http.Request) error {
