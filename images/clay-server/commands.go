@@ -44,35 +44,35 @@ func commandCreate(scraperName string) (createResult, error) {
 }
 
 func commandGetApp(runName string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, "app", "tgz", w)
+	return retrieveFromStore(storeAccess, runName, "app.tgz", w)
 }
 
 func commandPutApp(reader io.Reader, objectSize int64, runName string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, "app", "tgz")
+	return saveToStore(storeAccess, reader, objectSize, runName, "app.tgz")
 }
 
 func commandGetCache(runName string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, "cache", "tgz", w)
+	return retrieveFromStore(storeAccess, runName, "cache.tgz", w)
 }
 
 func commandPutCache(reader io.Reader, objectSize int64, runName string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, "cache", "tgz")
+	return saveToStore(storeAccess, reader, objectSize, runName, "cache.tgz")
 }
 
 func commandGetOutput(runName string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, "output", "", w)
+	return retrieveFromStore(storeAccess, runName, "output", w)
 }
 
 func commandPutOutput(reader io.Reader, objectSize int64, runName string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, "output", "")
+	return saveToStore(storeAccess, reader, objectSize, runName, "output")
 }
 
 func commandGetExitData(runName string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, "exit-data", "json", w)
+	return retrieveFromStore(storeAccess, runName, "exit-data.json", w)
 }
 
 func commandPutExitData(reader io.Reader, objectSize int64, runName string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, "exit-data", "json")
+	return saveToStore(storeAccess, reader, objectSize, runName, "exit-data.json")
 }
 
 func commandStart(runName string, l startBody) error {
@@ -112,19 +112,19 @@ func commandDelete(runName string) error {
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(storeAccess, runName, "app", "tgz")
+	err = deleteFromStore(storeAccess, runName, "app.tgz")
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(storeAccess, runName, "output", "")
+	err = deleteFromStore(storeAccess, runName, "output")
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(storeAccess, runName, "exit-data", "json")
+	err = deleteFromStore(storeAccess, runName, "exit-data.json")
 	if err != nil {
 		return err
 	}
-	return deleteFromStore(storeAccess, runName, "cache", "tgz")
+	return deleteFromStore(storeAccess, runName, "cache.tgz")
 }
 
 var storeAccess StoreAccess

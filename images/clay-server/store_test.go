@@ -8,11 +8,11 @@ import (
 var _ = Describe("Store", func() {
 	Describe("storagePath", func() {
 		It("should convert app to a standard path", func() {
-			Expect(storagePath("abc", "app", "tgz")).To(Equal("abc/app.tgz"))
+			Expect(storagePath("abc", "app.tgz")).To(Equal("abc/app.tgz"))
 		})
 
 		It("should convert output to a standard path", func() {
-			Expect(storagePath("def", "output", "")).To(Equal("def/output"))
+			Expect(storagePath("def", "output")).To(Equal("def/output"))
 		})
 	})
 })
