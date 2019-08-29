@@ -12,6 +12,17 @@ type MinioAccess struct {
 	Client     *minio.Client
 	BucketName string
 }
+
+// NewMinioAccess creates a MinioAccess
+func NewMinioAccess(url string, bucketName string, accessKey string, secretKey string) (MinioAccess, error) {
+	client, err := minio.New(url, accessKey, secretKey, false)
+	m := MinioAccess{
+		Client:     client,
+		BucketName: bucketName,
+	}
+	return m, err
+}
+
 // Put saves a file to the store with the given path
 func (m *MinioAccess) Put(path string, reader io.Reader, objectSize int64) error {
 	_, err := m.Client.PutObject(
@@ -42,19 +53,14 @@ func (m *MinioAccess) Delete(path string) error {
 }
 
 func access() (MinioAccess, error) {
-	minioClient, err := minio.New(
+	return NewMinioAccess(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
+		// TODO: Make bucket name configurable
+		"clay",
 		os.Getenv("STORE_ACCESS_KEY"),
 		os.Getenv("STORE_SECRET_KEY"),
-		false,
 	)
-	m := MinioAccess{
-		Client: minioClient,
-		// TODO: Make bucket name configurable
-		BucketName: "clay",
-	}
-	return m, err
 }
 
 func storagePath(runName string, fileName string, fileExtension string) string {
