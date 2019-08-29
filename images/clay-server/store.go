@@ -5,7 +5,7 @@ import (
 )
 
 func storagePath(runName string, fileName string, fileExtension string) string {
-	path := fileName + "/" + runName
+	path := runName + "/" + fileName
 	if fileExtension != "" {
 		path += "." + fileExtension
 	}
