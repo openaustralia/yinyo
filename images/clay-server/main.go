@@ -27,31 +27,42 @@ func create(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) error {
+// The body of the request should contain the tarred & gzipped code
+func app(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	if r.Method == "GET" {
-		return commandGetStore(runName, fileName, fileExtension, w)
+		return commandGetStore(runName, "app", "tgz", w)
 	}
-	return commandPutStore(r.Body, r.ContentLength, runName, fileName, fileExtension)
-}
-
-// The body of the request should contain the tarred & gzipped code
-func app(w http.ResponseWriter, r *http.Request) error {
-	return store(w, r, "app", "tgz")
+	return commandPutStore(r.Body, r.ContentLength, runName, "app", "tgz")
 }
 
 // The body of the request should contain the tarred & gzipped cache
 func cache(w http.ResponseWriter, r *http.Request) error {
-	return store(w, r, "cache", "tgz")
+	runName := mux.Vars(r)["id"]
+
+	if r.Method == "GET" {
+		return commandGetStore(runName, "cache", "tgz", w)
+	}
+	return commandPutStore(r.Body, r.ContentLength, runName, "cache", "tgz")
 }
 
 func output(w http.ResponseWriter, r *http.Request) error {
-	return store(w, r, "output", "")
+	runName := mux.Vars(r)["id"]
+
+	if r.Method == "GET" {
+		return commandGetStore(runName, "output", "", w)
+	}
+	return commandPutStore(r.Body, r.ContentLength, runName, "output", "")
 }
 
 func exitData(w http.ResponseWriter, r *http.Request) error {
-	return store(w, r, "exit-data", "json")
+	runName := mux.Vars(r)["id"]
+
+	if r.Method == "GET" {
+		return commandGetStore(runName, "exit-data", "json", w)
+	}
+	return commandPutStore(r.Body, r.ContentLength, runName, "exit-data", "json")
 }
 
 func start(w http.ResponseWriter, r *http.Request) error {
