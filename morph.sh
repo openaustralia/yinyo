@@ -4,7 +4,6 @@
 #
 # Dependencies:
 # jq - https://stedolan.github.io/jq/
-# mc - https://min.io/download
 
 # exit when any command fails
 set -e
@@ -37,13 +36,6 @@ done
 shift $((OPTIND-1))
 
 morph_scraper_name=$1
-morph_bucket="morph/morph"
-
-store_access_key=$(grep store_access_key secrets-morph.env | cut -d "=" -f 2)
-store_secret_key=$(grep store_secret_key secrets-morph.env | cut -d "=" -f 2)
-
-# This command doesn't work with "-api s3v4". No idea why.
-mc config host add morph http://localhost:9000 "$store_access_key" "$store_secret_key" -api s3v4
 
 # This environment variable is used by clay.sh
 CLAY_SERVER_URL=http://localhost:8080
@@ -59,7 +51,8 @@ else
   git clone --quiet --depth 1 "https://github.com/$morph_scraper_name.git" app
   rm -rf app/.git app/.gitignore
   # Add the sqlite database
-  (mc cat "$morph_bucket/db/$morph_scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
+  (cat "morph-storage/db/$morph_scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
+  morph_scraper_name="github/$morph_scraper_name"
 fi
 
 create_result=$(./images/clay-scraper/clay.sh create "$morph_scraper_name")
@@ -74,7 +67,7 @@ tar -zcf - * | "$dir/images/clay-scraper/clay.sh" put "$run_name" "$run_token" a
 cd "$dir"
 rm -rf app
 
-(mc cat "$morph_bucket/cache/$morph_scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
+(cat "morph-storage/cache/$morph_scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
 ./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite MORPH_SCRAPER_NAME "$morph_scraper_name"
 
 if [ "$run_token" = "" ]; then
@@ -82,10 +75,13 @@ if [ "$run_token" = "" ]; then
   exit 1
 fi
 
+mkdir -p $(dirname "morph-storage/db/$morph_scraper_name")
+mkdir -p $(dirname "morph-storage/cache/$morph_scraper_name")
+
 ./images/clay-scraper/clay.sh logs "$run_name" "$run_token"
 # Get the sqlite database from clay and save it away in a morph bucket
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" output | mc pipe "$morph_bucket/db/$morph_scraper_name.sqlite"
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache | mc pipe "$morph_bucket/cache/$morph_scraper_name.tgz"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "morph-storage/db/$morph_scraper_name.sqlite"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "morph-storage/cache/$morph_scraper_name.tgz"
 echo "exit data returned by clay:"
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
 ./images/clay-scraper/clay.sh delete "$run_name" "$run_token"

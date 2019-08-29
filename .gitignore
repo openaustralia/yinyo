@@ -1,6 +1,2 @@
-cache
 app
-app.tgz
-kubernetes/job.yaml
-kubernetes/secret.yaml
-server/server
+morph-storage
