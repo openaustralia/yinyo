@@ -7,17 +7,34 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
+
+func getClientSet() (*kubernetes.Clientset, error) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	return clientset, err
+}
 
 func create(w http.ResponseWriter, r *http.Request) error {
 	// TODO: Make the scraper_name optional
 	// TODO: Do we make sure that there is only one scraper_name used?
 	scraperName := r.URL.Query()["scraper_name"][0]
 
-	createResult, err := commandCreate(scraperName)
+	clientset, err := getClientSet()
+	if err != nil {
+		return err
+	}
+
+	createResult, err := commandCreate(clientset, scraperName)
 	if err != nil {
 		return err
 	}
@@ -29,63 +46,73 @@ func create(w http.ResponseWriter, r *http.Request) error {
 
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetApp(runName, w)
+	return commandGetApp(storeAccess, runName, w)
 }
 
 func putApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutApp(r.Body, r.ContentLength, runName)
+	return commandPutApp(storeAccess, r.Body, r.ContentLength, runName)
 }
 
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetCache(runName, w)
+	return commandGetCache(storeAccess, runName, w)
 }
 
 func putCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutCache(r.Body, r.ContentLength, runName)
+	return commandPutCache(storeAccess, r.Body, r.ContentLength, runName)
 }
 
 func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetOutput(runName, w)
+	return commandGetOutput(storeAccess, runName, w)
 }
 
 func putOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutOutput(r.Body, r.ContentLength, runName)
+	return commandPutOutput(storeAccess, r.Body, r.ContentLength, runName)
 }
 
 func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetExitData(runName, w)
+	return commandGetExitData(storeAccess, runName, w)
 }
 
 func putExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutExitData(r.Body, r.ContentLength, runName)
+	return commandPutExitData(storeAccess, r.Body, r.ContentLength, runName)
 }
 
 func start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
+	clientset, err := getClientSet()
+	if err != nil {
+		return err
+	}
+
 	// TODO: If json is not of the right form return an error code that isn't 500
 	decoder := json.NewDecoder(r.Body)
 	var l startBody
-	err := decoder.Decode(&l)
+	err = decoder.Decode(&l)
 	if err != nil {
 		return err
 	}
 
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return commandStart(runName, l)
+	return commandStart(clientset, runName, l)
 }
 
 func getLogs(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	podLogs, err := commandGetLogs(runName)
+	clientset, err := getClientSet()
+	if err != nil {
+		return err
+	}
+
+	podLogs, err := commandGetLogs(clientset, runName)
 	if err != nil {
 		return err
 	}
@@ -119,7 +146,12 @@ func createLogs(w http.ResponseWriter, r *http.Request) error {
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	return commandDelete(runName)
+	clientset, err := getClientSet()
+	if err != nil {
+		return err
+	}
+
+	return commandDelete(clientset, storeAccess, runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -189,6 +221,23 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+var storeAccess StoreAccess
+
+func init() {
+	var err error
+	storeAccess, err = NewMinioAccess(
+		// TODO: Get data store url for configmap
+		"minio-service:9000",
+		// TODO: Make bucket name configurable
+		"clay",
+		os.Getenv("STORE_ACCESS_KEY"),
+		os.Getenv("STORE_SECRET_KEY"),
+	)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 

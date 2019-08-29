@@ -3,10 +3,8 @@ package main
 import (
 	"io"
 	"log"
-	"os"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 type createResult struct {
@@ -19,21 +17,7 @@ type logMessage struct {
 	Log, Stream string
 }
 
-func getClientSet() (*kubernetes.Clientset, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	return clientset, err
-}
-
-func commandCreate(scraperName string) (createResult, error) {
-	clientset, err := getClientSet()
-	if err != nil {
-		return createResult{}, err
-	}
-
+func commandCreate(clientset *kubernetes.Clientset, scraperName string) (createResult, error) {
 	runName, runToken, err := createSecret(clientset, scraperName)
 
 	createResult := createResult{
@@ -43,51 +27,43 @@ func commandCreate(scraperName string) (createResult, error) {
 	return createResult, err
 }
 
-func commandGetApp(runName string, w io.Writer) error {
+func commandGetApp(storeAccess StoreAccess, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "app.tgz", w)
 }
 
-func commandPutApp(reader io.Reader, objectSize int64, runName string) error {
+func commandPutApp(storeAccess StoreAccess, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "app.tgz")
 }
 
-func commandGetCache(runName string, w io.Writer) error {
+func commandGetCache(storeAccess StoreAccess, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "cache.tgz", w)
 }
 
-func commandPutCache(reader io.Reader, objectSize int64, runName string) error {
+func commandPutCache(storeAccess StoreAccess, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "cache.tgz")
 }
 
-func commandGetOutput(runName string, w io.Writer) error {
+func commandGetOutput(storeAccess StoreAccess, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "output", w)
 }
 
-func commandPutOutput(reader io.Reader, objectSize int64, runName string) error {
+func commandPutOutput(storeAccess StoreAccess, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "output")
 }
 
-func commandGetExitData(runName string, w io.Writer) error {
+func commandGetExitData(storeAccess StoreAccess, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "exit-data.json", w)
 }
 
-func commandPutExitData(reader io.Reader, objectSize int64, runName string) error {
+func commandPutExitData(storeAccess StoreAccess, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "exit-data.json")
 }
 
-func commandStart(runName string, l startBody) error {
-	clientset, err := getClientSet()
-	if err != nil {
-		return err
-	}
+func commandStart(clientset *kubernetes.Clientset, runName string, l startBody) error {
 	return createJob(clientset, runName, l)
 }
 
-func commandGetLogs(runName string) (io.ReadCloser, error) {
-	clientset, err := getClientSet()
-	if err != nil {
-		return nil, err
-	}
+func commandGetLogs(clientset *kubernetes.Clientset, runName string) (io.ReadCloser, error) {
 	return logStream(clientset, runName)
 }
 
@@ -98,13 +74,8 @@ func commandCreateLog(runName string, l logMessage) error {
 	return nil
 }
 
-func commandDelete(runName string) error {
-	clientset, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	err = deleteJob(clientset, runName)
+func commandDelete(clientset *kubernetes.Clientset, storeAccess StoreAccess, runName string) error {
+	err := deleteJob(clientset, runName)
 	if err != nil {
 		return err
 	}
@@ -125,21 +96,4 @@ func commandDelete(runName string) error {
 		return err
 	}
 	return deleteFromStore(storeAccess, runName, "cache.tgz")
-}
-
-var storeAccess StoreAccess
-
-func init() {
-	var err error
-	storeAccess, err = NewMinioAccess(
-		// TODO: Get data store url for configmap
-		"minio-service:9000",
-		// TODO: Make bucket name configurable
-		"clay",
-		os.Getenv("STORE_ACCESS_KEY"),
-		os.Getenv("STORE_SECRET_KEY"),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
