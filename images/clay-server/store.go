@@ -7,6 +7,13 @@ import (
 	"github.com/minio/minio-go/v6"
 )
 
+// StoreAccess defines the interface to access the storage layer
+type StoreAccess interface {
+	Put(path string, reader io.Reader, objectSize int64) error
+	Get(path string) (io.Reader, error)
+	Delete(path string) error
+}
+
 // MinioAccess implements StoreAccess
 type MinioAccess struct {
 	Client     *minio.Client
@@ -14,9 +21,9 @@ type MinioAccess struct {
 }
 
 // NewMinioAccess creates a MinioAccess
-func NewMinioAccess(url string, bucketName string, accessKey string, secretKey string) (MinioAccess, error) {
+func NewMinioAccess(url string, bucketName string, accessKey string, secretKey string) (StoreAccess, error) {
 	client, err := minio.New(url, accessKey, secretKey, false)
-	m := MinioAccess{
+	m := &MinioAccess{
 		Client:     client,
 		BucketName: bucketName,
 	}
@@ -52,7 +59,7 @@ func (m *MinioAccess) Delete(path string) error {
 	)
 }
 
-func access() (MinioAccess, error) {
+func access() (StoreAccess, error) {
 	return NewMinioAccess(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
