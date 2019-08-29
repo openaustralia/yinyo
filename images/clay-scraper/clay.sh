@@ -11,7 +11,7 @@ if [ $# == 0 ]; then
   echo "  create SCRAPER_NAME                                             Returns run name and run token"
   echo "  put RUN_NAME RUN_TOKEN [app|cache|output|exit-data]             Take stdin and upload"
   # TODO: Add support for more than one environment variable
-  echo "  start RUN_NAME RUN_TOKEN SCRAPER_OUTPUT [ENV_NAME=ENV_VALUE]    Start the scraper"
+  echo "  start RUN_NAME RUN_TOKEN SCRAPER_OUTPUT [ENV_NAME ENV_VALUE]    Start the scraper"
   echo "  logs RUN_NAME RUN_TOKEN                                         Stream the logs"
   echo "  get RUN_NAME RUN_TOKEN [app|cache|output|exit-data]             Retrieve and send to stdout"
   echo "  delete RUN_NAME RUN_TOKEN                                       Cleanup after everything has finished"
