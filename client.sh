@@ -75,12 +75,11 @@ if [ "$run_token" = "" ]; then
   exit 1
 fi
 
-mkdir -p $(dirname "client-storage/db/$scraper_name")
-mkdir -p $(dirname "client-storage/cache/$scraper_name")
-
 ./images/clay-scraper/clay.sh logs "$run_name" "$run_token"
 # Get the sqlite database from clay and save it away
+mkdir -p $(dirname "client-storage/db/$scraper_name")
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$scraper_name.sqlite"
+mkdir -p $(dirname "client-storage/cache/$scraper_name")
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "client-storage/cache/$scraper_name.tgz"
 echo "exit data returned by clay:"
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
