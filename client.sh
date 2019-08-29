@@ -35,7 +35,7 @@ done
 # Get rid of the parsed options so far
 shift $((OPTIND-1))
 
-morph_scraper_name=$1
+scraper_name=$1
 
 # This environment variable is used by clay.sh
 CLAY_SERVER_URL=http://localhost:8080
@@ -43,19 +43,19 @@ export CLAY_SERVER_URL
 
 rm -rf app
 if [ "$scraper_name_is_directory" = true ]; then
-  cp -R "$morph_scraper_name" app
+  cp -R "$scraper_name" app
   # Prepend scraper name with something different so that it can be cached separately
-  morph_scraper_name="local/$morph_scraper_name"
+  scraper_name="local/$scraper_name"
 else
   # Checkout the code from github
-  git clone --quiet --depth 1 "https://github.com/$morph_scraper_name.git" app
+  git clone --quiet --depth 1 "https://github.com/$scraper_name.git" app
   rm -rf app/.git app/.gitignore
   # Add the sqlite database
-  (cat "client-storage/db/$morph_scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
-  morph_scraper_name="github/$morph_scraper_name"
+  (cat "client-storage/db/$scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
+  scraper_name="github/$scraper_name"
 fi
 
-create_result=$(./images/clay-scraper/clay.sh create "$morph_scraper_name")
+create_result=$(./images/clay-scraper/clay.sh create "$scraper_name")
 run_name=$(echo "$create_result" | jq -r ".run_name")
 run_token=$(echo "$create_result" | jq -r ".run_token")
 
@@ -67,21 +67,21 @@ tar -zcf - * | "$dir/images/clay-scraper/clay.sh" put "$run_name" "$run_token" a
 cd "$dir"
 rm -rf app
 
-(cat "client-storage/cache/$morph_scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
-./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite MORPH_SCRAPER_NAME "$morph_scraper_name"
+(cat "client-storage/cache/$scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
+./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite MORPH_SCRAPER_NAME "$scraper_name"
 
 if [ "$run_token" = "" ]; then
   echo "There was an error starting the scraper"
   exit 1
 fi
 
-mkdir -p $(dirname "client-storage/db/$morph_scraper_name")
-mkdir -p $(dirname "client-storage/cache/$morph_scraper_name")
+mkdir -p $(dirname "client-storage/db/$scraper_name")
+mkdir -p $(dirname "client-storage/cache/$scraper_name")
 
 ./images/clay-scraper/clay.sh logs "$run_name" "$run_token"
 # Get the sqlite database from clay and save it away in a morph bucket
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$morph_scraper_name.sqlite"
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "client-storage/cache/$morph_scraper_name.tgz"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$scraper_name.sqlite"
+./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "client-storage/cache/$scraper_name.tgz"
 echo "exit data returned by clay:"
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
 ./images/clay-scraper/clay.sh delete "$run_name" "$run_token"
