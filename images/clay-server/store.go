@@ -41,14 +41,20 @@ func (m *MinioAccess) Delete(path string) error {
 	)
 }
 
-func minioClient() (*minio.Client, error) {
-	return minio.New(
+func access() (MinioAccess, error) {
+	minioClient, err := minio.New(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
 		os.Getenv("STORE_ACCESS_KEY"),
 		os.Getenv("STORE_SECRET_KEY"),
 		false,
 	)
+	m := MinioAccess{
+		Client: minioClient,
+		// TODO: Make bucket name configurable
+		BucketName: "clay",
+	}
+	return m, err
 }
 
 func storagePath(runName string, fileName string, fileExtension string) string {
@@ -57,16 +63,6 @@ func storagePath(runName string, fileName string, fileExtension string) string {
 		path += "." + fileExtension
 	}
 	return path
-}
-
-func access() (MinioAccess, error) {
-	minioClient, err := minioClient()
-	m := MinioAccess{
-		Client: minioClient,
-		// TODO: Make bucket name configurable
-		BucketName: "clay",
-	}
-	return m, err
 }
 
 func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
