@@ -59,15 +59,20 @@ func storagePath(runName string, fileName string, fileExtension string) string {
 	return path
 }
 
-func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
+func access() (MinioAccess, error) {
 	minioClient, err := minioClient()
-	if err != nil {
-		return err
-	}
 	m := MinioAccess{
 		Client: minioClient,
 		// TODO: Make bucket name configurable
 		BucketName: "clay",
+	}
+	return m, err
+}
+
+func saveToStore(reader io.Reader, objectSize int64, runName string, fileName string, fileExtension string) error {
+	m, err := access()
+	if err != nil {
+		return err
 	}
 	return m.Put(
 		storagePath(runName, fileName, fileExtension),
@@ -77,14 +82,9 @@ func saveToStore(reader io.Reader, objectSize int64, runName string, fileName st
 }
 
 func retrieveFromStore(runName string, fileName string, fileExtension string, writer io.Writer) error {
-	minioClient, err := minioClient()
+	m, err := access()
 	if err != nil {
 		return err
-	}
-	m := MinioAccess{
-		Client: minioClient,
-		// TODO: Make bucket name configurable
-		BucketName: "clay",
 	}
 	reader, err := m.Get(storagePath(runName, fileName, fileExtension))
 	if err != nil {
@@ -95,13 +95,9 @@ func retrieveFromStore(runName string, fileName string, fileExtension string, wr
 }
 
 func deleteFromStore(runName string, fileName string, fileExtension string) error {
-	minioClient, err := minioClient()
+	m, err := access()
 	if err != nil {
 		return err
-	}
-	m := MinioAccess{
-		Client:     minioClient,
-		BucketName: "clay",
 	}
 	return m.Delete(storagePath(runName, fileName, fileExtension))
 }
