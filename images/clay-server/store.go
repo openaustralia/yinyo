@@ -7,6 +7,40 @@ import (
 	"github.com/minio/minio-go/v6"
 )
 
+// MinioAccess implements StoreAccess
+type MinioAccess struct {
+	Client     *minio.Client
+	BucketName string
+}
+// Put saves a file to the store with the given path
+func (m *MinioAccess) Put(path string, reader io.Reader, objectSize int64) error {
+	_, err := m.Client.PutObject(
+		m.BucketName,
+		path,
+		reader,
+		objectSize,
+		minio.PutObjectOptions{},
+	)
+	return err
+}
+
+// Get retrieves a file at the given path from the store
+func (m *MinioAccess) Get(path string) (io.Reader, error) {
+	return m.Client.GetObject(
+		m.BucketName,
+		path,
+		minio.GetObjectOptions{},
+	)
+}
+
+// Delete removes a file in the store at the given path
+func (m *MinioAccess) Delete(path string) error {
+	return m.Client.RemoveObject(
+		m.BucketName,
+		path,
+	)
+}
+
 func minioClient() (*minio.Client, error) {
 	return minio.New(
 		// TODO: Get data store url for configmap
@@ -30,17 +64,16 @@ func saveToStore(reader io.Reader, objectSize int64, runName string, fileName st
 	if err != nil {
 		return err
 	}
-
-	_, err = minioClient.PutObject(
+	m := MinioAccess{
+		Client: minioClient,
 		// TODO: Make bucket name configurable
-		"clay",
+		BucketName: "clay",
+	}
+	return m.Put(
 		storagePath(runName, fileName, fileExtension),
 		reader,
 		objectSize,
-		minio.PutObjectOptions{},
 	)
-
-	return err
 }
 
 func retrieveFromStore(runName string, fileName string, fileExtension string, writer io.Writer) error {
@@ -48,17 +81,16 @@ func retrieveFromStore(runName string, fileName string, fileExtension string, wr
 	if err != nil {
 		return err
 	}
-
-	// TODO: Make bucket name configurable
-	object, err := minioClient.GetObject(
-		"clay",
-		storagePath(runName, fileName, fileExtension),
-		minio.GetObjectOptions{},
-	)
+	m := MinioAccess{
+		Client: minioClient,
+		// TODO: Make bucket name configurable
+		BucketName: "clay",
+	}
+	reader, err := m.Get(storagePath(runName, fileName, fileExtension))
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(writer, object)
+	_, err = io.Copy(writer, reader)
 	return err
 }
 
@@ -67,10 +99,9 @@ func deleteFromStore(runName string, fileName string, fileExtension string) erro
 	if err != nil {
 		return err
 	}
-
-	err = minioClient.RemoveObject(
-		"clay",
-		storagePath(runName, fileName, fileExtension),
-	)
-	return err
+	m := MinioAccess{
+		Client:     minioClient,
+		BucketName: "clay",
+	}
+	return m.Delete(storagePath(runName, fileName, fileExtension))
 }
