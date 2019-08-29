@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bufio"
-	"errors"
-	"fmt"
-	"net/http"
+	"io"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -38,35 +35,16 @@ func waitForPodToStart(clientset *kubernetes.Clientset, runName string) (string,
 	}
 }
 
-func streamAndCopyLogs(clientset *kubernetes.Clientset, runName string, w http.ResponseWriter) error {
+func logStream(clientset *kubernetes.Clientset, runName string) (io.ReadCloser, error) {
 	podsClient := clientset.CoreV1().Pods("clay-scrapers")
 
 	podName, err := waitForPodToStart(clientset, runName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req := podsClient.GetLogs(podName, &apiv1.PodLogOptions{
 		Follow: true,
 	})
-	podLogs, err := req.Stream()
-	if err != nil {
-		return err
-	}
-	defer podLogs.Close()
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		return errors.New("Couldn't access the flusher")
-	}
-
-	scanner := bufio.NewScanner(podLogs)
-	for scanner.Scan() {
-		fmt.Fprintln(w, scanner.Text())
-		flusher.Flush()
-	}
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-	return nil
+	return req.Stream()
 }

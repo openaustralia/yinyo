@@ -1,51 +1,25 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
-
-func getClientSet() (*kubernetes.Clientset, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	return clientset, err
-}
-
-type createResult struct {
-	RunName  string `json:"run_name"`
-	RunToken string `json:"run_token"`
-}
 
 func create(w http.ResponseWriter, r *http.Request) error {
 	// TODO: Make the scraper_name optional
 	// TODO: Do we make sure that there is only one scraper_name used?
 	scraperName := r.URL.Query()["scraper_name"][0]
 
-	clientset, err := getClientSet()
+	createResult, err := commandCreate(scraperName)
 	if err != nil {
 		return err
-	}
-
-	runName, runToken, err := createSecret(clientset, scraperName)
-	if err != nil {
-		return err
-	}
-
-	createResult := createResult{
-		RunName:  runName,
-		RunToken: runToken,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -57,9 +31,9 @@ func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtensio
 	runName := mux.Vars(r)["id"]
 
 	if r.Method == "GET" {
-		return retrieveFromStore(storeAccess, runName, fileName, fileExtension, w)
+		return commandGetStore(runName, fileName, fileExtension, w)
 	}
-	return saveToStore(storeAccess, r.Body, r.ContentLength, runName, fileName, fileExtension)
+	return commandPutStore(r.Body, r.ContentLength, runName, fileName, fileExtension)
 }
 
 // The body of the request should contain the tarred & gzipped code
@@ -91,76 +65,46 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	clientset, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return createJob(clientset, runName, l)
-}
-
-type logMessage struct {
-	// TODO: Make the stream an enum
-	Log, Stream string
+	return commandStart(runName, l)
 }
 
 func logs(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	clientset, err := getClientSet()
+	if r.Method == "GET" {
+		podLogs, err := commandGetLogs(runName)
+		if err != nil {
+			return err
+		}
+		defer podLogs.Close()
+
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			return errors.New("Couldn't access the flusher")
+		}
+
+		scanner := bufio.NewScanner(podLogs)
+		for scanner.Scan() {
+			fmt.Fprintln(w, scanner.Text())
+			flusher.Flush()
+		}
+		return scanner.Err()
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var l logMessage
+	err := decoder.Decode(&l)
 	if err != nil {
 		return err
 	}
-
-	if r.Method == "GET" {
-		err = streamAndCopyLogs(clientset, runName, w)
-		if err != nil {
-			return err
-		}
-	} else {
-		// For the time being just show the results on stdout
-		// TODO: Send them to the user with an http POST
-		decoder := json.NewDecoder(r.Body)
-		var l logMessage
-		err := decoder.Decode(&l)
-		if err != nil {
-			return err
-		}
-		log.Printf("log %s %q", l.Stream, l.Log)
-	}
-	return nil
+	return commandCreateLog(runName, l)
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	clientset, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	err = deleteJob(clientset, runName)
-	if err != nil {
-		return err
-	}
-	err = deleteSecret(clientset, runName)
-	if err != nil {
-		return err
-	}
-	err = deleteFromStore(storeAccess, runName, "app", "tgz")
-	if err != nil {
-		return err
-	}
-	err = deleteFromStore(storeAccess, runName, "output", "")
-	if err != nil {
-		return err
-	}
-	err = deleteFromStore(storeAccess, runName, "exit-data", "json")
-	if err != nil {
-		return err
-	}
-	return deleteFromStore(storeAccess, runName, "cache", "tgz")
+	return commandDelete(runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -230,23 +174,6 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
-	}
-}
-
-var storeAccess StoreAccess
-
-func init() {
-	var err error
-	storeAccess, err = NewMinioAccess(
-		// TODO: Get data store url for configmap
-		"minio-service:9000",
-		// TODO: Make bucket name configurable
-		"clay",
-		os.Getenv("STORE_ACCESS_KEY"),
-		os.Getenv("STORE_SECRET_KEY"),
-	)
-	if err != nil {
-		log.Fatal(err)
 	}
 }
 
