@@ -6,12 +6,25 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
+
+// TODO: Move this into initialisation code
+func access() (StoreAccess, error) {
+	return NewMinioAccess(
+		// TODO: Get data store url for configmap
+		"minio-service:9000",
+		// TODO: Make bucket name configurable
+		"clay",
+		os.Getenv("STORE_ACCESS_KEY"),
+		os.Getenv("STORE_SECRET_KEY"),
+	)
+}
 
 func getClientSet() (*kubernetes.Clientset, error) {
 	config, err := rest.InClusterConfig()
@@ -55,10 +68,14 @@ func create(w http.ResponseWriter, r *http.Request) error {
 func store(w http.ResponseWriter, r *http.Request, fileName string, fileExtension string) error {
 	runName := mux.Vars(r)["id"]
 
-	if r.Method == "GET" {
-		return retrieveFromStore(runName, fileName, fileExtension, w)
+	m, err := access()
+	if err != nil {
+		return err
 	}
-	return saveToStore(r.Body, r.ContentLength, runName, fileName, fileExtension)
+	if r.Method == "GET" {
+		return retrieveFromStore(m, runName, fileName, fileExtension, w)
+	}
+	return saveToStore(m, r.Body, r.ContentLength, runName, fileName, fileExtension)
 }
 
 // The body of the request should contain the tarred & gzipped code
@@ -147,19 +164,23 @@ func delete(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(runName, "app", "tgz")
+	m, err := access()
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(runName, "output", "")
+	err = deleteFromStore(m, runName, "app", "tgz")
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(runName, "exit-data", "json")
+	err = deleteFromStore(m, runName, "output", "")
 	if err != nil {
 		return err
 	}
-	return deleteFromStore(runName, "cache", "tgz")
+	err = deleteFromStore(m, runName, "exit-data", "json")
+	if err != nil {
+		return err
+	}
+	return deleteFromStore(m, runName, "cache", "tgz")
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
