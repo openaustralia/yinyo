@@ -68,7 +68,7 @@ cd "$dir"
 rm -rf app
 
 (cat "client-storage/cache/$scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
-./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite MORPH_SCRAPER_NAME "$scraper_name"
+./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite SCRAPER_NAME "$scraper_name"
 
 if [ "$run_token" = "" ]; then
   echo "There was an error starting the scraper"

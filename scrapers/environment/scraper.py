@@ -1,2 +1,2 @@
 import os
-print "MORPH_SCRAPER_NAME: %s" % os.environ['MORPH_SCRAPER_NAME']
+print "SCRAPER_NAME: %s" % os.environ['SCRAPER_NAME']
