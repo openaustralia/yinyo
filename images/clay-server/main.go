@@ -27,41 +27,43 @@ func create(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// The body of the request should contain the tarred & gzipped code
-func app(w http.ResponseWriter, r *http.Request) error {
+func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	return commandGetStore(runName, "app", "tgz", w)
+}
 
-	if r.Method == "GET" {
-		return commandGetStore(runName, "app", "tgz", w)
-	}
+func putApp(w http.ResponseWriter, r *http.Request) error {
+	runName := mux.Vars(r)["id"]
 	return commandPutStore(r.Body, r.ContentLength, runName, "app", "tgz")
 }
 
-// The body of the request should contain the tarred & gzipped cache
-func cache(w http.ResponseWriter, r *http.Request) error {
+func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	return commandGetStore(runName, "cache", "tgz", w)
+}
 
-	if r.Method == "GET" {
-		return commandGetStore(runName, "cache", "tgz", w)
-	}
+func putCache(w http.ResponseWriter, r *http.Request) error {
+	runName := mux.Vars(r)["id"]
 	return commandPutStore(r.Body, r.ContentLength, runName, "cache", "tgz")
 }
 
-func output(w http.ResponseWriter, r *http.Request) error {
+func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	return commandGetStore(runName, "output", "", w)
+}
 
-	if r.Method == "GET" {
-		return commandGetStore(runName, "output", "", w)
-	}
+func putOutput(w http.ResponseWriter, r *http.Request) error {
+	runName := mux.Vars(r)["id"]
 	return commandPutStore(r.Body, r.ContentLength, runName, "output", "")
 }
 
-func exitData(w http.ResponseWriter, r *http.Request) error {
+func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	return commandGetStore(runName, "exit-data", "json", w)
+}
 
-	if r.Method == "GET" {
-		return commandGetStore(runName, "exit-data", "json", w)
-	}
+func putExitData(w http.ResponseWriter, r *http.Request) error {
+	runName := mux.Vars(r)["id"]
 	return commandPutStore(r.Body, r.ContentLength, runName, "exit-data", "json")
 }
 
@@ -80,28 +82,30 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	return commandStart(runName, l)
 }
 
-func logs(w http.ResponseWriter, r *http.Request) error {
+func getLogs(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	if r.Method == "GET" {
-		podLogs, err := commandGetLogs(runName)
-		if err != nil {
-			return err
-		}
-		defer podLogs.Close()
-
-		flusher, ok := w.(http.Flusher)
-		if !ok {
-			return errors.New("Couldn't access the flusher")
-		}
-
-		scanner := bufio.NewScanner(podLogs)
-		for scanner.Scan() {
-			fmt.Fprintln(w, scanner.Text())
-			flusher.Flush()
-		}
-		return scanner.Err()
+	podLogs, err := commandGetLogs(runName)
+	if err != nil {
+		return err
 	}
+	defer podLogs.Close()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		return errors.New("Couldn't access the flusher")
+	}
+
+	scanner := bufio.NewScanner(podLogs)
+	for scanner.Scan() {
+		fmt.Fprintln(w, scanner.Text())
+		flusher.Flush()
+	}
+	return scanner.Err()
+}
+
+func createLogs(w http.ResponseWriter, r *http.Request) error {
+	runName := mux.Vars(r)["id"]
 
 	decoder := json.NewDecoder(r.Body)
 	var l logMessage
@@ -196,12 +200,17 @@ func main() {
 	router.Handle("/runs", appHandler(create)).Methods("POST")
 
 	authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
-	authenticatedRouter.Handle("/app", appHandler(app)).Methods("PUT", "GET")
-	authenticatedRouter.Handle("/cache", appHandler(cache)).Methods("PUT", "GET")
-	authenticatedRouter.Handle("/output", appHandler(output)).Methods("PUT", "GET")
-	authenticatedRouter.Handle("/exit-data", appHandler(exitData)).Methods("PUT", "GET")
+	authenticatedRouter.Handle("/app", appHandler(getApp)).Methods("GET")
+	authenticatedRouter.Handle("/app", appHandler(putApp)).Methods("PUT")
+	authenticatedRouter.Handle("/cache", appHandler(getCache)).Methods("GET")
+	authenticatedRouter.Handle("/cache", appHandler(putCache)).Methods("PUT")
+	authenticatedRouter.Handle("/output", appHandler(getOutput)).Methods("GET")
+	authenticatedRouter.Handle("/output", appHandler(putOutput)).Methods("PUT")
+	authenticatedRouter.Handle("/exit-data", appHandler(getExitData)).Methods("GET")
+	authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
 	authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
-	authenticatedRouter.Handle("/logs", appHandler(logs)).Methods("POST", "GET")
+	authenticatedRouter.Handle("/logs", appHandler(getLogs)).Methods("GET")
+	authenticatedRouter.Handle("/logs", appHandler(createLogs)).Methods("POST")
 	authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
 	authenticatedRouter.Use(authenticate)
 	router.Use(logRequests)
