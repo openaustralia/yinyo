@@ -1,18 +1,12 @@
 package main
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-var _ = Describe("Store", func() {
-	Describe("storagePath", func() {
-		It("should convert app to a standard path", func() {
-			Expect(storagePath("abc", "app.tgz")).To(Equal("abc/app.tgz"))
-		})
-
-		It("should convert output to a standard path", func() {
-			Expect(storagePath("def", "output")).To(Equal("def/output"))
-		})
-	})
-})
+func TestStoragePath(t *testing.T) {
+	assert.Equal(t, storagePath("abc", "app.tgz"), "abc/app.tgz")
+	assert.Equal(t, storagePath("def", "output"), "def/output")
+}
