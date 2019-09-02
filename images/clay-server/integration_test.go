@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -16,7 +16,6 @@ func TestServerHello(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(resp.Header)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, []string{"text/plain; charset=utf-8"}, resp.Header["Content-Type"])
 	b, err := ioutil.ReadAll(resp.Body)
@@ -24,4 +23,27 @@ func TestServerHello(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, "Hello from Clay!\n", string(b))
+}
+
+// TODO: Put the tests in a different package so no chance that we could use things we probably shouldn't
+type createRunResult struct {
+	RunName  string `json:"run_name"`
+	RunToken string `json:"run_token"`
+}
+
+func TestCreateRun(t *testing.T) {
+	resp, err := http.Post("http://localhost:8080/runs?scraper_name=foo", "application/json", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	decoder := json.NewDecoder(resp.Body)
+	var result createRunResult
+	err = decoder.Decode(&result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotEqual(t, "", result.RunName)
+	assert.NotEqual(t, "", result.RunToken)
 }
