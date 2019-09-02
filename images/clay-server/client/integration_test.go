@@ -36,3 +36,13 @@ func TestCreateRun(t *testing.T) {
 	assert.True(t, strings.HasPrefix(result.RunName, "foo"))
 	assert.NotEqual(t, "", result.RunToken)
 }
+
+func TestCreateRunScraperNameEncoding(t *testing.T) {
+	result, err := createRun("foo/b_12r")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Only certain characters are allowed in kubernetes job names
+	assert.True(t, strings.HasPrefix(result.RunName, "foo-b-12r"))
+}
