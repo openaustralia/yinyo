@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,6 +45,8 @@ func TestCreateRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.NotEqual(t, "", result.RunName)
+	// The only purpose of scraper name is to make runs easier for humans to identify
+	// So, expect the run to start with the scraper name but there's probably more
+	assert.True(t, strings.HasPrefix(result.RunName, "foo"))
 	assert.NotEqual(t, "", result.RunToken)
 }
