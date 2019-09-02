@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"encoding/json"
@@ -26,14 +26,13 @@ func TestServerHello(t *testing.T) {
 	assert.Equal(t, "Hello from Clay!\n", string(b))
 }
 
-// TODO: Put the tests in a different package so no chance that we could use things we probably shouldn't
 type createRunResult struct {
 	RunName  string `json:"run_name"`
 	RunToken string `json:"run_token"`
 }
 
 func TestCreateRun(t *testing.T) {
-	resp, err := http.Post("http://localhost:8080/runs?scraper_name=foo", "application/json", nil)
+	resp, err := http.Post("http://localhost:8080/runs?scraper_name=foo", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
