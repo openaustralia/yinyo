@@ -46,3 +46,17 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 	// Only certain characters are allowed in kubernetes job names
 	assert.True(t, strings.HasPrefix(result.RunName, "foo-b-12r"))
 }
+
+// Check that run names are created to be unique even when the same scraper name
+// is given twice
+func TestCreateRunNamesUnique(t *testing.T) {
+	result1, err := createRun("foo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result2, err := createRun("foo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotEqual(t, result1.RunName, result2.RunName)
+}
