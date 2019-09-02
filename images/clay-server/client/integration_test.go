@@ -33,7 +33,7 @@ func TestCreateRun(t *testing.T) {
 
 	// The only purpose of scraper name is to make runs easier for humans to identify
 	// So, expect the run to start with the scraper name but there's probably more
-	assert.True(t, strings.HasPrefix(result.RunName, "foo"))
+	assert.True(t, strings.HasPrefix(result.RunName, "foo-"))
 	assert.NotEqual(t, "", result.RunToken)
 }
 
@@ -44,7 +44,7 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 	}
 
 	// Only certain characters are allowed in kubernetes job names
-	assert.True(t, strings.HasPrefix(result.RunName, "foo-b-12r"))
+	assert.True(t, strings.HasPrefix(result.RunName, "foo-b-12r-"))
 }
 
 // Check that run names are created to be unique even when the same scraper name
