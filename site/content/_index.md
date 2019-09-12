@@ -8,19 +8,19 @@ quotes:
     company: OpenAustralia Foundation
     photo: matthew.jpg
     text: |
-      This is going to make morph.io so much better. I wish we had done this ages ago.
+      This is going to make morph.io so much better! I wish we had done this *ages* ago.
   - name: Matthew Landauer
     title: cofounder
     company: OpenAustralia Foundation
     photo: matthew.jpg
     text: |
-      This is going to make morph.io so much better. I wish we had done this ages ago.
+      This is going to make morph.io so much better! I wish we had done this *ages* ago.
   - name: Matthew Landauer
     title: cofounder
     company: OpenAustralia Foundation
     photo: matthew.jpg
     text: |
-      This is going to make morph.io so much better. I wish we had done this ages ago.
+      This is going to make morph.io so much better! I wish we had done this *ages* ago.
 ---
 
 * Made specifically for developers of scraper systems
