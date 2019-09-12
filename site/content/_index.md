@@ -40,12 +40,3 @@ Used in production to run scrapers more than xxxxx times
 ### Why is it called Leila?
 
 Matthew’s mother’s dog is called Leila. And no he doesn’t use that as a password security question.
-
-### Contact
-
-Email address
-GitHub
-Suggest a feature or report an issue
-
-
-Made with love by the OpenAustralia Foundation for you
