@@ -36,7 +36,3 @@ Photograph
 ### More social validation
 
 Used in production to run scrapers more than xxxxx times
-
-### Why is it called Leila?
-
-Matthew’s mother’s dog is called Leila. And no he doesn’t use that as a password security question.
