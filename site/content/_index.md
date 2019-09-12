@@ -2,6 +2,25 @@
 title: "Leila"
 date: 2019-09-12T07:07:08+10:00
 draft: true
+quotes:
+  - name: Matthew Landauer
+    title: cofounder
+    company: OpenAustralia Foundation
+    photo: matthew.jpg
+    text: |
+      This is going to make morph.io so much better. I wish we had done this ages ago.
+  - name: Matthew Landauer
+    title: cofounder
+    company: OpenAustralia Foundation
+    photo: matthew.jpg
+    text: |
+      This is going to make morph.io so much better. I wish we had done this ages ago.
+  - name: Matthew Landauer
+    title: cofounder
+    company: OpenAustralia Foundation
+    photo: matthew.jpg
+    text: |
+      This is going to make morph.io so much better. I wish we had done this ages ago.
 ---
 
 * Made specifically for developers of scraper systems

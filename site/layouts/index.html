@@ -18,33 +18,17 @@
     <h3>What people are saying</h3>
 
     <div class="row py-4">
+    {{ range .Params.quotes }}
       <div class="col">
         <blockquote class="blockquote">
-          <p>This is going to make morph.io so much better. I wish we had done this ages ago.</p>
-          <img src="matthew.jpg" alt="Matthew Landauer" class="img-thumbnail rounded-circle" width="100">
+          <p>{{ .text }}</p>
+          <img src="{{ .photo }}" alt="{{ .name }}" class="img-thumbnail rounded-circle" width="100">
           <footer class="text-muted">
-            <small>Matthew Landauer, cofounder OpenAustralia Foundation</small>
+            <small>{{ .name }}, {{ .title }} {{ .company }}</small>
           </footer>
         </blockquote>
       </div>
-      <div class="col">
-        <blockquote class="blockquote">
-          <p>This is going to make morph.io so much better. I wish we had done this ages ago.</p>
-          <img src="matthew.jpg" alt="Matthew Landauer" class="img-thumbnail rounded-circle" width="100">
-          <footer class="text-muted">
-            <small>Matthew Landauer, cofounder OpenAustralia Foundation</small>
-          </footer>
-        </blockquote>
-      </div>
-      <div class="col">
-        <blockquote class="blockquote">
-          <p>This is going to make morph.io so much better. I wish we had done this ages ago.</p>
-          <img src="matthew.jpg" alt="Matthew Landauer" class="img-thumbnail rounded-circle" width="100">
-          <footer class="text-muted">
-            <small>Matthew Landauer, cofounder OpenAustralia Foundation</small>
-          </footer>
-        </blockquote>
-      </div>
+    {{ end }}
     </div>
 
     <h3>More social validation</h3>
