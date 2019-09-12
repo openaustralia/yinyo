@@ -4,11 +4,6 @@ date: 2019-09-12T07:07:08+10:00
 draft: true
 ---
 
-# Clay (name to change)
-## A wonderfully simple API to reliably execute many long running scrapers in a super scaleable way. Built on top of Kubernetes and Docker.
-
-[Get Started](#get-started-in-the-documentation)
-
 * Made specifically for developers of scraper systems
 * Easily run many many scrapers across a cluster without having to worry about managing machines and how things are scheduled
 * Built on top of Kubernetes
