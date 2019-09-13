@@ -12,13 +12,14 @@
     </div>
 
     <!-- Features -->
-    <!-- TODO: Put features in a block list with an icon for each feature block* -->
-
-    <ul>
+    <div class="row">
       {{ range .Params.features }}
-        <li>{{ .text }}</li>
+        <div class="col">
+          <!-- TODO: Add icon for each feature -->
+          {{ .text }}
+        </div>
       {{ end }}
-    </ul>
+    </div>
     <!-- TODO: Make this a button -->
     <a href="#get-started-in-the-documentation">Get Started</a>
 
