@@ -7,9 +7,20 @@
         A wonderfully simple API to reliably execute many long running scrapers in a super scaleable way.
         Built on top of Kubernetes and Docker.
       </p>
-      <!-- Make this a button -->
+      <!-- TODO: Make this a button -->
       <a href="#get-started-in-the-documentation">Get Started</a>
     </div>
+
+    <!-- Features -->
+    <!-- TODO: Put features in a block list with an icon for each feature block* -->
+
+    <ul>
+      {{ range .Params.features }}
+        <li>{{ .text }}</li>
+      {{ end }}
+    </ul>
+    <!-- TODO: Make this a button -->
+    <a href="#get-started-in-the-documentation">Get Started</a>
 
     <div>
       {{.Content}}
@@ -17,6 +28,7 @@
 
     <h3>What people are saying</h3>
 
+    <!-- Quotes -->
     <div class="row py-4">
     {{ range .Params.quotes }}
       <div class="col">
