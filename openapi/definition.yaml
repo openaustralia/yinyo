@@ -1,0 +1,352 @@
+openapi: 3.0.1
+info:
+  title: Clay (to be renamed) server
+  description: |
+    First rough version of documentation for the clay server, a simple
+    scraper API.
+  version: "0.1"
+servers:
+- url: /
+tags:
+  - name: Core
+    description: The minimum you'll need to use
+  - name: Optional
+    description: Get access to more information about runs
+paths:
+  /runs:
+    summary: Create run
+    post:
+      tags: [ "Core" ]
+      summary: Create run
+      description: |
+        Returns with the "run ID" which uniquely identifies this run. You will need this run ID to subsequently start, track and access this run.
+      parameters:
+      # TODO: Rename scraper_name to prefix
+      - name: scraper_name
+        description: Prefix used when generating run names
+        in: query
+        schema:
+          type: string
+      responses:
+        200:
+          description: Created successfully
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  run_name:
+                    type: string
+                    description: |
+                      Uniquely identifies this run. Needed for any subsequent API calls for this run.
+                  run_token:
+                    type: string
+                    description: |
+                      Secret value needed to access the run
+  /runs/{name}/app:
+    put:
+      tags: [ "Core" ]
+      summary: Upload the scraper code and local data
+      parameters:
+      - $ref: '#/components/parameters/name'
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              description: |
+                Directory with code, configuration and data to run. Everything needs to be tarred up.
+              format: binary
+        required: true
+      security:
+        - run_token: []
+      responses:
+        200:
+          description: Success
+        403:
+          description: The run token was incorrect
+  /runs/{name}/cache:
+    summary: Manage build cache
+    put:
+      tags: [ "Optional" ]
+      summary: Upload a build cache
+      parameters:
+      - $ref: '#/components/parameters/name'
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              description: Build cache exactly as it was downloaded before
+              type: string
+              format: binary
+        required: true
+      security:
+        - run_token: []
+      responses:
+        200:
+          description: Success
+        403:
+          description: The run token was incorrect
+    get:
+      tags: [ "Optional" ]
+      summary: Download a build cache
+      parameters:
+      - $ref: '#/components/parameters/name'
+      security:
+        - run_token: []
+      responses:
+        200:
+          content:
+            application/octet-stream:
+              schema:
+                description: Build cache
+                type: string
+                format: binary
+          description: Success
+        403:
+          description: The run token was incorrect
+  /runs/{name}/start:
+    post:
+      tags: [ "Core" ]
+      summary: Start the run
+      parameters:
+      - $ref: '#/components/parameters/name'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                output:
+                  type: string
+                  description: |
+                    relative path (from the directory of the scraper) to file you want access to later. This will usually be the output of the scraper.
+                env:
+                  type: array
+                  description: |
+                    Environment variables to set for the scraper run.
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+      security:
+        - run_token: []
+      responses:
+        200:
+          description: Success
+        403:
+          description: The run token was incorrect
+  /runs/{name}/logs:
+    get:
+      tags: [ "Optional" ]
+      summary: Attach to run log stream
+      description: |
+        Watch what is happening to a scraper in real-time as it gets compiled and runs. By default this will stream all logs that have occurred from the scraper getting started until now and then as new logs occur stream those in real-time.
+      parameters:
+      - $ref: '#/components/parameters/name'
+      security:
+        - run_token: []
+      responses:
+        200:
+          description: Attached
+          content:
+            'text/plain':
+              schema:
+                type: string
+  /runs/{name}/exit-data:
+    get:
+      tags: [ "Optional" ]
+      summary: Get exit code and usage metrics
+      description: |
+        Usually at the end of a run you want to know whether the scraper ran succesfully or not. Also returns information about how much resources the run took.
+      parameters:
+      - $ref: '#/components/parameters/name'
+      security:
+        - run_token: []
+      responses:
+        200:
+          description: Success
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    exit_code:
+                      type: integer
+                    usage:
+                      type: object
+                      properties:
+                        build:
+                          $ref: '#/components/schemas/ResourceUsage'
+                        run:
+                          $ref: '#/components/schemas/ResourceUsage'
+        403:
+          description: The run token was incorrect
+  /runs/{name}/output:
+    get:
+      tags: [ "Optional" ]
+      summary: Get output file
+      description: |
+        Usually at the end of the scraper run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.
+      parameters:
+      - $ref: '#/components/parameters/name'
+      security:
+        - run_token: []
+      responses:
+        200:
+          description: Success
+          content:
+            'application/octet-stream':
+              schema:
+                type: string
+                format: binary
+        403:
+          description: The run token was incorrect
+  /runs/{name}:
+    delete:
+      tags: [ "Core" ]
+      summary: Finalise scraper run
+      description: |
+        This does final clean up of everything associated with a run. After doing this it's not possible to get any information about the run. So, make sure you have everything you need before you call this.
+      parameters:
+      - $ref: '#/components/parameters/name'
+      security:
+        - run_token: []
+      responses:
+        200:
+          description: Success
+        403:
+          description: The run token was incorrect
+components:
+  parameters:
+    name:
+      name: name
+      in: path
+      description: The run name (as returned by creating a run)
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    Stage:
+      type: string
+      description: The stage of the life-cycle of the run
+      enum:
+      - queued
+      - compiling
+      - running
+      - stopped
+    ResourceUsage:
+      type: object
+      properties:
+        wall_time:
+          type: number
+          description: Wall clock
+        cpu_time:
+          type: number
+          description: |
+            This is the total number of seconds spent executing by the CPU.
+            It's the sum of time spent in user and kernel mode.
+        max_rss:
+          type: integer
+          description: |
+            This is the maximum resident set size used in kilobytes.
+        network_in:
+          type: integer
+          description: Total received network traffic in bytes.
+        network_out:
+          type: integer
+          description: Total transmitted network traffic in bytes.
+      description: |
+        Resources used by a process. This information is recorded as part of the metrics for a scraper run.
+
+        The names of metrics are all copied from the structure returned by `getrusage(2)` (with the exception of `wall_time`)
+    Event:
+      required:
+      - id
+      - stage
+      - time
+      - type
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        time:
+          type: string
+          description: Date and time of event
+          format: date-time
+        stage:
+          $ref: '#/components/schemas/Stage'
+      discriminator:
+        propertyName: type
+    LogEvent:
+      description: Console output event (from scraper run)
+      allOf:
+      - $ref: '#/components/schemas/Event'
+      - required:
+        - source
+        - text
+        type: object
+        properties:
+          source:
+            type: string
+            description: |
+              Source of the message. e.g. `stdout`, `stderr`
+            enum:
+            - stdout
+            - stderr
+          text:
+            type: string
+            description: Console message
+    ConnectionEvent:
+      description: http/https connection made to the outside world
+      allOf:
+      - $ref: '#/components/schemas/Event'
+      - required:
+        - domain
+        - method
+        - path
+        - request_size
+        - response_code
+        - response_size
+        - scheme
+        type: object
+        properties:
+          method:
+            type: string
+            description: REST method used (e.g. GET, PUT..)
+          scheme:
+            type: string
+            description: Whether http or https
+          domain:
+            type: string
+            description: Name of server being connected to
+          path:
+            type: string
+            description: Path bit of url from domain being connected to
+          request_size:
+            type: integer
+          response_size:
+            type: integer
+          response_code:
+            type: integer
+    StageChangeEvent:
+      type: object
+      properties:
+        exitCode:
+          type: integer
+          description: |
+            On stage "stopped", includes the exitCode of the running process.
+      description: |
+        Event for moving from one stage to another. e.g. queued, compiling, running, exited with particular exit code. The stage is the stage that we're moving into.
+  securitySchemes:
+    run_token:
+      type: http
+      scheme: bearer
