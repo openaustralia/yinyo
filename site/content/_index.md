@@ -22,14 +22,19 @@ quotes:
     text: |
       This is going to make morph.io so much better! I wish we had done this *ages* ago.
 features:
-  - text: Made specifically for developers of scraper systems
-  - text: Easily run many many scrapers across a cluster without having to worry about managing machines and how things are scheduled
-  - text: Built on top of Kubernetes
-  - text: Supports Python, JavaScript, Ruby, PHP and Perl
-  - text: Language support uses Heroku Buildpacks
-  - text: Optionally logs scraper standard and error asynchronously to an http endpoint of your choice
-  - text: Choose between a synchronous or asynchronous API depending on your use case
-  - text: Open source. MIT licensed
+  - text: |
+      Easily run as many scrapers as you like across a cluster of machines without
+      having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
+  - text: |
+      Use the language and libraries you love for writing scrapers.
+      Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
+  - text: |
+      Supports many different use cases through a simple, yet flexible API that can operate synchronously
+      or asynchronously.
+  - text: |
+      Made specifically for developers of scraper systems be it open source or
+      commercial systems. No chance of vendor lock-in because it's open source,
+      MIT licensed.
 
 ---
 ### What’s a scraper anyway?

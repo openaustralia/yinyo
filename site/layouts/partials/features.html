@@ -2,7 +2,7 @@
   {{ range . }}
     <div class="col">
       <!-- TODO: Add icon for each feature -->
-      {{ .text }}
+      {{ .text | markdownify }}
     </div>
   {{ end }}
 </div>
