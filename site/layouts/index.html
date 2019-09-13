@@ -11,13 +11,11 @@
 
     {{ partial "features.html" .Params.features }}
 
-    <div>
+    <div class="py-5">
       {{.Content}}
+      <a class="btn btn-primary" href="#get-started-in-the-documentation" role="button">Get Started</a>
     </div>
 
-    <a class="btn btn-primary" href="#get-started-in-the-documentation" role="button">Get Started</a>
-
-    <h3>What people are saying</h3>
     {{ partial "quotes.html" .Params.quotes }}
 
     <h3>More social validation</h3>
