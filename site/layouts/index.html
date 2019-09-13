@@ -4,8 +4,7 @@
     <div class="starter-template">
       <h1>{{ .Title }}</h1>
       <p class="lead">
-        A wonderfully simple API to reliably execute many long running scrapers in a super scaleable way.
-        Built on top of Kubernetes and Docker.
+        {{ .Params.headline | markdownify }}
       </p>
       <a class="btn btn-primary" href="#get-started-in-the-documentation" role="button">Get Started</a>
     </div>
