@@ -10,15 +10,7 @@
       <a class="btn btn-primary" href="#get-started-in-the-documentation" role="button">Get Started</a>
     </div>
 
-    <!-- Features -->
-    <div class="row">
-      {{ range .Params.features }}
-        <div class="col">
-          <!-- TODO: Add icon for each feature -->
-          {{ .text }}
-        </div>
-      {{ end }}
-    </div>
+    {{ partial "features.html" .Params.features }}
     <a class="btn btn-primary" href="#get-started-in-the-documentation" role="button">Get Started</a>
 
     <div>
@@ -26,21 +18,7 @@
     </div>
 
     <h3>What people are saying</h3>
-
-    <!-- Quotes -->
-    <div class="row py-4">
-    {{ range .Params.quotes }}
-      <div class="col">
-        <blockquote class="blockquote">
-          <p>{{ .text | markdownify }}</p>
-          <img src="{{ .photo }}" alt="{{ .name }}" class="img-thumbnail rounded-circle" width="100">
-          <footer class="text-muted">
-            <small>{{ .name }}, {{ .title }} {{ .company }}</small>
-          </footer>
-        </blockquote>
-      </div>
-    {{ end }}
-    </div>
+    {{ partial "quotes.html" .Params.quotes }}
 
     <h3>More social validation</h3>
     <p>

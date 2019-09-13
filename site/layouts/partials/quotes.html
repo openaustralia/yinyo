@@ -1,0 +1,14 @@
+<!-- Quotes -->
+<div class="row py-4">
+{{ range . }}
+  <div class="col">
+    <blockquote class="blockquote">
+      <p>{{ .text | markdownify }}</p>
+      <img src="{{ .photo }}" alt="{{ .name }}" class="img-thumbnail rounded-circle" width="100">
+      <footer class="text-muted">
+        <small>{{ .name }}, {{ .title }} {{ .company }}</small>
+      </footer>
+    </blockquote>
+  </div>
+{{ end }}
+</div>
