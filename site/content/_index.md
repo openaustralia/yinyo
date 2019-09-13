@@ -5,7 +5,7 @@ draft: true
 headline: |
   A wonderfully simple API to reliably execute many long running scrapers in a
   super scaleable way.
-  Built on top of Kubernetes and Docker.
+  Built on top of Kubernetes.
 quotes:
   - name: Matthew Landauer
     title: cofounder
@@ -37,13 +37,13 @@ features:
       or asynchronously.
   - text: |
       Made specifically for developers of scraper systems be it open source or
-      commercial systems. No chance of vendor lock-in because it's open source,
+      commercial. No chance of vendor lock-in because it's open source,
       MIT licensed.
 
 ---
 ### What’s a scraper anyway?
 
-A scraper is a program that collects data from the web (usually unstructured) and reformats into structured data. The input is the whole web (and optionally some state like the output of a previous run).The output is some data. Scrapers can often run a long time because they need to traverse a large number of web pages. It’s not unusual for scrapers to run for hours. This means that many technologies are not particularly well suited to running scrapers.
+A scraper is a program that collects data from the web (usually unstructured) and reformats into structured data. The input is the whole web (and optionally some state like the output of a previous run). The output is some data. Scrapers can often run a long time because they need to traverse a large number of web pages. It’s not unusual for scrapers to run for hours. This means that many technologies are not particularly well suited to running scrapers.
 
 ### Origins and motivations
 
