@@ -1,5 +1,5 @@
 ---
-title: Leila is cool
+title: Leila is
 date: 2019-09-11T21:07:08.000+00:00
 headline: |
   A wonderfully simple API to reliably execute many long running scrapers in a
