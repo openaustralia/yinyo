@@ -11,3 +11,9 @@ secretGenerator:
 - name: clay-server
   namespace: clay-system
   env: secrets-clay-server.env
+- name: redis
+  namespace: clay-system
+  env: secrets-redis.env
+
+configurations:
+- kustomizeconfig/redis.yaml

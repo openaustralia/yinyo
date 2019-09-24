@@ -1,0 +1,5 @@
+nameReference:
+- kind: Secret
+  fieldSpecs:
+  - path: spec/podTemplate/spec/env/valueFrom/secretKeyRef/name
+    kind: Redis
