@@ -5,6 +5,7 @@
 #### Main dependencies
 
 * [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
+* [KubeDB operator](https://kubedb.com/docs/0.12.0/setup/install/)
 * [Skaffold](https://skaffold.dev/docs/getting-started/)
 * [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
 * [jq](https://stedolan.github.io/jq/)
