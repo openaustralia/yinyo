@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"io"
 
 	"github.com/go-redis/redis"
@@ -78,10 +77,7 @@ func commandGetEvent(redisClient *redis.Client, runName string, id string) (newI
 	newId = result[0].Messages[0].ID
 	jsonString = result[0].Messages[0].Values["json"].(string)
 
-	var l logMessage
-	json.Unmarshal([]byte(jsonString), &l)
-	if l.Type == "finished" && l.Stage == "run" {
-		// TODO: Correctly handle situation where build fails
+	if jsonString == "EOF" {
 		finished = true
 	}
 	return

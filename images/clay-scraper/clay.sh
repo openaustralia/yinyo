@@ -20,6 +20,7 @@ if [ $# == 0 ]; then
   echo "  send-logs RUN_NAME RUN_TOKEN STAGE STREAM                       Take stdin and send them as logs"
   echo "  started RUN_NAME RUN_TOKEN STAGE                                Let the world know that a stage is starting"
   echo "  finished RUN_NAME RUN_TOKEN STAGE                               Let the world know that a stage is finished"
+  echo "  send-event RUN_NAME RUN_TOKEN JSON                              Send arbitrary json string as an event"
   echo ""
   echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
   echo "used as a base to generate the unique run name."
@@ -65,6 +66,8 @@ elif [ "$1" == "started" ]; then
 elif [ "$1" == "finished" ]; then
   data=$(jq -c -n --arg log "$line" --arg stage "$4" '{stage: $stage, type: "finished"}')
   curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$data"
+elif [ "$1" == "send-event" ]; then
+  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$4"
 else
   echo "Unknown command" >&2
   exit 1

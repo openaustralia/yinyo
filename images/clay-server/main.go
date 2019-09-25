@@ -120,11 +120,11 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(w, jsonString)
-		flusher.Flush()
 		if finished {
 			break
 		}
+		fmt.Fprintln(w, jsonString)
+		flusher.Flush()
 	}
 	return nil
 }

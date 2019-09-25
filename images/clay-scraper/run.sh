@@ -66,3 +66,5 @@ cd /app || exit
 /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" output < "$RUN_OUTPUT"
 
 /bin/clay.sh finished "$RUN_NAME" "$CLAY_RUN_TOKEN" run
+# TODO: Make sure that this is always sent even, for instance, if the build fails
+/bin/clay.sh send-event "$RUN_NAME" "$CLAY_RUN_TOKEN" "EOF"
