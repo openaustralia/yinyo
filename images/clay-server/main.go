@@ -250,11 +250,10 @@ func main() {
 		Addr:     "redis:6379",
 		Password: os.Getenv("REDIS_PASSWORD"),
 	})
-	pong, err := redisClient.Ping().Result()
+	_, err := redisClient.Ping().Result()
 	if err != nil {
 		log.Fatal("Couldn't connect to redis: ", err)
 	}
-	fmt.Println(pong)
 
 	log.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
