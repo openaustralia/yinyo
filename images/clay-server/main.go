@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -109,28 +108,39 @@ func start(w http.ResponseWriter, r *http.Request) error {
 func getLogs(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	clientset, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
-	podLogs, err := commandGetLogs(clientset, runName)
-	if err != nil {
-		return err
-	}
-	defer podLogs.Close()
-
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		return errors.New("Couldn't access the flusher")
 	}
 
-	scanner := bufio.NewScanner(podLogs)
-	for scanner.Scan() {
-		fmt.Fprintln(w, scanner.Text())
-		flusher.Flush()
+	// TODO: Move this code to commandGetLogs
+	var id = "0"
+	for {
+		// For the moment get one event at a time
+		// TODO: Grab more than one at a time for a little more efficiency
+		result, err := redisClient.XRead(&redis.XReadArgs{
+			Streams: []string{runName, id},
+			Count:   1,
+			Block:   0,
+		}).Result()
+		if err != nil {
+			return err
+		}
+		id = result[0].Messages[0].ID
+		jsonString := result[0].Messages[0].Values["json"].(string)
+
+		var l logMessage
+		json.Unmarshal([]byte(jsonString), &l)
+
+		if l.Type == "log" {
+			fmt.Fprintln(w, l.Log)
+			flusher.Flush()
+		} else if l.Type == "finished" && l.Stage == "run" {
+			// TODO: Handle case where build fails
+			break
+		}
 	}
-	return scanner.Err()
+	return nil
 }
 
 func createEvents(w http.ResponseWriter, r *http.Request) error {
