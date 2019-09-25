@@ -55,16 +55,16 @@ elif [ "$1" = "send-logs" ]; then
   do
     # Send as json
     data=$(jq -c -n --arg log "$line" --arg stage "$4" --arg stream "$5" '{stage: $stage, type: "log", stream: $stream, log: $log}')
-    curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
+    curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$data"
     # Also for the time being
     echo "$line"
   done
 elif [ "$1" == "started" ]; then
   data=$(jq -c -n --arg log "$line" --arg stage "$4" '{stage: $stage, type: "started"}')
-  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
+  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$data"
 elif [ "$1" == "finished" ]; then
   data=$(jq -c -n --arg log "$line" --arg stage "$4" '{stage: $stage, type: "finished"}')
-  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
+  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$data"
 else
   echo "Unknown command" >&2
   exit 1

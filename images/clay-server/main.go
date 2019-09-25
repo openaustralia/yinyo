@@ -133,7 +133,7 @@ func getLogs(w http.ResponseWriter, r *http.Request) error {
 	return scanner.Err()
 }
 
-func createLogs(w http.ResponseWriter, r *http.Request) error {
+func createEvents(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	// Read json message as is into a string
@@ -142,7 +142,7 @@ func createLogs(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return commandCreateLog(redisClient, runName, string(buf))
+	return commandCreateEvent(redisClient, runName, string(buf))
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
@@ -273,7 +273,7 @@ func main() {
 	authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
 	authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
 	authenticatedRouter.Handle("/logs", appHandler(getLogs)).Methods("GET")
-	authenticatedRouter.Handle("/logs", appHandler(createLogs)).Methods("POST")
+	authenticatedRouter.Handle("/events", appHandler(createEvents)).Methods("POST")
 	authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
 	authenticatedRouter.Use(authenticate)
 	router.Use(logRequests)

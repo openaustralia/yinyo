@@ -68,16 +68,16 @@ func commandGetLogs(clientset *kubernetes.Clientset, runName string) (io.ReadClo
 	return logStream(clientset, runName)
 }
 
-func commandCreateLog(redisClient *redis.Client, runName string, l string) error {
+func commandCreateEvent(redisClient *redis.Client, runName string, eventJson string) error {
 	// For the time being just show the results on stdout
 	// TODO: Send them to the user with an http POST
-	log.Println(l)
+	log.Println(eventJson)
 
 	// Send the json to a redis stream
 	return redisClient.XAdd(&redis.XAddArgs{
 		// TODO: Use something like runName-events instead for the stream name
 		Stream: runName,
-		Values: map[string]interface{}{"json": l},
+		Values: map[string]interface{}{"json": eventJson},
 	}).Err()
 }
 
