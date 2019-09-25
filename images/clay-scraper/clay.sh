@@ -17,10 +17,11 @@ if [ $# == 0 ]; then
   echo "  delete RUN_NAME RUN_TOKEN                                       Cleanup after everything has finished"
   echo ""
   echo "COMMANDS (only used from container):"
-  echo "  send-logs RUN_NAME RUN_TOKEN STREAM                             Take stdin and send them as logs"
+  echo "  send-logs RUN_NAME RUN_TOKEN STAGE STREAM                        Take stdin and send them as logs"
   echo ""
   echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
   echo "used as a base to generate the unique run name."
+  echo "STAGE can be either build or run"
   echo ""
   echo "e.g. $0 create my-first-scraper"
   exit 1
@@ -51,7 +52,7 @@ elif [ "$1" = "send-logs" ]; then
   while IFS= read -r line ;
   do
     # Send as json
-    data=$(jq -c -n --arg log "$line" --arg stream "$4" '{log: $log, stream: $stream}')
+    data=$(jq -c -n --arg log "$line" --arg stage "$4" --arg stream "$5" '{stage: $stage, stream: $stream, log: $log}')
     curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
     # Also for the time being
     echo "$line"

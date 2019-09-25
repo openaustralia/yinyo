@@ -14,8 +14,8 @@ type createResult struct {
 }
 
 type logMessage struct {
-	// TODO: Make the stream an enum
-	Log, Stream string
+	// TODO: Make the stream and stage an enum
+	Log, Stream, Stage string
 }
 
 func commandCreate(clientset *kubernetes.Clientset, scraperName string) (createResult, error) {
@@ -71,7 +71,7 @@ func commandGetLogs(clientset *kubernetes.Clientset, runName string) (io.ReadClo
 func commandCreateLog(redisClient *redis.Client, runName string, l logMessage) error {
 	// For the time being just show the results on stdout
 	// TODO: Send them to the user with an http POST
-	log.Printf("log %s %q", l.Stream, l.Log)
+	log.Printf("log %s %s %q", l.Stage, l.Stream, l.Log)
 
 	// Send the log to a redis stream
 	return redisClient.XAdd(&redis.XAddArgs{

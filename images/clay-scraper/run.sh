@@ -37,7 +37,7 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 (/bin/clay.sh get "$RUN_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf - -C cache 2> /dev/null) || true
 
 # This fairly hideous construction pipes stdout and stderr to seperate commands
-{ /bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
+{ /bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" build stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" build stderr
 
 # TODO: If the build fails then it shouldn't try to run the scraper but it should record stats
 
@@ -45,7 +45,7 @@ cd cache
 tar -zcf - * | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 cd ..
 
-{ /bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" stderr
+{ /bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" run stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" run stderr
 
 exit_code=${PIPESTATUS[0]}
 
