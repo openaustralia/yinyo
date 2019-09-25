@@ -14,8 +14,8 @@ type createResult struct {
 }
 
 type logMessage struct {
-	// TODO: Make the stream and stage an enum
-	Log, Stream, Stage string
+	// TODO: Make the stream, stage and type an enum
+	Log, Stream, Stage, Type string
 }
 
 func commandCreate(clientset *kubernetes.Clientset, scraperName string) (createResult, error) {

@@ -52,7 +52,7 @@ elif [ "$1" = "send-logs" ]; then
   while IFS= read -r line ;
   do
     # Send as json
-    data=$(jq -c -n --arg log "$line" --arg stage "$4" --arg stream "$5" '{stage: $stage, stream: $stream, log: $log}')
+    data=$(jq -c -n --arg log "$line" --arg stage "$4" --arg stream "$5" '{stage: $stage, type: "log", stream: $stream, log: $log}')
     curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
     # Also for the time being
     echo "$line"
