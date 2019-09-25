@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -242,6 +243,17 @@ func init() {
 }
 
 func main() {
+	// Connect to redis and initially just check that we can connect
+	client := redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: os.Getenv("REDIS_PASSWORD"),
+	})
+	pong, err := client.Ping().Result()
+	if err != nil {
+		log.Fatal("Couldn't connect to redis: ", err)
+	}
+	fmt.Println(pong)
+
 	log.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
 

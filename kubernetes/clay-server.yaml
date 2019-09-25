@@ -53,7 +53,11 @@ spec:
             secretKeyRef:
               name: clay-server
               key: store_secret_key
-
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis
+              key: password
 ---
 apiVersion: v1
 kind: Service

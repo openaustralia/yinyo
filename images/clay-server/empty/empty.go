@@ -9,6 +9,7 @@ import (
 	_ "time"
 
 	_ "github.com/dchest/uniuri"
+	_ "github.com/go-redis/redis"
 	_ "github.com/gorilla/mux"
 	_ "github.com/minio/minio-go/v6"
 	_ "k8s.io/api/batch/v1"
