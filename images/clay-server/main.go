@@ -225,7 +225,9 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// TODO: Move these together into a struct
 var storeAccess StoreAccess
+var redisClient *redis.Client
 
 func init() {
 	var err error
@@ -244,11 +246,11 @@ func init() {
 
 func main() {
 	// Connect to redis and initially just check that we can connect
-	client := redis.NewClient(&redis.Options{
+	redisClient = redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
 		Password: os.Getenv("REDIS_PASSWORD"),
 	})
-	pong, err := client.Ping().Result()
+	pong, err := redisClient.Ping().Result()
 	if err != nil {
 		log.Fatal("Couldn't connect to redis: ", err)
 	}
