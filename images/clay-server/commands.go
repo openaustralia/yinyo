@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 
@@ -66,6 +67,24 @@ func commandStart(clientset *kubernetes.Clientset, runName string, l startBody) 
 
 func commandGetLogs(clientset *kubernetes.Clientset, runName string) (io.ReadCloser, error) {
 	return logStream(clientset, runName)
+}
+
+func commandGetEvent(redisClient *redis.Client, runName string, id string) (newId string, l logMessage, err error) {
+	// For the moment get one event at a time
+	// TODO: Grab more than one at a time for a little more efficiency
+	result, err := redisClient.XRead(&redis.XReadArgs{
+		Streams: []string{runName, id},
+		Count:   1,
+		Block:   0,
+	}).Result()
+	if err != nil {
+		return
+	}
+	newId = result[0].Messages[0].ID
+	jsonString := result[0].Messages[0].Values["json"].(string)
+
+	json.Unmarshal([]byte(jsonString), &l)
+	return
 }
 
 func commandCreateEvent(redisClient *redis.Client, runName string, eventJson string) error {
