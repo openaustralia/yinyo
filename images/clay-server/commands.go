@@ -65,10 +65,6 @@ func commandStart(clientset *kubernetes.Clientset, runName string, l startBody) 
 	return createJob(clientset, runName, l)
 }
 
-func commandGetLogs(clientset *kubernetes.Clientset, runName string) (io.ReadCloser, error) {
-	return logStream(clientset, runName)
-}
-
 func commandGetEvent(redisClient *redis.Client, runName string, id string) (newId string, l logMessage, err error) {
 	// For the moment get one event at a time
 	// TODO: Grab more than one at a time for a little more efficiency
