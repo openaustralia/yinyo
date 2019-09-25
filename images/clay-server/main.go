@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -135,13 +136,13 @@ func getLogs(w http.ResponseWriter, r *http.Request) error {
 func createLogs(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	decoder := json.NewDecoder(r.Body)
-	var l logMessage
-	err := decoder.Decode(&l)
+	// Read json message as is into a string
+	buf, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
-	return commandCreateLog(redisClient, runName, l)
+
+	return commandCreateLog(redisClient, runName, string(buf))
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
