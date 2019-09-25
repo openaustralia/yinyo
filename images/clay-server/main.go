@@ -115,16 +115,14 @@ func getLogs(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newId, l, err := commandGetEvent(redisClient, runName, id)
+		newId, jsonString, finished, err := commandGetEvent(redisClient, runName, id)
 		id = newId
 		if err != nil {
 			return err
 		}
-		if l.Type == "log" {
-			fmt.Fprintln(w, l.Log)
-			flusher.Flush()
-		} else if l.Type == "finished" && l.Stage == "run" {
-			// TODO: Handle case where build fails
+		fmt.Fprintln(w, jsonString)
+		flusher.Flush()
+		if finished {
 			break
 		}
 	}

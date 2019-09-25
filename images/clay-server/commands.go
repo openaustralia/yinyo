@@ -64,7 +64,7 @@ func commandStart(clientset *kubernetes.Clientset, runName string, l startBody) 
 	return createJob(clientset, runName, l)
 }
 
-func commandGetEvent(redisClient *redis.Client, runName string, id string) (newId string, l logMessage, err error) {
+func commandGetEvent(redisClient *redis.Client, runName string, id string) (newId string, jsonString string, finished bool, err error) {
 	// For the moment get one event at a time
 	// TODO: Grab more than one at a time for a little more efficiency
 	result, err := redisClient.XRead(&redis.XReadArgs{
@@ -76,9 +76,14 @@ func commandGetEvent(redisClient *redis.Client, runName string, id string) (newI
 		return
 	}
 	newId = result[0].Messages[0].ID
-	jsonString := result[0].Messages[0].Values["json"].(string)
+	jsonString = result[0].Messages[0].Values["json"].(string)
 
+	var l logMessage
 	json.Unmarshal([]byte(jsonString), &l)
+	if l.Type == "finished" && l.Stage == "run" {
+		// TODO: Correctly handle situation where build fails
+		finished = true
+	}
 	return
 }
 
