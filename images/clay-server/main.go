@@ -141,7 +141,7 @@ func createLogs(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	return commandCreateLog(runName, l)
+	return commandCreateLog(redisClient, runName, l)
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
@@ -152,7 +152,7 @@ func delete(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return commandDelete(clientset, storeAccess, runName)
+	return commandDelete(clientset, storeAccess, redisClient, runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {

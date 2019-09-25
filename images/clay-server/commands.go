@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 
+	"github.com/go-redis/redis"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -67,14 +68,23 @@ func commandGetLogs(clientset *kubernetes.Clientset, runName string) (io.ReadClo
 	return logStream(clientset, runName)
 }
 
-func commandCreateLog(runName string, l logMessage) error {
+func commandCreateLog(redisClient *redis.Client, runName string, l logMessage) error {
 	// For the time being just show the results on stdout
 	// TODO: Send them to the user with an http POST
 	log.Printf("log %s %q", l.Stream, l.Log)
-	return nil
+
+	// Send the log to a redis stream
+	return redisClient.XAdd(&redis.XAddArgs{
+		// TODO: Use something like runName-events instead for the stream name
+		Stream: runName,
+		Values: map[string]interface{}{
+			"stream": l.Stream,
+			"log":    l.Log,
+		},
+	}).Err()
 }
 
-func commandDelete(clientset *kubernetes.Clientset, storeAccess StoreAccess, runName string) error {
+func commandDelete(clientset *kubernetes.Clientset, storeAccess StoreAccess, redisClient *redis.Client, runName string) error {
 	err := deleteJob(clientset, runName)
 	if err != nil {
 		return err
@@ -95,5 +105,9 @@ func commandDelete(clientset *kubernetes.Clientset, storeAccess StoreAccess, run
 	if err != nil {
 		return err
 	}
-	return deleteFromStore(storeAccess, runName, "cache.tgz")
+	err = deleteFromStore(storeAccess, runName, "cache.tgz")
+	if err != nil {
+		return err
+	}
+	return redisClient.Del(runName).Err()
 }
