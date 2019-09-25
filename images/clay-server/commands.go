@@ -82,24 +82,6 @@ func commandGetEvent(redisClient *redis.Client, runName string, id string) (newI
 	return
 }
 
-func commandGetLog(redisClient *redis.Client, runName string, id string) (newId string, text string, finished bool, err error) {
-	for {
-		var l logMessage
-		newId, l, err = commandGetEvent(redisClient, runName, id)
-		id = newId
-		if err != nil {
-			return
-		}
-		if l.Type == "log" {
-			text = l.Log
-			return
-		} else if l.Type == "finished" && l.Stage == "run" {
-			finished = true
-			return
-		}
-	}
-}
-
 func commandCreateEvent(redisClient *redis.Client, runName string, eventJson string) error {
 	// TODO: Send the event to the user with an http POST
 
