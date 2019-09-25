@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"io"
-	"log"
 
 	"github.com/go-redis/redis"
 	"k8s.io/client-go/kubernetes"
@@ -102,9 +101,7 @@ func commandGetLog(redisClient *redis.Client, runName string, id string) (newId 
 }
 
 func commandCreateEvent(redisClient *redis.Client, runName string, eventJson string) error {
-	// For the time being just show the results on stdout
-	// TODO: Send them to the user with an http POST
-	log.Println(eventJson)
+	// TODO: Send the event to the user with an http POST
 
 	// Send the json to a redis stream
 	return redisClient.XAdd(&redis.XAddArgs{
