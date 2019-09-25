@@ -17,7 +17,9 @@ if [ $# == 0 ]; then
   echo "  delete RUN_NAME RUN_TOKEN                                       Cleanup after everything has finished"
   echo ""
   echo "COMMANDS (only used from container):"
-  echo "  send-logs RUN_NAME RUN_TOKEN STAGE STREAM                        Take stdin and send them as logs"
+  echo "  send-logs RUN_NAME RUN_TOKEN STAGE STREAM                       Take stdin and send them as logs"
+  echo "  started RUN_NAME RUN_TOKEN STAGE                                Let the world know that a stage is starting"
+  echo "  finished RUN_NAME RUN_TOKEN STAGE                               Let the world know that a stage is finished"
   echo ""
   echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
   echo "used as a base to generate the unique run name."
@@ -57,6 +59,12 @@ elif [ "$1" = "send-logs" ]; then
     # Also for the time being
     echo "$line"
   done
+elif [ "$1" == "started" ]; then
+  data=$(jq -c -n --arg log "$line" --arg stage "$4" '{stage: $stage, type: "started"}')
+  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
+elif [ "$1" == "finished" ]; then
+  data=$(jq -c -n --arg log "$line" --arg stage "$4" '{stage: $stage, type: "finished"}')
+  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/logs" -d "$data"
 else
   echo "Unknown command" >&2
   exit 1

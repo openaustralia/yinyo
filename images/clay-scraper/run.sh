@@ -26,6 +26,8 @@ export CLAY_SERVER_URL=clay-server.clay-system:8080
 
 # TODO: Probably don't want to do this as root
 
+/bin/clay.sh started "$RUN_NAME" "$CLAY_RUN_TOKEN" build
+
 cd /tmp || exit
 
 mkdir -p app cache
@@ -45,6 +47,10 @@ cd cache
 tar -zcf - * | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
 cd ..
 
+/bin/clay.sh finished "$RUN_NAME" "$CLAY_RUN_TOKEN" build
+
+# TODO: Factor out common code from the build and run
+/bin/clay.sh started "$RUN_NAME" "$CLAY_RUN_TOKEN" run
 { /bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper 2>&3 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" run stdout; } 3>&1 1>&2 | /bin/clay.sh send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" run stderr
 
 exit_code=${PIPESTATUS[0]}
@@ -58,3 +64,5 @@ echo "$overall_stats" | /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" exit-data
 cd /app || exit
 # TODO: Do nothing if the output file doesn't exist
 /bin/clay.sh put "$RUN_NAME" "$CLAY_RUN_TOKEN" output < "$RUN_OUTPUT"
+
+/bin/clay.sh finished "$RUN_NAME" "$CLAY_RUN_TOKEN" run
