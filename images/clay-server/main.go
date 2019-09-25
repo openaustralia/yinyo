@@ -105,7 +105,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	return commandStart(clientset, runName, l)
 }
 
-func getLogs(w http.ResponseWriter, r *http.Request) error {
+func getEvents(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	flusher, ok := w.(http.Flusher)
@@ -268,7 +268,7 @@ func main() {
 	authenticatedRouter.Handle("/exit-data", appHandler(getExitData)).Methods("GET")
 	authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
 	authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
-	authenticatedRouter.Handle("/logs", appHandler(getLogs)).Methods("GET")
+	authenticatedRouter.Handle("/events", appHandler(getEvents)).Methods("GET")
 	authenticatedRouter.Handle("/events", appHandler(createEvents)).Methods("POST")
 	authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
 	authenticatedRouter.Use(authenticate)

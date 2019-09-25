@@ -75,7 +75,7 @@ if [ "$run_token" = "" ]; then
   exit 1
 fi
 
-./images/clay-scraper/clay.sh logs "$run_name" "$run_token" | jq -r 'select(has("log")) | .log'
+./images/clay-scraper/clay.sh events "$run_name" "$run_token" | jq -r 'select(has("log")) | .log'
 # Get the sqlite database from clay and save it away
 mkdir -p $(dirname "client-storage/db/$scraper_name")
 ./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$scraper_name.sqlite"

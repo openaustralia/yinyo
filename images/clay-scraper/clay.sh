@@ -12,7 +12,7 @@ if [ $# == 0 ]; then
   echo "  put RUN_NAME RUN_TOKEN [app|cache|output|exit-data]             Take stdin and upload"
   # TODO: Add support for more than one environment variable
   echo "  start RUN_NAME RUN_TOKEN SCRAPER_OUTPUT [ENV_NAME ENV_VALUE]    Start the scraper"
-  echo "  logs RUN_NAME RUN_TOKEN                                         Stream the logs"
+  echo "  events RUN_NAME RUN_TOKEN                                       Stream the events json"
   echo "  get RUN_NAME RUN_TOKEN [app|cache|output|exit-data]             Retrieve and send to stdout"
   echo "  delete RUN_NAME RUN_TOKEN                                       Cleanup after everything has finished"
   echo ""
@@ -44,8 +44,8 @@ elif [ "$1" = "start" ]; then
   # Send as json
   data=$(jq -c -n --arg output "$4" --arg env_name "$5" --arg env_value "$6" '{output: $output, env: [{name: $env_name, value: $env_value}]}')
   curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/start" -d "$data"
-elif [ "$1" = "logs" ]; then
-  curl -s --no-buffer -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/logs"
+elif [ "$1" = "events" ]; then
+  curl -s --no-buffer -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/events"
 elif [ "$1" = "delete" ]; then
   curl -s -X DELETE -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2"
 elif [ "$1" = "send-logs" ]; then
