@@ -15,8 +15,10 @@
 
 Start Minikube if you haven't already
 ```
-minikube start
+minikube start --memory=4096
 ```
+Minikube by default starts with 2GB of memory for the VM which is not enough in
+our case.
 
 Run skaffold. This will build all the bits and pieces and deploy things to your local kubernetes for you. The first time it builds everything it it takes a few minutes. After that when you make any changes to the code it does everything much faster.
 ```
