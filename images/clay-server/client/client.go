@@ -13,11 +13,19 @@ type createRunResult struct {
 	RunToken string `json:"run_token"`
 }
 
+type Client struct {
+	URL string
+}
+
+func NewClient(URL string) Client {
+	return Client{URL: URL}
+}
+
 // TODO: Handle server being at a different URL
-func createRun(namePrefix string) (createRunResult, error) {
+func (client *Client) CreateRun(namePrefix string) (createRunResult, error) {
 	var result createRunResult
 
-	uri := "http://localhost:8080/runs"
+	uri := client.URL + "/runs"
 	if namePrefix != "" {
 		params := url.Values{}
 		params.Add("name_prefix", namePrefix)
@@ -33,8 +41,8 @@ func createRun(namePrefix string) (createRunResult, error) {
 	return result, err
 }
 
-func uploadApp(run createRunResult, appData io.Reader) (*http.Response, error) {
-	url := fmt.Sprintf("http://localhost:8080/runs/%s/app", run.RunName)
+func (client *Client) PutApp(run createRunResult, appData io.Reader) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/app", run.RunName)
 	req, err := http.NewRequest("PUT", url, appData)
 	if err != nil {
 		return nil, err
@@ -43,8 +51,8 @@ func uploadApp(run createRunResult, appData io.Reader) (*http.Response, error) {
 	return http.DefaultClient.Do(req)
 }
 
-func downloadApp(run createRunResult) (*http.Response, error) {
-	url := fmt.Sprintf("http://localhost:8080/runs/%s/app", run.RunName)
+func (client *Client) GetApp(run createRunResult) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/app", run.RunName)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

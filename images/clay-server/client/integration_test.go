@@ -25,8 +25,13 @@ func TestServerHello(t *testing.T) {
 	assert.Equal(t, "Hello from Clay!\n", string(b))
 }
 
+func defaultClient() Client {
+	return NewClient("http://localhost:8080")
+}
+
 func TestCreateRun(t *testing.T) {
-	result, err := createRun("foo")
+	client := defaultClient()
+	result, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +43,8 @@ func TestCreateRun(t *testing.T) {
 }
 
 func TestCreateRunScraperNameEncoding(t *testing.T) {
-	result, err := createRun("foo/b_12r")
+	client := defaultClient()
+	result, err := client.CreateRun("foo/b_12r")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,11 +56,12 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 // Check that run names are created to be unique even when the same scraper name
 // is given twice
 func TestCreateRunNamesUnique(t *testing.T) {
-	result1, err := createRun("foo")
+	client := defaultClient()
+	result1, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
-	result2, err := createRun("foo")
+	result2, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +69,8 @@ func TestCreateRunNamesUnique(t *testing.T) {
 }
 
 func TestNamePrefixOptional(t *testing.T) {
-	result, err := createRun("")
+	client := defaultClient()
+	result, err := client.CreateRun("")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,21 +79,22 @@ func TestNamePrefixOptional(t *testing.T) {
 
 func TestUploadDownloadApp(t *testing.T) {
 	// First we need to create a run
-	run, err := createRun("")
+	client := defaultClient()
+	run, err := client.CreateRun("")
 	if err != nil {
 		t.Fatal(err)
 	}
 	// Now upload a random test pattern for the app
 	app := "Random test pattern"
 	body := strings.NewReader(app)
-	resp, err := uploadApp(run, body)
+	resp, err := client.PutApp(run, body)
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// Now download the test pattern and check that it matches
-	resp, err = downloadApp(run)
+	resp, err = client.GetApp(run)
 	if err != nil {
 		t.Fatal(err)
 	}
