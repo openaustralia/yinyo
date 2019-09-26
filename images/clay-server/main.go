@@ -50,6 +50,7 @@ func create(w http.ResponseWriter, r *http.Request) error {
 
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	w.Header().Set("Content-Type", "application/gzip")
 	return commandGetApp(storeAccess, runName, w)
 }
 

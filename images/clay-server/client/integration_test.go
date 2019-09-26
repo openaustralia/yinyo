@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -67,4 +68,45 @@ func TestNamePrefixOptional(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.True(t, strings.HasPrefix(result.RunName, "run-"))
+}
+
+func TestUploadDownloadApp(t *testing.T) {
+	// First we need to create a run
+	run, err := createRun("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Now upload a random test pattern for the app
+	app := "Random test pattern"
+	body := strings.NewReader(app)
+	url := fmt.Sprintf("http://localhost:8080/runs/%s/app", run.RunName)
+	req, err := http.NewRequest("PUT", url, body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer "+run.RunToken)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Now download the test pattern and check that it matches
+	req, err = http.NewRequest("GET", url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer "+run.RunToken)
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, []string{"application/gzip"}, resp.Header["Content-Type"])
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, app, string(b))
+	// TODO: Clean up run
 }
