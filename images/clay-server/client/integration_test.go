@@ -50,6 +50,16 @@ func TestCreateRun(t *testing.T) {
 	assert.NotEqual(t, "", run.Token)
 }
 
+func TestCreateRunRaw(t *testing.T) {
+	client := defaultClient()
+	resp, err := client.CreateRunRaw("foo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, []string{"application/json"}, resp.Header["Content-Type"])
+}
+
 func TestCreateRunScraperNameEncoding(t *testing.T) {
 	client := defaultClient()
 	run, err := client.CreateRun("foo/b_12r")

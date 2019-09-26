@@ -41,9 +41,7 @@ func (client *Client) Hello() (string, error) {
 	return string(b), err
 }
 
-func (client *Client) CreateRun(namePrefix string) (Run, error) {
-	var result Run
-
+func (client *Client) CreateRunRaw(namePrefix string) (*http.Response, error) {
 	uri := client.URL + "/runs"
 	if namePrefix != "" {
 		params := url.Values{}
@@ -52,10 +50,16 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	}
 	req, err := http.NewRequest("POST", uri, nil)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
-	resp, err := client.HttpClient.Do(req)
+	return client.HttpClient.Do(req)
+}
+
+func (client *Client) CreateRun(namePrefix string) (Run, error) {
+	var result Run
+
+	resp, err := client.CreateRunRaw(namePrefix)
 	if err != nil {
 		return result, err
 	}
