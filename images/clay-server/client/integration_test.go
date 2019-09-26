@@ -9,10 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func defaultClient() Client {
+	return NewClient("http://localhost:8080")
+}
+
 // First go at doing end-to-end testing of the system
 func TestServerHello(t *testing.T) {
-	// This assumes the API is accessible at http://localhost:8080
-	resp, err := http.Get("http://localhost:8080")
+	client := defaultClient()
+	resp, err := client.Hello()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,10 +27,6 @@ func TestServerHello(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, "Hello from Clay!\n", string(b))
-}
-
-func defaultClient() Client {
-	return NewClient("http://localhost:8080")
 }
 
 func TestCreateRun(t *testing.T) {

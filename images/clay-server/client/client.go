@@ -25,6 +25,14 @@ func NewClient(URL string) Client {
 	}
 }
 
+func (client *Client) Hello() (*http.Response, error) {
+	req, err := http.NewRequest("GET", client.URL, nil)
+	if err != nil {
+		return nil, err
+	}
+	return client.HttpClient.Do(req)
+}
+
 func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	var result Run
 
