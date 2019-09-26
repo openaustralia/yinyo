@@ -8,9 +8,9 @@ import (
 	"net/url"
 )
 
-type createRunResult struct {
-	RunName  string `json:"run_name"`
-	RunToken string `json:"run_token"`
+type Run struct {
+	Name  string `json:"run_name"`
+	Token string `json:"run_token"`
 }
 
 type Client struct {
@@ -25,8 +25,8 @@ func NewClient(URL string) Client {
 	}
 }
 
-func (client *Client) CreateRun(namePrefix string) (createRunResult, error) {
-	var result createRunResult
+func (client *Client) CreateRun(namePrefix string) (Run, error) {
+	var result Run
 
 	uri := client.URL + "/runs"
 	if namePrefix != "" {
@@ -49,22 +49,22 @@ func (client *Client) CreateRun(namePrefix string) (createRunResult, error) {
 	return result, err
 }
 
-func (client *Client) PutApp(run createRunResult, appData io.Reader) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/app", run.RunName)
+func (client *Client) PutApp(run Run, appData io.Reader) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/app", run.Name)
 	req, err := http.NewRequest("PUT", url, appData)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.RunToken)
+	req.Header.Set("Authorization", "Bearer "+run.Token)
 	return client.HttpClient.Do(req)
 }
 
-func (client *Client) GetApp(run createRunResult) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/app", run.RunName)
+func (client *Client) GetApp(run Run) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/app", run.Name)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.RunToken)
+	req.Header.Set("Authorization", "Bearer "+run.Token)
 	return client.HttpClient.Do(req)
 }

@@ -31,50 +31,50 @@ func defaultClient() Client {
 
 func TestCreateRun(t *testing.T) {
 	client := defaultClient()
-	result, err := client.CreateRun("foo")
+	run, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// The only purpose of name_prefix is to make runs easier for humans to identify
 	// So, expect the run to start with the name_prefix but there's probably more
-	assert.True(t, strings.HasPrefix(result.RunName, "foo-"))
-	assert.NotEqual(t, "", result.RunToken)
+	assert.True(t, strings.HasPrefix(run.Name, "foo-"))
+	assert.NotEqual(t, "", run.Token)
 }
 
 func TestCreateRunScraperNameEncoding(t *testing.T) {
 	client := defaultClient()
-	result, err := client.CreateRun("foo/b_12r")
+	run, err := client.CreateRun("foo/b_12r")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Only certain characters are allowed in kubernetes job names
-	assert.True(t, strings.HasPrefix(result.RunName, "foo-b-12r-"))
+	assert.True(t, strings.HasPrefix(run.Name, "foo-b-12r-"))
 }
 
 // Check that run names are created to be unique even when the same scraper name
 // is given twice
 func TestCreateRunNamesUnique(t *testing.T) {
 	client := defaultClient()
-	result1, err := client.CreateRun("foo")
+	run1, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
-	result2, err := client.CreateRun("foo")
+	run2, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.NotEqual(t, result1.RunName, result2.RunName)
+	assert.NotEqual(t, run1.Name, run2.Name)
 }
 
 func TestNamePrefixOptional(t *testing.T) {
 	client := defaultClient()
-	result, err := client.CreateRun("")
+	run, err := client.CreateRun("")
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.True(t, strings.HasPrefix(result.RunName, "run-"))
+	assert.True(t, strings.HasPrefix(run.Name, "run-"))
 }
 
 func TestUploadDownloadApp(t *testing.T) {
