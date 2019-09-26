@@ -9,22 +9,22 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func createSecret(clientset *kubernetes.Clientset, scraperName string) (string, string, error) {
+func createSecret(clientset *kubernetes.Clientset, namePrefix string) (string, string, error) {
 	// Generate random token
 	runToken := uniuri.NewLen(32)
 
-	// We need to convert the user-supplied scraperName to something that will
+	// We need to convert the user-supplied namePrefix to something that will
 	// work in k8s. That means only alpha numeric characters and "-".
 	// For instance no "/".
 
 	// Matches any non alphanumeric character
 	re := regexp.MustCompile(`[^[:alnum:]]`)
-	convertedScraperName := re.ReplaceAllString(scraperName, "-")
+	convertedNamePrefix := re.ReplaceAllString(namePrefix, "-")
 
 	secretsClient := clientset.CoreV1().Secrets("clay-scrapers")
 	secret := &apiv1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: convertedScraperName + "-",
+			GenerateName: convertedNamePrefix + "-",
 		},
 		StringData: map[string]string{
 			"run_token": runToken,

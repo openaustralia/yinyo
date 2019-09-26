@@ -26,16 +26,16 @@ func getClientSet() (*kubernetes.Clientset, error) {
 }
 
 func create(w http.ResponseWriter, r *http.Request) error {
-	// TODO: Make the scraper_name optional
-	// TODO: Do we make sure that there is only one scraper_name used?
-	scraperName := r.URL.Query()["scraper_name"][0]
+	// TODO: Make the name_prefix optional
+	// TODO: Do we make sure that there is only one name_prefix used?
+	namePrefix := r.URL.Query()["name_prefix"][0]
 
 	clientset, err := getClientSet()
 	if err != nil {
 		return err
 	}
 
-	createResult, err := commandCreate(clientset, scraperName)
+	createResult, err := commandCreate(clientset, namePrefix)
 	if err != nil {
 		return err
 	}

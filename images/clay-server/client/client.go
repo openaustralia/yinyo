@@ -16,7 +16,7 @@ func createRun(scraperName string) (createRunResult, error) {
 	var result createRunResult
 
 	params := url.Values{}
-	params.Add("scraper_name", scraperName)
+	params.Add("name_prefix", scraperName)
 	resp, err := http.Post("http://localhost:8080/runs?"+params.Encode(), "", nil)
 	if err != nil {
 		return result, err

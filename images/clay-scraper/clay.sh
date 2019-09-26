@@ -8,7 +8,7 @@ if [ $# == 0 ]; then
   echo "  $0 COMMAND"
   echo ""
   echo "COMMANDS:"
-  echo "  create SCRAPER_NAME                                             Returns run name and run token"
+  echo "  create NAME_PREFIX                                              Returns run name and run token"
   echo "  put RUN_NAME RUN_TOKEN [app|cache|output|exit-data]             Take stdin and upload"
   # TODO: Add support for more than one environment variable
   echo "  start RUN_NAME RUN_TOKEN SCRAPER_OUTPUT [ENV_NAME ENV_VALUE]    Start the scraper"
@@ -22,7 +22,7 @@ if [ $# == 0 ]; then
   echo "  finished RUN_NAME RUN_TOKEN STAGE                               Let the world know that a stage is finished"
   echo "  send-event RUN_NAME RUN_TOKEN JSON                              Send arbitrary json string as an event"
   echo ""
-  echo "SCRAPER_NAME is chosen by the user. It doesn't have to be unique and is only"
+  echo "NAME_PREFIX is chosen by the user. It doesn't have to be unique and is only"
   echo "used as a base to generate the unique run name."
   echo "STAGE can be either build or run"
   echo ""
@@ -40,7 +40,7 @@ if [ "$1" = "put" ]; then
 elif [ "$1" = "get" ]; then
   curl -s -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/$4"
 elif [ "$1" = "create" ]; then
-  curl -s -G -X POST "$CLAY_SERVER_URL/runs" -d "scraper_name=$2"
+  curl -s -G -X POST "$CLAY_SERVER_URL/runs" -d "name_prefix=$2"
 elif [ "$1" = "start" ]; then
   # Send as json
   data=$(jq -c -n --arg output "$4" --arg env_name "$5" --arg env_value "$6" '{output: $output, env: [{name: $env_name, value: $env_value}]}')

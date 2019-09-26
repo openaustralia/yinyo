@@ -21,8 +21,7 @@ paths:
       description: |
         Returns with the "run ID" which uniquely identifies this run. You will need this run ID to subsequently start, track and access this run.
       parameters:
-      # TODO: Rename scraper_name to prefix
-      - name: scraper_name
+      - name: name_prefix
         description: Prefix used when generating run names
         in: query
         schema:

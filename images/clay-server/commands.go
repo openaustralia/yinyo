@@ -17,8 +17,8 @@ type logMessage struct {
 	Log, Stream, Stage, Type string
 }
 
-func commandCreate(clientset *kubernetes.Clientset, scraperName string) (createResult, error) {
-	runName, runToken, err := createSecret(clientset, scraperName)
+func commandCreate(clientset *kubernetes.Clientset, namePrefix string) (createResult, error) {
+	runName, runToken, err := createSecret(clientset, namePrefix)
 
 	createResult := createResult{
 		RunName:  runName,
