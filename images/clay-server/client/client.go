@@ -14,14 +14,17 @@ type createRunResult struct {
 }
 
 type Client struct {
-	URL string
+	URL        string
+	HttpClient *http.Client
 }
 
 func NewClient(URL string) Client {
-	return Client{URL: URL}
+	return Client{
+		URL:        URL,
+		HttpClient: http.DefaultClient,
+	}
 }
 
-// TODO: Handle server being at a different URL
 func (client *Client) CreateRun(namePrefix string) (createRunResult, error) {
 	var result createRunResult
 
@@ -31,7 +34,12 @@ func (client *Client) CreateRun(namePrefix string) (createRunResult, error) {
 		params.Add("name_prefix", namePrefix)
 		uri += "?" + params.Encode()
 	}
-	resp, err := http.Post(uri, "", nil)
+	req, err := http.NewRequest("POST", uri, nil)
+	if err != nil {
+		return result, err
+	}
+
+	resp, err := client.HttpClient.Do(req)
 	if err != nil {
 		return result, err
 	}
@@ -48,7 +56,7 @@ func (client *Client) PutApp(run createRunResult, appData io.Reader) (*http.Resp
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.RunToken)
-	return http.DefaultClient.Do(req)
+	return client.HttpClient.Do(req)
 }
 
 func (client *Client) GetApp(run createRunResult) (*http.Response, error) {
@@ -58,5 +66,5 @@ func (client *Client) GetApp(run createRunResult) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.RunToken)
-	return http.DefaultClient.Do(req)
+	return client.HttpClient.Do(req)
 }
