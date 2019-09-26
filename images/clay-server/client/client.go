@@ -2,6 +2,8 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -29,4 +31,24 @@ func createRun(namePrefix string) (createRunResult, error) {
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&result)
 	return result, err
+}
+
+func uploadApp(run createRunResult, appData io.Reader) (*http.Response, error) {
+	url := fmt.Sprintf("http://localhost:8080/runs/%s/app", run.RunName)
+	req, err := http.NewRequest("PUT", url, appData)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+run.RunToken)
+	return http.DefaultClient.Do(req)
+}
+
+func downloadApp(run createRunResult) (*http.Response, error) {
+	url := fmt.Sprintf("http://localhost:8080/runs/%s/app", run.RunName)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+run.RunToken)
+	return http.DefaultClient.Do(req)
 }

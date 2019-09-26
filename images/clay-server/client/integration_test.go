@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -79,25 +78,14 @@ func TestUploadDownloadApp(t *testing.T) {
 	// Now upload a random test pattern for the app
 	app := "Random test pattern"
 	body := strings.NewReader(app)
-	url := fmt.Sprintf("http://localhost:8080/runs/%s/app", run.RunName)
-	req, err := http.NewRequest("PUT", url, body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	req.Header.Set("Authorization", "Bearer "+run.RunToken)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := uploadApp(run, body)
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// Now download the test pattern and check that it matches
-	req, err = http.NewRequest("GET", url, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	req.Header.Set("Authorization", "Bearer "+run.RunToken)
-	resp, err = http.DefaultClient.Do(req)
+	resp, err = downloadApp(run)
 	if err != nil {
 		t.Fatal(err)
 	}
