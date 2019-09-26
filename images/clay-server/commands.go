@@ -18,6 +18,9 @@ type logMessage struct {
 }
 
 func commandCreate(clientset *kubernetes.Clientset, namePrefix string) (createResult, error) {
+	if namePrefix == "" {
+		namePrefix = "run"
+	}
 	runName, runToken, err := createSecret(clientset, namePrefix)
 
 	createResult := createResult{

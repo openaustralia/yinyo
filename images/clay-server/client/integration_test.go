@@ -31,8 +31,8 @@ func TestCreateRun(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// The only purpose of scraper name is to make runs easier for humans to identify
-	// So, expect the run to start with the scraper name but there's probably more
+	// The only purpose of name_prefix is to make runs easier for humans to identify
+	// So, expect the run to start with the name_prefix but there's probably more
 	assert.True(t, strings.HasPrefix(result.RunName, "foo-"))
 	assert.NotEqual(t, "", result.RunToken)
 }
@@ -59,4 +59,12 @@ func TestCreateRunNamesUnique(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.NotEqual(t, result1.RunName, result2.RunName)
+}
+
+func TestNamePrefixOptional(t *testing.T) {
+	result, err := createRun("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.True(t, strings.HasPrefix(result.RunName, "run-"))
 }

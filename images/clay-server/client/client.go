@@ -12,12 +12,16 @@ type createRunResult struct {
 }
 
 // TODO: Handle server being at a different URL
-func createRun(scraperName string) (createRunResult, error) {
+func createRun(namePrefix string) (createRunResult, error) {
 	var result createRunResult
 
-	params := url.Values{}
-	params.Add("name_prefix", scraperName)
-	resp, err := http.Post("http://localhost:8080/runs?"+params.Encode(), "", nil)
+	uri := "http://localhost:8080/runs"
+	if namePrefix != "" {
+		params := url.Values{}
+		params.Add("name_prefix", namePrefix)
+		uri += "?" + params.Encode()
+	}
+	resp, err := http.Post(uri, "", nil)
 	if err != nil {
 		return result, err
 	}

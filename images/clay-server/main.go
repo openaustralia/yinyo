@@ -26,9 +26,12 @@ func getClientSet() (*kubernetes.Clientset, error) {
 }
 
 func create(w http.ResponseWriter, r *http.Request) error {
-	// TODO: Make the name_prefix optional
 	// TODO: Do we make sure that there is only one name_prefix used?
-	namePrefix := r.URL.Query()["name_prefix"][0]
+	values := r.URL.Query()["name_prefix"]
+	namePrefix := ""
+	if len(values) > 0 {
+		namePrefix = values[0]
+	}
 
 	clientset, err := getClientSet()
 	if err != nil {
