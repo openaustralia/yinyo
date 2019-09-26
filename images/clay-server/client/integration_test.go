@@ -13,10 +13,9 @@ func defaultClient() Client {
 	return NewClient("http://localhost:8080")
 }
 
-// First go at doing end-to-end testing of the system
-func TestServerHello(t *testing.T) {
+func TestHelloRaw(t *testing.T) {
 	client := defaultClient()
-	resp, err := client.Hello()
+	resp, err := client.HelloRaw()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,6 +26,15 @@ func TestServerHello(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, "Hello from Clay!\n", string(b))
+}
+
+func TestHello(t *testing.T) {
+	client := defaultClient()
+	text, err := client.Hello()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, "Hello from Clay!\n", text)
 }
 
 func TestCreateRun(t *testing.T) {

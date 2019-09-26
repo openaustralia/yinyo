@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -25,12 +26,19 @@ func NewClient(URL string) Client {
 	}
 }
 
-func (client *Client) Hello() (*http.Response, error) {
+func (client *Client) HelloRaw() (*http.Response, error) {
 	req, err := http.NewRequest("GET", client.URL, nil)
 	if err != nil {
 		return nil, err
 	}
 	return client.HttpClient.Do(req)
+}
+
+func (client *Client) Hello() (string, error) {
+	resp, err := client.HelloRaw()
+	// TODO: Do we need to check that we get a 200 response?
+	b, err := ioutil.ReadAll(resp.Body)
+	return string(b), err
 }
 
 func (client *Client) CreateRun(namePrefix string) (Run, error) {
