@@ -176,14 +176,19 @@ func TestHelloWorld(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Upload the cache
+	// Upload the cache if it exists
+	// TODO: If the cache doesn't exist the test will fail on its first run
+	// because the log output is slightly different. Handle this better.
 	file, err := os.Open("fixtures/caches/hello-world.tar.gz")
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = client.PutCache(run, file)
-	if err != nil {
-		t.Fatal(err)
+	if err == nil {
+		_, err = client.PutCache(run, file)
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		if !os.IsNotExist(err) {
+			t.Fatal(err)
+		}
 	}
 
 	// Now start the scraper
@@ -219,8 +224,7 @@ func TestHelloWorld(t *testing.T) {
 		"{\"stage\":\"run\",\"type\":\"finished\"}",
 	}, eventStrings)
 
-	// Get the cache (initially just save it as is)
-	// TODO: Uncompress and untar the cache
+	// Get the cache
 	resp, err := client.GetCache(run)
 	if err != nil {
 		t.Fatal(err)
