@@ -28,7 +28,7 @@ func NewClient(URL string) Client {
 	}
 }
 
-func (client *Client) HelloRaw() (*http.Response, error) {
+func (client *Client) helloRaw() (*http.Response, error) {
 	req, err := http.NewRequest("GET", client.URL, nil)
 	if err != nil {
 		return nil, err
@@ -37,13 +37,18 @@ func (client *Client) HelloRaw() (*http.Response, error) {
 }
 
 func (client *Client) Hello() (string, error) {
-	resp, err := client.HelloRaw()
+	resp, err := client.helloRaw()
 	if err != nil {
 		return "", err
 	}
 	if resp.StatusCode != http.StatusOK {
 		return "", errors.New(resp.Status)
 	}
+	ct := resp.Header["Content-Type"]
+	if len(ct) != 1 || ct[0] != "text/plain; charset=utf-8" {
+		return "", errors.New("Unexpected content type")
+	}
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -51,7 +56,7 @@ func (client *Client) Hello() (string, error) {
 	return string(b), nil
 }
 
-func (client *Client) CreateRunRaw(namePrefix string) (*http.Response, error) {
+func (client *Client) createRunRaw(namePrefix string) (*http.Response, error) {
 	uri := client.URL + "/runs"
 	if namePrefix != "" {
 		params := url.Values{}
@@ -69,12 +74,16 @@ func (client *Client) CreateRunRaw(namePrefix string) (*http.Response, error) {
 func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	var result Run
 
-	resp, err := client.CreateRunRaw(namePrefix)
+	resp, err := client.createRunRaw(namePrefix)
 	if err != nil {
 		return result, err
 	}
 	if resp.StatusCode != http.StatusOK {
 		return result, errors.New(resp.Status)
+	}
+	ct := resp.Header["Content-Type"]
+	if len(ct) != 1 || ct[0] != "application/json" {
+		return result, errors.New("Unexpected content type")
 	}
 
 	decoder := json.NewDecoder(resp.Body)
@@ -82,7 +91,7 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	return result, err
 }
 
-func (client *Client) PutApp(run Run, appData io.Reader) (*http.Response, error) {
+func (client *Client) putAppRaw(run Run, appData io.Reader) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/app", run.Name)
 	req, err := http.NewRequest("PUT", url, appData)
 	if err != nil {
@@ -92,7 +101,18 @@ func (client *Client) PutApp(run Run, appData io.Reader) (*http.Response, error)
 	return client.HttpClient.Do(req)
 }
 
-func (client *Client) GetApp(run Run) (*http.Response, error) {
+func (client *Client) PutApp(run Run, appData io.Reader) error {
+	resp, err := client.putAppRaw(run, appData)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(resp.Status)
+	}
+	return nil
+}
+
+func (client *Client) getAppRaw(run Run) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/app", run.Name)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -103,7 +123,22 @@ func (client *Client) GetApp(run Run) (*http.Response, error) {
 	return client.HttpClient.Do(req)
 }
 
-func (client *Client) PutCache(run Run, data io.Reader) (*http.Response, error) {
+func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
+	resp, err := client.getAppRaw(run)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	ct := resp.Header["Content-Type"]
+	if len(ct) != 1 || ct[0] != "application/gzip" {
+		return nil, errors.New("Unexpected content type")
+	}
+	return resp.Body, nil
+}
+
+func (client *Client) PutCacheRaw(run Run, data io.Reader) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/cache", run.Name)
 	req, err := http.NewRequest("PUT", url, data)
 	if err != nil {
@@ -113,7 +148,7 @@ func (client *Client) PutCache(run Run, data io.Reader) (*http.Response, error) 
 	return client.HttpClient.Do(req)
 }
 
-func (client *Client) GetCache(run Run) (*http.Response, error) {
+func (client *Client) GetCacheRaw(run Run) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/cache", run.Name)
 
 	req, err := http.NewRequest("GET", url, nil)

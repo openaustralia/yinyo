@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,21 +18,6 @@ import (
 
 func defaultClient() Client {
 	return NewClient("http://localhost:8080")
-}
-
-func TestHelloRaw(t *testing.T) {
-	client := defaultClient()
-	resp, err := client.HelloRaw()
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, []string{"text/plain; charset=utf-8"}, resp.Header["Content-Type"])
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, "Hello from Clay!\n", string(b))
 }
 
 func TestHello(t *testing.T) {
@@ -56,16 +40,6 @@ func TestCreateRun(t *testing.T) {
 	// So, expect the run to start with the name_prefix but there's probably more
 	assert.True(t, strings.HasPrefix(run.Name, "foo-"))
 	assert.NotEqual(t, "", run.Token)
-}
-
-func TestCreateRunRaw(t *testing.T) {
-	client := defaultClient()
-	resp, err := client.CreateRunRaw("foo")
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, []string{"application/json"}, resp.Header["Content-Type"])
 }
 
 func TestCreateRunScraperNameEncoding(t *testing.T) {
@@ -113,20 +87,17 @@ func TestUploadDownloadApp(t *testing.T) {
 	// Now upload a random test pattern for the app
 	app := "Random test pattern"
 	body := strings.NewReader(app)
-	resp, err := client.PutApp(run, body)
+	err = client.PutApp(run, body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// Now download the test pattern and check that it matches
-	resp, err = client.GetApp(run)
+	data, err := client.GetApp(run)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, []string{"application/gzip"}, resp.Header["Content-Type"])
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,7 +142,7 @@ func TestHelloWorld(t *testing.T) {
 	tarWriter.Close()
 	gzipWriter.Close()
 
-	_, err = client.PutApp(run, &buffer)
+	err = client.PutApp(run, &buffer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +152,7 @@ func TestHelloWorld(t *testing.T) {
 	// because the log output is slightly different. Handle this better.
 	file, err := os.Open("fixtures/caches/hello-world.tar.gz")
 	if err == nil {
-		_, err = client.PutCache(run, file)
+		_, err = client.PutCacheRaw(run, file)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -225,7 +196,7 @@ func TestHelloWorld(t *testing.T) {
 	}, eventStrings)
 
 	// Get the cache
-	resp, err := client.GetCache(run)
+	resp, err := client.GetCacheRaw(run)
 	if err != nil {
 		t.Fatal(err)
 	}
