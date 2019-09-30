@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -36,9 +37,15 @@ func (client *Client) HelloRaw() (*http.Response, error) {
 
 func (client *Client) Hello() (string, error) {
 	resp, err := client.HelloRaw()
+	if err != nil {
+		return "", err
+	}
 	// TODO: Do we need to check that we get a 200 response?
 	b, err := ioutil.ReadAll(resp.Body)
-	return string(b), err
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 func (client *Client) CreateRunRaw(namePrefix string) (*http.Response, error) {
@@ -81,6 +88,57 @@ func (client *Client) PutApp(run Run, appData io.Reader) (*http.Response, error)
 
 func (client *Client) GetApp(run Run) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/app", run.Name)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+run.Token)
+	return client.HttpClient.Do(req)
+}
+
+func (client *Client) PutCache(run Run, data io.Reader) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/cache", run.Name)
+	req, err := http.NewRequest("PUT", url, data)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+run.Token)
+	return client.HttpClient.Do(req)
+}
+
+func (client *Client) GetCache(run Run) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/cache", run.Name)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+run.Token)
+	return client.HttpClient.Do(req)
+}
+
+type StartRunOptions struct {
+	Output string
+}
+
+// TODO: Add setting of environment variables
+func (client *Client) StartRunRaw(run Run, options *StartRunOptions) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/start", run.Name)
+	b, err := json.Marshal(options)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewReader(b))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+run.Token)
+	return client.HttpClient.Do(req)
+}
+
+func (client *Client) GetEventsRaw(run Run) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/events", run.Name)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
