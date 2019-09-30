@@ -1,15 +1,11 @@
 package client
 
 import (
-	"archive/tar"
 	"bufio"
-	"bytes"
-	"compress/gzip"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -117,32 +113,7 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now upload the application
-	var buffer bytes.Buffer
-	gzipWriter := gzip.NewWriter(&buffer)
-	tarWriter := tar.NewWriter(gzipWriter)
-	dir := "fixtures/scrapers/hello-world"
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, file := range files {
-		// Now put the contents of this file into the tar file
-		tarWriter.WriteHeader(&tar.Header{
-			Name: file.Name(),
-			Size: file.Size(),
-			Mode: 0600,
-		})
-		f, err := os.Open(filepath.Join(dir, file.Name()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		io.Copy(tarWriter, f)
-	}
-	// TODO: This should always get called
-	tarWriter.Close()
-	gzipWriter.Close()
-
-	err = client.PutApp(run, &buffer)
+	err = client.PutAppFromDirectory(run, "fixtures/scrapers/hello-world")
 	if err != nil {
 		t.Fatal(err)
 	}

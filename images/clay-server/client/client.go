@@ -1,7 +1,9 @@
 package client
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +11,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 )
 
 type Run struct {
@@ -110,6 +114,34 @@ func (client *Client) PutApp(run Run, appData io.Reader) error {
 		return errors.New(resp.Status)
 	}
 	return nil
+}
+
+func (client *Client) PutAppFromDirectory(run Run, dir string) error {
+	var buffer bytes.Buffer
+	gzipWriter := gzip.NewWriter(&buffer)
+	tarWriter := tar.NewWriter(gzipWriter)
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		// Now put the contents of this file into the tar file
+		tarWriter.WriteHeader(&tar.Header{
+			Name: file.Name(),
+			Size: file.Size(),
+			Mode: 0600,
+		})
+		f, err := os.Open(filepath.Join(dir, file.Name()))
+		if err != nil {
+			return err
+		}
+		io.Copy(tarWriter, f)
+	}
+	// TODO: This should always get called
+	tarWriter.Close()
+	gzipWriter.Close()
+
+	return client.PutApp(run, &buffer)
 }
 
 func (client *Client) getAppRaw(run Run) (*http.Response, error) {
