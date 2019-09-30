@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -40,7 +41,9 @@ func (client *Client) Hello() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// TODO: Do we need to check that we get a 200 response?
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New(resp.Status)
+	}
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -69,6 +72,9 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	resp, err := client.CreateRunRaw(namePrefix)
 	if err != nil {
 		return result, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return result, errors.New(resp.Status)
 	}
 
 	decoder := json.NewDecoder(resp.Body)
