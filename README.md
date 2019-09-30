@@ -15,7 +15,7 @@
 
 Start Minikube if you haven't already
 ```
-minikube start --memory=3072
+minikube start --memory=3072 --kubernetes-version='v1.15.2'
 ```
 Minikube by default starts with 2GB of memory for the VM which is not enough in
 our case.
