@@ -170,7 +170,7 @@ func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
-func (client *Client) PutCacheRaw(run Run, data io.Reader) (*http.Response, error) {
+func (client *Client) putCacheRaw(run Run, data io.Reader) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/cache", run.Name)
 	req, err := http.NewRequest("PUT", url, data)
 	if err != nil {
@@ -180,7 +180,18 @@ func (client *Client) PutCacheRaw(run Run, data io.Reader) (*http.Response, erro
 	return client.HttpClient.Do(req)
 }
 
-func (client *Client) GetCacheRaw(run Run) (*http.Response, error) {
+func (client *Client) PutCache(run Run, data io.Reader) error {
+	resp, err := client.putCacheRaw(run, data)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(resp.Status)
+	}
+	return nil
+}
+
+func (client *Client) getCacheRaw(run Run) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/cache", run.Name)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -189,6 +200,21 @@ func (client *Client) GetCacheRaw(run Run) (*http.Response, error) {
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
 	return client.HttpClient.Do(req)
+}
+
+func (client *Client) GetCache(run Run) (io.ReadCloser, error) {
+	resp, err := client.getCacheRaw(run)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	ct := resp.Header["Content-Type"]
+	if len(ct) != 1 || ct[0] != "application/gzip" {
+		return nil, errors.New("Unexpected content type")
+	}
+	return resp.Body, nil
 }
 
 type StartRunOptions struct {

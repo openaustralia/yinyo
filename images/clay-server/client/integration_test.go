@@ -123,7 +123,7 @@ func TestHelloWorld(t *testing.T) {
 	// because the log output is slightly different. Handle this better.
 	file, err := os.Open("fixtures/caches/hello-world.tar.gz")
 	if err == nil {
-		_, err = client.PutCacheRaw(run, file)
+		err = client.PutCache(run, file)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -167,7 +167,7 @@ func TestHelloWorld(t *testing.T) {
 	}, eventStrings)
 
 	// Get the cache
-	resp, err := client.GetCacheRaw(run)
+	cache, err := client.GetCache(run)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,7 +176,7 @@ func TestHelloWorld(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	io.Copy(file, resp.Body)
+	io.Copy(file, cache)
 
 	// Get the output
 	// Get the metrics

@@ -61,6 +61,7 @@ func putApp(w http.ResponseWriter, r *http.Request) error {
 
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	w.Header().Set("Content-Type", "application/gzip")
 	return commandGetCache(storeAccess, runName, w)
 }
 
