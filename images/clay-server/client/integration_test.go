@@ -1,8 +1,16 @@
 package client
 
 import (
+	"archive/tar"
+	"bufio"
+	"bytes"
+	"compress/gzip"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -124,4 +132,109 @@ func TestUploadDownloadApp(t *testing.T) {
 	}
 	assert.Equal(t, app, string(b))
 	// TODO: Clean up run
+}
+
+// TODO: Add a test for calling CreateRun("TestHelloWorld")
+
+func TestHelloWorld(t *testing.T) {
+	// Test the running of a super-simple program end-to-end
+	client := defaultClient()
+	// Create the run
+	run, err := client.CreateRun("test-hello-world")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Now upload the application
+	var buffer bytes.Buffer
+	gzipWriter := gzip.NewWriter(&buffer)
+	tarWriter := tar.NewWriter(gzipWriter)
+	dir := "fixtures/scrapers/hello-world"
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		// Now put the contents of this file into the tar file
+		tarWriter.WriteHeader(&tar.Header{
+			Name: file.Name(),
+			Size: file.Size(),
+			Mode: 0600,
+		})
+		f, err := os.Open(filepath.Join(dir, file.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		io.Copy(tarWriter, f)
+	}
+	// TODO: This should always get called
+	tarWriter.Close()
+	gzipWriter.Close()
+
+	_, err = client.PutApp(run, &buffer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Upload the cache
+	file, err := os.Open("fixtures/caches/hello-world.tar.gz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = client.PutCache(run, file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Now start the scraper
+	_, err = client.StartRunRaw(run, &StartRunOptions{Output: "output.txt"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the logs (events)
+	events, err := client.GetEventsRaw(run)
+	if err != nil {
+		t.Fatal(err)
+	}
+	scanner := bufio.NewScanner(events.Body)
+	var eventStrings []string
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+		eventStrings = append(eventStrings, scanner.Text())
+	}
+	assert.Equal(t, []string{
+		"{\"stage\":\"build\",\"type\":\"started\"}",
+		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       \\u001b[1G-----> Python app detected\"}",
+		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16\"}",
+		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes\"}",
+		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G-----> Installing requirements with pip\"}",
+		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       You must give at least one requirement to install (see \\\"pip help install\\\")\"}",
+		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       \"}",
+		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       \\u001b[1G-----> Discovering process types\"}",
+		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       Procfile declares types -> scraper\"}",
+		"{\"stage\":\"build\",\"type\":\"finished\"}",
+		"{\"stage\":\"run\",\"type\":\"started\"}",
+		"{\"stage\":\"run\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"Hello World!\"}",
+		"{\"stage\":\"run\",\"type\":\"finished\"}",
+	}, eventStrings)
+
+	// Get the cache (initially just save it as is)
+	// TODO: Uncompress and untar the cache
+	resp, err := client.GetCache(run)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	file, err = os.Create("fixtures/caches/hello-world.tar.gz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	io.Copy(file, resp.Body)
+
+	// Get the output
+	// Get the metrics
+	// Get the exit status
+	// Cleanup
+
 }
