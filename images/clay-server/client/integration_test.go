@@ -30,6 +30,7 @@ func TestCreateRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.DeleteRun(run)
 
 	// The only purpose of name_prefix is to make runs easier for humans to identify
 	// So, expect the run to start with the name_prefix but there's probably more
@@ -43,6 +44,7 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.DeleteRun(run)
 
 	// Only certain characters are allowed in kubernetes job names
 	assert.True(t, strings.HasPrefix(run.Name, "foo-b-12r-"))
@@ -56,10 +58,12 @@ func TestCreateRunNamesUnique(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.DeleteRun(run1)
 	run2, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.DeleteRun(run2)
 	assert.NotEqual(t, run1.Name, run2.Name)
 }
 
@@ -69,6 +73,7 @@ func TestNamePrefixOptional(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.DeleteRun(run)
 	assert.True(t, strings.HasPrefix(run.Name, "run-"))
 }
 
@@ -79,6 +84,7 @@ func TestUploadDownloadApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.DeleteRun(run)
 	// Now upload a random test pattern for the app
 	app := "Random test pattern"
 	body := strings.NewReader(app)
@@ -110,6 +116,7 @@ func TestHelloWorld(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.DeleteRun(run)
 
 	// Now upload the application
 	err = client.PutAppFromDirectory(run, "fixtures/scrapers/hello-world")

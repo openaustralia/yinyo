@@ -111,7 +111,7 @@ func addAuthorization(req *http.Request, run Run) {
 
 // Make an API call for a particular run. These requests are always authenticated
 func (client *Client) runRequest(run Run, method string, path string, body io.Reader) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/", run.Name) + path
+	url := client.URL + fmt.Sprintf("/runs/%s", run.Name) + path
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (client *Client) runRequest(run Run, method string, path string, body io.Re
 
 // PutApp uploads the tarred & gzipped scraper code
 func (client *Client) PutApp(run Run, appData io.Reader) error {
-	resp, err := client.runRequest(run, "PUT", "app", appData)
+	resp, err := client.runRequest(run, "PUT", "/app", appData)
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (client *Client) PutAppFromDirectory(run Run, dir string) error {
 
 // GetApp downloads the tarred & gzipped scraper code
 func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
-	resp, err := client.runRequest(run, "GET", "app", nil)
+	resp, err := client.runRequest(run, "GET", "/app", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
 
 // PutCache uploads the tarred & gzipped build cache
 func (client *Client) PutCache(run Run, data io.Reader) error {
-	resp, err := client.runRequest(run, "PUT", "cache", data)
+	resp, err := client.runRequest(run, "PUT", "/cache", data)
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func (client *Client) PutCache(run Run, data io.Reader) error {
 
 // GetCache downloads the tarred & gzipped build cache
 func (client *Client) GetCache(run Run) (io.ReadCloser, error) {
-	resp, err := client.runRequest(run, "GET", "cache", nil)
+	resp, err := client.runRequest(run, "GET", "/cache", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func (client *Client) StartRun(run Run, options *StartRunOptions) error {
 	if err != nil {
 		return err
 	}
-	resp, err := client.runRequest(run, "POST", "start", bytes.NewReader(b))
+	resp, err := client.runRequest(run, "POST", "/start", bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func (iterator *EventIterator) Next() (Event, error) {
 
 // GetEvents returns a stream of events from the API
 func (client *Client) GetEvents(run Run) (*EventIterator, error) {
-	resp, err := client.runRequest(run, "GET", "events", nil)
+	resp, err := client.runRequest(run, "GET", "/events", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -284,4 +284,13 @@ func (client *Client) GetEvents(run Run) (*EventIterator, error) {
 		return nil, err
 	}
 	return &EventIterator{decoder: json.NewDecoder(resp.Body)}, nil
+}
+
+// DeleteRun cleans up after a run is complete
+func (client *Client) DeleteRun(run Run) error {
+	resp, err := client.runRequest(run, "DELETE", "", nil)
+	if err != nil {
+		return err
+	}
+	return checkOK(resp)
 }
