@@ -43,18 +43,32 @@ func (client *Client) helloRaw() (*http.Response, error) {
 	return client.HTTPClient.Do(req)
 }
 
+func checkOK(resp *http.Response) error {
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+	return errors.New(resp.Status)
+}
+
+func checkContentType(resp *http.Response, expected string) error {
+	ct := resp.Header["Content-Type"]
+	if len(ct) == 1 && ct[0] == expected {
+		return nil
+	}
+	return errors.New("Unexpected content type")
+}
+
 // Hello does a simple ping type request to the API
 func (client *Client) Hello() (string, error) {
 	resp, err := client.helloRaw()
 	if err != nil {
 		return "", err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.New(resp.Status)
+	if err = checkOK(resp); err != nil {
+		return "", err
 	}
-	ct := resp.Header["Content-Type"]
-	if len(ct) != 1 || ct[0] != "text/plain; charset=utf-8" {
-		return "", errors.New("Unexpected content type")
+	if err = checkContentType(resp, "text/plain; charset=utf-8"); err != nil {
+		return "", err
 	}
 
 	b, err := ioutil.ReadAll(resp.Body)
@@ -87,12 +101,11 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	if err != nil {
 		return result, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return result, errors.New(resp.Status)
+	if err = checkOK(resp); err != nil {
+		return result, err
 	}
-	ct := resp.Header["Content-Type"]
-	if len(ct) != 1 || ct[0] != "application/json" {
-		return result, errors.New("Unexpected content type")
+	if err = checkContentType(resp, "application/json"); err != nil {
+		return result, err
 	}
 
 	decoder := json.NewDecoder(resp.Body)
@@ -116,10 +129,7 @@ func (client *Client) PutApp(run Run, appData io.Reader) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return errors.New(resp.Status)
-	}
-	return nil
+	return checkOK(resp)
 }
 
 // PutAppFromDirectory uploads the scraper code from a directory on the filesystem
@@ -168,12 +178,11 @@ func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
+	if err = checkOK(resp); err != nil {
+		return nil, err
 	}
-	ct := resp.Header["Content-Type"]
-	if len(ct) != 1 || ct[0] != "application/gzip" {
-		return nil, errors.New("Unexpected content type")
+	if err = checkContentType(resp, "application/gzip"); err != nil {
+		return nil, err
 	}
 	return resp.Body, nil
 }
@@ -194,10 +203,7 @@ func (client *Client) PutCache(run Run, data io.Reader) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return errors.New(resp.Status)
-	}
-	return nil
+	return checkOK(resp)
 }
 
 func (client *Client) getCacheRaw(run Run) (*http.Response, error) {
@@ -217,12 +223,11 @@ func (client *Client) GetCache(run Run) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
+	if err = checkOK(resp); err != nil {
+		return nil, err
 	}
-	ct := resp.Header["Content-Type"]
-	if len(ct) != 1 || ct[0] != "application/gzip" {
-		return nil, errors.New("Unexpected content type")
+	if err = checkContentType(resp, "application/gzip"); err != nil {
+		return nil, err
 	}
 	return resp.Body, nil
 }
@@ -253,10 +258,7 @@ func (client *Client) StartRun(run Run, options *StartRunOptions) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return errors.New(resp.Status)
-	}
-	return nil
+	return checkOK(resp)
 }
 
 type eventRaw struct {
@@ -330,12 +332,11 @@ func (client *Client) GetEvents(run Run) (*EventIterator, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
+	if err = checkOK(resp); err != nil {
+		return nil, err
 	}
-	ct := resp.Header["Content-Type"]
-	if len(ct) != 1 || ct[0] != "application/ld+json" {
-		return nil, errors.New("Unexpected content type")
+	if err = checkContentType(resp, "application/ld+json"); err != nil {
+		return nil, err
 	}
 	return &EventIterator{decoder: json.NewDecoder(resp.Body)}, nil
 }
