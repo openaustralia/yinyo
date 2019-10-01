@@ -19,6 +19,8 @@ import (
 type Run struct {
 	Name  string `json:"run_name"`
 	Token string `json:"run_token"`
+	// Ignore this field when converting from/to json
+	client *Client `json:"-"`
 }
 
 // Client is used to access the API
@@ -76,7 +78,7 @@ func (client *Client) Hello() (string, error) {
 
 // CreateRun is the first thing called. It creates a run
 func (client *Client) CreateRun(namePrefix string) (Run, error) {
-	var result Run
+	run := Run{client: client}
 
 	uri := client.URL + "/runs"
 	if namePrefix != "" {
@@ -86,23 +88,23 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	}
 	req, err := http.NewRequest("POST", uri, nil)
 	if err != nil {
-		return result, err
+		return run, err
 	}
 
 	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
-		return result, err
+		return run, err
 	}
 	if err = checkOK(resp); err != nil {
-		return result, err
+		return run, err
 	}
 	if err = checkContentType(resp, "application/json"); err != nil {
-		return result, err
+		return run, err
 	}
 
 	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&result)
-	return result, err
+	err = decoder.Decode(&run)
+	return run, err
 }
 
 func addAuthorization(req *http.Request, run Run) {
@@ -110,19 +112,19 @@ func addAuthorization(req *http.Request, run Run) {
 }
 
 // Make an API call for a particular run. These requests are always authenticated
-func (client *Client) runRequest(run Run, method string, path string, body io.Reader) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s", run.Name) + path
+func (run *Run) request(method string, path string, body io.Reader) (*http.Response, error) {
+	url := run.client.URL + fmt.Sprintf("/runs/%s", run.Name) + path
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
-	addAuthorization(req, run)
-	return client.HTTPClient.Do(req)
+	addAuthorization(req, *run)
+	return run.client.HTTPClient.Do(req)
 }
 
 // PutApp uploads the tarred & gzipped scraper code
-func (client *Client) PutApp(run Run, appData io.Reader) error {
-	resp, err := client.runRequest(run, "PUT", "/app", appData)
+func (run *Run) PutApp(appData io.Reader) error {
+	resp, err := run.request("PUT", "/app", appData)
 	if err != nil {
 		return err
 	}
@@ -130,7 +132,7 @@ func (client *Client) PutApp(run Run, appData io.Reader) error {
 }
 
 // PutAppFromDirectory uploads the scraper code from a directory on the filesystem
-func (client *Client) PutAppFromDirectory(run Run, dir string) error {
+func (run *Run) PutAppFromDirectory(dir string) error {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
 	tarWriter := tar.NewWriter(gzipWriter)
@@ -155,12 +157,12 @@ func (client *Client) PutAppFromDirectory(run Run, dir string) error {
 	tarWriter.Close()
 	gzipWriter.Close()
 
-	return client.PutApp(run, &buffer)
+	return run.PutApp(&buffer)
 }
 
 // GetApp downloads the tarred & gzipped scraper code
-func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
-	resp, err := client.runRequest(run, "GET", "/app", nil)
+func (run *Run) GetApp() (io.ReadCloser, error) {
+	resp, err := run.request("GET", "/app", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +176,8 @@ func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
 }
 
 // PutCache uploads the tarred & gzipped build cache
-func (client *Client) PutCache(run Run, data io.Reader) error {
-	resp, err := client.runRequest(run, "PUT", "/cache", data)
+func (run *Run) PutCache(data io.Reader) error {
+	resp, err := run.request("PUT", "/cache", data)
 	if err != nil {
 		return err
 	}
@@ -183,8 +185,8 @@ func (client *Client) PutCache(run Run, data io.Reader) error {
 }
 
 // GetCache downloads the tarred & gzipped build cache
-func (client *Client) GetCache(run Run) (io.ReadCloser, error) {
-	resp, err := client.runRequest(run, "GET", "/cache", nil)
+func (run *Run) GetCache() (io.ReadCloser, error) {
+	resp, err := run.request("GET", "/cache", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -202,14 +204,14 @@ type StartRunOptions struct {
 	Output string
 }
 
-// StartRun starts a run that has earlier been created
+// Start starts a run that has earlier been created
 // TODO: Add setting of environment variables
-func (client *Client) StartRun(run Run, options *StartRunOptions) error {
+func (run *Run) Start(options *StartRunOptions) error {
 	b, err := json.Marshal(options)
 	if err != nil {
 		return err
 	}
-	resp, err := client.runRequest(run, "POST", "/start", bytes.NewReader(b))
+	resp, err := run.request("POST", "/start", bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
@@ -272,8 +274,8 @@ func (iterator *EventIterator) Next() (Event, error) {
 }
 
 // GetEvents returns a stream of events from the API
-func (client *Client) GetEvents(run Run) (*EventIterator, error) {
-	resp, err := client.runRequest(run, "GET", "/events", nil)
+func (run *Run) GetEvents() (*EventIterator, error) {
+	resp, err := run.request("GET", "/events", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -286,9 +288,9 @@ func (client *Client) GetEvents(run Run) (*EventIterator, error) {
 	return &EventIterator{decoder: json.NewDecoder(resp.Body)}, nil
 }
 
-// DeleteRun cleans up after a run is complete
-func (client *Client) DeleteRun(run Run) error {
-	resp, err := client.runRequest(run, "DELETE", "", nil)
+// Delete cleans up after a run is complete
+func (run *Run) Delete() error {
+	resp, err := run.request("DELETE", "", nil)
 	if err != nil {
 		return err
 	}

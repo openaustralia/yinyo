@@ -30,7 +30,7 @@ func TestCreateRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.DeleteRun(run)
+	defer run.Delete()
 
 	// The only purpose of name_prefix is to make runs easier for humans to identify
 	// So, expect the run to start with the name_prefix but there's probably more
@@ -44,7 +44,7 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.DeleteRun(run)
+	defer run.Delete()
 
 	// Only certain characters are allowed in kubernetes job names
 	assert.True(t, strings.HasPrefix(run.Name, "foo-b-12r-"))
@@ -58,12 +58,12 @@ func TestCreateRunNamesUnique(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.DeleteRun(run1)
+	defer run1.Delete()
 	run2, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.DeleteRun(run2)
+	defer run2.Delete()
 	assert.NotEqual(t, run1.Name, run2.Name)
 }
 
@@ -73,7 +73,7 @@ func TestNamePrefixOptional(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.DeleteRun(run)
+	defer run.Delete()
 	assert.True(t, strings.HasPrefix(run.Name, "run-"))
 }
 
@@ -84,17 +84,17 @@ func TestUploadDownloadApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.DeleteRun(run)
+	defer run.Delete()
 	// Now upload a random test pattern for the app
 	app := "Random test pattern"
 	body := strings.NewReader(app)
-	err = client.PutApp(run, body)
+	err = run.PutApp(body)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Now download the test pattern and check that it matches
-	data, err := client.GetApp(run)
+	data, err := run.GetApp()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,10 +116,10 @@ func TestHelloWorld(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.DeleteRun(run)
+	defer run.Delete()
 
 	// Now upload the application
-	err = client.PutAppFromDirectory(run, "fixtures/scrapers/hello-world")
+	err = run.PutAppFromDirectory("fixtures/scrapers/hello-world")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +129,7 @@ func TestHelloWorld(t *testing.T) {
 	// because the log output is slightly different. Handle this better.
 	file, err := os.Open("fixtures/caches/hello-world.tar.gz")
 	if err == nil {
-		err = client.PutCache(run, file)
+		err = run.PutCache(file)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -140,13 +140,13 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now start the scraper
-	err = client.StartRun(run, &StartRunOptions{Output: "output.txt"})
+	err = run.Start(&StartRunOptions{Output: "output.txt"})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Get the logs (events)
-	iterator, err := client.GetEvents(run)
+	iterator, err := run.GetEvents()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +180,7 @@ func TestHelloWorld(t *testing.T) {
 	}, eventsList)
 
 	// Get the cache
-	cache, err := client.GetCache(run)
+	cache, err := run.GetCache()
 	if err != nil {
 		t.Fatal(err)
 	}
