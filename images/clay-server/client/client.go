@@ -296,7 +296,7 @@ func (iterator *EventIterator) Next() (Event, error) {
 	return nil, errors.New("Unexpected type")
 }
 
-func (client *Client) GetEventsRaw(run Run) (*http.Response, error) {
+func (client *Client) getEventsRaw(run Run) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/events", run.Name)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -304,4 +304,19 @@ func (client *Client) GetEventsRaw(run Run) (*http.Response, error) {
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
 	return client.HttpClient.Do(req)
+}
+
+func (client *Client) GetEvents(run Run) (*EventIterator, error) {
+	resp, err := client.getEventsRaw(run)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	ct := resp.Header["Content-Type"]
+	if len(ct) != 1 || ct[0] != "application/ld+json" {
+		return nil, errors.New("Unexpected content type")
+	}
+	return &EventIterator{decoder: json.NewDecoder(resp.Body)}, nil
 }

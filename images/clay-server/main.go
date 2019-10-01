@@ -112,6 +112,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	w.Header().Set("Content-Type", "application/ld+json")
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {

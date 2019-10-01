@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
@@ -140,12 +139,11 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Get the logs (events)
-	events, err := client.GetEventsRaw(run)
+	iterator, err := client.GetEvents(run)
 	if err != nil {
 		t.Fatal(err)
 	}
-	decoder := json.NewDecoder(events.Body)
-	iterator := EventIterator{decoder: decoder}
+
 	var eventsList []Event
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
