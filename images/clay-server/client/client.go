@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 )
 
+// Run is what you get when you create a run and what you need to update it
 type Run struct {
 	Name  string `json:"run_name"`
 	Token string `json:"run_token"`
@@ -222,7 +223,7 @@ type StartRunOptions struct {
 }
 
 // TODO: Add setting of environment variables
-func (client *Client) StartRunRaw(run Run, options *StartRunOptions) (*http.Response, error) {
+func (client *Client) startRunRaw(run Run, options *StartRunOptions) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/start", run.Name)
 	b, err := json.Marshal(options)
 	if err != nil {
@@ -234,6 +235,17 @@ func (client *Client) StartRunRaw(run Run, options *StartRunOptions) (*http.Resp
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
 	return client.HttpClient.Do(req)
+}
+
+func (client *Client) StartRun(run Run, options *StartRunOptions) error {
+	resp, err := client.startRunRaw(run, options)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(resp.Status)
+	}
+	return nil
 }
 
 func (client *Client) GetEventsRaw(run Run) (*http.Response, error) {

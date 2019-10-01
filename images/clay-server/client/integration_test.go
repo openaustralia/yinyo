@@ -134,7 +134,7 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now start the scraper
-	_, err = client.StartRunRaw(run, &StartRunOptions{Output: "output.txt"})
+	err = client.StartRun(run, &StartRunOptions{Output: "output.txt"})
 	if err != nil {
 		t.Fatal(err)
 	}
