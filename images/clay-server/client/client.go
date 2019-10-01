@@ -248,6 +248,13 @@ func (client *Client) StartRun(run Run, options *StartRunOptions) error {
 	return nil
 }
 
+type Event struct {
+	Stage  string
+	Type   string
+	Stream string
+	Log    string // TODO: Rename Log to Text
+}
+
 func (client *Client) GetEventsRaw(run Run) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/events", run.Name)
 	req, err := http.NewRequest("GET", url, nil)

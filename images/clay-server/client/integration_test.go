@@ -1,8 +1,7 @@
 package client
 
 import (
-	"bufio"
-	"fmt"
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
@@ -144,27 +143,29 @@ func TestHelloWorld(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	scanner := bufio.NewScanner(events.Body)
-	var eventStrings []string
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-		eventStrings = append(eventStrings, scanner.Text())
+	decoder := json.NewDecoder(events.Body)
+	var eventsList []Event
+	for decoder.More() {
+		var event Event
+		decoder.Decode(&event)
+		eventsList = append(eventsList, event)
+		// TODO: Do some kind of progress indicator here?
 	}
-	assert.Equal(t, []string{
-		"{\"stage\":\"build\",\"type\":\"started\"}",
-		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       \\u001b[1G-----> Python app detected\"}",
-		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16\"}",
-		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes\"}",
-		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G-----> Installing requirements with pip\"}",
-		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       You must give at least one requirement to install (see \\\"pip help install\\\")\"}",
-		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       \"}",
-		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       \\u001b[1G-----> Discovering process types\"}",
-		"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"\\u001b[1G       Procfile declares types -> scraper\"}",
-		"{\"stage\":\"build\",\"type\":\"finished\"}",
-		"{\"stage\":\"run\",\"type\":\"started\"}",
-		"{\"stage\":\"run\",\"type\":\"log\",\"stream\":\"stdout\",\"log\":\"Hello World!\"}",
-		"{\"stage\":\"run\",\"type\":\"finished\"}",
-	}, eventStrings)
+	assert.Equal(t, []Event{
+		Event{Stage: "build", Type: "started"},
+		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Python app detected"},
+		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
+		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
+		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G-----> Installing requirements with pip"},
+		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
+		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       "},
+		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Discovering process types"},
+		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       Procfile declares types -> scraper"},
+		Event{Stage: "build", Type: "finished"},
+		Event{Stage: "run", Type: "started"},
+		Event{Stage: "run", Type: "log", Stream: "stdout", Log: "Hello World!"},
+		Event{Stage: "run", Type: "finished"},
+	}, eventsList)
 
 	// Get the cache
 	cache, err := client.GetCache(run)
