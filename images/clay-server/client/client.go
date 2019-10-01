@@ -35,14 +35,6 @@ func NewClient(URL string) Client {
 	}
 }
 
-func (client *Client) helloRaw() (*http.Response, error) {
-	req, err := http.NewRequest("GET", client.URL, nil)
-	if err != nil {
-		return nil, err
-	}
-	return client.HTTPClient.Do(req)
-}
-
 func checkOK(resp *http.Response) error {
 	if resp.StatusCode == http.StatusOK {
 		return nil
@@ -60,7 +52,11 @@ func checkContentType(resp *http.Response, expected string) error {
 
 // Hello does a simple ping type request to the API
 func (client *Client) Hello() (string, error) {
-	resp, err := client.helloRaw()
+	req, err := http.NewRequest("GET", client.URL, nil)
+	if err != nil {
+		return "", err
+	}
+	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -78,7 +74,10 @@ func (client *Client) Hello() (string, error) {
 	return string(b), nil
 }
 
-func (client *Client) createRunRaw(namePrefix string) (*http.Response, error) {
+// CreateRun is the first thing called. It creates a run
+func (client *Client) CreateRun(namePrefix string) (Run, error) {
+	var result Run
+
 	uri := client.URL + "/runs"
 	if namePrefix != "" {
 		params := url.Values{}
@@ -87,17 +86,10 @@ func (client *Client) createRunRaw(namePrefix string) (*http.Response, error) {
 	}
 	req, err := http.NewRequest("POST", uri, nil)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
-	return client.HTTPClient.Do(req)
-}
-
-// CreateRun is the first thing called. It creates a run
-func (client *Client) CreateRun(namePrefix string) (Run, error) {
-	var result Run
-
-	resp, err := client.createRunRaw(namePrefix)
+	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return result, err
 	}
@@ -128,13 +120,9 @@ func (client *Client) runRequest(run Run, method string, path string, body io.Re
 	return client.HTTPClient.Do(req)
 }
 
-func (client *Client) putAppRaw(run Run, appData io.Reader) (*http.Response, error) {
-	return client.runRequest(run, "PUT", "app", appData)
-}
-
 // PutApp uploads the tarred & gzipped scraper code
 func (client *Client) PutApp(run Run, appData io.Reader) error {
-	resp, err := client.putAppRaw(run, appData)
+	resp, err := client.runRequest(run, "PUT", "app", appData)
 	if err != nil {
 		return err
 	}
@@ -170,13 +158,9 @@ func (client *Client) PutAppFromDirectory(run Run, dir string) error {
 	return client.PutApp(run, &buffer)
 }
 
-func (client *Client) getAppRaw(run Run) (*http.Response, error) {
-	return client.runRequest(run, "GET", "app", nil)
-}
-
 // GetApp downloads the tarred & gzipped scraper code
 func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
-	resp, err := client.getAppRaw(run)
+	resp, err := client.runRequest(run, "GET", "app", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -189,26 +173,18 @@ func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
-func (client *Client) putCacheRaw(run Run, data io.Reader) (*http.Response, error) {
-	return client.runRequest(run, "PUT", "cache", data)
-}
-
 // PutCache uploads the tarred & gzipped build cache
 func (client *Client) PutCache(run Run, data io.Reader) error {
-	resp, err := client.putCacheRaw(run, data)
+	resp, err := client.runRequest(run, "PUT", "cache", data)
 	if err != nil {
 		return err
 	}
 	return checkOK(resp)
 }
 
-func (client *Client) getCacheRaw(run Run) (*http.Response, error) {
-	return client.runRequest(run, "GET", "cache", nil)
-}
-
 // GetCache downloads the tarred & gzipped build cache
 func (client *Client) GetCache(run Run) (io.ReadCloser, error) {
-	resp, err := client.getCacheRaw(run)
+	resp, err := client.runRequest(run, "GET", "cache", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -226,18 +202,14 @@ type StartRunOptions struct {
 	Output string
 }
 
+// StartRun starts a run that has earlier been created
 // TODO: Add setting of environment variables
-func (client *Client) startRunRaw(run Run, options *StartRunOptions) (*http.Response, error) {
+func (client *Client) StartRun(run Run, options *StartRunOptions) error {
 	b, err := json.Marshal(options)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return client.runRequest(run, "POST", "start", bytes.NewReader(b))
-}
-
-// StartRun starts a run that has earlier been created
-func (client *Client) StartRun(run Run, options *StartRunOptions) error {
-	resp, err := client.startRunRaw(run, options)
+	resp, err := client.runRequest(run, "POST", "start", bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
@@ -299,13 +271,9 @@ func (iterator *EventIterator) Next() (Event, error) {
 	return nil, errors.New("Unexpected type")
 }
 
-func (client *Client) getEventsRaw(run Run) (*http.Response, error) {
-	return client.runRequest(run, "GET", "events", nil)
-}
-
 // GetEvents returns a stream of events from the API
 func (client *Client) GetEvents(run Run) (*EventIterator, error) {
-	resp, err := client.getEventsRaw(run)
+	resp, err := client.runRequest(run, "GET", "events", nil)
 	if err != nil {
 		return nil, err
 	}
