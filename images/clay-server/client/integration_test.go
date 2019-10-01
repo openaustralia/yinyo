@@ -2,7 +2,6 @@ package client
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -146,21 +145,14 @@ func TestHelloWorld(t *testing.T) {
 		t.Fatal(err)
 	}
 	decoder := json.NewDecoder(events.Body)
+	iterator := EventIterator{decoder: decoder}
 	var eventsList []Event
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
-	for decoder.More() {
-		var eventRaw EventRaw
-		decoder.Decode(&eventRaw)
-		var event Event
-		if eventRaw.Type == "started" {
-			event = StartEvent{Stage: eventRaw.Stage}
-		} else if eventRaw.Type == "finished" {
-			event = FinishEvent{Stage: eventRaw.Stage}
-		} else if eventRaw.Type == "log" {
-			event = LogEvent{Stage: eventRaw.Stage, Stream: eventRaw.Stream, Log: eventRaw.Log}
-		} else {
-			t.Fatal(errors.New("Unexpected type"))
+	for iterator.More() {
+		event, err := iterator.Next()
+		if err != nil {
+			t.Fatal(err)
 		}
 		eventsList = append(eventsList, event)
 		bar.Increment()

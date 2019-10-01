@@ -272,6 +272,30 @@ type LogEvent struct {
 	Log    string // TODO: Rename Log to Text
 }
 
+type EventIterator struct {
+	decoder *json.Decoder
+}
+
+func (iterator *EventIterator) More() bool {
+	return iterator.decoder.More()
+}
+
+func (iterator *EventIterator) Next() (Event, error) {
+	var eventRaw EventRaw
+	err := iterator.decoder.Decode(&eventRaw)
+	if err != nil {
+		return nil, err
+	}
+	if eventRaw.Type == "started" {
+		return StartEvent{Stage: eventRaw.Stage}, nil
+	} else if eventRaw.Type == "finished" {
+		return FinishEvent{Stage: eventRaw.Stage}, nil
+	} else if eventRaw.Type == "log" {
+		return LogEvent{Stage: eventRaw.Stage, Stream: eventRaw.Stream, Log: eventRaw.Log}, nil
+	}
+	return nil, errors.New("Unexpected type")
+}
+
 func (client *Client) GetEventsRaw(run Run) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/events", run.Name)
 	req, err := http.NewRequest("GET", url, nil)
