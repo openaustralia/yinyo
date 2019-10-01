@@ -113,13 +113,17 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	return result, err
 }
 
+func addAuthorization(req *http.Request, run Run) {
+	req.Header.Set("Authorization", "Bearer "+run.Token)
+}
+
 func (client *Client) putAppRaw(run Run, appData io.Reader) (*http.Response, error) {
 	url := client.URL + fmt.Sprintf("/runs/%s/app", run.Name)
 	req, err := http.NewRequest("PUT", url, appData)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.Token)
+	addAuthorization(req, run)
 	return client.HTTPClient.Do(req)
 }
 
@@ -168,7 +172,7 @@ func (client *Client) getAppRaw(run Run) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.Token)
+	addAuthorization(req, run)
 	return client.HTTPClient.Do(req)
 }
 
@@ -193,7 +197,7 @@ func (client *Client) putCacheRaw(run Run, data io.Reader) (*http.Response, erro
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.Token)
+	addAuthorization(req, run)
 	return client.HTTPClient.Do(req)
 }
 
@@ -213,7 +217,7 @@ func (client *Client) getCacheRaw(run Run) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.Token)
+	addAuthorization(req, run)
 	return client.HTTPClient.Do(req)
 }
 
@@ -248,7 +252,7 @@ func (client *Client) startRunRaw(run Run, options *StartRunOptions) (*http.Resp
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.Token)
+	addAuthorization(req, run)
 	return client.HTTPClient.Do(req)
 }
 
@@ -322,7 +326,7 @@ func (client *Client) getEventsRaw(run Run) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.Token)
+	addAuthorization(req, run)
 	return client.HTTPClient.Do(req)
 }
 
