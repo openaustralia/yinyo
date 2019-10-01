@@ -248,9 +248,26 @@ func (client *Client) StartRun(run Run, options *StartRunOptions) error {
 	return nil
 }
 
-type Event struct {
+type EventRaw struct {
 	Stage  string
 	Type   string
+	Stream string
+	Log    string // TODO: Rename Log to Text
+}
+
+type Event interface {
+}
+
+type StartEvent struct {
+	Stage string
+}
+
+type FinishEvent struct {
+	Stage string
+}
+
+type LogEvent struct {
+	Stage  string
 	Stream string
 	Log    string // TODO: Rename Log to Text
 }

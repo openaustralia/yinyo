@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -149,26 +150,36 @@ func TestHelloWorld(t *testing.T) {
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
 	for decoder.More() {
+		var eventRaw EventRaw
+		decoder.Decode(&eventRaw)
 		var event Event
-		decoder.Decode(&event)
+		if eventRaw.Type == "started" {
+			event = StartEvent{Stage: eventRaw.Stage}
+		} else if eventRaw.Type == "finished" {
+			event = FinishEvent{Stage: eventRaw.Stage}
+		} else if eventRaw.Type == "log" {
+			event = LogEvent{Stage: eventRaw.Stage, Stream: eventRaw.Stream, Log: eventRaw.Log}
+		} else {
+			t.Fatal(errors.New("Unexpected type"))
+		}
 		eventsList = append(eventsList, event)
 		bar.Increment()
 	}
 	bar.Finish()
 	assert.Equal(t, []Event{
-		Event{Stage: "build", Type: "started"},
-		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Python app detected"},
-		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
-		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
-		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G-----> Installing requirements with pip"},
-		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
-		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       "},
-		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Discovering process types"},
-		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       Procfile declares types -> scraper"},
-		Event{Stage: "build", Type: "finished"},
-		Event{Stage: "run", Type: "started"},
-		Event{Stage: "run", Type: "log", Stream: "stdout", Log: "Hello World!"},
-		Event{Stage: "run", Type: "finished"},
+		StartEvent{Stage: "build"},
+		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Python app detected"},
+		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
+		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
+		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G-----> Installing requirements with pip"},
+		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
+		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       "},
+		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Discovering process types"},
+		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       Procfile declares types -> scraper"},
+		FinishEvent{Stage: "build"},
+		StartEvent{Stage: "run"},
+		LogEvent{Stage: "run", Stream: "stdout", Log: "Hello World!"},
+		FinishEvent{Stage: "run"},
 	}, eventsList)
 
 	// Get the cache
