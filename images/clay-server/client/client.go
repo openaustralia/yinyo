@@ -117,14 +117,19 @@ func addAuthorization(req *http.Request, run Run) {
 	req.Header.Set("Authorization", "Bearer "+run.Token)
 }
 
-func (client *Client) putAppRaw(run Run, appData io.Reader) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/app", run.Name)
-	req, err := http.NewRequest("PUT", url, appData)
+// Make an API call for a particular run. These requests are always authenticated
+func (client *Client) runRequest(run Run, method string, path string, body io.Reader) (*http.Response, error) {
+	url := client.URL + fmt.Sprintf("/runs/%s/", run.Name) + path
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
 	addAuthorization(req, run)
 	return client.HTTPClient.Do(req)
+}
+
+func (client *Client) putAppRaw(run Run, appData io.Reader) (*http.Response, error) {
+	return client.runRequest(run, "PUT", "app", appData)
 }
 
 // PutApp uploads the tarred & gzipped scraper code
@@ -166,14 +171,7 @@ func (client *Client) PutAppFromDirectory(run Run, dir string) error {
 }
 
 func (client *Client) getAppRaw(run Run) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/app", run.Name)
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	addAuthorization(req, run)
-	return client.HTTPClient.Do(req)
+	return client.runRequest(run, "GET", "app", nil)
 }
 
 // GetApp downloads the tarred & gzipped scraper code
@@ -192,13 +190,7 @@ func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
 }
 
 func (client *Client) putCacheRaw(run Run, data io.Reader) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/cache", run.Name)
-	req, err := http.NewRequest("PUT", url, data)
-	if err != nil {
-		return nil, err
-	}
-	addAuthorization(req, run)
-	return client.HTTPClient.Do(req)
+	return client.runRequest(run, "PUT", "cache", data)
 }
 
 // PutCache uploads the tarred & gzipped build cache
@@ -211,14 +203,7 @@ func (client *Client) PutCache(run Run, data io.Reader) error {
 }
 
 func (client *Client) getCacheRaw(run Run) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/cache", run.Name)
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	addAuthorization(req, run)
-	return client.HTTPClient.Do(req)
+	return client.runRequest(run, "GET", "cache", nil)
 }
 
 // GetCache downloads the tarred & gzipped build cache
@@ -243,17 +228,11 @@ type StartRunOptions struct {
 
 // TODO: Add setting of environment variables
 func (client *Client) startRunRaw(run Run, options *StartRunOptions) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/start", run.Name)
 	b, err := json.Marshal(options)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", url, bytes.NewReader(b))
-	if err != nil {
-		return nil, err
-	}
-	addAuthorization(req, run)
-	return client.HTTPClient.Do(req)
+	return client.runRequest(run, "POST", "start", bytes.NewReader(b))
 }
 
 // StartRun starts a run that has earlier been created
@@ -321,13 +300,7 @@ func (iterator *EventIterator) Next() (Event, error) {
 }
 
 func (client *Client) getEventsRaw(run Run) (*http.Response, error) {
-	url := client.URL + fmt.Sprintf("/runs/%s/events", run.Name)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	addAuthorization(req, run)
-	return client.HTTPClient.Do(req)
+	return client.runRequest(run, "GET", "events", nil)
 }
 
 // GetEvents returns a stream of events from the API
