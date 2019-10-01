@@ -107,10 +107,6 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	return run, err
 }
 
-func addAuthorization(req *http.Request, run Run) {
-	req.Header.Set("Authorization", "Bearer "+run.Token)
-}
-
 // Make an API call for a particular run. These requests are always authenticated
 func (run *Run) request(method string, path string, body io.Reader) (*http.Response, error) {
 	url := run.client.URL + fmt.Sprintf("/runs/%s", run.Name) + path
@@ -118,7 +114,7 @@ func (run *Run) request(method string, path string, body io.Reader) (*http.Respo
 	if err != nil {
 		return nil, err
 	}
-	addAuthorization(req, *run)
+	req.Header.Set("Authorization", "Bearer "+run.Token)
 	return run.client.HTTPClient.Do(req)
 }
 
