@@ -21,15 +21,17 @@ type Run struct {
 	Token string `json:"run_token"`
 }
 
+// Client is used to access the API
 type Client struct {
 	URL        string
-	HttpClient *http.Client
+	HTTPClient *http.Client
 }
 
+// NewClient configures a new Client
 func NewClient(URL string) Client {
 	return Client{
 		URL:        URL,
-		HttpClient: http.DefaultClient,
+		HTTPClient: http.DefaultClient,
 	}
 }
 
@@ -38,9 +40,10 @@ func (client *Client) helloRaw() (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return client.HttpClient.Do(req)
+	return client.HTTPClient.Do(req)
 }
 
+// Hello does a simple ping type request to the API
 func (client *Client) Hello() (string, error) {
 	resp, err := client.helloRaw()
 	if err != nil {
@@ -73,7 +76,7 @@ func (client *Client) createRunRaw(namePrefix string) (*http.Response, error) {
 		return nil, err
 	}
 
-	return client.HttpClient.Do(req)
+	return client.HTTPClient.Do(req)
 }
 
 func (client *Client) CreateRun(namePrefix string) (Run, error) {
@@ -103,7 +106,7 @@ func (client *Client) putAppRaw(run Run, appData io.Reader) (*http.Response, err
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
-	return client.HttpClient.Do(req)
+	return client.HTTPClient.Do(req)
 }
 
 func (client *Client) PutApp(run Run, appData io.Reader) error {
@@ -153,7 +156,7 @@ func (client *Client) getAppRaw(run Run) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
-	return client.HttpClient.Do(req)
+	return client.HTTPClient.Do(req)
 }
 
 func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
@@ -178,7 +181,7 @@ func (client *Client) putCacheRaw(run Run, data io.Reader) (*http.Response, erro
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
-	return client.HttpClient.Do(req)
+	return client.HTTPClient.Do(req)
 }
 
 func (client *Client) PutCache(run Run, data io.Reader) error {
@@ -200,7 +203,7 @@ func (client *Client) getCacheRaw(run Run) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
-	return client.HttpClient.Do(req)
+	return client.HTTPClient.Do(req)
 }
 
 func (client *Client) GetCache(run Run) (io.ReadCloser, error) {
@@ -218,6 +221,7 @@ func (client *Client) GetCache(run Run) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
+// StartRunOptions are options that can be used when starting a run
 type StartRunOptions struct {
 	Output string
 }
@@ -234,9 +238,10 @@ func (client *Client) startRunRaw(run Run, options *StartRunOptions) (*http.Resp
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
-	return client.HttpClient.Do(req)
+	return client.HTTPClient.Do(req)
 }
 
+// StartRun starts a run that has earlier been created
 func (client *Client) StartRun(run Run, options *StartRunOptions) error {
 	resp, err := client.startRunRaw(run, options)
 	if err != nil {
@@ -248,40 +253,47 @@ func (client *Client) StartRun(run Run, options *StartRunOptions) error {
 	return nil
 }
 
-type EventRaw struct {
+type eventRaw struct {
 	Stage  string
 	Type   string
 	Stream string
 	Log    string // TODO: Rename Log to Text
 }
 
+// Event is the interface for all event types
 type Event interface {
 }
 
+// StartEvent represents the start of a build or run
 type StartEvent struct {
 	Stage string
 }
 
+// FinishEvent represent the completion of a build or run
 type FinishEvent struct {
 	Stage string
 }
 
+// LogEvent is the output of some text from the build or run of a scraper
 type LogEvent struct {
 	Stage  string
 	Stream string
 	Log    string // TODO: Rename Log to Text
 }
 
+// EventIterator is a stream of events
 type EventIterator struct {
 	decoder *json.Decoder
 }
 
+// More checks whether another event is available
 func (iterator *EventIterator) More() bool {
 	return iterator.decoder.More()
 }
 
+// Next returns the next event
 func (iterator *EventIterator) Next() (Event, error) {
-	var eventRaw EventRaw
+	var eventRaw eventRaw
 	err := iterator.decoder.Decode(&eventRaw)
 	if err != nil {
 		return nil, err
@@ -303,9 +315,10 @@ func (client *Client) getEventsRaw(run Run) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
-	return client.HttpClient.Do(req)
+	return client.HTTPClient.Do(req)
 }
 
+// GetEvents returns a stream of events from the API
 func (client *Client) GetEvents(run Run) (*EventIterator, error) {
 	resp, err := client.getEventsRaw(run)
 	if err != nil {
