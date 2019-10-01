@@ -3,6 +3,7 @@ module app
 go 1.12
 
 require (
+	github.com/cheggaaa/pb/v3 v3.0.1
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/gorilla/mux v1.7.3

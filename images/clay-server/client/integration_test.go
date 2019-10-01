@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -145,12 +146,15 @@ func TestHelloWorld(t *testing.T) {
 	}
 	decoder := json.NewDecoder(events.Body)
 	var eventsList []Event
+	// Expect roughly 13 events
+	bar := pb.StartNew(13)
 	for decoder.More() {
 		var event Event
 		decoder.Decode(&event)
 		eventsList = append(eventsList, event)
-		// TODO: Do some kind of progress indicator here?
+		bar.Increment()
 	}
+	bar.Finish()
 	assert.Equal(t, []Event{
 		Event{Stage: "build", Type: "started"},
 		Event{Stage: "build", Type: "log", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Python app detected"},
