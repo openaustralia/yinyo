@@ -79,6 +79,7 @@ func (client *Client) createRunRaw(namePrefix string) (*http.Response, error) {
 	return client.HTTPClient.Do(req)
 }
 
+// CreateRun is the first thing called. It creates a run
 func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	var result Run
 
@@ -109,6 +110,7 @@ func (client *Client) putAppRaw(run Run, appData io.Reader) (*http.Response, err
 	return client.HTTPClient.Do(req)
 }
 
+// PutApp uploads the tarred & gzipped scraper code
 func (client *Client) PutApp(run Run, appData io.Reader) error {
 	resp, err := client.putAppRaw(run, appData)
 	if err != nil {
@@ -120,6 +122,7 @@ func (client *Client) PutApp(run Run, appData io.Reader) error {
 	return nil
 }
 
+// PutAppFromDirectory uploads the scraper code from a directory on the filesystem
 func (client *Client) PutAppFromDirectory(run Run, dir string) error {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
@@ -159,6 +162,7 @@ func (client *Client) getAppRaw(run Run) (*http.Response, error) {
 	return client.HTTPClient.Do(req)
 }
 
+// GetApp downloads the tarred & gzipped scraper code
 func (client *Client) GetApp(run Run) (io.ReadCloser, error) {
 	resp, err := client.getAppRaw(run)
 	if err != nil {
@@ -184,6 +188,7 @@ func (client *Client) putCacheRaw(run Run, data io.Reader) (*http.Response, erro
 	return client.HTTPClient.Do(req)
 }
 
+// PutCache uploads the tarred & gzipped build cache
 func (client *Client) PutCache(run Run, data io.Reader) error {
 	resp, err := client.putCacheRaw(run, data)
 	if err != nil {
@@ -206,6 +211,7 @@ func (client *Client) getCacheRaw(run Run) (*http.Response, error) {
 	return client.HTTPClient.Do(req)
 }
 
+// GetCache downloads the tarred & gzipped build cache
 func (client *Client) GetCache(run Run) (io.ReadCloser, error) {
 	resp, err := client.getCacheRaw(run)
 	if err != nil {
