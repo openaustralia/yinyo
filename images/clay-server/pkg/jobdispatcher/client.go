@@ -6,4 +6,5 @@ type Client interface {
 	CreateJob(namePrefix string, runToken string) (string, error)
 	StartJob(runName string, dockerImage string, command []string, env map[string]string) error
 	DeleteJob(runName string) error
+	GetToken(runName string) (string, error)
 }

@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
+	"clay/pkg/jobdispatcher"
 	"clay/pkg/store"
 )
 
@@ -217,7 +218,9 @@ func authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		actualRunToken, err := actualRunToken(clientset, runName)
+		k := jobdispatcher.Kubernetes(clientset)
+		actualRunToken, err := k.GetToken(runName)
+
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
