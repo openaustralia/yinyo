@@ -18,7 +18,7 @@ func Kubernetes(clientset *kubernetes.Clientset) Client {
 	return &kubernetesClient{clientset: clientset}
 }
 
-func (client *kubernetesClient) CreateJob(namePrefix string, runToken string) (string, error) {
+func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken string) (string, error) {
 	// We need to convert the user-supplied namePrefix to something that will
 	// work in k8s. That means only alpha numeric characters and "-".
 	// For instance no "/".
@@ -96,7 +96,7 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 	return err
 }
 
-func (client *kubernetesClient) DeleteJob(runName string) error {
+func (client *kubernetesClient) DeleteJobAndToken(runName string) error {
 	err := deleteJob(client.clientset, runName)
 	if err != nil {
 		return err

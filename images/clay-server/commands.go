@@ -28,7 +28,7 @@ func commandCreate(clientset *kubernetes.Clientset, namePrefix string) (createRe
 	}
 	// Generate random token
 	runToken := uniuri.NewLen(32)
-	runName, err := k.CreateJob(namePrefix, runToken)
+	runName, err := k.CreateJobAndToken(namePrefix, runToken)
 
 	createResult := createResult{
 		RunName:  runName,
@@ -107,7 +107,7 @@ func commandCreateEvent(redisClient *redis.Client, runName string, eventJson str
 
 func commandDelete(clientset *kubernetes.Clientset, storeAccess store.Client, redisClient *redis.Client, runName string) error {
 	k := jobdispatcher.Kubernetes(clientset)
-	err := k.DeleteJob(runName)
+	err := k.DeleteJobAndToken(runName)
 	if err != nil {
 		return err
 	}
