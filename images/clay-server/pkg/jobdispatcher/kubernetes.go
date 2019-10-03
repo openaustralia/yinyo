@@ -5,6 +5,7 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -92,5 +93,39 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 		},
 	}
 	_, err := jobsClient.Create(job)
+	return err
+}
+
+func (client *kubernetesClient) DeleteJob(runName string) error {
+	err := deleteJob(client.clientset, runName)
+	if err != nil {
+		return err
+	}
+	return deleteSecret(client.clientset, runName)
+}
+
+func deleteJob(clientset *kubernetes.Clientset, runName string) error {
+	jobsClient := clientset.BatchV1().Jobs("clay-scrapers")
+
+	deletePolicy := metav1.DeletePropagationForeground
+	err := jobsClient.Delete(runName, &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	})
+	if err != nil {
+		// Don't error if it's just that the job doesn't exist
+		if err.(*apierrors.StatusError).ErrStatus.Reason == metav1.StatusReasonNotFound {
+			return nil
+		}
+		return err
+	}
+	return nil
+}
+
+func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
+	secretsClient := clientset.CoreV1().Secrets("clay-scrapers")
+	deletePolicy := metav1.DeletePropagationForeground
+	err := secretsClient.Delete(runName, &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	})
 	return err
 }

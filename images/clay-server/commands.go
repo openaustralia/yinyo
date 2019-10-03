@@ -106,14 +106,12 @@ func commandCreateEvent(redisClient *redis.Client, runName string, eventJson str
 }
 
 func commandDelete(clientset *kubernetes.Clientset, storeAccess store.Client, redisClient *redis.Client, runName string) error {
-	err := deleteJob(clientset, runName)
+	k := jobdispatcher.Kubernetes(clientset)
+	err := k.DeleteJob(runName)
 	if err != nil {
 		return err
 	}
-	err = deleteSecret(clientset, runName)
-	if err != nil {
-		return err
-	}
+
 	err = deleteFromStore(storeAccess, runName, "app.tgz")
 	if err != nil {
 		return err
