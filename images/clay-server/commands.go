@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 
+	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 	"k8s.io/client-go/kubernetes"
 )
@@ -21,7 +22,9 @@ func commandCreate(clientset *kubernetes.Clientset, namePrefix string) (createRe
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
-	runName, runToken, err := createSecret(clientset, namePrefix)
+	// Generate random token
+	runToken := uniuri.NewLen(32)
+	runName, err := createSecret(clientset, namePrefix, runToken)
 
 	createResult := createResult{
 		RunName:  runName,

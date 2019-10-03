@@ -3,16 +3,12 @@ package main
 import (
 	"regexp"
 
-	"github.com/dchest/uniuri"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
-func createSecret(clientset *kubernetes.Clientset, namePrefix string) (string, string, error) {
-	// Generate random token
-	runToken := uniuri.NewLen(32)
-
+func createSecret(clientset *kubernetes.Clientset, namePrefix string, runToken string) (string, error) {
 	// We need to convert the user-supplied namePrefix to something that will
 	// work in k8s. That means only alpha numeric characters and "-".
 	// For instance no "/".
@@ -32,7 +28,7 @@ func createSecret(clientset *kubernetes.Clientset, namePrefix string) (string, s
 	}
 	created, err := secretsClient.Create(secret)
 
-	return created.ObjectMeta.Name, runToken, err
+	return created.ObjectMeta.Name, err
 }
 
 func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
