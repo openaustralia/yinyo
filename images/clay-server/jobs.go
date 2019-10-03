@@ -8,18 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-type envVariable struct {
-	Name  string
-	Value string
-}
-
-// TODO: Rename
-type startBody struct {
-	Output string
-	Env    []envVariable
-}
-
-func createJob(clientset *kubernetes.Clientset, runName string, dockerImage string, command []string, env []envVariable) error {
+func createJob(clientset *kubernetes.Clientset, runName string, dockerImage string, command []string, env map[string]string) error {
 	jobsClient := clientset.BatchV1().Jobs("clay-scrapers")
 
 	autoMountServiceAccountToken := false
@@ -42,11 +31,8 @@ func createJob(clientset *kubernetes.Clientset, runName string, dockerImage stri
 	}
 	// TODO: Check that runOptions.Env isn't trying to set CLAY_RUN_TOKEN
 	// and warn the user if that is the case because the scraper will mysteriously not work
-	for _, env := range env {
-		environment = append(environment, apiv1.EnvVar{
-			Name:  env.Name,
-			Value: env.Value,
-		})
+	for k, v := range env {
+		environment = append(environment, apiv1.EnvVar{Name: k, Value: v})
 	}
 
 	job := &batchv1.Job{

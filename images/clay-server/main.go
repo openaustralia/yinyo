@@ -92,6 +92,16 @@ func putExitData(w http.ResponseWriter, r *http.Request) error {
 	return commandPutExitData(storeAccess, r.Body, r.ContentLength, runName)
 }
 
+type envVariable struct {
+	Name  string
+	Value string
+}
+
+type startBody struct {
+	Output string
+	Env    []envVariable
+}
+
 func start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
@@ -108,8 +118,13 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	var env map[string]string
+	for _, keyvalue := range l.Env {
+		env[keyvalue.Name] = keyvalue.Value
+	}
+
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return commandStart(clientset, runName, l)
+	return commandStart(clientset, runName, l.Output, env)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
