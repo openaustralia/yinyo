@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis"
 	"k8s.io/client-go/kubernetes"
 
+	"clay/pkg/jobdispatcher"
 	"clay/pkg/store"
 )
 
@@ -21,12 +22,13 @@ type logMessage struct {
 }
 
 func commandCreate(clientset *kubernetes.Clientset, namePrefix string) (createResult, error) {
+	k := jobdispatcher.Kubernetes(clientset)
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
 	// Generate random token
 	runToken := uniuri.NewLen(32)
-	runName, err := createSecret(clientset, namePrefix, runToken)
+	runName, err := k.CreateJob(namePrefix, runToken)
 
 	createResult := createResult{
 		RunName:  runName,
