@@ -70,7 +70,13 @@ func commandPutExitData(storeAccess store.Client, reader io.Reader, objectSize i
 }
 
 func commandStart(clientset *kubernetes.Clientset, runName string, l startBody) error {
-	return createJob(clientset, runName, l)
+	return createJob(
+		clientset,
+		runName,
+		"openaustralia/clay-scraper:v1",
+		[]string{"/bin/run.sh", runName, l.Output},
+		l.Env,
+	)
 }
 
 func commandGetEvent(redisClient *redis.Client, runName string, id string) (newId string, jsonString string, finished bool, err error) {
