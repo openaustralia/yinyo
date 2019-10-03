@@ -14,6 +14,8 @@ import (
 	"github.com/gorilla/mux"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"clay/pkg/store"
 )
 
 func getClientSet() (*kubernetes.Clientset, error) {
@@ -229,12 +231,12 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO: Move these together into a struct
-var storeAccess StoreAccess
+var storeAccess store.Client
 var redisClient *redis.Client
 
 func init() {
 	var err error
-	storeAccess, err = NewMinioAccess(
+	storeAccess, err = store.NewMinioClient(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
 		// TODO: Make bucket name configurable

@@ -1,4 +1,4 @@
-module app
+module clay
 
 go 1.12
 

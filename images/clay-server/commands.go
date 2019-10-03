@@ -6,6 +6,8 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 	"k8s.io/client-go/kubernetes"
+
+	"clay/pkg/store"
 )
 
 type createResult struct {
@@ -33,35 +35,35 @@ func commandCreate(clientset *kubernetes.Clientset, namePrefix string) (createRe
 	return createResult, err
 }
 
-func commandGetApp(storeAccess StoreAccess, runName string, w io.Writer) error {
+func commandGetApp(storeAccess store.Client, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "app.tgz", w)
 }
 
-func commandPutApp(storeAccess StoreAccess, reader io.Reader, objectSize int64, runName string) error {
+func commandPutApp(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "app.tgz")
 }
 
-func commandGetCache(storeAccess StoreAccess, runName string, w io.Writer) error {
+func commandGetCache(storeAccess store.Client, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "cache.tgz", w)
 }
 
-func commandPutCache(storeAccess StoreAccess, reader io.Reader, objectSize int64, runName string) error {
+func commandPutCache(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "cache.tgz")
 }
 
-func commandGetOutput(storeAccess StoreAccess, runName string, w io.Writer) error {
+func commandGetOutput(storeAccess store.Client, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "output", w)
 }
 
-func commandPutOutput(storeAccess StoreAccess, reader io.Reader, objectSize int64, runName string) error {
+func commandPutOutput(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "output")
 }
 
-func commandGetExitData(storeAccess StoreAccess, runName string, w io.Writer) error {
+func commandGetExitData(storeAccess store.Client, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "exit-data.json", w)
 }
 
-func commandPutExitData(storeAccess StoreAccess, reader io.Reader, objectSize int64, runName string) error {
+func commandPutExitData(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "exit-data.json")
 }
 
@@ -100,7 +102,7 @@ func commandCreateEvent(redisClient *redis.Client, runName string, eventJson str
 	}).Err()
 }
 
-func commandDelete(clientset *kubernetes.Clientset, storeAccess StoreAccess, redisClient *redis.Client, runName string) error {
+func commandDelete(clientset *kubernetes.Clientset, storeAccess store.Client, redisClient *redis.Client, runName string) error {
 	err := deleteJob(clientset, runName)
 	if err != nil {
 		return err

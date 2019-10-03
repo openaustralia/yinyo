@@ -18,13 +18,13 @@ RUN go build empty.go
 RUN rm empty.go
 
 # Compile the actual thing
-COPY *.go ./
+COPY . .
 RUN CGO_ENABLED=0 go install
 
 # Now make the runtime image
 FROM scratch
 
-COPY --from=builder /go/bin/app /go/bin/app
+COPY --from=builder /go/bin/clay /go/bin/clay
 
 # TODO: Run this is an unprivileged user
-CMD ["/go/bin/app"]
+CMD ["/go/bin/clay"]
