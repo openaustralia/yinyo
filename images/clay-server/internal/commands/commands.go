@@ -10,6 +10,13 @@ import (
 	"github.com/openaustralia/morph-ng/pkg/store"
 )
 
+const filenameApp = "app.tgz"
+const filenameCache = "cache.tgz"
+const filenameOutput = "output"
+const filenameExitData = "exit-data.json"
+const dockerImage = "openaustralia/clay-scraper:v1"
+const runBinary = "/bin/run.sh"
+
 type createResult struct {
 	RunName  string `json:"run_name"`
 	RunToken string `json:"run_token"`
@@ -36,39 +43,39 @@ func Create(k jobdispatcher.Client, namePrefix string) (createResult, error) {
 }
 
 func GetApp(storeAccess store.Client, runName string, w io.Writer) error {
-	return getData(storeAccess, runName, "app.tgz", w)
+	return getData(storeAccess, runName, filenameApp, w)
 }
 
 func PutApp(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return putData(storeAccess, reader, objectSize, runName, "app.tgz")
+	return putData(storeAccess, reader, objectSize, runName, filenameApp)
 }
 
 func GetCache(storeAccess store.Client, runName string, w io.Writer) error {
-	return getData(storeAccess, runName, "cache.tgz", w)
+	return getData(storeAccess, runName, filenameCache, w)
 }
 
 func PutCache(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return putData(storeAccess, reader, objectSize, runName, "cache.tgz")
+	return putData(storeAccess, reader, objectSize, runName, filenameCache)
 }
 
 func GetOutput(storeAccess store.Client, runName string, w io.Writer) error {
-	return getData(storeAccess, runName, "output", w)
+	return getData(storeAccess, runName, filenameOutput, w)
 }
 
 func PutOutput(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return putData(storeAccess, reader, objectSize, runName, "output")
+	return putData(storeAccess, reader, objectSize, runName, filenameOutput)
 }
 
 func GetExitData(storeAccess store.Client, runName string, w io.Writer) error {
-	return getData(storeAccess, runName, "exit-data.json", w)
+	return getData(storeAccess, runName, filenameExitData, w)
 }
 
 func PutExitData(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return putData(storeAccess, reader, objectSize, runName, "exit-data.json")
+	return putData(storeAccess, reader, objectSize, runName, filenameExitData)
 }
 
 func Start(k jobdispatcher.Client, runName string, output string, env map[string]string) error {
-	return k.StartJob(runName, "openaustralia/clay-scraper:v1", []string{"/bin/run.sh", runName, output}, env)
+	return k.StartJob(runName, dockerImage, []string{runBinary, runName, output}, env)
 }
 
 func GetEvent(redisClient *redis.Client, runName string, id string) (newId string, jsonString string, finished bool, err error) {
@@ -108,19 +115,19 @@ func Delete(k jobdispatcher.Client, storeAccess store.Client, redisClient *redis
 		return err
 	}
 
-	err = deleteData(storeAccess, runName, "app.tgz")
+	err = deleteData(storeAccess, runName, filenameApp)
 	if err != nil {
 		return err
 	}
-	err = deleteData(storeAccess, runName, "output")
+	err = deleteData(storeAccess, runName, filenameOutput)
 	if err != nil {
 		return err
 	}
-	err = deleteData(storeAccess, runName, "exit-data.json")
+	err = deleteData(storeAccess, runName, filenameExitData)
 	if err != nil {
 		return err
 	}
-	err = deleteData(storeAccess, runName, "cache.tgz")
+	err = deleteData(storeAccess, runName, filenameCache)
 	if err != nil {
 		return err
 	}
