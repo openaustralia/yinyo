@@ -10,7 +10,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 
 	"github.com/openaustralia/morph-ng/internal/commands"
@@ -237,16 +236,14 @@ func init() {
 }
 
 func main() {
-	// Connect to redis and initially just check that we can connect
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
-		Password: os.Getenv("REDIS_PASSWORD"),
-	})
-	_, err := redisClient.Ping().Result()
+	var err error
+	streamClient, err = stream.NewRedis(
+		"redis:6379",
+		os.Getenv("REDIS_PASSWORD"),
+	)
 	if err != nil {
 		log.Fatal("Couldn't connect to redis: ", err)
 	}
-	streamClient = stream.NewRedis(redisClient)
 
 	jobDispatcher, err = jobdispatcher.Kubernetes()
 	if err != nil {
