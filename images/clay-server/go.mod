@@ -1,4 +1,4 @@
-module clay
+module github.com/openaustralia/morph-ng
 
 go 1.12
 

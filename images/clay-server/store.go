@@ -3,7 +3,7 @@ package main
 import (
 	"io"
 
-	"clay/pkg/store"
+	"github.com/openaustralia/morph-ng/pkg/store"
 )
 
 func storagePath(runName string, fileName string) string {

@@ -13,8 +13,8 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 
-	"clay/pkg/jobdispatcher"
-	"clay/pkg/store"
+	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
+	"github.com/openaustralia/morph-ng/pkg/store"
 )
 
 func create(w http.ResponseWriter, r *http.Request) error {

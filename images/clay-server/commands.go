@@ -6,8 +6,8 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 
-	"clay/pkg/jobdispatcher"
-	"clay/pkg/store"
+	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
+	"github.com/openaustralia/morph-ng/pkg/store"
 )
 
 type createResult struct {

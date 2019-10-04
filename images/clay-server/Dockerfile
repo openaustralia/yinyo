@@ -24,7 +24,7 @@ RUN CGO_ENABLED=0 go install
 # Now make the runtime image
 FROM scratch
 
-COPY --from=builder /go/bin/clay /go/bin/clay
+COPY --from=builder /go/bin/clay-server /go/bin/clay-server
 
 # TODO: Run this is an unprivileged user
-CMD ["/go/bin/clay"]
+CMD ["/go/bin/clay-server"]
