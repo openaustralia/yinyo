@@ -5,9 +5,10 @@ build:
     envTemplate:
       template: "{{.IMAGE_NAME}}:v1"
   artifacts:
-  - image: openaustralia/clay-server
-    context: images/clay-server
-  - image: openaustralia/clay-scraper
-    context: images/clay-scraper
+    - image: openaustralia/clay-server
+      docker:
+        dockerfile: images/clay-server/Dockerfile
+    - image: openaustralia/clay-scraper
+      context: images/clay-scraper
 deploy:
   kustomize: {}
