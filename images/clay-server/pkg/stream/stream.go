@@ -7,4 +7,5 @@ package stream
 type Stream interface {
 	Add(key string, value string) error
 	Get(key string, id string) (newId string, value string, finished bool, err error)
+	Delete(key string) error
 }

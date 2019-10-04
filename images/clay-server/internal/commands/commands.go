@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/dchest/uniuri"
-	"github.com/go-redis/redis"
 
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
 	"github.com/openaustralia/morph-ng/pkg/store"
@@ -79,20 +78,18 @@ func Start(k jobdispatcher.Client, runName string, output string, env map[string
 	return k.StartJob(runName, dockerImage, []string{runBinary, runName, output}, env)
 }
 
-func GetEvent(redisClient *redis.Client, runName string, id string) (newId string, jsonString string, finished bool, err error) {
-	r := stream.NewRedis(redisClient)
+func GetEvent(r stream.Stream, runName string, id string) (newId string, jsonString string, finished bool, err error) {
 	return r.Get(runName, id)
 }
 
-func CreateEvent(redisClient *redis.Client, runName string, eventJson string) error {
+func CreateEvent(r stream.Stream, runName string, eventJson string) error {
 	// TODO: Send the event to the user with an http POST
 
-	r := stream.NewRedis(redisClient)
 	// TODO: Use something like runName-events instead for the stream name
 	return r.Add(runName, eventJson)
 }
 
-func Delete(k jobdispatcher.Client, storeAccess store.Client, redisClient *redis.Client, runName string) error {
+func Delete(k jobdispatcher.Client, storeAccess store.Client, stream stream.Stream, runName string) error {
 	err := k.DeleteJobAndToken(runName)
 	if err != nil {
 		return err
@@ -114,7 +111,7 @@ func Delete(k jobdispatcher.Client, storeAccess store.Client, redisClient *redis
 	if err != nil {
 		return err
 	}
-	return redisClient.Del(runName).Err()
+	return stream.Delete(runName)
 }
 
 func storagePath(runName string, fileName string) string {

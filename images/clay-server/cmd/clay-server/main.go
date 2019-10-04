@@ -16,6 +16,7 @@ import (
 	"github.com/openaustralia/morph-ng/internal/commands"
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
 	"github.com/openaustralia/morph-ng/pkg/store"
+	"github.com/openaustralia/morph-ng/pkg/stream"
 )
 
 func create(w http.ResponseWriter, r *http.Request) error {
@@ -119,7 +120,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newId, jsonString, finished, err := commands.GetEvent(redisClient, runName, id)
+		newId, jsonString, finished, err := commands.GetEvent(streamClient, runName, id)
 		id = newId
 		if err != nil {
 			return err
@@ -142,13 +143,13 @@ func createEvents(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return commands.CreateEvent(redisClient, runName, string(buf))
+	return commands.CreateEvent(streamClient, runName, string(buf))
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	return commands.Delete(jobDispatcher, storeAccess, redisClient, runName)
+	return commands.Delete(jobDispatcher, storeAccess, streamClient, runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -217,8 +218,8 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // TODO: Move these together into a struct
 var storeAccess store.Client
-var redisClient *redis.Client
 var jobDispatcher jobdispatcher.Client
+var streamClient stream.Stream
 
 func init() {
 	var err error
@@ -237,7 +238,7 @@ func init() {
 
 func main() {
 	// Connect to redis and initially just check that we can connect
-	redisClient = redis.NewClient(&redis.Options{
+	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
 		Password: os.Getenv("REDIS_PASSWORD"),
 	})
@@ -245,6 +246,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Couldn't connect to redis: ", err)
 	}
+	streamClient = stream.NewRedis(redisClient)
 
 	jobDispatcher, err = jobdispatcher.Kubernetes()
 	if err != nil {

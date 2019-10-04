@@ -41,3 +41,7 @@ func (stream *redisStream) Get(key string, id string) (newId string, value strin
 	}
 	return
 }
+
+func (stream *redisStream) Delete(key string) error {
+	return stream.client.Del(key).Err()
+}
