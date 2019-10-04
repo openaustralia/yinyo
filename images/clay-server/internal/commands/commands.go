@@ -8,6 +8,7 @@ import (
 
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
 	"github.com/openaustralia/morph-ng/pkg/store"
+	"github.com/openaustralia/morph-ng/pkg/stream"
 )
 
 const filenameApp = "app.tgz"
@@ -79,34 +80,16 @@ func Start(k jobdispatcher.Client, runName string, output string, env map[string
 }
 
 func GetEvent(redisClient *redis.Client, runName string, id string) (newId string, jsonString string, finished bool, err error) {
-	// For the moment get one event at a time
-	// TODO: Grab more than one at a time for a little more efficiency
-	result, err := redisClient.XRead(&redis.XReadArgs{
-		Streams: []string{runName, id},
-		Count:   1,
-		Block:   0,
-	}).Result()
-	if err != nil {
-		return
-	}
-	newId = result[0].Messages[0].ID
-	jsonString = result[0].Messages[0].Values["json"].(string)
-
-	if jsonString == "EOF" {
-		finished = true
-	}
-	return
+	r := stream.NewRedis(redisClient)
+	return r.Get(runName, id)
 }
 
 func CreateEvent(redisClient *redis.Client, runName string, eventJson string) error {
 	// TODO: Send the event to the user with an http POST
 
-	// Send the json to a redis stream
-	return redisClient.XAdd(&redis.XAddArgs{
-		// TODO: Use something like runName-events instead for the stream name
-		Stream: runName,
-		Values: map[string]interface{}{"json": eventJson},
-	}).Err()
+	r := stream.NewRedis(redisClient)
+	// TODO: Use something like runName-events instead for the stream name
+	return r.Add(runName, eventJson)
 }
 
 func Delete(k jobdispatcher.Client, storeAccess store.Client, redisClient *redis.Client, runName string) error {
