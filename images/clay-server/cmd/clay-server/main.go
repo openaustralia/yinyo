@@ -26,7 +26,7 @@ func create(w http.ResponseWriter, r *http.Request) error {
 		namePrefix = values[0]
 	}
 
-	createResult, err := commands.Create(jobDispatcher, namePrefix)
+	createResult, err := commands.Create(app.Job, namePrefix)
 	if err != nil {
 		return err
 	}
@@ -39,43 +39,43 @@ func create(w http.ResponseWriter, r *http.Request) error {
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	return commands.GetApp(storeAccess, runName, w)
+	return commands.GetApp(app.Store, runName, w)
 }
 
 func putApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.PutApp(storeAccess, r.Body, r.ContentLength, runName)
+	return commands.PutApp(app.Store, r.Body, r.ContentLength, runName)
 }
 
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	return commands.GetCache(storeAccess, runName, w)
+	return commands.GetCache(app.Store, runName, w)
 }
 
 func putCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.PutCache(storeAccess, r.Body, r.ContentLength, runName)
+	return commands.PutCache(app.Store, r.Body, r.ContentLength, runName)
 }
 
 func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.GetOutput(storeAccess, runName, w)
+	return commands.GetOutput(app.Store, runName, w)
 }
 
 func putOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.PutOutput(storeAccess, r.Body, r.ContentLength, runName)
+	return commands.PutOutput(app.Store, r.Body, r.ContentLength, runName)
 }
 
 func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.GetExitData(storeAccess, runName, w)
+	return commands.GetExitData(app.Store, runName, w)
 }
 
 func putExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.PutExitData(storeAccess, r.Body, r.ContentLength, runName)
+	return commands.PutExitData(app.Store, r.Body, r.ContentLength, runName)
 }
 
 type envVariable struct {
@@ -105,7 +105,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return commands.Start(jobDispatcher, runName, l.Output, env)
+	return commands.Start(app.Job, runName, l.Output, env)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
@@ -119,7 +119,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newId, jsonString, finished, err := commands.GetEvent(streamClient, runName, id)
+		newId, jsonString, finished, err := commands.GetEvent(app.Stream, runName, id)
 		id = newId
 		if err != nil {
 			return err
@@ -142,13 +142,13 @@ func createEvents(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return commands.CreateEvent(streamClient, runName, string(buf))
+	return commands.CreateEvent(app.Stream, runName, string(buf))
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	return commands.Delete(jobDispatcher, storeAccess, streamClient, runName)
+	return commands.Delete(app.Job, app.Store, app.Stream, runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -186,7 +186,7 @@ func authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		actualRunToken, err := jobDispatcher.GetToken(runName)
+		actualRunToken, err := app.Job.GetToken(runName)
 
 		if err != nil {
 			log.Println(err)
@@ -215,14 +215,20 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// TODO: Move these together into a struct
-var storeAccess store.Client
-var jobDispatcher jobdispatcher.Client
-var streamClient stream.Stream
+type App struct {
+	Store  store.Client
+	Job    jobdispatcher.Client
+	Stream stream.Stream
+}
+
+// Our global state
+var app App
 
 func init() {
-	var err error
-	storeAccess, err = store.NewMinioClient(
+}
+
+func main() {
+	storeAccess, err := store.NewMinioClient(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
 		// TODO: Make bucket name configurable
@@ -233,11 +239,8 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
 
-func main() {
-	var err error
-	streamClient, err = stream.NewRedis(
+	streamClient, err := stream.NewRedis(
 		"redis:6379",
 		os.Getenv("REDIS_PASSWORD"),
 	)
@@ -245,10 +248,12 @@ func main() {
 		log.Fatal("Couldn't connect to redis: ", err)
 	}
 
-	jobDispatcher, err = jobdispatcher.Kubernetes()
+	jobDispatcher, err := jobdispatcher.Kubernetes()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	app = App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient}
 
 	log.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
