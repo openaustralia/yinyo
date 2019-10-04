@@ -19,7 +19,7 @@ RUN rm empty.go
 
 # Compile the actual thing
 COPY . .
-RUN CGO_ENABLED=0 go install
+RUN CGO_ENABLED=0 go install github.com/openaustralia/morph-ng/cmd/clay-server
 
 # Now make the runtime image
 FROM scratch
