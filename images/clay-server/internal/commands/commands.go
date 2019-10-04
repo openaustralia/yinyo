@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"io"
@@ -20,7 +20,7 @@ type logMessage struct {
 	Log, Stream, Stage, Type string
 }
 
-func commandCreate(k jobdispatcher.Client, namePrefix string) (createResult, error) {
+func Create(k jobdispatcher.Client, namePrefix string) (createResult, error) {
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
@@ -35,43 +35,43 @@ func commandCreate(k jobdispatcher.Client, namePrefix string) (createResult, err
 	return createResult, err
 }
 
-func commandGetApp(storeAccess store.Client, runName string, w io.Writer) error {
+func GetApp(storeAccess store.Client, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "app.tgz", w)
 }
 
-func commandPutApp(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
+func PutApp(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "app.tgz")
 }
 
-func commandGetCache(storeAccess store.Client, runName string, w io.Writer) error {
+func GetCache(storeAccess store.Client, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "cache.tgz", w)
 }
 
-func commandPutCache(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
+func PutCache(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "cache.tgz")
 }
 
-func commandGetOutput(storeAccess store.Client, runName string, w io.Writer) error {
+func GetOutput(storeAccess store.Client, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "output", w)
 }
 
-func commandPutOutput(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
+func PutOutput(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "output")
 }
 
-func commandGetExitData(storeAccess store.Client, runName string, w io.Writer) error {
+func GetExitData(storeAccess store.Client, runName string, w io.Writer) error {
 	return retrieveFromStore(storeAccess, runName, "exit-data.json", w)
 }
 
-func commandPutExitData(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
+func PutExitData(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
 	return saveToStore(storeAccess, reader, objectSize, runName, "exit-data.json")
 }
 
-func commandStart(k jobdispatcher.Client, runName string, output string, env map[string]string) error {
+func Start(k jobdispatcher.Client, runName string, output string, env map[string]string) error {
 	return k.StartJob(runName, "openaustralia/clay-scraper:v1", []string{"/bin/run.sh", runName, output}, env)
 }
 
-func commandGetEvent(redisClient *redis.Client, runName string, id string) (newId string, jsonString string, finished bool, err error) {
+func GetEvent(redisClient *redis.Client, runName string, id string) (newId string, jsonString string, finished bool, err error) {
 	// For the moment get one event at a time
 	// TODO: Grab more than one at a time for a little more efficiency
 	result, err := redisClient.XRead(&redis.XReadArgs{
@@ -91,7 +91,7 @@ func commandGetEvent(redisClient *redis.Client, runName string, id string) (newI
 	return
 }
 
-func commandCreateEvent(redisClient *redis.Client, runName string, eventJson string) error {
+func CreateEvent(redisClient *redis.Client, runName string, eventJson string) error {
 	// TODO: Send the event to the user with an http POST
 
 	// Send the json to a redis stream
@@ -102,7 +102,7 @@ func commandCreateEvent(redisClient *redis.Client, runName string, eventJson str
 	}).Err()
 }
 
-func commandDelete(k jobdispatcher.Client, storeAccess store.Client, redisClient *redis.Client, runName string) error {
+func Delete(k jobdispatcher.Client, storeAccess store.Client, redisClient *redis.Client, runName string) error {
 	err := k.DeleteJobAndToken(runName)
 	if err != nil {
 		return err

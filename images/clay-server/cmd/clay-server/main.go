@@ -13,6 +13,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 
+	"github.com/openaustralia/morph-ng/internal/commands"
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
 	"github.com/openaustralia/morph-ng/pkg/store"
 )
@@ -25,7 +26,7 @@ func create(w http.ResponseWriter, r *http.Request) error {
 		namePrefix = values[0]
 	}
 
-	createResult, err := commandCreate(jobDispatcher, namePrefix)
+	createResult, err := commands.Create(jobDispatcher, namePrefix)
 	if err != nil {
 		return err
 	}
@@ -38,43 +39,43 @@ func create(w http.ResponseWriter, r *http.Request) error {
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	return commandGetApp(storeAccess, runName, w)
+	return commands.GetApp(storeAccess, runName, w)
 }
 
 func putApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutApp(storeAccess, r.Body, r.ContentLength, runName)
+	return commands.PutApp(storeAccess, r.Body, r.ContentLength, runName)
 }
 
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	return commandGetCache(storeAccess, runName, w)
+	return commands.GetCache(storeAccess, runName, w)
 }
 
 func putCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutCache(storeAccess, r.Body, r.ContentLength, runName)
+	return commands.PutCache(storeAccess, r.Body, r.ContentLength, runName)
 }
 
 func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetOutput(storeAccess, runName, w)
+	return commands.GetOutput(storeAccess, runName, w)
 }
 
 func putOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutOutput(storeAccess, r.Body, r.ContentLength, runName)
+	return commands.PutOutput(storeAccess, r.Body, r.ContentLength, runName)
 }
 
 func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandGetExitData(storeAccess, runName, w)
+	return commands.GetExitData(storeAccess, runName, w)
 }
 
 func putExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commandPutExitData(storeAccess, r.Body, r.ContentLength, runName)
+	return commands.PutExitData(storeAccess, r.Body, r.ContentLength, runName)
 }
 
 type envVariable struct {
@@ -104,7 +105,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return commandStart(jobDispatcher, runName, l.Output, env)
+	return commands.Start(jobDispatcher, runName, l.Output, env)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
@@ -118,7 +119,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newId, jsonString, finished, err := commandGetEvent(redisClient, runName, id)
+		newId, jsonString, finished, err := commands.GetEvent(redisClient, runName, id)
 		id = newId
 		if err != nil {
 			return err
@@ -141,13 +142,13 @@ func createEvents(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return commandCreateEvent(redisClient, runName, string(buf))
+	return commands.CreateEvent(redisClient, runName, string(buf))
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	return commandDelete(jobDispatcher, storeAccess, redisClient, runName)
+	return commands.Delete(jobDispatcher, storeAccess, redisClient, runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
