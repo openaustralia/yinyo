@@ -25,12 +25,7 @@ func create(w http.ResponseWriter, r *http.Request) error {
 		namePrefix = values[0]
 	}
 
-	k, err := jobdispatcher.Kubernetes()
-	if err != nil {
-		return err
-	}
-
-	createResult, err := commandCreate(k, namePrefix)
+	createResult, err := commandCreate(jobDispatcher, namePrefix)
 	if err != nil {
 		return err
 	}
@@ -108,13 +103,8 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	k, err := jobdispatcher.Kubernetes()
-	if err != nil {
-		return err
-	}
-
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return commandStart(k, runName, l.Output, env)
+	return commandStart(jobDispatcher, runName, l.Output, env)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
@@ -157,12 +147,7 @@ func createEvents(w http.ResponseWriter, r *http.Request) error {
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	k, err := jobdispatcher.Kubernetes()
-	if err != nil {
-		return err
-	}
-
-	return commandDelete(k, storeAccess, redisClient, runName)
+	return commandDelete(jobDispatcher, storeAccess, redisClient, runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -200,14 +185,7 @@ func authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		k, err := jobdispatcher.Kubernetes()
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		actualRunToken, err := k.GetToken(runName)
+		actualRunToken, err := jobDispatcher.GetToken(runName)
 
 		if err != nil {
 			log.Println(err)
@@ -239,6 +217,7 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // TODO: Move these together into a struct
 var storeAccess store.Client
 var redisClient *redis.Client
+var jobDispatcher jobdispatcher.Client
 
 func init() {
 	var err error
@@ -264,6 +243,11 @@ func main() {
 	_, err := redisClient.Ping().Result()
 	if err != nil {
 		log.Fatal("Couldn't connect to redis: ", err)
+	}
+
+	jobDispatcher, err = jobdispatcher.Kubernetes()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Println("Clay is ready and waiting.")
