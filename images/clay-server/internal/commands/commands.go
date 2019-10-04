@@ -36,35 +36,35 @@ func Create(k jobdispatcher.Client, namePrefix string) (createResult, error) {
 }
 
 func GetApp(storeAccess store.Client, runName string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, "app.tgz", w)
+	return getData(storeAccess, runName, "app.tgz", w)
 }
 
 func PutApp(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, "app.tgz")
+	return putData(storeAccess, reader, objectSize, runName, "app.tgz")
 }
 
 func GetCache(storeAccess store.Client, runName string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, "cache.tgz", w)
+	return getData(storeAccess, runName, "cache.tgz", w)
 }
 
 func PutCache(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, "cache.tgz")
+	return putData(storeAccess, reader, objectSize, runName, "cache.tgz")
 }
 
 func GetOutput(storeAccess store.Client, runName string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, "output", w)
+	return getData(storeAccess, runName, "output", w)
 }
 
 func PutOutput(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, "output")
+	return putData(storeAccess, reader, objectSize, runName, "output")
 }
 
 func GetExitData(storeAccess store.Client, runName string, w io.Writer) error {
-	return retrieveFromStore(storeAccess, runName, "exit-data.json", w)
+	return getData(storeAccess, runName, "exit-data.json", w)
 }
 
 func PutExitData(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return saveToStore(storeAccess, reader, objectSize, runName, "exit-data.json")
+	return putData(storeAccess, reader, objectSize, runName, "exit-data.json")
 }
 
 func Start(k jobdispatcher.Client, runName string, output string, env map[string]string) error {
@@ -108,21 +108,46 @@ func Delete(k jobdispatcher.Client, storeAccess store.Client, redisClient *redis
 		return err
 	}
 
-	err = deleteFromStore(storeAccess, runName, "app.tgz")
+	err = deleteData(storeAccess, runName, "app.tgz")
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(storeAccess, runName, "output")
+	err = deleteData(storeAccess, runName, "output")
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(storeAccess, runName, "exit-data.json")
+	err = deleteData(storeAccess, runName, "exit-data.json")
 	if err != nil {
 		return err
 	}
-	err = deleteFromStore(storeAccess, runName, "cache.tgz")
+	err = deleteData(storeAccess, runName, "cache.tgz")
 	if err != nil {
 		return err
 	}
 	return redisClient.Del(runName).Err()
+}
+
+func storagePath(runName string, fileName string) string {
+	return runName + "/" + fileName
+}
+
+func getData(m store.Client, runName string, fileName string, writer io.Writer) error {
+	reader, err := m.Get(storagePath(runName, fileName))
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(writer, reader)
+	return err
+}
+
+func putData(m store.Client, reader io.Reader, objectSize int64, runName string, fileName string) error {
+	return m.Put(
+		storagePath(runName, fileName),
+		reader,
+		objectSize,
+	)
+}
+
+func deleteData(m store.Client, runName string, fileName string) error {
+	return m.Delete(storagePath(runName, fileName))
 }
