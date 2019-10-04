@@ -7,15 +7,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
 
 	"github.com/openaustralia/morph-ng/internal/commands"
-	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
-	"github.com/openaustralia/morph-ng/pkg/store"
-	"github.com/openaustralia/morph-ng/pkg/stream"
 )
 
 func create(w http.ResponseWriter, r *http.Request) error {
@@ -216,38 +212,17 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Our global state
-var app commands.App
+var app *commands.App
 
 func init() {
 }
 
 func main() {
-	storeAccess, err := store.NewMinioClient(
-		// TODO: Get data store url for configmap
-		"minio-service:9000",
-		// TODO: Make bucket name configurable
-		"clay",
-		os.Getenv("STORE_ACCESS_KEY"),
-		os.Getenv("STORE_SECRET_KEY"),
-	)
+	var err error
+	app, err = commands.New()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	streamClient, err := stream.NewRedis(
-		"redis:6379",
-		os.Getenv("REDIS_PASSWORD"),
-	)
-	if err != nil {
-		log.Fatal("Couldn't connect to redis: ", err)
-	}
-
-	jobDispatcher, err := jobdispatcher.Kubernetes()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	app = commands.App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient}
 
 	log.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"io"
+	"os"
 
 	"github.com/dchest/uniuri"
 
@@ -31,6 +32,36 @@ type createResult struct {
 type logMessage struct {
 	// TODO: Make the stream, stage and type an enum
 	Log, Stream, Stage, Type string
+}
+
+// New initialises the main state of the application
+func New() (*App, error) {
+	storeAccess, err := store.NewMinioClient(
+		// TODO: Get data store url for configmap
+		"minio-service:9000",
+		// TODO: Make bucket name configurable
+		"clay",
+		os.Getenv("STORE_ACCESS_KEY"),
+		os.Getenv("STORE_SECRET_KEY"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	streamClient, err := stream.NewRedis(
+		"redis:6379",
+		os.Getenv("REDIS_PASSWORD"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	jobDispatcher, err := jobdispatcher.Kubernetes()
+	if err != nil {
+		return nil, err
+	}
+
+	return &App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient}, nil
 }
 
 func (app *App) Create(namePrefix string) (createResult, error) {
