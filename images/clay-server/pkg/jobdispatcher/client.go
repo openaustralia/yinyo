@@ -1,5 +1,6 @@
 package jobdispatcher
 
+// Client is the interface to creating jobs and tokens
 // TODO: Not happy with this interface. It jumbles up the concept of job and secret
 type Client interface {
 	// TODO: Rename to SetupJob?

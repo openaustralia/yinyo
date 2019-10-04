@@ -18,13 +18,15 @@ const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/clay-scraper:v1"
 const runBinary = "/bin/run.sh"
 
+// App holds the state for the application
 type App struct {
 	Store  store.Client
 	Job    jobdispatcher.Client
 	Stream stream.Stream
 }
 
-type createResult struct {
+// CreateRunResult is the output of CreateRun
+type CreateRunResult struct {
 	RunName  string `json:"run_name"`
 	RunToken string `json:"run_token"`
 }
@@ -56,7 +58,7 @@ func New() (*App, error) {
 		return nil, err
 	}
 
-	jobDispatcher, err := jobdispatcher.Kubernetes()
+	jobDispatcher, err := jobdispatcher.NewKubernetes()
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +66,8 @@ func New() (*App, error) {
 	return &App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient}, nil
 }
 
-func (app *App) Create(namePrefix string) (createResult, error) {
+// CreateRun creates a run
+func (app *App) CreateRun(namePrefix string) (CreateRunResult, error) {
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
@@ -72,61 +75,73 @@ func (app *App) Create(namePrefix string) (createResult, error) {
 	runToken := uniuri.NewLen(32)
 	runName, err := app.Job.CreateJobAndToken(namePrefix, runToken)
 
-	createResult := createResult{
+	createResult := CreateRunResult{
 		RunName:  runName,
 		RunToken: runToken,
 	}
 	return createResult, err
 }
 
+// GetApp downloads the tar & gzipped application code
 func (app *App) GetApp(runName string, w io.Writer) error {
 	return app.getData(runName, filenameApp, w)
 }
 
+// PutApp uploads the tar & gzipped application code
 func (app *App) PutApp(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameApp)
 }
 
+// GetCache downloads the tar & gzipped build cache
 func (app *App) GetCache(runName string, w io.Writer) error {
 	return app.getData(runName, filenameCache, w)
 }
 
+// PutCache uploads the tar & gzipped build cache
 func (app *App) PutCache(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameCache)
 }
 
+// GetOutput downloads the scraper output
 func (app *App) GetOutput(runName string, w io.Writer) error {
 	return app.getData(runName, filenameOutput, w)
 }
 
+// PutOutput uploads the scraper output
 func (app *App) PutOutput(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameOutput)
 }
 
+// GetExitData downloads the json exit data
 func (app *App) GetExitData(runName string, w io.Writer) error {
 	return app.getData(runName, filenameExitData, w)
 }
 
+// PutExitData uploads the (already serialised) json exit data
 func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameExitData)
 }
 
-func (app *App) Start(runName string, output string, env map[string]string) error {
+// StartRun starts the run
+func (app *App) StartRun(runName string, output string, env map[string]string) error {
 	return app.Job.StartJob(runName, dockerImage, []string{runBinary, runName, output}, env)
 }
 
-func (app *App) GetEvent(runName string, id string) (newId string, jsonString string, finished bool, err error) {
+// GetEvent gets the next event
+func (app *App) GetEvent(runName string, id string) (newID string, jsonString string, finished bool, err error) {
 	return app.Stream.Get(runName, id)
 }
 
-func (app *App) CreateEvent(runName string, eventJson string) error {
+// CreateEvent add an event to the stream
+func (app *App) CreateEvent(runName string, eventJSON string) error {
 	// TODO: Send the event to the user with an http POST
 
 	// TODO: Use something like runName-events instead for the stream name
-	return app.Stream.Add(runName, eventJson)
+	return app.Stream.Add(runName, eventJSON)
 }
 
-func (app *App) Delete(runName string) error {
+// DeleteRun deletes the run. Should be the last thing called
+func (app *App) DeleteRun(runName string) error {
 	err := app.Job.DeleteJobAndToken(runName)
 	if err != nil {
 		return err

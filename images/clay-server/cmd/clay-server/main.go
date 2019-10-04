@@ -22,7 +22,7 @@ func create(w http.ResponseWriter, r *http.Request) error {
 		namePrefix = values[0]
 	}
 
-	createResult, err := app.Create(namePrefix)
+	createResult, err := app.CreateRun(namePrefix)
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return app.Start(runName, l.Output, env)
+	return app.StartRun(runName, l.Output, env)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
@@ -115,8 +115,8 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newId, jsonString, finished, err := app.GetEvent(runName, id)
-		id = newId
+		newID, jsonString, finished, err := app.GetEvent(runName, id)
+		id = newID
 		if err != nil {
 			return err
 		}
@@ -144,7 +144,7 @@ func createEvents(w http.ResponseWriter, r *http.Request) error {
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	return app.Delete(runName)
+	return app.DeleteRun(runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {

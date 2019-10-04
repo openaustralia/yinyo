@@ -20,7 +20,7 @@ type Run struct {
 	Name  string `json:"run_name"`
 	Token string `json:"run_token"`
 	// Ignore this field when converting from/to json
-	client *Client `json:"-"`
+	client *Client
 }
 
 // Client is used to access the API

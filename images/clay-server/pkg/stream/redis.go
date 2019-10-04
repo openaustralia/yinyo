@@ -8,6 +8,7 @@ type redisStream struct {
 	client *redis.Client
 }
 
+// NewRedis returns the Redis implementation of Stream
 func NewRedis(address string, password string) (Stream, error) {
 	// Connect to redis and initially just check that we can connect
 	redisClient := redis.NewClient(&redis.Options{
@@ -31,7 +32,7 @@ func (stream *redisStream) Add(key string, value string) error {
 
 // Get the next string in the stream based on the id. It will wait until it's
 // available or the stream is finished.
-func (stream *redisStream) Get(key string, id string) (newId string, value string, finished bool, err error) {
+func (stream *redisStream) Get(key string, id string) (newID string, value string, finished bool, err error) {
 	// For the moment get one event at a time
 	// TODO: Grab more than one at a time for a little more efficiency
 	result, err := stream.client.XRead(&redis.XReadArgs{
@@ -42,7 +43,7 @@ func (stream *redisStream) Get(key string, id string) (newId string, value strin
 	if err != nil {
 		return
 	}
-	newId = result[0].Messages[0].ID
+	newID = result[0].Messages[0].ID
 	value = result[0].Messages[0].Values["json"].(string)
 
 	// TODO: Should this check be here?

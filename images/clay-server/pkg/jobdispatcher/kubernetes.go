@@ -15,7 +15,8 @@ type kubernetesClient struct {
 	clientset *kubernetes.Clientset
 }
 
-func Kubernetes() (Client, error) {
+// NewKubernetes returns the Kubernetes implementation of Client
+func NewKubernetes() (Client, error) {
 	clientset, err := getClientSet()
 	if err != nil {
 		return nil, err
