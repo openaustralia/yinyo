@@ -13,7 +13,7 @@ COPY go.sum .
 RUN go mod download
 
 # Compiles the dependencies of empty.go
-COPY empty/empty.go .
+COPY pkg/empty/empty.go .
 RUN go build empty.go
 RUN rm empty.go
 
