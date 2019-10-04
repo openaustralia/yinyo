@@ -8,14 +8,29 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 type kubernetesClient struct {
 	clientset *kubernetes.Clientset
 }
 
-func Kubernetes(clientset *kubernetes.Clientset) Client {
-	return &kubernetesClient{clientset: clientset}
+func Kubernetes() (Client, error) {
+	clientset, err := getClientSet()
+	if err != nil {
+		return nil, err
+	}
+	k := &kubernetesClient{clientset: clientset}
+	return k, nil
+}
+
+func getClientSet() (*kubernetes.Clientset, error) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	return clientset, err
 }
 
 func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken string) (string, error) {

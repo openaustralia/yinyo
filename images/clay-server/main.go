@@ -12,21 +12,10 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 
 	"clay/pkg/jobdispatcher"
 	"clay/pkg/store"
 )
-
-func getClientSet() (*kubernetes.Clientset, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	return clientset, err
-}
 
 func create(w http.ResponseWriter, r *http.Request) error {
 	// TODO: Do we make sure that there is only one name_prefix used?
@@ -36,12 +25,12 @@ func create(w http.ResponseWriter, r *http.Request) error {
 		namePrefix = values[0]
 	}
 
-	clientset, err := getClientSet()
+	k, err := jobdispatcher.Kubernetes()
 	if err != nil {
 		return err
 	}
 
-	createResult, err := commandCreate(clientset, namePrefix)
+	createResult, err := commandCreate(k, namePrefix)
 	if err != nil {
 		return err
 	}
@@ -106,15 +95,10 @@ type startBody struct {
 func start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	clientset, err := getClientSet()
-	if err != nil {
-		return err
-	}
-
 	// TODO: If json is not of the right form return an error code that isn't 500
 	decoder := json.NewDecoder(r.Body)
 	var l startBody
-	err = decoder.Decode(&l)
+	err := decoder.Decode(&l)
 	if err != nil {
 		return err
 	}
@@ -124,8 +108,13 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
+	k, err := jobdispatcher.Kubernetes()
+	if err != nil {
+		return err
+	}
+
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return commandStart(clientset, runName, l.Output, env)
+	return commandStart(k, runName, l.Output, env)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
@@ -168,12 +157,12 @@ func createEvents(w http.ResponseWriter, r *http.Request) error {
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	clientset, err := getClientSet()
+	k, err := jobdispatcher.Kubernetes()
 	if err != nil {
 		return err
 	}
 
-	return commandDelete(clientset, storeAccess, redisClient, runName)
+	return commandDelete(k, storeAccess, redisClient, runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -211,14 +200,13 @@ func authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		clientset, err := getClientSet()
+		k, err := jobdispatcher.Kubernetes()
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		k := jobdispatcher.Kubernetes(clientset)
 		actualRunToken, err := k.GetToken(runName)
 
 		if err != nil {

@@ -5,7 +5,6 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
-	"k8s.io/client-go/kubernetes"
 
 	"clay/pkg/jobdispatcher"
 	"clay/pkg/store"
@@ -21,8 +20,7 @@ type logMessage struct {
 	Log, Stream, Stage, Type string
 }
 
-func commandCreate(clientset *kubernetes.Clientset, namePrefix string) (createResult, error) {
-	k := jobdispatcher.Kubernetes(clientset)
+func commandCreate(k jobdispatcher.Client, namePrefix string) (createResult, error) {
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
@@ -69,8 +67,7 @@ func commandPutExitData(storeAccess store.Client, reader io.Reader, objectSize i
 	return saveToStore(storeAccess, reader, objectSize, runName, "exit-data.json")
 }
 
-func commandStart(clientset *kubernetes.Clientset, runName string, output string, env map[string]string) error {
-	k := jobdispatcher.Kubernetes(clientset)
+func commandStart(k jobdispatcher.Client, runName string, output string, env map[string]string) error {
 	return k.StartJob(runName, "openaustralia/clay-scraper:v1", []string{"/bin/run.sh", runName, output}, env)
 }
 
@@ -105,8 +102,7 @@ func commandCreateEvent(redisClient *redis.Client, runName string, eventJson str
 	}).Err()
 }
 
-func commandDelete(clientset *kubernetes.Clientset, storeAccess store.Client, redisClient *redis.Client, runName string) error {
-	k := jobdispatcher.Kubernetes(clientset)
+func commandDelete(k jobdispatcher.Client, storeAccess store.Client, redisClient *redis.Client, runName string) error {
 	err := k.DeleteJobAndToken(runName)
 	if err != nil {
 		return err
