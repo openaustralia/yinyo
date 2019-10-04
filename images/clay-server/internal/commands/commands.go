@@ -17,6 +17,12 @@ const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/clay-scraper:v1"
 const runBinary = "/bin/run.sh"
 
+type App struct {
+	Store  store.Client
+	Job    jobdispatcher.Client
+	Stream stream.Stream
+}
+
 type createResult struct {
 	RunName  string `json:"run_name"`
 	RunToken string `json:"run_token"`
@@ -27,13 +33,13 @@ type logMessage struct {
 	Log, Stream, Stage, Type string
 }
 
-func Create(k jobdispatcher.Client, namePrefix string) (createResult, error) {
+func (app *App) Create(namePrefix string) (createResult, error) {
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
 	// Generate random token
 	runToken := uniuri.NewLen(32)
-	runName, err := k.CreateJobAndToken(namePrefix, runToken)
+	runName, err := app.Job.CreateJobAndToken(namePrefix, runToken)
 
 	createResult := createResult{
 		RunName:  runName,
@@ -42,84 +48,84 @@ func Create(k jobdispatcher.Client, namePrefix string) (createResult, error) {
 	return createResult, err
 }
 
-func GetApp(storeAccess store.Client, runName string, w io.Writer) error {
-	return getData(storeAccess, runName, filenameApp, w)
+func (app *App) GetApp(runName string, w io.Writer) error {
+	return app.getData(runName, filenameApp, w)
 }
 
-func PutApp(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return putData(storeAccess, reader, objectSize, runName, filenameApp)
+func (app *App) PutApp(reader io.Reader, objectSize int64, runName string) error {
+	return app.putData(reader, objectSize, runName, filenameApp)
 }
 
-func GetCache(storeAccess store.Client, runName string, w io.Writer) error {
-	return getData(storeAccess, runName, filenameCache, w)
+func (app *App) GetCache(runName string, w io.Writer) error {
+	return app.getData(runName, filenameCache, w)
 }
 
-func PutCache(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return putData(storeAccess, reader, objectSize, runName, filenameCache)
+func (app *App) PutCache(reader io.Reader, objectSize int64, runName string) error {
+	return app.putData(reader, objectSize, runName, filenameCache)
 }
 
-func GetOutput(storeAccess store.Client, runName string, w io.Writer) error {
-	return getData(storeAccess, runName, filenameOutput, w)
+func (app *App) GetOutput(runName string, w io.Writer) error {
+	return app.getData(runName, filenameOutput, w)
 }
 
-func PutOutput(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return putData(storeAccess, reader, objectSize, runName, filenameOutput)
+func (app *App) PutOutput(reader io.Reader, objectSize int64, runName string) error {
+	return app.putData(reader, objectSize, runName, filenameOutput)
 }
 
-func GetExitData(storeAccess store.Client, runName string, w io.Writer) error {
-	return getData(storeAccess, runName, filenameExitData, w)
+func (app *App) GetExitData(runName string, w io.Writer) error {
+	return app.getData(runName, filenameExitData, w)
 }
 
-func PutExitData(storeAccess store.Client, reader io.Reader, objectSize int64, runName string) error {
-	return putData(storeAccess, reader, objectSize, runName, filenameExitData)
+func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) error {
+	return app.putData(reader, objectSize, runName, filenameExitData)
 }
 
-func Start(k jobdispatcher.Client, runName string, output string, env map[string]string) error {
-	return k.StartJob(runName, dockerImage, []string{runBinary, runName, output}, env)
+func (app *App) Start(runName string, output string, env map[string]string) error {
+	return app.Job.StartJob(runName, dockerImage, []string{runBinary, runName, output}, env)
 }
 
-func GetEvent(r stream.Stream, runName string, id string) (newId string, jsonString string, finished bool, err error) {
-	return r.Get(runName, id)
+func (app *App) GetEvent(runName string, id string) (newId string, jsonString string, finished bool, err error) {
+	return app.Stream.Get(runName, id)
 }
 
-func CreateEvent(r stream.Stream, runName string, eventJson string) error {
+func (app *App) CreateEvent(runName string, eventJson string) error {
 	// TODO: Send the event to the user with an http POST
 
 	// TODO: Use something like runName-events instead for the stream name
-	return r.Add(runName, eventJson)
+	return app.Stream.Add(runName, eventJson)
 }
 
-func Delete(k jobdispatcher.Client, storeAccess store.Client, stream stream.Stream, runName string) error {
-	err := k.DeleteJobAndToken(runName)
+func (app *App) Delete(runName string) error {
+	err := app.Job.DeleteJobAndToken(runName)
 	if err != nil {
 		return err
 	}
 
-	err = deleteData(storeAccess, runName, filenameApp)
+	err = app.deleteData(runName, filenameApp)
 	if err != nil {
 		return err
 	}
-	err = deleteData(storeAccess, runName, filenameOutput)
+	err = app.deleteData(runName, filenameOutput)
 	if err != nil {
 		return err
 	}
-	err = deleteData(storeAccess, runName, filenameExitData)
+	err = app.deleteData(runName, filenameExitData)
 	if err != nil {
 		return err
 	}
-	err = deleteData(storeAccess, runName, filenameCache)
+	err = app.deleteData(runName, filenameCache)
 	if err != nil {
 		return err
 	}
-	return stream.Delete(runName)
+	return app.Stream.Delete(runName)
 }
 
 func storagePath(runName string, fileName string) string {
 	return runName + "/" + fileName
 }
 
-func getData(m store.Client, runName string, fileName string, writer io.Writer) error {
-	reader, err := m.Get(storagePath(runName, fileName))
+func (app *App) getData(runName string, fileName string, writer io.Writer) error {
+	reader, err := app.Store.Get(storagePath(runName, fileName))
 	if err != nil {
 		return err
 	}
@@ -127,14 +133,14 @@ func getData(m store.Client, runName string, fileName string, writer io.Writer) 
 	return err
 }
 
-func putData(m store.Client, reader io.Reader, objectSize int64, runName string, fileName string) error {
-	return m.Put(
+func (app *App) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {
+	return app.Store.Put(
 		storagePath(runName, fileName),
 		reader,
 		objectSize,
 	)
 }
 
-func deleteData(m store.Client, runName string, fileName string) error {
-	return m.Delete(storagePath(runName, fileName))
+func (app *App) deleteData(runName string, fileName string) error {
+	return app.Store.Delete(storagePath(runName, fileName))
 }

@@ -26,7 +26,7 @@ func create(w http.ResponseWriter, r *http.Request) error {
 		namePrefix = values[0]
 	}
 
-	createResult, err := commands.Create(app.Job, namePrefix)
+	createResult, err := app.Create(namePrefix)
 	if err != nil {
 		return err
 	}
@@ -39,43 +39,43 @@ func create(w http.ResponseWriter, r *http.Request) error {
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	return commands.GetApp(app.Store, runName, w)
+	return app.GetApp(runName, w)
 }
 
 func putApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.PutApp(app.Store, r.Body, r.ContentLength, runName)
+	return app.PutApp(r.Body, r.ContentLength, runName)
 }
 
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	return commands.GetCache(app.Store, runName, w)
+	return app.GetCache(runName, w)
 }
 
 func putCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.PutCache(app.Store, r.Body, r.ContentLength, runName)
+	return app.PutCache(r.Body, r.ContentLength, runName)
 }
 
 func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.GetOutput(app.Store, runName, w)
+	return app.GetOutput(runName, w)
 }
 
 func putOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.PutOutput(app.Store, r.Body, r.ContentLength, runName)
+	return app.PutOutput(r.Body, r.ContentLength, runName)
 }
 
 func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.GetExitData(app.Store, runName, w)
+	return app.GetExitData(runName, w)
 }
 
 func putExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return commands.PutExitData(app.Store, r.Body, r.ContentLength, runName)
+	return app.PutExitData(r.Body, r.ContentLength, runName)
 }
 
 type envVariable struct {
@@ -105,7 +105,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return commands.Start(app.Job, runName, l.Output, env)
+	return app.Start(runName, l.Output, env)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
@@ -119,7 +119,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newId, jsonString, finished, err := commands.GetEvent(app.Stream, runName, id)
+		newId, jsonString, finished, err := app.GetEvent(runName, id)
 		id = newId
 		if err != nil {
 			return err
@@ -142,13 +142,13 @@ func createEvents(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return commands.CreateEvent(app.Stream, runName, string(buf))
+	return app.CreateEvent(runName, string(buf))
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	return commands.Delete(app.Job, app.Store, app.Stream, runName)
+	return app.Delete(runName)
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -215,14 +215,8 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type App struct {
-	Store  store.Client
-	Job    jobdispatcher.Client
-	Stream stream.Stream
-}
-
 // Our global state
-var app App
+var app commands.App
 
 func init() {
 }
@@ -253,7 +247,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app = App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient}
+	app = commands.App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient}
 
 	log.Println("Clay is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
