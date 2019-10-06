@@ -14,7 +14,7 @@ usage() {
   echo ""
   echo "If -d is used interpret scraper_name as a path to a directory."
   echo "Otherwise interpret it as a name of a scraper stored on GitHub."
-  echo "e.g. $0 -d scrapers/test-python"
+  echo "e.g. $0 -d test/scrapers/test-python"
   exit 1
 }
 

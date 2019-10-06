@@ -41,7 +41,7 @@ This might not work immediately because Minio might not be ready
 Now you're ready to run your first scraper.
 
 ```bash
-./client.sh -d scrapers/test-python
+./client.sh -d test/scrapers/test-python
 ```
 
 The first time you run this it will take a little while (and you'll probably see some messages about some keys not existing. You can ignore that).
@@ -49,7 +49,7 @@ The first time you run this it will take a little while (and you'll probably see
 Now, if you run the same scraper again
 
 ```bash
-./client.sh -d scrapers/test-python
+./client.sh -d test/scrapers/test-python
 ```
 
 It should run significantly faster.
