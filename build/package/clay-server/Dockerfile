@@ -18,7 +18,11 @@ RUN go build empty.go
 RUN rm empty.go
 
 # Compile the actual thing
-COPY . .
+# Only copying across the bits we actually need so that skaffold isn't overeager on
+# rebuilding everything when another (not relevant) file changes
+COPY cmd cmd
+COPY internal internal
+COPY pkg pkg
 RUN CGO_ENABLED=0 go install github.com/openaustralia/morph-ng/cmd/clay-server
 
 # Now make the runtime image
