@@ -17,21 +17,16 @@ type kubernetesClient struct {
 
 // NewKubernetes returns the Kubernetes implementation of Client
 func NewKubernetes() (Client, error) {
-	clientset, err := getClientSet()
-	if err != nil {
-		return nil, err
-	}
-	k := &kubernetesClient{clientset: clientset}
-	return k, nil
-}
-
-func getClientSet() (*kubernetes.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
 	}
 	clientset, err := kubernetes.NewForConfig(config)
-	return clientset, err
+	if err != nil {
+		return nil, err
+	}
+	k := &kubernetesClient{clientset: clientset}
+	return k, nil
 }
 
 func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken string) (string, error) {
