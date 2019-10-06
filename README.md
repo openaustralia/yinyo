@@ -56,7 +56,7 @@ It should run significantly faster.
 
 ## To see what's on the blob storage (Minio)
 
-Point your web browser at http://localhost:9000. Login with the credentials in the file `configs/secrets-minio.env`.
+Point your web browser at [http://localhost:9000](http://localhost:9000). Login with the credentials in the file `configs/secrets-minio.env`.
 
 ## To see what Kubernetes is doing
 
