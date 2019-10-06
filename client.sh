@@ -55,7 +55,7 @@ else
   scraper_name="github/$scraper_name"
 fi
 
-create_result=$(./images/clay-scraper/clay.sh create "$scraper_name")
+create_result=$(./build/package/clay-scraper/clay.sh create "$scraper_name")
 run_name=$(echo "$create_result" | jq -r ".run_name")
 run_token=$(echo "$create_result" | jq -r ".run_token")
 
@@ -63,24 +63,24 @@ run_token=$(echo "$create_result" | jq -r ".run_token")
 # Note that this doesn't include hidden files currently. Do we want this?
 dir=$(pwd)
 cd app
-tar -zcf - * | "$dir/images/clay-scraper/clay.sh" put "$run_name" "$run_token" app
+tar -zcf - * | "$dir/build/package/clay-scraper/clay.sh" put "$run_name" "$run_token" app
 cd "$dir"
 rm -rf app
 
-(cat "client-storage/cache/$scraper_name.tgz" 2> /dev/null | ./images/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
-./images/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite SCRAPER_NAME "$scraper_name"
+(cat "client-storage/cache/$scraper_name.tgz" 2> /dev/null | ./build/package/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
+./build/package/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite SCRAPER_NAME "$scraper_name"
 
 if [ "$run_token" = "" ]; then
   echo "There was an error starting the scraper"
   exit 1
 fi
 
-./images/clay-scraper/clay.sh events "$run_name" "$run_token" | jq -r 'select(has("log")) | .log'
+./build/package/clay-scraper/clay.sh events "$run_name" "$run_token" | jq -r 'select(has("log")) | .log'
 # Get the sqlite database from clay and save it away
 mkdir -p $(dirname "client-storage/db/$scraper_name")
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$scraper_name.sqlite"
+./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$scraper_name.sqlite"
 mkdir -p $(dirname "client-storage/cache/$scraper_name")
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "client-storage/cache/$scraper_name.tgz"
+./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "client-storage/cache/$scraper_name.tgz"
 echo "exit data returned by clay:"
-./images/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
-./images/clay-scraper/clay.sh delete "$run_name" "$run_token"
+./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
+./build/package/clay-scraper/clay.sh delete "$run_name" "$run_token"

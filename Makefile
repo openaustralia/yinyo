@@ -10,7 +10,7 @@ shell:
 	docker run --rm -i -t openaustralia/clay-scraper:v1 /bin/bash
 
 lint:
-	shellcheck images/clay-scraper/*.sh client.sh
+	shellcheck build/package/clay-scraper/*.sh client.sh
 
 minio_access_key = $(shell grep access_key secrets-minio.env | cut -d "=" -f 2)
 minio_secret_key = $(shell grep secret_key secrets-minio.env | cut -d "=" -f 2)

@@ -7,8 +7,8 @@ build:
   artifacts:
     - image: openaustralia/clay-server
       docker:
-        dockerfile: images/clay-server/Dockerfile
+        dockerfile: build/package/clay-server/Dockerfile
     - image: openaustralia/clay-scraper
-      context: images/clay-scraper
+      context: build/package/clay-scraper
 deploy:
   kustomize: {}
