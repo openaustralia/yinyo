@@ -124,7 +124,8 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 
 // StartRun starts the run
 func (app *App) StartRun(runName string, output string, env map[string]string) error {
-	return app.Job.StartJob(runName, dockerImage, []string{runBinary, runName, output}, env)
+	command := []string{runBinary, runName, output}
+	return app.Job.StartJob(runName, dockerImage, command, env)
 }
 
 // GetEvent gets the next event
