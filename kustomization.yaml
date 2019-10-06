@@ -1,19 +1,19 @@
 resources:
-  - kubernetes/000-clay-namespace.yaml
-  - kubernetes/clay-server.yaml
-  - kubernetes/minio-deployment.yaml
-  - kubernetes/redis.yaml
+  - deployments/kubernetes/000-clay-namespace.yaml
+  - deployments/kubernetes/clay-server.yaml
+  - deployments/kubernetes/minio-deployment.yaml
+  - deployments/kubernetes/redis.yaml
 
 secretGenerator:
-- name: minio
-  namespace: clay-system
-  env: secrets-minio.env
-- name: clay-server
-  namespace: clay-system
-  env: secrets-clay-server.env
-- name: redis
-  namespace: clay-system
-  env: secrets-redis.env
+  - name: minio
+    namespace: clay-system
+    env: secrets-minio.env
+  - name: clay-server
+    namespace: clay-system
+    env: secrets-clay-server.env
+  - name: redis
+    namespace: clay-system
+    env: secrets-redis.env
 
 configurations:
-- kustomizeconfig/redis.yaml
+  - deployments/kustomizeconfig/redis.yaml
