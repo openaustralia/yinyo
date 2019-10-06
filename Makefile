@@ -20,6 +20,6 @@ minio_clay_secret_key = $(shell grep store_secret_key secrets-clay-server.env | 
 buckets:
 	mc config host add minio http://localhost:9000 $(minio_access_key) $(minio_secret_key)
 	mc admin user add minio $(minio_clay_access_key) $(minio_clay_secret_key)
-	mc admin policy add minio clay minio-clay-policy.json
+	mc admin policy add minio clay configs/minio-clay-policy.json
 	mc admin policy set minio clay user=$(minio_clay_access_key)
 	mc mb -p minio/clay
