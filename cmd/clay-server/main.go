@@ -95,7 +95,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	var env map[string]string
+	env := make(map[string]string)
 	for _, keyvalue := range l.Env {
 		env[keyvalue.Name] = keyvalue.Value
 	}
