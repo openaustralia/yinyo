@@ -51,7 +51,7 @@ else
   git clone --quiet --depth 1 "https://github.com/$scraper_name.git" app
   rm -rf app/.git app/.gitignore
   # Add the sqlite database
-  (cat "client-storage/db/$scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
+  (cat "assets/client-storage/db/$scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
   scraper_name="github/$scraper_name"
 fi
 
@@ -67,7 +67,7 @@ tar -zcf - * | "$dir/build/package/clay-scraper/clay.sh" put "$run_name" "$run_t
 cd "$dir"
 rm -rf app
 
-(cat "client-storage/cache/$scraper_name.tgz" 2> /dev/null | ./build/package/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
+(cat "assets/client-storage/cache/$scraper_name.tgz" 2> /dev/null | ./build/package/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
 ./build/package/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite SCRAPER_NAME "$scraper_name"
 
 if [ "$run_token" = "" ]; then
@@ -77,10 +77,10 @@ fi
 
 ./build/package/clay-scraper/clay.sh events "$run_name" "$run_token" | jq -r 'select(has("log")) | .log'
 # Get the sqlite database from clay and save it away
-mkdir -p $(dirname "client-storage/db/$scraper_name")
-./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" output > "client-storage/db/$scraper_name.sqlite"
-mkdir -p $(dirname "client-storage/cache/$scraper_name")
-./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "client-storage/cache/$scraper_name.tgz"
+mkdir -p $(dirname "assets/client-storage/db/$scraper_name")
+./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" output > "assets/client-storage/db/$scraper_name.sqlite"
+mkdir -p $(dirname "assets/client-storage/cache/$scraper_name")
+./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "assets/client-storage/cache/$scraper_name.tgz"
 echo "exit data returned by clay:"
 ./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
 ./build/package/clay-scraper/clay.sh delete "$run_name" "$run_token"
