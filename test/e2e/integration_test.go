@@ -8,14 +8,11 @@ import (
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/openaustralia/morph-ng/pkg/clayclient"
 	"github.com/stretchr/testify/assert"
-
-	// TODO: Rename client package to clayclient
-	"github.com/openaustralia/morph-ng/pkg/client"
-	clayclient "github.com/openaustralia/morph-ng/pkg/client"
 )
 
-func defaultClient() client.Client {
+func defaultClient() clayclient.Client {
 	return clayclient.New("http://localhost:8080")
 }
 

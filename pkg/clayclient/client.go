@@ -1,4 +1,4 @@
-package client
+package clayclient
 
 import (
 	"archive/tar"
