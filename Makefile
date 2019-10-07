@@ -1,4 +1,4 @@
-.PHONY: image server
+.PHONY: image server test
 
 all: run
 
