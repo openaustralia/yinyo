@@ -35,39 +35,80 @@ if [ -z "$CLAY_SERVER_URL" ]; then
   exit 1
 fi
 
-if [ "$1" = "put" ]; then
-  curl -s -X PUT -H "Authorization: Bearer $3" --data-binary @- --no-buffer "$CLAY_SERVER_URL/runs/$2/$4"
-elif [ "$1" = "get" ]; then
-  curl -s -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/$4"
-elif [ "$1" = "create" ]; then
-  curl -s -G -X POST "$CLAY_SERVER_URL/runs" -d "name_prefix=$2"
-elif [ "$1" = "start" ]; then
+put() {
+  curl -s -X PUT -H "Authorization: Bearer $2" --data-binary @- --no-buffer "$CLAY_SERVER_URL/runs/$1/$3"
+}
+
+get() {
+  curl -s -H "Authorization: Bearer $2" "$CLAY_SERVER_URL/runs/$1/$3"
+}
+
+create() {
+  curl -s -G -X POST "$CLAY_SERVER_URL/runs" -d "name_prefix=$1"
+}
+
+start() {
   # Send as json
-  data=$(jq -c -n --arg output "$4" --arg env_name "$5" --arg env_value "$6" '{output: $output, env: [{name: $env_name, value: $env_value}]}')
-  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/start" -d "$data"
-elif [ "$1" = "events" ]; then
-  curl -s --no-buffer -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2/events"
-elif [ "$1" = "delete" ]; then
-  curl -s -X DELETE -H "Authorization: Bearer $3" "$CLAY_SERVER_URL/runs/$2"
-elif [ "$1" = "send-logs" ]; then
+  data=$(jq -c -n --arg output "$3" --arg env_name "$4" --arg env_value "$5" '{output: $output, env: [{name: $env_name, value: $env_value}]}')
+  curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/start" -d "$data"
+}
+
+events() {
+  curl -s --no-buffer -H "Authorization: Bearer $2" "$CLAY_SERVER_URL/runs/$1/events"
+}
+
+delete() {
+  curl -s -X DELETE -H "Authorization: Bearer $2" "$CLAY_SERVER_URL/runs/$1"
+}
+
+send-logs() {
   # Send each line of stdin as a separate POST
   # TODO: Chunk up lines that get sent close together into one request
   while IFS= read -r text ;
   do
     # Send as json
-    data=$(jq -c -n --arg text "$text" --arg stage "$4" --arg stream "$5" '{stage: $stage, type: "log", stream: $stream, text: $text}')
-    curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$data"
+    data=$(jq -c -n --arg text "$text" --arg stage "$3" --arg stream "$4" '{stage: $stage, type: "log", stream: $stream, text: $text}')
+    curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/events" -d "$data"
     # Also for the time being
+    # TODO: No need for this anymore
     echo "$line"
   done
+}
+
+started() {
+  data=$(jq -c -n --arg log "$line" --arg stage "$3" '{stage: $stage, type: "started"}')
+  curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/events" -d "$data"
+}
+
+finished() {
+  data=$(jq -c -n --arg log "$line" --arg stage "$3" '{stage: $stage, type: "finished"}')
+  curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/events" -d "$data"
+}
+
+send-event() {
+  curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/events" -d "$3"
+}
+
+if [ "$1" = "put" ]; then
+  put $2 $3 $4
+elif [ "$1" = "get" ]; then
+  get $2 $3 $4
+elif [ "$1" = "create" ]; then
+  create $2
+elif [ "$1" = "start" ]; then
+  start $2 $3 $4 $5 $6
+elif [ "$1" = "events" ]; then
+  events $2 $3
+elif [ "$1" = "delete" ]; then
+  delete $2 $3
+elif [ "$1" = "send-logs" ]; then
+  send-logs $2 $3 $4 $5
 elif [ "$1" == "started" ]; then
-  data=$(jq -c -n --arg log "$line" --arg stage "$4" '{stage: $stage, type: "started"}')
-  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$data"
+  started $2 $3 $4
 elif [ "$1" == "finished" ]; then
-  data=$(jq -c -n --arg log "$line" --arg stage "$4" '{stage: $stage, type: "finished"}')
-  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$data"
+  finished $2 $3 $4
 elif [ "$1" == "send-event" ]; then
-  curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$4"
+  send-event $2 $3 $4
 else
   echo "Unknown command" >&2
   exit 1
