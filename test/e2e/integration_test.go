@@ -16,7 +16,7 @@ import (
 )
 
 func defaultClient() client.Client {
-	return clayclient.NewClient("http://localhost:8080")
+	return clayclient.New("http://localhost:8080")
 }
 
 func TestHello(t *testing.T) {

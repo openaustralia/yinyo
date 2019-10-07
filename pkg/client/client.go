@@ -29,8 +29,8 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-// NewClient configures a new Client
-func NewClient(URL string) Client {
+// New configures a new Client
+func New(URL string) Client {
 	return Client{
 		URL:        URL,
 		HTTPClient: http.DefaultClient,
