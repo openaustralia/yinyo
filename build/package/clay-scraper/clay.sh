@@ -52,10 +52,10 @@ elif [ "$1" = "delete" ]; then
 elif [ "$1" = "send-logs" ]; then
   # Send each line of stdin as a separate POST
   # TODO: Chunk up lines that get sent close together into one request
-  while IFS= read -r line ;
+  while IFS= read -r text ;
   do
     # Send as json
-    data=$(jq -c -n --arg log "$line" --arg stage "$4" --arg stream "$5" '{stage: $stage, type: "log", stream: $stream, log: $log}')
+    data=$(jq -c -n --arg text "$text" --arg stage "$4" --arg stream "$5" '{stage: $stage, type: "log", stream: $stream, text: $text}')
     curl -s -X POST -H "Authorization: Bearer $3" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$2/events" -d "$data"
     # Also for the time being
     echo "$line"

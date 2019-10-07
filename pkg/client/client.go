@@ -218,7 +218,7 @@ type eventRaw struct {
 	Stage  string
 	Type   string
 	Stream string
-	Log    string // TODO: Rename Log to Text
+	Text   string
 }
 
 // Event is the interface for all event types
@@ -239,7 +239,7 @@ type FinishEvent struct {
 type LogEvent struct {
 	Stage  string
 	Stream string
-	Log    string // TODO: Rename Log to Text
+	Text   string
 }
 
 // EventIterator is a stream of events
@@ -264,7 +264,7 @@ func (iterator *EventIterator) Next() (Event, error) {
 	} else if eventRaw.Type == "finished" {
 		return FinishEvent{Stage: eventRaw.Stage}, nil
 	} else if eventRaw.Type == "log" {
-		return LogEvent{Stage: eventRaw.Stage, Stream: eventRaw.Stream, Log: eventRaw.Log}, nil
+		return LogEvent{Stage: eventRaw.Stage, Stream: eventRaw.Stream, Text: eventRaw.Text}, nil
 	}
 	return nil, errors.New("Unexpected type")
 }

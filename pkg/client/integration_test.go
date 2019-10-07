@@ -165,17 +165,17 @@ func TestHelloWorld(t *testing.T) {
 	bar.Finish()
 	assert.Equal(t, []Event{
 		StartEvent{Stage: "build"},
-		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Python app detected"},
-		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
-		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
-		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G-----> Installing requirements with pip"},
-		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
-		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       "},
-		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       \u001b[1G-----> Discovering process types"},
-		LogEvent{Stage: "build", Stream: "stdout", Log: "\u001b[1G       Procfile declares types -> scraper"},
+		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"},
+		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
+		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
+		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"},
+		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
+		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "},
+		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"},
+		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"},
 		FinishEvent{Stage: "build"},
 		StartEvent{Stage: "run"},
-		LogEvent{Stage: "run", Stream: "stdout", Log: "Hello World!"},
+		LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
 		FinishEvent{Stage: "run"},
 	}, eventsList)
 
