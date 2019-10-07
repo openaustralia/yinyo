@@ -1,4 +1,4 @@
-package client
+package test
 
 import (
 	"io"
@@ -9,10 +9,14 @@ import (
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/stretchr/testify/assert"
+
+	// TODO: Rename client package to clayclient
+	"github.com/openaustralia/morph-ng/pkg/client"
+	clayclient "github.com/openaustralia/morph-ng/pkg/client"
 )
 
-func defaultClient() Client {
-	return NewClient("http://localhost:8080")
+func defaultClient() client.Client {
+	return clayclient.NewClient("http://localhost:8080")
 }
 
 func TestHello(t *testing.T) {
@@ -140,7 +144,7 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now start the scraper
-	err = run.Start(&StartRunOptions{Output: "output.txt"})
+	err = run.Start(&clayclient.StartRunOptions{Output: "output.txt"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -151,7 +155,7 @@ func TestHelloWorld(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var eventsList []Event
+	var eventsList []clayclient.Event
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
 	for iterator.More() {
@@ -163,20 +167,20 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
-	assert.Equal(t, []Event{
-		StartEvent{Stage: "build"},
-		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"},
-		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
-		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
-		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"},
-		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
-		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "},
-		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"},
-		LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"},
-		FinishEvent{Stage: "build"},
-		StartEvent{Stage: "run"},
-		LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
-		FinishEvent{Stage: "run"},
+	assert.Equal(t, []clayclient.Event{
+		clayclient.StartEvent{Stage: "build"},
+		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"},
+		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
+		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
+		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"},
+		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
+		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "},
+		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"},
+		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"},
+		clayclient.FinishEvent{Stage: "build"},
+		clayclient.StartEvent{Stage: "run"},
+		clayclient.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
+		clayclient.FinishEvent{Stage: "run"},
 	}, eventsList)
 
 	// Get the cache
@@ -195,5 +199,4 @@ func TestHelloWorld(t *testing.T) {
 	// Get the metrics
 	// Get the exit status
 	// Cleanup
-
 }
