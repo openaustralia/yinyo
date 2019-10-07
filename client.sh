@@ -10,10 +10,11 @@ set -e
 
 usage() {
   echo "Runs a scraper in a local directory using clay"
-  echo "Usage: $0 scraper_directory"
+  echo "Usage: $0 scraper_directory output_file"
   echo ""
-  echo "e.g. $0 test/scrapers/test-python"
-  echo "The output is written to the same local directory at the end"
+  echo "e.g. $0 test/scrapers/test-python data.sqlite"
+  echo "The output is written to the same local directory at the end. The output file path"
+  echo "is given relative to the scraper directory"
   exit 1
 }
 
@@ -25,6 +26,7 @@ fi
 shift $((OPTIND-1))
 
 scraper_directory=$1
+output=$2
 
 # This environment variable is used by clay.sh
 CLAY_SERVER_URL=http://localhost:8080
@@ -42,7 +44,7 @@ tar -zcf - * | "$dir/build/package/clay-scraper/clay.sh" put "$run_name" "$run_t
 cd "$dir"
 
 (cat "assets/client-storage/cache/$scraper_directory.tgz" 2> /dev/null | ./build/package/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
-./build/package/clay-scraper/clay.sh start "$run_name" "$run_token" data.sqlite SCRAPER_NAME "$scraper_directory"
+./build/package/clay-scraper/clay.sh start "$run_name" "$run_token" "$output" SCRAPER_NAME "$scraper_directory"
 
 if [ "$run_token" = "" ]; then
   echo "There was an error starting the scraper"
@@ -51,7 +53,7 @@ fi
 
 ./build/package/clay-scraper/clay.sh events "$run_name" "$run_token" | jq -r 'select(has("log")) | .log'
 # Get the sqlite database from clay and save it away
-./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" output > "$scraper_directory/data.sqlite"
+./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" output > "$scraper_directory/$output"
 mkdir -p $(dirname "assets/client-storage/cache/$scraper_directory")
 ./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "assets/client-storage/cache/$scraper_directory.tgz"
 echo "exit data returned by clay:"
