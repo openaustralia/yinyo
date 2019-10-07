@@ -9,28 +9,16 @@
 set -e
 
 usage() {
-  echo "Runs a scraper using clay"
-  echo "Usage: $0 [-d] scraper_name"
+  echo "Runs a scraper in a local directory using clay"
+  echo "Usage: $0 scraper_directory"
   echo ""
-  echo "If -d is used interpret scraper_name as a path to a directory."
-  echo "Otherwise interpret it as a name of a scraper stored on GitHub."
-  echo "e.g. $0 -d test/scrapers/test-python"
+  echo "e.g. $0 test/scrapers/test-python"
   exit 1
 }
 
 if [ $# == 0 ]; then
   usage
 fi
-
-scraper_name_is_directory=false
-
-while getopts 'd' c
-do
-  case $c in
-    d) scraper_name_is_directory=true ;;
-    *) usage ;;
-  esac
-done
 
 # Get rid of the parsed options so far
 shift $((OPTIND-1))
@@ -42,18 +30,7 @@ CLAY_SERVER_URL=http://localhost:8080
 export CLAY_SERVER_URL
 
 rm -rf app
-if [ "$scraper_name_is_directory" = true ]; then
-  cp -R "$scraper_name" app
-  # Prepend scraper name with something different so that it can be cached separately
-  scraper_name="local/$scraper_name"
-else
-  # Checkout the code from github
-  git clone --quiet --depth 1 "https://github.com/$scraper_name.git" app
-  rm -rf app/.git app/.gitignore
-  # Add the sqlite database
-  (cat "assets/client-storage/db/$scraper_name.sqlite" > app/data.sqlite 2> /dev/null) || true
-  scraper_name="github/$scraper_name"
-fi
+cp -R "$scraper_name" app
 
 create_result=$(./build/package/clay-scraper/clay.sh create "$scraper_name")
 run_name=$(echo "$create_result" | jq -r ".run_name")
