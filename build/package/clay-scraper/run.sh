@@ -61,45 +61,45 @@ send-event() {
   curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/events" -d "$3"
 }
 
-started "$RUN_NAME" "$CLAY_RUN_TOKEN" build
+started "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" build
 
 cd /tmp || exit
 
 mkdir -p app cache
 
-get "$RUN_NAME" "$CLAY_RUN_TOKEN" app | tar xzf - -C app
+get "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" app | tar xzf - -C app
 
 cp /usr/local/lib/Procfile /tmp/app/Procfile
 
-(get "$RUN_NAME" "$CLAY_RUN_TOKEN" cache | tar xzf - -C cache 2> /dev/null) || true
+(get "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" cache | tar xzf - -C cache 2> /dev/null) || true
 
 # This fairly hideous construction pipes stdout and stderr to seperate commands
-{ /bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build 2>&3 | send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" build stdout; } 3>&1 1>&2 | send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" build stderr
+{ /bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build 2>&3 | send-logs "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" build stdout; } 3>&1 1>&2 | send-logs "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" build stderr
 
 # TODO: If the build fails then it shouldn't try to run the scraper but it should record stats
 
 cd cache
-tar -zcf - * | put "$RUN_NAME" "$CLAY_RUN_TOKEN" cache
+tar -zcf - * | put "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" cache
 cd ..
 
-finished "$RUN_NAME" "$CLAY_RUN_TOKEN" build
+finished "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" build
 
 # TODO: Factor out common code from the build and run
-started "$RUN_NAME" "$CLAY_RUN_TOKEN" run
-{ /bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper 2>&3 | send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" run stdout; } 3>&1 1>&2 | send-logs "$RUN_NAME" "$CLAY_RUN_TOKEN" run stderr
+started "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" run
+{ /bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper 2>&3 | send-logs "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" run stdout; } 3>&1 1>&2 | send-logs "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" run stderr
 
 exit_code=${PIPESTATUS[0]}
 
 build_statistics=$(cat /tmp/usage_build.json)
 run_statistics=$(cat /tmp/usage_run.json)
 overall_stats="{\"exit_code\": $exit_code, \"usage\": {\"build\": $build_statistics, \"run\": $run_statistics}}"
-echo "$overall_stats" | put "$RUN_NAME" "$CLAY_RUN_TOKEN" exit-data
+echo "$overall_stats" | put "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" exit-data
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
 # TODO: Do nothing if the output file doesn't exist
-put "$RUN_NAME" "$CLAY_RUN_TOKEN" output < "$RUN_OUTPUT"
+put "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" output < "$RUN_OUTPUT"
 
-finished "$RUN_NAME" "$CLAY_RUN_TOKEN" run
+finished "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" run
 # TODO: Make sure that this is always sent even, for instance, if the build fails
-send-event "$RUN_NAME" "$CLAY_RUN_TOKEN" "EOF"
+send-event "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" "EOF"

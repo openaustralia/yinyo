@@ -62,7 +62,7 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 
 	environment := []apiv1.EnvVar{
 		{
-			Name: "CLAY_RUN_TOKEN",
+			Name: "CLAY_INTERNAL_RUN_TOKEN",
 			ValueFrom: &apiv1.EnvVarSource{
 				SecretKeyRef: &apiv1.SecretKeySelector{
 					LocalObjectReference: apiv1.LocalObjectReference{
@@ -73,8 +73,6 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 			},
 		},
 	}
-	// TODO: Check that runOptions.Env isn't trying to set CLAY_RUN_TOKEN
-	// and warn the user if that is the case because the scraper will mysteriously not work
 	for k, v := range env {
 		environment = append(environment, apiv1.EnvVar{Name: k, Value: v})
 	}
