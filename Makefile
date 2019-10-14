@@ -8,6 +8,9 @@ run:
 test:
 	go test ./...
 
+mocks:
+	mockery -all -inpkg
+
 # If you want an interactive shell in the container
 shell:
 	docker run --rm -i -t openaustralia/clay-scraper:v1 /bin/bash
