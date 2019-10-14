@@ -218,6 +218,9 @@ func init() {
 }
 
 func main() {
+	// Show the source of the error with the standard logger. Don't show date & time
+	log.SetFlags(log.Lshortfile)
+
 	var err error
 	app, err = commands.New()
 	if err != nil {
