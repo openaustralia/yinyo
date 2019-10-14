@@ -145,6 +145,11 @@ func (app *App) StartRun(runName string, output string, env map[string]string) e
 			return errors.New("Can't override environment variables starting with " + reservedEnvNamespace)
 		}
 	}
+	runToken, err := app.Job.GetToken(runName)
+	if err != nil {
+		return err
+	}
+	env["CLAY_INTERNAL_RUN_TOKEN"] = runToken
 	command := []string{runBinary, runName, output}
 	return app.Job.StartJob(runName, dockerImage, command, env)
 }

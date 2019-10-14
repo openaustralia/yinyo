@@ -60,19 +60,7 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 	// Let this run for a maximum of 24 hours
 	activeDeadlineSeconds := int64(86400)
 
-	environment := []apiv1.EnvVar{
-		{
-			Name: "CLAY_INTERNAL_RUN_TOKEN",
-			ValueFrom: &apiv1.EnvVarSource{
-				SecretKeyRef: &apiv1.SecretKeySelector{
-					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: runName,
-					},
-					Key: "run_token",
-				},
-			},
-		},
-	}
+	environment := []apiv1.EnvVar{}
 	for k, v := range env {
 		environment = append(environment, apiv1.EnvVar{Name: k, Value: v})
 	}

@@ -21,8 +21,10 @@ func TestStartRun(t *testing.T) {
 		"run-name",
 		"openaustralia/clay-scraper:v1",
 		[]string{"/bin/run.sh", "run-name", "output.txt"},
-		map[string]string{"FOO": "bar"},
+		map[string]string{"FOO": "bar", "CLAY_INTERNAL_RUN_TOKEN": "supersecret"},
 	).Return(nil)
+	job.On("GetToken", "run-name").Return("supersecret", nil)
+
 	app := App{Job: job}
 	err := app.StartRun("run-name", "output.txt", map[string]string{"FOO": "bar"})
 	assert.Nil(t, err)
