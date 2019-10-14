@@ -19,6 +19,7 @@ const filenameOutput = "output"
 const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/clay-scraper:v1"
 const runBinary = "/bin/run.sh"
+const reservedEnvNamespace = "CLAY_INTERNAL_"
 
 // App holds the state for the application
 type App struct {
@@ -140,8 +141,8 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 func (app *App) StartRun(runName string, output string, env map[string]string) error {
 	// Check that we're not using any reserved environment variables
 	for k := range env {
-		if strings.HasPrefix(k, "CLAY_INTERNAL_") {
-			return errors.New("Can't override environment variables starting with CLAY_INTERNAL_")
+		if strings.HasPrefix(k, reservedEnvNamespace) {
+			return errors.New("Can't override environment variables starting with " + reservedEnvNamespace)
 		}
 	}
 	command := []string{runBinary, runName, output}
