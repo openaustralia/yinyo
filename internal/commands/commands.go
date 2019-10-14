@@ -36,9 +36,8 @@ type logMessage struct {
 	Log, Stream, Stage, Type string
 }
 
-// New initialises the main state of the application
-func New() (*App, error) {
-	storeAccess, err := store.NewMinioClient(
+func defaultStore() (store.Client, error) {
+	return store.NewMinioClient(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
 		// TODO: Make bucket name configurable
@@ -46,19 +45,32 @@ func New() (*App, error) {
 		os.Getenv("STORE_ACCESS_KEY"),
 		os.Getenv("STORE_SECRET_KEY"),
 	)
-	if err != nil {
-		return nil, err
-	}
+}
 
-	streamClient, err := stream.NewRedis(
+func defaultStream() (stream.Stream, error) {
+	return stream.NewRedis(
 		"redis:6379",
 		os.Getenv("REDIS_PASSWORD"),
 	)
+}
+
+func defaultJobDispatcher() (jobdispatcher.Client, error) {
+	return jobdispatcher.NewKubernetes()
+}
+
+// New initialises the main state of the application
+func New() (*App, error) {
+	storeAccess, err := defaultStore()
 	if err != nil {
 		return nil, err
 	}
 
-	jobDispatcher, err := jobdispatcher.NewKubernetes()
+	streamClient, err := defaultStream()
+	if err != nil {
+		return nil, err
+	}
+
+	jobDispatcher, err := defaultJobDispatcher()
 	if err != nil {
 		return nil, err
 	}
