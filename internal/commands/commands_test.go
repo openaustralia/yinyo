@@ -24,6 +24,7 @@ func TestStartRun(t *testing.T) {
 		map[string]string{"FOO": "bar"},
 	).Return(nil)
 	app := App{Job: job}
-	app.StartRun("run-name", "output.txt", map[string]string{"FOO": "bar"})
+	err := app.StartRun("run-name", "output.txt", map[string]string{"FOO": "bar"})
+	assert.Nil(t, err)
 	job.AssertExpectations(t)
 }
