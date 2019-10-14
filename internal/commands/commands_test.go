@@ -28,3 +28,10 @@ func TestStartRun(t *testing.T) {
 	assert.Nil(t, err)
 	job.AssertExpectations(t)
 }
+
+// Make sure that setting a reserved environment variable is not allowed
+func TestStartRunWithReservedEnv(t *testing.T) {
+	app := App{}
+	err := app.StartRun("run-name", "output.txt", map[string]string{"CLAY_INTERNAL_FOO": "bar"})
+	assert.NotNil(t, err)
+}

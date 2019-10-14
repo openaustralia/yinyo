@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"errors"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/dchest/uniuri"
 
@@ -136,6 +138,12 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 
 // StartRun starts the run
 func (app *App) StartRun(runName string, output string, env map[string]string) error {
+	// Check that we're not using any reserved environment variables
+	for k := range env {
+		if strings.HasPrefix(k, "CLAY_INTERNAL_") {
+			return errors.New("Can't override environment variables starting with CLAY_INTERNAL_")
+		}
+	}
 	command := []string{runBinary, runName, output}
 	return app.Job.StartJob(runName, dockerImage, command, env)
 }
