@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
+	"github.com/openaustralia/morph-ng/pkg/stream"
 )
 
 func TestStoragePath(t *testing.T) {
@@ -36,4 +37,13 @@ func TestStartRunWithReservedEnv(t *testing.T) {
 	app := App{}
 	err := app.StartRun("run-name", "output.txt", map[string]string{"CLAY_INTERNAL_FOO": "bar"})
 	assert.EqualError(t, err, "Can't override environment variables starting with CLAY_INTERNAL_")
+}
+
+func TestCreateEvent(t *testing.T) {
+	stream := new(stream.MockStream)
+	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
+
+	app := App{Stream: stream}
+	err := app.CreateEvent("run-name", "{\"some\": \"json\"}")
+	assert.Nil(t, err)
 }
