@@ -28,11 +28,35 @@ shift $((OPTIND-1))
 scraper_directory=$1
 output=$2
 
-# This environment variable is used by clay.sh
 CLAY_SERVER_URL=http://localhost:8080
-export CLAY_SERVER_URL
 
-create_result=$(./build/package/clay-scraper/clay.sh create "$scraper_directory")
+create() {
+  curl -s -G -X POST "$CLAY_SERVER_URL/runs" -d "name_prefix=$1"
+}
+
+get() {
+  curl -s -H "Authorization: Bearer $2" "$CLAY_SERVER_URL/runs/$1/$3"
+}
+
+put() {
+  curl -s -X PUT -H "Authorization: Bearer $2" --data-binary @- --no-buffer "$CLAY_SERVER_URL/runs/$1/$3"
+}
+
+start() {
+  # Send as json
+  data=$(jq -c -n --arg output "$3" --arg env_name "$4" --arg env_value "$5" '{output: $output, env: [{name: $env_name, value: $env_value}]}')
+  curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/start" -d "$data"
+}
+
+events() {
+  curl -s --no-buffer -H "Authorization: Bearer $2" "$CLAY_SERVER_URL/runs/$1/events"
+}
+
+delete() {
+  curl -s -X DELETE -H "Authorization: Bearer $2" "$CLAY_SERVER_URL/runs/$1"
+}
+
+create_result=$(create "$scraper_directory")
 run_name=$(echo "$create_result" | jq -r ".run_name")
 run_token=$(echo "$create_result" | jq -r ".run_token")
 
@@ -40,22 +64,22 @@ run_token=$(echo "$create_result" | jq -r ".run_token")
 # Note that this doesn't include hidden files currently. Do we want this?
 dir=$(pwd)
 cd "$scraper_directory"
-tar -zcf - * | "$dir/build/package/clay-scraper/clay.sh" put "$run_name" "$run_token" app
+tar -zcf - * | put "$run_name" "$run_token" app
 cd "$dir"
 
-(cat "assets/client-storage/cache/$scraper_directory.tgz" 2> /dev/null | ./build/package/clay-scraper/clay.sh put "$run_name" "$run_token" cache) || true
-./build/package/clay-scraper/clay.sh start "$run_name" "$run_token" "$output" SCRAPER_NAME "$scraper_directory"
+(cat "assets/client-storage/cache/$scraper_directory.tgz" 2> /dev/null | put "$run_name" "$run_token" cache) || true
+start "$run_name" "$run_token" "$output" SCRAPER_NAME "$scraper_directory"
 
 if [ "$run_token" = "" ]; then
   echo "There was an error starting the scraper"
   exit 1
 fi
 
-./build/package/clay-scraper/clay.sh events "$run_name" "$run_token" | jq -r 'select(has("text")) | .text'
+events "$run_name" "$run_token" | jq -r 'select(has("text")) | .text'
 # Get the sqlite database from clay and save it away
-./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" output > "$scraper_directory/$output"
+get "$run_name" "$run_token" output > "$scraper_directory/$output"
 mkdir -p $(dirname "assets/client-storage/cache/$scraper_directory")
-./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" cache > "assets/client-storage/cache/$scraper_directory.tgz"
+get "$run_name" "$run_token" cache > "assets/client-storage/cache/$scraper_directory.tgz"
 echo "exit data returned by clay:"
-./build/package/clay-scraper/clay.sh get "$run_name" "$run_token" exit-data |  jq .
-./build/package/clay-scraper/clay.sh delete "$run_name" "$run_token"
+get "$run_name" "$run_token" exit-data |  jq .
+delete "$run_name" "$run_token"
