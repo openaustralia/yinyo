@@ -33,5 +33,5 @@ func TestStartRun(t *testing.T) {
 func TestStartRunWithReservedEnv(t *testing.T) {
 	app := App{}
 	err := app.StartRun("run-name", "output.txt", map[string]string{"CLAY_INTERNAL_FOO": "bar"})
-	assert.NotNil(t, err)
+	assert.EqualError(t, err, "Can't override environment variables starting with CLAY_INTERNAL_")
 }
