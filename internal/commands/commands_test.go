@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
+	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
 	"github.com/openaustralia/morph-ng/pkg/stream"
 )
 
@@ -15,8 +16,10 @@ func TestStoragePath(t *testing.T) {
 }
 
 func TestStartRun(t *testing.T) {
-	// We want to mock the job dispatcher and check that it's called in the expected way
 	job := new(jobdispatcher.MockClient)
+	keyValueStore := new(keyvaluestore.MockClient)
+
+	// Expect that the job will get dispatched
 	job.On(
 		"StartJob",
 		"run-name",
@@ -24,18 +27,34 @@ func TestStartRun(t *testing.T) {
 		[]string{"/bin/run.sh", "run-name", "output.txt"},
 		map[string]string{"FOO": "bar", "CLAY_INTERNAL_RUN_TOKEN": "supersecret"},
 	).Return(nil)
+	// Expect that we'll need the secret token
 	job.On("GetToken", "run-name").Return("supersecret", nil)
+	// Expect that we save the callback url in the key value store
+	keyValueStore.On("Set", "run-name", "http://foo.com").Return(nil)
 
-	app := App{Job: job}
-	err := app.StartRun("run-name", "output.txt", map[string]string{"FOO": "bar"})
+	app := App{Job: job, KeyValueStore: keyValueStore}
+	// TODO: Pass an options struct instead (we get named parameters effectively then)
+	err := app.StartRun(
+		"run-name",                      // Run name
+		"output.txt",                    // Output filename
+		map[string]string{"FOO": "bar"}, // Environment variables
+		"http://foo.com",                // Callback URL
+	)
 	assert.Nil(t, err)
+
 	job.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
 }
 
 // Make sure that setting a reserved environment variable is not allowed
 func TestStartRunWithReservedEnv(t *testing.T) {
 	app := App{}
-	err := app.StartRun("run-name", "output.txt", map[string]string{"CLAY_INTERNAL_FOO": "bar"})
+	err := app.StartRun(
+		"run-name",   // Run name
+		"output.txt", // Output filename
+		map[string]string{"CLAY_INTERNAL_FOO": "bar"}, // Environment variables
+		"", // Callback URL
+	)
 	assert.EqualError(t, err, "Can't override environment variables starting with CLAY_INTERNAL_")
 }
 

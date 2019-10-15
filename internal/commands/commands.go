@@ -9,6 +9,7 @@ import (
 	"github.com/dchest/uniuri"
 
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
+	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
 	"github.com/openaustralia/morph-ng/pkg/store"
 	"github.com/openaustralia/morph-ng/pkg/stream"
 )
@@ -23,9 +24,10 @@ const reservedEnvNamespace = "CLAY_INTERNAL_"
 
 // App holds the state for the application
 type App struct {
-	Store  store.Client
-	Job    jobdispatcher.Client
-	Stream stream.Stream
+	Store         store.Client
+	Job           jobdispatcher.Client
+	Stream        stream.Stream
+	KeyValueStore keyvaluestore.Client
 }
 
 // CreateRunResult is the output of CreateRun
@@ -78,7 +80,8 @@ func New() (*App, error) {
 		return nil, err
 	}
 
-	return &App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient}, nil
+	// TODO: Add proper value for KeyValueStore
+	return &App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient, KeyValueStore: nil}, nil
 }
 
 // CreateRun creates a run
@@ -138,7 +141,17 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 }
 
 // StartRun starts the run
-func (app *App) StartRun(runName string, output string, env map[string]string) error {
+func (app *App) StartRun(
+	runName string, output string, env map[string]string, callbackURL string,
+) error {
+	// Save away the callback URL
+	// TODO: Remove check for nil
+	if app.KeyValueStore != nil {
+		err := app.KeyValueStore.Set(runName, callbackURL)
+		if err != nil {
+			return err
+		}
+	}
 	// Check that we're not using any reserved environment variables
 	for k := range env {
 		if strings.HasPrefix(k, reservedEnvNamespace) {

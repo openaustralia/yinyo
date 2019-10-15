@@ -101,7 +101,8 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	return app.StartRun(runName, l.Output, env)
+	// TODO: Set callback URL
+	return app.StartRun(runName, l.Output, env, "")
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
