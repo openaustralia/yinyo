@@ -30,7 +30,7 @@ func TestStartRun(t *testing.T) {
 	// Expect that we'll need the secret token
 	job.On("GetToken", "run-name").Return("supersecret", nil)
 	// Expect that we save the callback url in the key value store
-	keyValueStore.On("Set", "run-name", "http://foo.com").Return(nil)
+	keyValueStore.On("Set", "url:run-name", "http://foo.com").Return(nil)
 
 	app := App{JobDispatcher: job, KeyValueStore: keyValueStore}
 	// TODO: Pass an options struct instead (we get named parameters effectively then)

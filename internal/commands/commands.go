@@ -165,8 +165,7 @@ func (app *App) StartRun(
 		}
 	}
 	// Save away the callback URL
-	// TODO: Prepend runName with "url:"
-	err := app.KeyValueStore.Set(runName, callbackURL)
+	err := app.KeyValueStore.Set("url:"+runName, callbackURL)
 	if err != nil {
 		return err
 	}
