@@ -32,7 +32,7 @@ func TestStartRun(t *testing.T) {
 	// Expect that we save the callback url in the key value store
 	keyValueStore.On("Set", "run-name", "http://foo.com").Return(nil)
 
-	app := App{Job: job, KeyValueStore: keyValueStore}
+	app := App{JobDispatcher: job, KeyValueStore: keyValueStore}
 	// TODO: Pass an options struct instead (we get named parameters effectively then)
 	err := app.StartRun(
 		"run-name",                      // Run name
@@ -59,7 +59,7 @@ func TestStartRunWithReservedEnv(t *testing.T) {
 }
 
 func TestCreateEvent(t *testing.T) {
-	stream := new(stream.MockStream)
+	stream := new(stream.MockClient)
 	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
 
 	app := App{Stream: stream}

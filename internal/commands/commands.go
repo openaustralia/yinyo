@@ -25,9 +25,9 @@ const reservedEnvNamespace = "CLAY_INTERNAL_"
 
 // App holds the state for the application
 type App struct {
-	Store         blobstore.Client
-	Job           jobdispatcher.Client
-	Stream        stream.Stream
+	BlobStore     blobstore.Client
+	JobDispatcher jobdispatcher.Client
+	Stream        stream.Client
 	KeyValueStore keyvaluestore.Client
 }
 
@@ -91,8 +91,8 @@ func New() (*App, error) {
 	keyValueStore := keyvaluestore.NewRedis(redisClient)
 
 	return &App{
-		Store:         storeAccess,
-		Job:           jobDispatcher,
+		BlobStore:     storeAccess,
+		JobDispatcher: jobDispatcher,
 		Stream:        streamClient,
 		KeyValueStore: keyValueStore,
 	}, nil
@@ -105,7 +105,7 @@ func (app *App) CreateRun(namePrefix string) (CreateRunResult, error) {
 	}
 	// Generate random token
 	runToken := uniuri.NewLen(32)
-	runName, err := app.Job.CreateJobAndToken(namePrefix, runToken)
+	runName, err := app.JobDispatcher.CreateJobAndToken(namePrefix, runToken)
 
 	createResult := CreateRunResult{
 		RunName:  runName,
@@ -170,13 +170,13 @@ func (app *App) StartRun(
 	if err != nil {
 		return err
 	}
-	runToken, err := app.Job.GetToken(runName)
+	runToken, err := app.JobDispatcher.GetToken(runName)
 	if err != nil {
 		return err
 	}
 	env["CLAY_INTERNAL_RUN_TOKEN"] = runToken
 	command := []string{runBinary, runName, output}
-	return app.Job.StartJob(runName, dockerImage, command, env)
+	return app.JobDispatcher.StartJob(runName, dockerImage, command, env)
 }
 
 // GetEvent gets the next event
@@ -194,7 +194,7 @@ func (app *App) CreateEvent(runName string, eventJSON string) error {
 
 // DeleteRun deletes the run. Should be the last thing called
 func (app *App) DeleteRun(runName string) error {
-	err := app.Job.DeleteJobAndToken(runName)
+	err := app.JobDispatcher.DeleteJobAndToken(runName)
 	if err != nil {
 		return err
 	}
@@ -223,7 +223,7 @@ func storagePath(runName string, fileName string) string {
 }
 
 func (app *App) getData(runName string, fileName string, writer io.Writer) error {
-	reader, err := app.Store.Get(storagePath(runName, fileName))
+	reader, err := app.BlobStore.Get(storagePath(runName, fileName))
 	if err != nil {
 		return err
 	}
@@ -232,7 +232,7 @@ func (app *App) getData(runName string, fileName string, writer io.Writer) error
 }
 
 func (app *App) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {
-	return app.Store.Put(
+	return app.BlobStore.Put(
 		storagePath(runName, fileName),
 		reader,
 		objectSize,
@@ -240,5 +240,5 @@ func (app *App) putData(reader io.Reader, objectSize int64, runName string, file
 }
 
 func (app *App) deleteData(runName string, fileName string) error {
-	return app.Store.Delete(storagePath(runName, fileName))
+	return app.BlobStore.Delete(storagePath(runName, fileName))
 }

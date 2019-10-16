@@ -183,7 +183,7 @@ func authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		actualRunToken, err := app.Job.GetToken(runName)
+		actualRunToken, err := app.JobDispatcher.GetToken(runName)
 
 		if err != nil {
 			log.Println(err)
