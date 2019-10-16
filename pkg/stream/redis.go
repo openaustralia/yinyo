@@ -9,6 +9,7 @@ type redisStream struct {
 }
 
 // NewRedis returns the Redis implementation of Stream
+// TODO: Just pass a redis client to this
 func NewRedis(address string, password string) (Stream, error) {
 	// Connect to redis and initially just check that we can connect
 	redisClient := redis.NewClient(&redis.Options{

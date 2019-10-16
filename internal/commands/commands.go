@@ -59,6 +59,14 @@ func defaultStream() (stream.Stream, error) {
 	)
 }
 
+func defaultKeyValueStore() (keyvaluestore.Client, error) {
+	// TODO: Extract common code with defaultStream
+	return keyvaluestore.NewRedis(
+		"redis:6379",
+		os.Getenv("REDIS_PASSWORD"),
+	)
+}
+
 func defaultJobDispatcher() (jobdispatcher.Client, error) {
 	return jobdispatcher.NewKubernetes()
 }
@@ -80,8 +88,17 @@ func New() (*App, error) {
 		return nil, err
 	}
 
-	// TODO: Add proper value for KeyValueStore
-	return &App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient, KeyValueStore: nil}, nil
+	keyValueStore, err := defaultKeyValueStore()
+	if err != nil {
+		return nil, err
+	}
+
+	return &App{
+		Store:         storeAccess,
+		Job:           jobDispatcher,
+		Stream:        streamClient,
+		KeyValueStore: keyValueStore,
+	}, nil
 }
 
 // CreateRun creates a run
@@ -144,19 +161,17 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 func (app *App) StartRun(
 	runName string, output string, env map[string]string, callbackURL string,
 ) error {
-	// Save away the callback URL
-	// TODO: Remove check for nil
-	if app.KeyValueStore != nil {
-		err := app.KeyValueStore.Set(runName, callbackURL)
-		if err != nil {
-			return err
-		}
-	}
 	// Check that we're not using any reserved environment variables
 	for k := range env {
 		if strings.HasPrefix(k, reservedEnvNamespace) {
 			return errors.New("Can't override environment variables starting with " + reservedEnvNamespace)
 		}
+	}
+	// Save away the callback URL
+	// TODO: Prepend runName with "url:"
+	err := app.KeyValueStore.Set(runName, callbackURL)
+	if err != nil {
+		return err
 	}
 	runToken, err := app.Job.GetToken(runName)
 	if err != nil {
