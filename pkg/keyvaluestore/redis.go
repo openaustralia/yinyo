@@ -9,19 +9,8 @@ type client struct {
 }
 
 // NewRedis returns the Redis implementation of Client
-// TODO: Factor out common code between this and stream.NewRedis
-func NewRedis(address string, password string) (Client, error) {
-	// Connect to redis and initially just check that we can connect
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     address,
-		Password: password,
-	})
-	_, err := redisClient.Ping().Result()
-	if err != nil {
-		return nil, err
-	}
-
-	return &client{client: redisClient}, nil
+func NewRedis(redisClient *redis.Client) Client {
+	return &client{client: redisClient}
 }
 
 func namespaced(key string) string {

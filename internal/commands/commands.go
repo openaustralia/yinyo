@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/dchest/uniuri"
+	"github.com/go-redis/redis"
 
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
 	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
@@ -52,19 +53,17 @@ func defaultStore() (store.Client, error) {
 	)
 }
 
-func defaultStream() (stream.Stream, error) {
-	return stream.NewRedis(
-		"redis:6379",
-		os.Getenv("REDIS_PASSWORD"),
-	)
-}
-
-func defaultKeyValueStore() (keyvaluestore.Client, error) {
-	// TODO: Extract common code with defaultStream
-	return keyvaluestore.NewRedis(
-		"redis:6379",
-		os.Getenv("REDIS_PASSWORD"),
-	)
+func defaultRedis() (*redis.Client, error) {
+	// Connect to redis and initially just check that we can connect
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: os.Getenv("REDIS_PASSWORD"),
+	})
+	_, err := redisClient.Ping().Result()
+	if err != nil {
+		return nil, err
+	}
+	return redisClient, nil
 }
 
 func defaultJobDispatcher() (jobdispatcher.Client, error) {
@@ -78,20 +77,18 @@ func New() (*App, error) {
 		return nil, err
 	}
 
-	streamClient, err := defaultStream()
+	redisClient, err := defaultRedis()
 	if err != nil {
 		return nil, err
 	}
+	streamClient := stream.NewRedis(redisClient)
 
 	jobDispatcher, err := defaultJobDispatcher()
 	if err != nil {
 		return nil, err
 	}
 
-	keyValueStore, err := defaultKeyValueStore()
-	if err != nil {
-		return nil, err
-	}
+	keyValueStore := keyvaluestore.NewRedis(redisClient)
 
 	return &App{
 		Store:         storeAccess,
