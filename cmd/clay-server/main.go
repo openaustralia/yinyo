@@ -80,8 +80,13 @@ type envVariable struct {
 }
 
 type startBody struct {
-	Output string
-	Env    []envVariable
+	Output   string
+	Env      []envVariable
+	Callback callback
+}
+
+type callback struct {
+	URL string
 }
 
 func start(w http.ResponseWriter, r *http.Request) error {
@@ -101,8 +106,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// TODO: If the scraper has already been started let the user know rather than 500'ing
-	// TODO: Set callback URL
-	return app.StartRun(runName, l.Output, env, "")
+	return app.StartRun(runName, l.Output, env, l.Callback.URL)
 }
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
