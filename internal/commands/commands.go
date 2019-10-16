@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -186,6 +187,13 @@ func (app *App) GetEvent(runName string, id string) (newID string, jsonString st
 // CreateEvent add an event to the stream
 func (app *App) CreateEvent(runName string, eventJSON string) error {
 	// TODO: Send the event to the user with an http POST
+	// First get the callback url
+	// TODO: Extract method for url key name
+	callbackURL, err := app.KeyValueStore.Get("url:" + runName)
+	if err != nil {
+		return err
+	}
+	fmt.Println(callbackURL)
 
 	// TODO: Use something like runName-events instead for the stream name
 	return app.Stream.Add(runName, eventJSON)

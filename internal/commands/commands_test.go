@@ -60,9 +60,15 @@ func TestStartRunWithReservedEnv(t *testing.T) {
 
 func TestCreateEvent(t *testing.T) {
 	stream := new(stream.MockClient)
-	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
+	keyValueStore := new(keyvaluestore.MockClient)
 
-	app := App{Stream: stream}
+	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
+	keyValueStore.On("Get", "url:run-name").Return("http://foo.com", nil)
+
+	app := App{Stream: stream, KeyValueStore: keyValueStore}
 	err := app.CreateEvent("run-name", "{\"some\": \"json\"}")
 	assert.Nil(t, err)
+
+	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
 }
