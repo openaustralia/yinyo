@@ -82,3 +82,8 @@ PONG
 ## Testing callback URLs
 
 Use [webhook.site](https://webhook.site) to see calls to a specific URL in real time. Very handy.
+You can run the test scraper and get the events directed to webhook.site. For example:
+
+```bash
+./client.sh test/scrapers/test-python data.sqlite https://webhook.site/#!/uuid-specific-to-you
+```
