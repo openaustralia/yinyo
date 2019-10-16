@@ -65,3 +65,20 @@ minikube dashboard
 ```
 
 You'll want to look in the "clay-system" and "clay-scrapers" namespaces.
+
+### Notes for debugging and testing
+
+## Accessing Redis
+
+```bash
+> kubectl exec -it redis-0 -n clay-system sh
+/data # redis-cli
+127.0.0.1:6379> auth changeme123
+OK
+127.0.0.1:6379> ping
+PONG
+```
+
+## Testing callback URLs
+
+Use [webhook.site](https://webhook.site) to see calls to a specific URL in real time. Very handy.
