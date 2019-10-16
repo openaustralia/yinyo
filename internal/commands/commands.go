@@ -2,8 +2,8 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 
@@ -30,6 +30,7 @@ type App struct {
 	JobDispatcher jobdispatcher.Client
 	Stream        stream.Client
 	KeyValueStore keyvaluestore.Client
+	HTTP          *http.Client
 }
 
 // CreateRunResult is the output of CreateRun
@@ -71,6 +72,10 @@ func defaultJobDispatcher() (jobdispatcher.Client, error) {
 	return jobdispatcher.NewKubernetes()
 }
 
+func defaultHTTP() *http.Client {
+	return http.DefaultClient
+}
+
 // New initialises the main state of the application
 func New() (*App, error) {
 	storeAccess, err := defaultStore()
@@ -96,6 +101,7 @@ func New() (*App, error) {
 		JobDispatcher: jobDispatcher,
 		Stream:        streamClient,
 		KeyValueStore: keyValueStore,
+		HTTP:          defaultHTTP(),
 	}, nil
 }
 
@@ -185,15 +191,29 @@ func (app *App) GetEvent(runName string, id string) (newID string, jsonString st
 }
 
 // CreateEvent add an event to the stream
+// TODO: In case of error during sending of a callback still send stuff to the stream
 func (app *App) CreateEvent(runName string, eventJSON string) error {
-	// TODO: Send the event to the user with an http POST
 	// First get the callback url
 	// TODO: Extract method for url key name
-	callbackURL, err := app.KeyValueStore.Get("url:" + runName)
+	r, err := app.KeyValueStore.Get("url:" + runName)
 	if err != nil {
 		return err
 	}
-	fmt.Println(callbackURL)
+	callbackURL, ok := r.(string)
+	if !ok {
+		return errors.New("Unexpected type")
+	}
+
+	// Only do the callback if there's a sensible URL
+	if callbackURL != "" {
+		resp, err := app.HTTP.Post(callbackURL, "application/json", strings.NewReader(eventJSON))
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return errors.New("callback: " + resp.Status)
+		}
+	}
 
 	// TODO: Use something like runName-events instead for the stream name
 	return app.Stream.Add(runName, eventJSON)

@@ -1,9 +1,13 @@
 package commands
 
 import (
+	"io/ioutil"
+	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
 	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
@@ -58,17 +62,62 @@ func TestStartRunWithReservedEnv(t *testing.T) {
 	assert.EqualError(t, err, "Can't override environment variables starting with CLAY_INTERNAL_")
 }
 
+type MockRoundTripper struct {
+	mock.Mock
+}
+
+func (m *MockRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+	args := m.Called(r)
+	return args.Get(0).(*http.Response), args.Error(1)
+}
+
 func TestCreateEvent(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
 	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
-	keyValueStore.On("Get", "url:run-name").Return("http://foo.com", nil)
+	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
-	app := App{Stream: stream, KeyValueStore: keyValueStore}
+	// Mock out the http RoundTripper so that no actual http request is made
+	httpClient := defaultHTTP()
+	roundTripper := new(MockRoundTripper)
+	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
+		return r.URL.String() == "http://foo.com/bar"
+	})).Return(
+		&http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+		},
+		nil,
+	)
+	httpClient.Transport = roundTripper
+
+	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
 	err := app.CreateEvent("run-name", "{\"some\": \"json\"}")
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
+	roundTripper.AssertExpectations(t)
+}
+
+func TestCreateEventNoCallbackURL(t *testing.T) {
+	stream := new(stream.MockClient)
+	keyValueStore := new(keyvaluestore.MockClient)
+
+	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
+	keyValueStore.On("Get", "url:run-name").Return("", nil)
+
+	// Mock out the http RoundTripper so that no actual http request is made
+	httpClient := defaultHTTP()
+	roundTripper := new(MockRoundTripper)
+	httpClient.Transport = roundTripper
+
+	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	err := app.CreateEvent("run-name", "{\"some\": \"json\"}")
+	assert.Nil(t, err)
+
+	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+	roundTripper.AssertNotCalled(t, "RoundTrip")
 }
