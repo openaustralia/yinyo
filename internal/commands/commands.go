@@ -9,9 +9,9 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 
+	"github.com/openaustralia/morph-ng/pkg/blobstore"
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
 	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
-	"github.com/openaustralia/morph-ng/pkg/store"
 	"github.com/openaustralia/morph-ng/pkg/stream"
 )
 
@@ -25,7 +25,7 @@ const reservedEnvNamespace = "CLAY_INTERNAL_"
 
 // App holds the state for the application
 type App struct {
-	Store         store.Client
+	Store         blobstore.Client
 	Job           jobdispatcher.Client
 	Stream        stream.Stream
 	KeyValueStore keyvaluestore.Client
@@ -42,8 +42,8 @@ type logMessage struct {
 	Log, Stream, Stage, Type string
 }
 
-func defaultStore() (store.Client, error) {
-	return store.NewMinioClient(
+func defaultStore() (blobstore.Client, error) {
+	return blobstore.NewMinioClient(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
 		// TODO: Make bucket name configurable
