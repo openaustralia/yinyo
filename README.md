@@ -16,7 +16,7 @@
 Start Minikube if you haven't already
 
 ```bash
-minikube start --memory=3072 --disk-size='30gb' --kubernetes-version='v1.15.2'
+minikube start --memory=3072 --disk-size='30gb'
 ```
 
 Minikube by default starts with 2GB of memory and 20GB of disk space for the VM which is not enough in
