@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -120,4 +121,34 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	stream.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
 	roundTripper.AssertNotCalled(t, "RoundTrip")
+}
+
+func TestCreateEventErrorDuringCallback(t *testing.T) {
+	stream := new(stream.MockClient)
+	keyValueStore := new(keyvaluestore.MockClient)
+
+	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
+	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
+
+	// Mock out the http RoundTripper so that no actual http request is made
+	httpClient := defaultHTTP()
+	roundTripper := new(MockRoundTripper)
+	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
+		return r.URL.String() == "http://foo.com/bar"
+	})).Return(
+		&http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+		},
+		errors.New("An error while doing the postback"),
+	)
+	httpClient.Transport = roundTripper
+
+	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	err := app.CreateEvent("run-name", "{\"some\": \"json\"}")
+	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
+
+	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+	roundTripper.AssertExpectations(t)
 }

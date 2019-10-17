@@ -190,15 +190,19 @@ func (app *App) GetEvent(runName string, id string) (newID string, jsonString st
 }
 
 // CreateEvent add an event to the stream
-// TODO: In case of error during sending of a callback still send stuff to the stream
 func (app *App) CreateEvent(runName string, eventJSON string) error {
-	err := app.postCallbackEvent(runName, eventJSON)
-	if err != nil {
-		return err
-	}
-
+	err1 := app.postCallbackEvent(runName, eventJSON)
 	// TODO: Use something like runName-events instead for the stream name
-	return app.Stream.Add(runName, eventJSON)
+	err2 := app.Stream.Add(runName, eventJSON)
+
+	// Only error when we have tried sending the event to both places
+	if err1 != nil {
+		return err1
+	}
+	if err2 != nil {
+		return err2
+	}
+	return nil
 }
 
 // DeleteRun deletes the run. Should be the last thing called
