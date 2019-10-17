@@ -16,6 +16,8 @@ usage() {
   echo "The output is written to the same local directory at the end. The output file path"
   echo "is given relative to the scraper directory"
   echo "Optionally provide a callback url. For every event on the scraper this will get called."
+  echo "Note: To be able to authenticate the callback you'll need to specify a secret in the url."
+  echo "Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick"
   exit 1
 }
 
