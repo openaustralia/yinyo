@@ -228,7 +228,12 @@ func (app *App) DeleteRun(runName string) error {
 	if err != nil {
 		return err
 	}
-	return app.Stream.Delete(runName)
+	err = app.Stream.Delete(runName)
+	if err != nil {
+		return err
+	}
+	err = app.deleteCallbackURL(runName)
+	return nil
 }
 
 func storagePath(runName string, fileName string) string {

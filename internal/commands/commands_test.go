@@ -158,6 +158,7 @@ func TestDeleteRun(t *testing.T) {
 	jobDispatcher := new(jobdispatcher.MockClient)
 	blobStore := new(blobstore.MockClient)
 	stream := new(stream.MockClient)
+	keyValueStore := new(keyvaluestore.MockClient)
 
 	jobDispatcher.On("DeleteJobAndToken", "run-name").Return(nil)
 	blobStore.On("Delete", "run-name/app.tgz").Return(nil)
@@ -165,12 +166,19 @@ func TestDeleteRun(t *testing.T) {
 	blobStore.On("Delete", "run-name/exit-data.json").Return(nil)
 	blobStore.On("Delete", "run-name/cache.tgz").Return(nil)
 	stream.On("Delete", "run-name").Return(nil)
+	keyValueStore.On("Delete", "url:run-name").Return(nil)
 
-	app := App{JobDispatcher: jobDispatcher, BlobStore: blobStore, Stream: stream}
+	app := App{
+		JobDispatcher: jobDispatcher,
+		BlobStore:     blobStore,
+		Stream:        stream,
+		KeyValueStore: keyValueStore,
+	}
 	err := app.DeleteRun("run-name")
 	assert.Nil(t, err)
 
 	jobDispatcher.AssertExpectations(t)
 	blobStore.AssertExpectations(t)
 	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
 }

@@ -26,6 +26,10 @@ func (app *App) getCallbackURL(runName string) (string, error) {
 	return callbackURL, nil
 }
 
+func (app *App) deleteCallbackURL(runName string) error {
+	return app.KeyValueStore.Delete(callbackURLKey(runName))
+}
+
 func (app *App) postCallbackEvent(runName string, eventJSON string) error {
 	callbackURL, err := app.getCallbackURL(runName)
 	if err != nil {
