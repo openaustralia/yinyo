@@ -192,20 +192,9 @@ func (app *App) GetEvent(runName string, id string) (newID string, jsonString st
 // CreateEvent add an event to the stream
 // TODO: In case of error during sending of a callback still send stuff to the stream
 func (app *App) CreateEvent(runName string, eventJSON string) error {
-	callbackURL, err := app.getCallbackURL(runName)
+	err := app.postCallbackEvent(runName, eventJSON)
 	if err != nil {
 		return err
-	}
-
-	// Only do the callback if there's a sensible URL
-	if callbackURL != "" {
-		resp, err := app.HTTP.Post(callbackURL, "application/json", strings.NewReader(eventJSON))
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return errors.New("callback: " + resp.Status)
-		}
 	}
 
 	// TODO: Use something like runName-events instead for the stream name

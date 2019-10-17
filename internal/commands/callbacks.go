@@ -2,6 +2,8 @@ package commands
 
 import (
 	"errors"
+	"net/http"
+	"strings"
 )
 
 func callbackURLKey(runName string) string {
@@ -24,3 +26,21 @@ func (app *App) getCallbackURL(runName string) (string, error) {
 	return callbackURL, nil
 }
 
+func (app *App) postCallbackEvent(runName string, eventJSON string) error {
+	callbackURL, err := app.getCallbackURL(runName)
+	if err != nil {
+		return err
+	}
+
+	// Only do the callback if there's a sensible URL
+	if callbackURL != "" {
+		resp, err := app.HTTP.Post(callbackURL, "application/json", strings.NewReader(eventJSON))
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return errors.New("callback: " + resp.Status)
+		}
+	}
+	return nil
+}
