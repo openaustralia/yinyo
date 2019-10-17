@@ -171,8 +171,7 @@ func (app *App) StartRun(
 			return errors.New("Can't override environment variables starting with " + reservedEnvNamespace)
 		}
 	}
-	// Save away the callback URL
-	err := app.KeyValueStore.Set("url:"+runName, callbackURL)
+	err := app.setCallbackURL(runName, callbackURL)
 	if err != nil {
 		return err
 	}
@@ -193,15 +192,9 @@ func (app *App) GetEvent(runName string, id string) (newID string, jsonString st
 // CreateEvent add an event to the stream
 // TODO: In case of error during sending of a callback still send stuff to the stream
 func (app *App) CreateEvent(runName string, eventJSON string) error {
-	// First get the callback url
-	// TODO: Extract method for url key name
-	r, err := app.KeyValueStore.Get("url:" + runName)
+	callbackURL, err := app.getCallbackURL(runName)
 	if err != nil {
 		return err
-	}
-	callbackURL, ok := r.(string)
-	if !ok {
-		return errors.New("Unexpected type")
 	}
 
 	// Only do the callback if there's a sensible URL
