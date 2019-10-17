@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/openaustralia/morph-ng/pkg/blobstore"
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
 	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
 	"github.com/openaustralia/morph-ng/pkg/stream"
@@ -151,4 +152,25 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	stream.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
 	roundTripper.AssertExpectations(t)
+}
+
+func TestDeleteRun(t *testing.T) {
+	jobDispatcher := new(jobdispatcher.MockClient)
+	blobStore := new(blobstore.MockClient)
+	stream := new(stream.MockClient)
+
+	jobDispatcher.On("DeleteJobAndToken", "run-name").Return(nil)
+	blobStore.On("Delete", "run-name/app.tgz").Return(nil)
+	blobStore.On("Delete", "run-name/output").Return(nil)
+	blobStore.On("Delete", "run-name/exit-data.json").Return(nil)
+	blobStore.On("Delete", "run-name/cache.tgz").Return(nil)
+	stream.On("Delete", "run-name").Return(nil)
+
+	app := App{JobDispatcher: jobDispatcher, BlobStore: blobStore, Stream: stream}
+	err := app.DeleteRun("run-name")
+	assert.Nil(t, err)
+
+	jobDispatcher.AssertExpectations(t)
+	blobStore.AssertExpectations(t)
+	stream.AssertExpectations(t)
 }
