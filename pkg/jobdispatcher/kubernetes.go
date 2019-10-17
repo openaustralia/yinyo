@@ -15,6 +15,8 @@ type kubernetesClient struct {
 	clientset *kubernetes.Clientset
 }
 
+const namespace = "clay-scrapers"
+
 // NewKubernetes returns the Kubernetes implementation of Client
 func NewKubernetes() (Client, error) {
 	config, err := rest.InClusterConfig()
@@ -38,7 +40,7 @@ func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken st
 	re := regexp.MustCompile(`[^[:alnum:]]`)
 	convertedNamePrefix := re.ReplaceAllString(namePrefix, "-")
 
-	secretsClient := client.clientset.CoreV1().Secrets("clay-scrapers")
+	secretsClient := client.clientset.CoreV1().Secrets(namespace)
 	secret := &apiv1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: convertedNamePrefix + "-",
@@ -53,26 +55,14 @@ func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken st
 }
 
 func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string, env map[string]string) error {
-	jobsClient := client.clientset.BatchV1().Jobs("clay-scrapers")
+	jobsClient := client.clientset.BatchV1().Jobs(namespace)
 
 	autoMountServiceAccountToken := false
 	backOffLimit := int32(0)
 	// Let this run for a maximum of 24 hours
 	activeDeadlineSeconds := int64(86400)
 
-	environment := []apiv1.EnvVar{
-		{
-			Name: "CLAY_INTERNAL_RUN_TOKEN",
-			ValueFrom: &apiv1.EnvVarSource{
-				SecretKeyRef: &apiv1.SecretKeySelector{
-					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: runName,
-					},
-					Key: "run_token",
-				},
-			},
-		},
-	}
+	environment := []apiv1.EnvVar{}
 	for k, v := range env {
 		environment = append(environment, apiv1.EnvVar{Name: k, Value: v})
 	}
@@ -114,7 +104,7 @@ func (client *kubernetesClient) DeleteJobAndToken(runName string) error {
 }
 
 func deleteJob(clientset *kubernetes.Clientset, runName string) error {
-	jobsClient := clientset.BatchV1().Jobs("clay-scrapers")
+	jobsClient := clientset.BatchV1().Jobs(namespace)
 
 	deletePolicy := metav1.DeletePropagationForeground
 	err := jobsClient.Delete(runName, &metav1.DeleteOptions{
@@ -131,7 +121,7 @@ func deleteJob(clientset *kubernetes.Clientset, runName string) error {
 }
 
 func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
-	secretsClient := clientset.CoreV1().Secrets("clay-scrapers")
+	secretsClient := clientset.CoreV1().Secrets(namespace)
 	deletePolicy := metav1.DeletePropagationForeground
 	err := secretsClient.Delete(runName, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
@@ -141,7 +131,7 @@ func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
 
 func (client *kubernetesClient) GetToken(runName string) (string, error) {
 	// First get the actual run token from the secret
-	secretsClient := client.clientset.CoreV1().Secrets("clay-scrapers")
+	secretsClient := client.clientset.CoreV1().Secrets(namespace)
 	secret, err := secretsClient.Get(runName, metav1.GetOptions{})
 	if err != nil {
 		return "", err

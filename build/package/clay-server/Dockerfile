@@ -28,6 +28,7 @@ RUN CGO_ENABLED=0 go install github.com/openaustralia/morph-ng/cmd/clay-server
 # Now make the runtime image
 FROM scratch
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/clay-server /go/bin/clay-server
 
 # TODO: Run this is an unprivileged user

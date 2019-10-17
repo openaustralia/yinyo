@@ -3,13 +3,16 @@ package commands
 import (
 	"errors"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/dchest/uniuri"
+	"github.com/go-redis/redis"
 
+	"github.com/openaustralia/morph-ng/pkg/blobstore"
 	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
-	"github.com/openaustralia/morph-ng/pkg/store"
+	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
 	"github.com/openaustralia/morph-ng/pkg/stream"
 )
 
@@ -23,9 +26,11 @@ const reservedEnvNamespace = "CLAY_INTERNAL_"
 
 // App holds the state for the application
 type App struct {
-	Store  store.Client
-	Job    jobdispatcher.Client
-	Stream stream.Stream
+	BlobStore     blobstore.Client
+	JobDispatcher jobdispatcher.Client
+	Stream        stream.Client
+	KeyValueStore keyvaluestore.Client
+	HTTP          *http.Client
 }
 
 // CreateRunResult is the output of CreateRun
@@ -39,8 +44,8 @@ type logMessage struct {
 	Log, Stream, Stage, Type string
 }
 
-func defaultStore() (store.Client, error) {
-	return store.NewMinioClient(
+func defaultStore() (blobstore.Client, error) {
+	return blobstore.NewMinioClient(
 		// TODO: Get data store url for configmap
 		"minio-service:9000",
 		// TODO: Make bucket name configurable
@@ -50,15 +55,25 @@ func defaultStore() (store.Client, error) {
 	)
 }
 
-func defaultStream() (stream.Stream, error) {
-	return stream.NewRedis(
-		"redis:6379",
-		os.Getenv("REDIS_PASSWORD"),
-	)
+func defaultRedis() (*redis.Client, error) {
+	// Connect to redis and initially just check that we can connect
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: os.Getenv("REDIS_PASSWORD"),
+	})
+	_, err := redisClient.Ping().Result()
+	if err != nil {
+		return nil, err
+	}
+	return redisClient, nil
 }
 
 func defaultJobDispatcher() (jobdispatcher.Client, error) {
 	return jobdispatcher.NewKubernetes()
+}
+
+func defaultHTTP() *http.Client {
+	return http.DefaultClient
 }
 
 // New initialises the main state of the application
@@ -68,17 +83,26 @@ func New() (*App, error) {
 		return nil, err
 	}
 
-	streamClient, err := defaultStream()
+	redisClient, err := defaultRedis()
 	if err != nil {
 		return nil, err
 	}
+	streamClient := stream.NewRedis(redisClient)
 
 	jobDispatcher, err := defaultJobDispatcher()
 	if err != nil {
 		return nil, err
 	}
 
-	return &App{Store: storeAccess, Job: jobDispatcher, Stream: streamClient}, nil
+	keyValueStore := keyvaluestore.NewRedis(redisClient)
+
+	return &App{
+		BlobStore:     storeAccess,
+		JobDispatcher: jobDispatcher,
+		Stream:        streamClient,
+		KeyValueStore: keyValueStore,
+		HTTP:          defaultHTTP(),
+	}, nil
 }
 
 // CreateRun creates a run
@@ -88,7 +112,7 @@ func (app *App) CreateRun(namePrefix string) (CreateRunResult, error) {
 	}
 	// Generate random token
 	runToken := uniuri.NewLen(32)
-	runName, err := app.Job.CreateJobAndToken(namePrefix, runToken)
+	runName, err := app.JobDispatcher.CreateJobAndToken(namePrefix, runToken)
 
 	createResult := CreateRunResult{
 		RunName:  runName,
@@ -138,15 +162,26 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 }
 
 // StartRun starts the run
-func (app *App) StartRun(runName string, output string, env map[string]string) error {
+func (app *App) StartRun(
+	runName string, output string, env map[string]string, callbackURL string,
+) error {
 	// Check that we're not using any reserved environment variables
 	for k := range env {
 		if strings.HasPrefix(k, reservedEnvNamespace) {
 			return errors.New("Can't override environment variables starting with " + reservedEnvNamespace)
 		}
 	}
+	err := app.setCallbackURL(runName, callbackURL)
+	if err != nil {
+		return err
+	}
+	runToken, err := app.JobDispatcher.GetToken(runName)
+	if err != nil {
+		return err
+	}
+	env["CLAY_INTERNAL_RUN_TOKEN"] = runToken
 	command := []string{runBinary, runName, output}
-	return app.Job.StartJob(runName, dockerImage, command, env)
+	return app.JobDispatcher.StartJob(runName, dockerImage, command, env)
 }
 
 // GetEvent gets the next event
@@ -156,15 +191,23 @@ func (app *App) GetEvent(runName string, id string) (newID string, jsonString st
 
 // CreateEvent add an event to the stream
 func (app *App) CreateEvent(runName string, eventJSON string) error {
-	// TODO: Send the event to the user with an http POST
-
+	err1 := app.postCallbackEvent(runName, eventJSON)
 	// TODO: Use something like runName-events instead for the stream name
-	return app.Stream.Add(runName, eventJSON)
+	err2 := app.Stream.Add(runName, eventJSON)
+
+	// Only error when we have tried sending the event to both places
+	if err1 != nil {
+		return err1
+	}
+	if err2 != nil {
+		return err2
+	}
+	return nil
 }
 
 // DeleteRun deletes the run. Should be the last thing called
 func (app *App) DeleteRun(runName string) error {
-	err := app.Job.DeleteJobAndToken(runName)
+	err := app.JobDispatcher.DeleteJobAndToken(runName)
 	if err != nil {
 		return err
 	}
@@ -185,7 +228,12 @@ func (app *App) DeleteRun(runName string) error {
 	if err != nil {
 		return err
 	}
-	return app.Stream.Delete(runName)
+	err = app.Stream.Delete(runName)
+	if err != nil {
+		return err
+	}
+	err = app.deleteCallbackURL(runName)
+	return nil
 }
 
 func storagePath(runName string, fileName string) string {
@@ -193,7 +241,7 @@ func storagePath(runName string, fileName string) string {
 }
 
 func (app *App) getData(runName string, fileName string, writer io.Writer) error {
-	reader, err := app.Store.Get(storagePath(runName, fileName))
+	reader, err := app.BlobStore.Get(storagePath(runName, fileName))
 	if err != nil {
 		return err
 	}
@@ -202,7 +250,7 @@ func (app *App) getData(runName string, fileName string, writer io.Writer) error
 }
 
 func (app *App) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {
-	return app.Store.Put(
+	return app.BlobStore.Put(
 		storagePath(runName, fileName),
 		reader,
 		objectSize,
@@ -210,5 +258,5 @@ func (app *App) putData(reader io.Reader, objectSize int64, runName string, file
 }
 
 func (app *App) deleteData(runName string, fileName string) error {
-	return app.Store.Delete(storagePath(runName, fileName))
+	return app.BlobStore.Delete(storagePath(runName, fileName))
 }

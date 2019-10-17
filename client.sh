@@ -10,11 +10,14 @@ set -e
 
 usage() {
   echo "Runs a scraper in a local directory using clay"
-  echo "Usage: $0 scraper_directory output_file"
+  echo "Usage: $0 scraper_directory output_file [callback url]"
   echo ""
   echo "e.g. $0 test/scrapers/test-python data.sqlite"
   echo "The output is written to the same local directory at the end. The output file path"
   echo "is given relative to the scraper directory"
+  echo "Optionally provide a callback url. For every event on the scraper this will get called."
+  echo "Note: To be able to authenticate the callback you'll need to specify a secret in the url."
+  echo "Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick"
   exit 1
 }
 
@@ -27,6 +30,7 @@ shift $((OPTIND-1))
 
 scraper_directory=$1
 output=$2
+callback_url=$3
 
 CLAY_SERVER_URL=http://localhost:8080
 
@@ -44,7 +48,11 @@ put() {
 
 start() {
   # Send as json
-  data=$(jq -c -n --arg output "$3" --arg env_name "$4" --arg env_value "$5" '{output: $output, env: [{name: $env_name, value: $env_value}]}')
+  if [ "$6" == "" ]; then
+    data=$(jq -c -n --arg output "$3" --arg env_name "$4" --arg env_value "$5" '{output: $output, env: [{name: $env_name, value: $env_value}]}')
+  else
+    data=$(jq -c -n --arg output "$3" --arg env_name "$4" --arg env_value "$5" --arg callback_url "$6" '{output: $output, env: [{name: $env_name, value: $env_value}], callback: {url: $callback_url}}')
+  fi
   curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/start" -d "$data"
 }
 
@@ -68,7 +76,7 @@ tar -zcf - * | put "$run_name" "$run_token" app
 cd "$dir"
 
 (cat "assets/client-storage/cache/$scraper_directory.tgz" 2> /dev/null | put "$run_name" "$run_token" cache) || true
-start "$run_name" "$run_token" "$output" SCRAPER_NAME "$scraper_directory"
+start "$run_name" "$run_token" "$output" SCRAPER_NAME "$scraper_directory" "$callback_url"
 
 if [ "$run_token" = "" ]; then
   echo "There was an error starting the scraper"

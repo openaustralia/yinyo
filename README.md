@@ -16,7 +16,7 @@
 Start Minikube if you haven't already
 
 ```bash
-minikube start --memory=3072 --disk-size='30gb' --kubernetes-version='v1.15.2'
+minikube start --memory=3072 --disk-size='30gb'
 ```
 
 Minikube by default starts with 2GB of memory and 20GB of disk space for the VM which is not enough in
@@ -65,3 +65,25 @@ minikube dashboard
 ```
 
 You'll want to look in the "clay-system" and "clay-scrapers" namespaces.
+
+### Notes for debugging and testing
+
+## Accessing Redis
+
+```bash
+> kubectl exec -it redis-0 -n clay-system sh
+/data # redis-cli
+127.0.0.1:6379> auth changeme123
+OK
+127.0.0.1:6379> ping
+PONG
+```
+
+## Testing callback URLs
+
+Use [webhook.site](https://webhook.site) to see calls to a specific URL in real time. Very handy.
+You can run the test scraper and get the events directed to webhook.site. For example:
+
+```bash
+./client.sh test/scrapers/test-python data.sqlite https://webhook.site/#!/uuid-specific-to-you
+```
