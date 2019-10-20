@@ -43,7 +43,6 @@ put() {
 
 send-logs() {
   # Send each line of stdin as a separate POST
-  # TODO: Chunk up lines that get sent close together into one request
   while IFS= read -r text ;
   do
     # Send as json
