@@ -13,8 +13,6 @@ if [ $# == 0 ]; then
   exit 1
 fi
 
-# TODO: Allow this script to be quit with control C
-
 RUN_NAME=$1
 RUN_OUTPUT=$2
 
