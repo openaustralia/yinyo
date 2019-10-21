@@ -48,9 +48,6 @@ send-logs() {
     # Send as json
     data=$(jq -c -n --arg text "$text" --arg stage "$3" --arg stream "$4" '{stage: $stage, type: "log", stream: $stream, text: $text}')
     curl -s -X POST -H "Authorization: Bearer $2" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$1/events" -d "$data"
-    # Also for the time being
-    # TODO: No need for this anymore
-    echo "$line"
   done
 }
 
