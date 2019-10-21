@@ -46,9 +46,7 @@ type logMessage struct {
 
 func defaultStore() (blobstore.Client, error) {
 	return blobstore.NewMinioClient(
-		// TODO: Get data store url for configmap
 		"minio-service:9000",
-		// TODO: Make bucket name configurable
 		"clay",
 		os.Getenv("STORE_ACCESS_KEY"),
 		os.Getenv("STORE_SECRET_KEY"),
