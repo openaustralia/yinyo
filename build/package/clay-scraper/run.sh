@@ -23,22 +23,26 @@ CLAY_SERVER_URL=clay-server.clay-system:8080
 
 # TODO: Probably don't want to do this as root
 
+# This is the header used for authorisation for some of the API calls
+header_auth="Authorization: Bearer $CLAY_INTERNAL_RUN_TOKEN"
+header_ct="Content-Type: application/json"
+
 started() {
   data=$(jq -c -n --arg stage "$1" '{stage: $stage, type: "started"}')
-  curl -s -X POST -H "Authorization: Bearer $CLAY_INTERNAL_RUN_TOKEN" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$data"
+  curl -s -X POST -H "$header_auth" -H "$header_ct" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$data"
 }
 
 finished() {
   data=$(jq -c -n --arg stage "$1" '{stage: $stage, type: "finished"}')
-  curl -s -X POST -H "Authorization: Bearer $CLAY_INTERNAL_RUN_TOKEN" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$data"
+  curl -s -X POST -H "$header_auth" -H "$header_ct" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$data"
 }
 
 get() {
-  curl -s -H "Authorization: Bearer $CLAY_INTERNAL_RUN_TOKEN" "$CLAY_SERVER_URL/runs/$RUN_NAME/$1"
+  curl -s -H "$header_auth" "$CLAY_SERVER_URL/runs/$RUN_NAME/$1"
 }
 
 put() {
-  curl -s -X PUT -H "Authorization: Bearer $CLAY_INTERNAL_RUN_TOKEN" --data-binary @- --no-buffer "$CLAY_SERVER_URL/runs/$RUN_NAME/$1"
+  curl -s -X PUT -H "$header_auth" --data-binary @- --no-buffer "$CLAY_SERVER_URL/runs/$RUN_NAME/$1"
 }
 
 send-logs() {
@@ -47,12 +51,12 @@ send-logs() {
   do
     # Send as json
     data=$(jq -c -n --arg text "$text" --arg stage "$1" --arg stream "$2" '{stage: $stage, type: "log", stream: $stream, text: $text}')
-    curl -s -X POST -H "Authorization: Bearer $CLAY_INTERNAL_RUN_TOKEN" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$data"
+    curl -s -X POST -H "$header_auth" -H "$header_ct" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$data"
   done
 }
 
 send-event() {
-  curl -s -X POST -H "Authorization: Bearer $CLAY_INTERNAL_RUN_TOKEN" -H "Content-Type: application/json" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$1"
+  curl -s -X POST -H "$header_auth" -H "$header_ct" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$1"
 }
 
 started build
