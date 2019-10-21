@@ -70,8 +70,6 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 # This fairly hideous construction pipes stdout and stderr to seperate commands
 { /bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build 2>&3 | send-logs "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" build stdout; } 3>&1 1>&2 | send-logs "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" build stderr
 
-# TODO: If the build fails then it shouldn't try to run the scraper but it should record stats
-
 cd cache
 tar -zcf - * | put "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" cache
 cd ..
@@ -91,9 +89,7 @@ echo "$overall_stats" | put "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" exit-data
 
 # Now take the filename given in $RUN_OUTPUT and save that away
 cd /app || exit
-# TODO: Do nothing if the output file doesn't exist
 put "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" output < "$RUN_OUTPUT"
 
 finished "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" run
-# TODO: Make sure that this is always sent even, for instance, if the build fails
 send-event "$RUN_NAME" "$CLAY_INTERNAL_RUN_TOKEN" "EOF"
