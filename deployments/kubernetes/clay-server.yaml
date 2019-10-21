@@ -9,15 +9,14 @@ kind: RoleBinding
 metadata:
   name: clay-server
   namespace: clay-scrapers
-# TODO: Give it more finely tuned permissions
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: edit
 subjects:
-- kind: ServiceAccount
-  name: clay-server
-  namespace: clay-system
+  - kind: ServiceAccount
+    name: clay-server
+    namespace: clay-system
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -38,26 +37,26 @@ spec:
     spec:
       serviceAccountName: clay-server
       containers:
-      - name: clay-server
-        image: openaustralia/clay-server
-        ports:
-        - containerPort: 8080
-        env:
-        - name: STORE_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: clay-server
-              key: store_access_key
-        - name: STORE_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: clay-server
-              key: store_secret_key
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: redis
-              key: password
+        - name: clay-server
+          image: openaustralia/clay-server
+          ports:
+            - containerPort: 8080
+          env:
+            - name: STORE_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: clay-server
+                  key: store_access_key
+            - name: STORE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: clay-server
+                  key: store_secret_key
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis
+                  key: password
 ---
 apiVersion: v1
 kind: Service

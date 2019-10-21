@@ -15,7 +15,6 @@ import (
 )
 
 func create(w http.ResponseWriter, r *http.Request) error {
-	// TODO: Do we make sure that there is only one name_prefix used?
 	values := r.URL.Query()["name_prefix"]
 	namePrefix := ""
 	if len(values) > 0 {
@@ -92,7 +91,6 @@ type callback struct {
 func start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	// TODO: If json is not of the right form return an error code that isn't 500
 	decoder := json.NewDecoder(r.Body)
 	var l startBody
 	err := decoder.Decode(&l)
@@ -105,7 +103,6 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	// TODO: If the scraper has already been started let the user know rather than 500'ing
 	return app.StartRun(runName, l.Output, env, l.Callback.URL)
 }
 
