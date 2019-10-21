@@ -55,6 +55,11 @@ send-logs() {
   done
 }
 
+send-logs-all() {
+  # This fairly hideous construction pipes stdout and stderr to seperate commands
+  { $1 2>&3 | send-logs build stdout; } 3>&1 1>&2 | send-logs build stderr
+}
+
 send-event() {
   curl -s -X POST -H "$header_auth" -H "$header_ct" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$1"
 }
@@ -71,8 +76,7 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 (get cache | tar xzf - -C cache 2> /dev/null) || true
 
-# This fairly hideous construction pipes stdout and stderr to seperate commands
-{ /bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build 2>&3 | send-logs build stdout; } 3>&1 1>&2 | send-logs build stderr
+send-logs-all "/bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build"
 
 cd cache
 tar -zcf - * | put cache
@@ -80,9 +84,8 @@ cd ..
 
 finished build
 
-# TODO: Factor out common code from the build and run
 started run
-{ /bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper 2>&3 | send-logs run stdout; } 3>&1 1>&2 | send-logs run stderr
+send-logs-all "/bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper"
 
 exit_code=${PIPESTATUS[0]}
 
