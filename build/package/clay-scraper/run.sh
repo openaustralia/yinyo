@@ -16,7 +16,11 @@ fi
 RUN_NAME=$1
 RUN_OUTPUT=$2
 
-CLAY_SERVER_URL=clay-server.clay-system:8080
+if [ -z "$CLAY_INTERNAL_SERVER_URL" ]; then
+  CLAY_SERVER_URL=clay-server.clay-system:8080
+else
+  CLAY_SERVER_URL="$CLAY_INTERNAL_SERVER_URL"
+fi
 
 # Turns on debugging output in herokuish
 # export TRACE=true
