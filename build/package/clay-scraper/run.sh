@@ -203,9 +203,13 @@ echo "scraper: /bin/start.sh" > /tmp/app/Procfile
 # Do the build
 send-logs-all build usage /tmp/usage_build.json $CLAY_INTERNAL_BUILD_COMMAND
 
-cd cache
-tar -zcf - * | put cache
-cd ..
+# Only upload the cache if there's something to upload
+# TODO: Think this through a bit more
+if [ "$(ls -A cache)" ]; then
+  cd cache
+  tar -zcf - * | put cache
+  cd ..
+fi
 
 finished build
 
