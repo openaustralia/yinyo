@@ -10,5 +10,5 @@ RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpac
 
 RUN apt-get install -y jq time bc net-tools
 
-ADD run.sh start.sh usage.sh /bin/
-RUN chmod +x /bin/run.sh /bin/start.sh /bin/usage.sh
+ADD run.sh start.sh /bin/
+RUN chmod +x /bin/run.sh /bin/start.sh
