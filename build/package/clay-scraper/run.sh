@@ -21,9 +21,7 @@ RUN_OUTPUT=$2
 # so they can't change any of these
 
 if [ -z "$CLAY_INTERNAL_SERVER_URL" ]; then
-  CLAY_SERVER_URL=clay-server.clay-system:8080
-else
-  CLAY_SERVER_URL="$CLAY_INTERNAL_SERVER_URL"
+  CLAY_INTERNAL_SERVER_URL=clay-server.clay-system:8080
 fi
 
 if [ -z "$CLAY_INTERNAL_BUILD_COMMAND" ]; then
@@ -54,11 +52,11 @@ finished() {
 }
 
 get() {
-  curl -s -H "$header_auth" "$CLAY_SERVER_URL/runs/$RUN_NAME/$1"
+  curl -s -H "$header_auth" "$CLAY_INTERNAL_SERVER_URL/runs/$RUN_NAME/$1"
 }
 
 put() {
-  curl -s -X PUT -H "$header_auth" --data-binary @- --no-buffer "$CLAY_SERVER_URL/runs/$RUN_NAME/$1"
+  curl -s -X PUT -H "$header_auth" --data-binary @- --no-buffer "$CLAY_INTERNAL_SERVER_URL/runs/$RUN_NAME/$1"
 }
 
 send-logs() {
@@ -79,7 +77,7 @@ send-logs-all() {
 }
 
 send-event() {
-  curl -s -X POST -H "$header_auth" -H "$header_ct" "$CLAY_SERVER_URL/runs/$RUN_NAME/events" -d "$1"
+  curl -s -X POST -H "$header_auth" -H "$header_ct" "$CLAY_INTERNAL_SERVER_URL/runs/$RUN_NAME/events" -d "$1"
 }
 
 extract_value() {
