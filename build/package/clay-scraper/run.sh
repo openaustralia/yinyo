@@ -16,10 +16,22 @@ fi
 RUN_NAME=$1
 RUN_OUTPUT=$2
 
+# We allow some settings to be overridden for the purposes of testing.
+# We don't allow users to change any environment variables that start with CLAY_INTERNAL_SERVER_
+# so they can't change any of these
+
 if [ -z "$CLAY_INTERNAL_SERVER_URL" ]; then
   CLAY_SERVER_URL=clay-server.clay-system:8080
 else
   CLAY_SERVER_URL="$CLAY_INTERNAL_SERVER_URL"
+fi
+
+if [ -z "$CLAY_INTERNAL_BUILD_COMMAND" ]; then
+  CLAY_INTERNAL_BUILD_COMMAND="/bin/herokuish buildpack build"
+fi
+
+if [ -z "$CLAY_INTERNAL_RUN_COMMAND" ]; then
+  CLAY_INTERNAL_RUN_COMMAND="/bin/herokuish procfile start scraper"
 fi
 
 # Turns on debugging output in herokuish
@@ -184,7 +196,7 @@ echo "scraper: /bin/start.sh" > /tmp/app/Procfile
 (get cache | tar xzf - -C cache 2> /dev/null) || true
 
 # Do the build
-send-logs-all build usage /tmp/usage_build.json /bin/herokuish buildpack build
+send-logs-all build usage /tmp/usage_build.json $CLAY_INTERNAL_BUILD_COMMAND
 
 cd cache
 tar -zcf - * | put cache
@@ -194,7 +206,7 @@ finished build
 
 # Do the actual run
 started run
-send-logs-all run usage /tmp/usage_run.json /bin/herokuish procfile start scraper
+send-logs-all run usage /tmp/usage_run.json $CLAY_INTERNAL_RUN_COMMAND
 
 exit_code=${PIPESTATUS[0]}
 
