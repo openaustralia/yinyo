@@ -70,16 +70,19 @@ send-event() {
 
 started build
 
+# Do initial setup. Go to our working directory and
+# setup the app and cache directory
 cd /tmp || exit
-
 mkdir -p app cache
 
+# Fill app directory
 get app | tar xzf - -C app
-
 echo "scraper: /bin/start.sh" > /tmp/app/Procfile
 
+# Fill cache directory
 (get cache | tar xzf - -C cache 2> /dev/null) || true
 
+# Do the build
 send-logs-all build "/bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build"
 
 cd cache
@@ -88,6 +91,7 @@ cd ..
 
 finished build
 
+# Do the actual run
 started run
 send-logs-all run "/bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper"
 
