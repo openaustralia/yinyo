@@ -225,8 +225,10 @@ overall_stats="{\"exit_code\": $exit_code, \"usage\": {\"build\": $build_statist
 echo "$overall_stats" | put exit-data
 
 # Now take the filename given in $RUN_OUTPUT and save that away
-cd /app || exit
-put output < "$RUN_OUTPUT"
+if [ -f "/app/$RUN_OUTPUT" ]; then
+  cd /app || exit
+  put output < "$RUN_OUTPUT"
+fi
 
 finished run
 send-event "EOF"
