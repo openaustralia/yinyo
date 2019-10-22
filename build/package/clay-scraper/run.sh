@@ -76,7 +76,7 @@ mkdir -p app cache
 
 get app | tar xzf - -C app
 
-cp /usr/local/lib/Procfile /tmp/app/Procfile
+echo "scraper: /bin/start.sh" > /tmp/app/Procfile
 
 (get cache | tar xzf - -C cache 2> /dev/null) || true
 
