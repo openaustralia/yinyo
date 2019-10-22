@@ -57,7 +57,7 @@ send-logs() {
 
 send-logs-all() {
   # This fairly hideous construction pipes stdout and stderr to seperate commands
-  { $1 2>&3 | send-logs build stdout; } 3>&1 1>&2 | send-logs build stderr
+  { $2 2>&3 | send-logs "$1" stdout; } 3>&1 1>&2 | send-logs "$1" stderr
 }
 
 send-event() {
@@ -76,7 +76,7 @@ cp /usr/local/lib/Procfile /tmp/app/Procfile
 
 (get cache | tar xzf - -C cache 2> /dev/null) || true
 
-send-logs-all "/bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build"
+send-logs-all build "/bin/usage.sh /tmp/usage_build.json /bin/herokuish buildpack build"
 
 cd cache
 tar -zcf - * | put cache
@@ -85,7 +85,7 @@ cd ..
 finished build
 
 started run
-send-logs-all "/bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper"
+send-logs-all run "/bin/usage.sh /tmp/usage_run.json /bin/herokuish procfile start scraper"
 
 exit_code=${PIPESTATUS[0]}
 
