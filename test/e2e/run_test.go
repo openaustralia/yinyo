@@ -15,87 +15,72 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func checkRequest(t *testing.T, r *http.Request, method string, path string, body string) {
+	assert.Equal(t, method, r.Method)
+	assert.Equal(t, path, r.URL.EscapedPath())
+	b, err := ioutil.ReadAll(r.Body)
+	r.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, body, string(b))
+}
+
 func TestSimpleRun(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		if count == 0 {
-			assert.Equal(t, "POST", r.Method)
-			assert.Equal(t, "/runs/run-name/events", r.URL.EscapedPath())
-			body, err := ioutil.ReadAll(r.Body)
-			r.Body.Close()
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, "{\"stage\":\"build\",\"type\":\"started\"}", string(body))
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				"{\"stage\":\"build\",\"type\":\"started\"}",
+			)
 		} else if count == 1 {
-			assert.Equal(t, "GET", r.Method)
-			assert.Equal(t, "/runs/run-name/app", r.URL.EscapedPath())
+			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 		} else if count == 2 {
-			assert.Equal(t, "GET", r.Method)
-			assert.Equal(t, "/runs/run-name/cache", r.URL.EscapedPath())
+			checkRequest(t, r, "GET", "/runs/run-name/cache", "")
 		} else if count == 3 {
-			assert.Equal(t, "POST", r.Method)
-			assert.Equal(t, "/runs/run-name/events", r.URL.EscapedPath())
-			body, err := ioutil.ReadAll(r.Body)
-			r.Body.Close()
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, "{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"text\":\"Built\"}", string(body))
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"text\":\"Built\"}",
+			)
 		} else if count == 4 {
-			assert.Equal(t, "POST", r.Method)
-			assert.Equal(t, "/runs/run-name/events", r.URL.EscapedPath())
-			body, err := ioutil.ReadAll(r.Body)
-			r.Body.Close()
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, "{\"stage\":\"build\",\"type\":\"finished\"}", string(body))
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				"{\"stage\":\"build\",\"type\":\"finished\"}",
+			)
 		} else if count == 5 {
-			assert.Equal(t, "POST", r.Method)
-			assert.Equal(t, "/runs/run-name/events", r.URL.EscapedPath())
-			body, err := ioutil.ReadAll(r.Body)
-			r.Body.Close()
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, "{\"stage\":\"run\",\"type\":\"started\"}", string(body))
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				"{\"stage\":\"run\",\"type\":\"started\"}",
+			)
 		} else if count == 6 {
-			assert.Equal(t, "POST", r.Method)
-			assert.Equal(t, "/runs/run-name/events", r.URL.EscapedPath())
-			body, err := ioutil.ReadAll(r.Body)
-			r.Body.Close()
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, "{\"stage\":\"run\",\"type\":\"log\",\"stream\":\"stdout\",\"text\":\"Ran\"}", string(body))
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				"{\"stage\":\"run\",\"type\":\"log\",\"stream\":\"stdout\",\"text\":\"Ran\"}",
+			)
 		} else if count == 7 {
-			assert.Equal(t, "PUT", r.Method)
-			assert.Equal(t, "/runs/run-name/exit-data", r.URL.EscapedPath())
-			body, err := ioutil.ReadAll(r.Body)
-			r.Body.Close()
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, "{\"exit_code\": 0, \"usage\": {\"build\": {}, \"run\": {}}}\n", string(body))
+			checkRequest(t, r,
+				"PUT",
+				"/runs/run-name/exit-data",
+				"{\"exit_code\": 0, \"usage\": {\"build\": {}, \"run\": {}}}\n",
+			)
 		} else if count == 8 {
-			assert.Equal(t, "POST", r.Method)
-			assert.Equal(t, "/runs/run-name/events", r.URL.EscapedPath())
-			body, err := ioutil.ReadAll(r.Body)
-			r.Body.Close()
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, "{\"stage\":\"run\",\"type\":\"finished\"}", string(body))
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				"{\"stage\":\"run\",\"type\":\"finished\"}",
+			)
 		} else if count == 9 {
-			assert.Equal(t, "POST", r.Method)
-			assert.Equal(t, "/runs/run-name/events", r.URL.EscapedPath())
-			body, err := ioutil.ReadAll(r.Body)
-			r.Body.Close()
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, "EOF", string(body))
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				"EOF",
+			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
