@@ -73,26 +73,41 @@ max_rss() {
   echo "$max_rss"
 }
 
-filename=$1
-shift
+usage() {
+  local filename=$1
+  shift
 
-snapshot_before=$(ip -s -j link show eth0)
+  local snapshot_before
+  snapshot_before=$(ip -s -j link show eth0)
 
-/usr/bin/time -v -o /tmp/time_output.txt "$@"
+  /usr/bin/time -v -o /tmp/time_output.txt "$@"
 
-snapshot_after=$(ip -s -j link show eth0)
+  local snapshot_after
+  snapshot_after=$(ip -s -j link show eth0)
 
-rx_bytes_before=$(echo "$snapshot_before" | jq ".[0].stats64.rx.bytes")
-tx_bytes_before=$(echo "$snapshot_before" | jq ".[0].stats64.tx.bytes")
-rx_bytes_after=$(echo "$snapshot_after" | jq ".[0].stats64.rx.bytes")
-tx_bytes_after=$(echo "$snapshot_after" | jq ".[0].stats64.tx.bytes")
-rx_bytes=$(echo "$rx_bytes_after - $rx_bytes_before" | bc)
-tx_bytes=$(echo "$tx_bytes_after - $tx_bytes_before" | bc)
+  local rx_bytes_before
+  local rx_bytes_after
+  local tx_bytes_before
+  local tx_bytes_after
+  local rx_bytes
+  local tx_bytes
+  rx_bytes_before=$(echo "$snapshot_before" | jq ".[0].stats64.rx.bytes")
+  tx_bytes_before=$(echo "$snapshot_before" | jq ".[0].stats64.tx.bytes")
+  rx_bytes_after=$(echo "$snapshot_after" | jq ".[0].stats64.rx.bytes")
+  tx_bytes_after=$(echo "$snapshot_after" | jq ".[0].stats64.tx.bytes")
+  rx_bytes=$(echo "$rx_bytes_after - $rx_bytes_before" | bc)
+  tx_bytes=$(echo "$tx_bytes_after - $tx_bytes_before" | bc)
 
-wall_time=$(wall_time /tmp/time_output.txt)
-max_rss=$(max_rss /tmp/time_output.txt)
-cpu_time=$(cpu_time /tmp/time_output.txt)
+  local wall_time
+  local max_rss
+  local cpu_time
+  wall_time=$(wall_time /tmp/time_output.txt)
+  max_rss=$(max_rss /tmp/time_output.txt)
+  cpu_time=$(cpu_time /tmp/time_output.txt)
 
-# Returns result as JSON
-echo "{\"wall_time\": $wall_time, \"cpu_time\": $cpu_time, \"max_rss\": $max_rss, \"network_in\": $rx_bytes, \"network_out\": $tx_bytes}" > "$filename"
-rm /tmp/time_output.txt
+  # Returns result as JSON
+  echo "{\"wall_time\": $wall_time, \"cpu_time\": $cpu_time, \"max_rss\": $max_rss, \"network_in\": $rx_bytes, \"network_out\": $tx_bytes}" > "$filename"
+  rm /tmp/time_output.txt
+}
+
+usage "$@"
