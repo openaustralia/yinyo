@@ -27,7 +27,6 @@ func TestSimpleRun(t *testing.T) {
 				t.Fatal(err)
 			}
 			assert.Equal(t, "{\"stage\":\"build\",\"type\":\"started\"}", string(body))
-			// fmt.Fprintln(w, "Hello, client")
 		} else if count == 1 {
 			assert.Equal(t, "GET", r.Method)
 			assert.Equal(t, "/runs/run-name/app", r.URL.EscapedPath())
