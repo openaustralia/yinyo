@@ -30,8 +30,8 @@ type Client struct {
 }
 
 // New configures a new Client
-func New(URL string) Client {
-	return Client{
+func New(URL string) *Client {
+	return &Client{
 		URL:        URL,
 		HTTPClient: http.DefaultClient,
 	}

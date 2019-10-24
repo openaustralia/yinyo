@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func defaultClient() clayclient.Client {
+func defaultClient() *clayclient.Client {
 	return clayclient.New("http://localhost:8080")
 }
 
