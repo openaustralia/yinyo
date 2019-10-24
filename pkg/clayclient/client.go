@@ -127,14 +127,37 @@ func (run *Run) PutApp(appData io.Reader) error {
 	return checkOK(resp)
 }
 
-// PutAppFromDirectory uploads the scraper code from a directory on the filesystem
-func (run *Run) PutAppFromDirectory(dir string) error {
+func extractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
+	gzipReader, err := gzip.NewReader(gzipTarContent)
+	if err != nil {
+		return err
+	}
+	tarReader := tar.NewReader(gzipReader)
+	for {
+		file, err := tarReader.Next()
+		if err == io.EOF {
+			break // End of archive
+		}
+		if err != nil {
+			return err
+		}
+		f, err := os.Open(filepath.Join(dir, file.Name))
+		if err != nil {
+			return err
+		}
+		io.Copy(f, tarReader)
+	}
+	return nil
+}
+
+// createArchiveFromDirectory creates an archive from a directory on the filesystem
+func createArchiveFromDirectory(dir string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
 	tarWriter := tar.NewWriter(gzipWriter)
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, file := range files {
 		// Now put the contents of this file into the tar file
@@ -145,15 +168,33 @@ func (run *Run) PutAppFromDirectory(dir string) error {
 		})
 		f, err := os.Open(filepath.Join(dir, file.Name()))
 		if err != nil {
-			return err
+			return nil, err
 		}
 		io.Copy(tarWriter, f)
 	}
 	// TODO: This should always get called
 	tarWriter.Close()
 	gzipWriter.Close()
+	return &buffer, nil
+}
 
-	return run.PutApp(&buffer)
+// GetAppToDirectory downloads the scraper code into a pre-existing directory on the filesystem
+func (run *Run) GetAppToDirectory(dir string) error {
+	app, err := run.GetApp()
+	defer app.Close()
+	if err != nil {
+		return err
+	}
+	return extractArchiveToDirectory(app, dir)
+}
+
+// PutAppFromDirectory uploads the scraper code from a directory on the filesystem
+func (run *Run) PutAppFromDirectory(dir string) error {
+	r, err := createArchiveFromDirectory(dir)
+	if err != nil {
+		return err
+	}
+	return run.PutApp(r)
 }
 
 // GetApp downloads the tarred & gzipped scraper code
@@ -282,6 +323,20 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 		return nil, err
 	}
 	return &EventIterator{decoder: json.NewDecoder(resp.Body)}, nil
+}
+
+// CreateStartEvent sends an event signalling the start of a "build" or "run"
+func (run *Run) CreateStartEvent(stage string) error {
+	event := StartEvent{Stage: stage}
+	b, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+	resp, err := run.request("POST", "/events", bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	return checkOK(resp)
 }
 
 // Delete cleans up after a run is complete
