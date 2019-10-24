@@ -118,15 +118,6 @@ func (run *Run) request(method string, path string, body io.Reader) (*http.Respo
 	return run.Client.HTTPClient.Do(req)
 }
 
-// PutApp uploads the tarred & gzipped scraper code
-func (run *Run) PutApp(appData io.Reader) error {
-	resp, err := run.request("PUT", "/app", appData)
-	if err != nil {
-		return err
-	}
-	return checkOK(resp)
-}
-
 func extractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 	gzipReader, err := gzip.NewReader(gzipTarContent)
 	if err != nil {
@@ -197,6 +188,25 @@ func (run *Run) PutAppFromDirectory(dir string) error {
 	return run.PutApp(r)
 }
 
+// GetCacheToDirectory downloads the cache into a pre-existing directory on the filesystem
+func (run *Run) GetCacheToDirectory(dir string) error {
+	app, err := run.GetCache()
+	defer app.Close()
+	if err != nil {
+		return err
+	}
+	return extractArchiveToDirectory(app, dir)
+}
+
+// PutCacheFromDirectory uploads the cache from a directory on the filesystem
+func (run *Run) PutCacheFromDirectory(dir string) error {
+	r, err := createArchiveFromDirectory(dir)
+	if err != nil {
+		return err
+	}
+	return run.PutCache(r)
+}
+
 // GetApp downloads the tarred & gzipped scraper code
 func (run *Run) GetApp() (io.ReadCloser, error) {
 	resp, err := run.request("GET", "/app", nil)
@@ -210,6 +220,15 @@ func (run *Run) GetApp() (io.ReadCloser, error) {
 		return nil, err
 	}
 	return resp.Body, nil
+}
+
+// PutApp uploads the tarred & gzipped scraper code
+func (run *Run) PutApp(appData io.Reader) error {
+	resp, err := run.request("PUT", "/app", appData)
+	if err != nil {
+		return err
+	}
+	return checkOK(resp)
 }
 
 // PutCache uploads the tarred & gzipped build cache
