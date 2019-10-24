@@ -20,7 +20,7 @@ type Run struct {
 	Name  string `json:"run_name"`
 	Token string `json:"run_token"`
 	// Ignore this field when converting from/to json
-	client *Client
+	Client *Client
 }
 
 // Client is used to access the API
@@ -78,7 +78,7 @@ func (client *Client) Hello() (string, error) {
 
 // CreateRun is the first thing called. It creates a run
 func (client *Client) CreateRun(namePrefix string) (Run, error) {
-	run := Run{client: client}
+	run := Run{Client: client}
 
 	uri := client.URL + "/runs"
 	if namePrefix != "" {
@@ -109,13 +109,13 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 
 // Make an API call for a particular run. These requests are always authenticated
 func (run *Run) request(method string, path string, body io.Reader) (*http.Response, error) {
-	url := run.client.URL + fmt.Sprintf("/runs/%s", run.Name) + path
+	url := run.Client.URL + fmt.Sprintf("/runs/%s", run.Name) + path
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+run.Token)
-	return run.client.HTTPClient.Do(req)
+	return run.Client.HTTPClient.Do(req)
 }
 
 // PutApp uploads the tarred & gzipped scraper code
