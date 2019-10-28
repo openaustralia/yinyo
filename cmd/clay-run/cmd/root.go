@@ -131,7 +131,12 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// TODO: Upload usage data
+		var exitData clayclient.ExitData
+		// TODO: Populate exitData with actual data!
+		if err := run.PutExitData(exitData); err != nil {
+			log.Fatal(err)
+		}
+
 		// TODO: Upload run output
 
 		err = run.CreateFinishEvent("run")

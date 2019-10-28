@@ -421,6 +421,41 @@ func (run *Run) CreateLastEvent() error {
 	return checkOK(resp)
 }
 
+// ExitData holds information about how things ran and how much resources were used
+type ExitData struct {
+	ExitCode int         `json:"exit_code"`
+	Usage    UsageStages `json:"usage"`
+}
+
+// UsageStages gives the usage for all the stages
+type UsageStages struct {
+	Build Usage `json:"build"`
+	Run   Usage `json:"run"`
+}
+
+// Usage gives the usage for a single stage
+type Usage struct {
+	// TODO: Get the correct types for the different fields
+	WallTime   float32 `json:"wall_time"`
+	CPUTime    float32 `json:"cpu_time"`
+	MaxRSS     float32 `json:"max_rss"`
+	NetworkIn  int     `json:"network_in"`
+	NetworkOut int     `json:"network_out"`
+}
+
+// PutExitData uploads information about how things ran and how much resources were used
+func (run *Run) PutExitData(exitData ExitData) error {
+	b, err := json.Marshal(exitData)
+	if err != nil {
+		return err
+	}
+	resp, err := run.request("PUT", "/exit-data", bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	return checkOK(resp)
+}
+
 // Delete cleans up after a run is complete
 func (run *Run) Delete() error {
 	resp, err := run.request("DELETE", "", nil)
