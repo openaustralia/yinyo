@@ -102,6 +102,13 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		// TODO: Upload cache
+
+		err = run.CreateFinishEvent("build")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// TODO: ***** MUCH MORE TODO HERE ******
 	},
 }

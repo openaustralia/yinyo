@@ -381,6 +381,20 @@ func (run *Run) CreateStartEvent(stage string) error {
 	return checkOK(resp)
 }
 
+// CreateFinishEvent sends an event signalling the start of a "build" or "run"
+func (run *Run) CreateFinishEvent(stage string) error {
+	event := eventRaw{Type: "finish", Stage: stage}
+	b, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+	resp, err := run.request("POST", "/events", bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	return checkOK(resp)
+}
+
 // CreateLogEvent sends an event with a single log line
 // TODO: Factor out common code with CreateStartEvent
 func (run *Run) CreateLogEvent(stage string, stream string, text string) error {
