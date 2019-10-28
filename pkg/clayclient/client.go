@@ -132,11 +132,27 @@ func extractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 		if err != nil {
 			return err
 		}
-		f, err := os.Open(filepath.Join(dir, file.Name))
-		if err != nil {
-			return err
+		switch file.Typeflag {
+		case tar.TypeDir:
+			// TODO: Extract variable
+			err := os.Mkdir(filepath.Join(dir, file.Name), 0755)
+			if err != nil {
+				return err
+			}
+		case tar.TypeReg:
+			f, err := os.Create(filepath.Join(dir, file.Name))
+			if err != nil {
+				return err
+			}
+			io.Copy(f, tarReader)
+		case tar.TypeSymlink:
+			err := os.Symlink(filepath.Join(dir, file.Linkname), filepath.Join(dir, file.Name))
+			if err != nil {
+				return err
+			}
+		default:
+			return errors.New("Unexpected type in tar")
 		}
-		io.Copy(f, tarReader)
 	}
 	return nil
 }
