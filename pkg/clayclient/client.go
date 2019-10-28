@@ -300,8 +300,8 @@ func (run *Run) Start(options *StartRunOptions) error {
 type eventRaw struct {
 	Stage  string `json:"stage"`
 	Type   string `json:"type"`
-	Stream string `json:"stream"`
-	Text   string `json:"text"`
+	Stream string `json:"stream,omitempty"`
+	Text   string `json:"text,omitempty"`
 }
 
 // Event is the interface for all event types
