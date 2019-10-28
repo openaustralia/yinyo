@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -81,15 +82,23 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Initially do a very naive way of calling the command just to get things going
-		// TODO: Capture output in real time rather than just when it completes
 		// TODO: Capture stdout and stderr
 		// TODO: Gather usage stats
 		// Nasty hacky way to split buildCommand up
-		command := strings.Split(buildCommand, " ")
-		out, err := exec.Command(command[0], command[1:]...).Output()
-		fmt.Printf("Output: %s\n", out)
-
+		commandParts := strings.Split(buildCommand, " ")
+		command := exec.Command(commandParts[0], commandParts[1:]...)
+		stdout, err := command.StdoutPipe()
 		if err != nil {
+			log.Fatal(err)
+		}
+		if err := command.Start(); err != nil {
+			log.Fatal(err)
+		}
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			run.CreateLogEvent("build", "stdout", scanner.Text())
+		}
+		if err := scanner.Err(); err != nil {
 			log.Fatal(err)
 		}
 

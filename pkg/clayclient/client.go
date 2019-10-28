@@ -298,10 +298,10 @@ func (run *Run) Start(options *StartRunOptions) error {
 }
 
 type eventRaw struct {
-	Stage  string
-	Type   string
-	Stream string
-	Text   string
+	Stage  string `json:"stage"`
+	Type   string `json:"type"`
+	Stream string `json:"stream"`
+	Text   string `json:"text"`
 }
 
 // Event is the interface for all event types
@@ -369,7 +369,22 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 
 // CreateStartEvent sends an event signalling the start of a "build" or "run"
 func (run *Run) CreateStartEvent(stage string) error {
-	event := StartEvent{Stage: stage}
+	event := eventRaw{Type: "start", Stage: stage}
+	b, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+	resp, err := run.request("POST", "/events", bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	return checkOK(resp)
+}
+
+// CreateLogEvent sends an event with a single log line
+// TODO: Factor out common code with CreateStartEvent
+func (run *Run) CreateLogEvent(stage string, stream string, text string) error {
+	event := eventRaw{Type: "log", Stage: stage, Stream: stream, Text: text}
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
