@@ -151,7 +151,9 @@ func extractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 			io.Copy(f, tarReader)
 			f.Close()
 		case tar.TypeSymlink:
-			err := os.Symlink(filepath.Join(dir, file.Linkname), filepath.Join(dir, file.Name))
+			newname := filepath.Join(dir, file.Name)
+			oldname := filepath.Join(filepath.Dir(newname), file.Linkname)
+			err = os.Symlink(oldname, newname)
 			if err != nil {
 				return err
 			}
