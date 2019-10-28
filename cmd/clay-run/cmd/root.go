@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/openaustralia/morph-ng/pkg/clayclient"
 	"github.com/spf13/cobra"
@@ -74,6 +76,19 @@ var rootCmd = &cobra.Command{
 		}
 		// TODO: Don't fail if the cache doesn't yet exist
 		err = run.GetCacheToDirectory("/tmp/cache")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Initially do a very naive way of calling the command just to get things going
+		// TODO: Capture output in real time rather than just when it completes
+		// TODO: Capture stdout and stderr
+		// TODO: Gather usage stats
+		// Nasty hacky way to split buildCommand up
+		command := strings.Split(buildCommand, " ")
+		out, err := exec.Command(command[0], command[1:]...).Output()
+		fmt.Printf("Output: %s\n", out)
+
 		if err != nil {
 			log.Fatal(err)
 		}
