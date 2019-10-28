@@ -109,7 +109,40 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// TODO: ***** MUCH MORE TODO HERE ******
+		err = run.CreateStartEvent("run")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		commandParts = strings.Split(runCommand, " ")
+		command = exec.Command(commandParts[0], commandParts[1:]...)
+		stdout, err = command.StdoutPipe()
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := command.Start(); err != nil {
+			log.Fatal(err)
+		}
+		scanner = bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			run.CreateLogEvent("run", "stdout", scanner.Text())
+		}
+		if err := scanner.Err(); err != nil {
+			log.Fatal(err)
+		}
+
+		// TODO: Upload usage data
+		// TODO: Upload run output
+
+		err = run.CreateFinishEvent("run")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = run.CreateLastEvent()
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

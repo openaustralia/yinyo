@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Run is what you get when you create a run and what you need to update it
@@ -404,6 +405,16 @@ func (run *Run) CreateLogEvent(stage string, stream string, text string) error {
 		return err
 	}
 	resp, err := run.request("POST", "/events", bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	return checkOK(resp)
+}
+
+// CreateLastEvent sends a special message to close the stream
+// TODO: Figure out a better way of doing this
+func (run *Run) CreateLastEvent() error {
+	resp, err := run.request("POST", "/events", strings.NewReader("EOF"))
 	if err != nil {
 		return err
 	}
