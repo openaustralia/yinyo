@@ -18,12 +18,13 @@ if not expected_string in r.text:
     raise Exception("Not expected result")
 
 # Write out to the sqlite database using scraperwiki library
-scraperwiki.sqlite.save(unique_keys=['name'], data={"name": "susan", "occupation": "software developer"})
+scraperwiki.sqlite.save(unique_keys=['name'], data={
+                        "name": "susan", "occupation": "software developer"})
 
 sys.stderr.write("First a little test message to stderr\n")
 
-print "Hello from test-python!"
+print("Hello from test-python!")
 
 for i in range(1, 6):
-    print "%i..." % i
+    print("%i..." % i)
     time.sleep(1)
