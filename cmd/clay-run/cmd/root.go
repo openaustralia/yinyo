@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/openaustralia/morph-ng/pkg/clayclient"
@@ -137,7 +138,17 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// TODO: Upload run output
+		if _, err := os.Stat(filepath.Join("/app", runOutput)); !os.IsNotExist(err) {
+			f, err := os.Open(filepath.Join("/app", runOutput))
+			defer f.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = run.PutOutput(f)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 
 		err = run.CreateFinishEvent("run")
 		if err != nil {

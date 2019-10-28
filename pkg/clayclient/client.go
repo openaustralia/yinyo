@@ -264,6 +264,15 @@ func (run *Run) PutCache(data io.Reader) error {
 	return checkOK(resp)
 }
 
+// PutOutput uploads the output of the scraper
+func (run *Run) PutOutput(data io.Reader) error {
+	resp, err := run.request("PUT", "/output", data)
+	if err != nil {
+		return err
+	}
+	return checkOK(resp)
+}
+
 // GetCache downloads the tarred & gzipped build cache
 func (run *Run) GetCache() (io.ReadCloser, error) {
 	resp, err := run.request("GET", "/cache", nil)
