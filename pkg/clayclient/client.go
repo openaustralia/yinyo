@@ -170,23 +170,37 @@ func createArchiveFromDirectory(dir string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
 	tarWriter := tar.NewWriter(gzipWriter)
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		// Now put the contents of this file into the tar file
-		tarWriter.WriteHeader(&tar.Header{
-			Name: file.Name(),
-			Size: file.Size(),
-			Mode: 0600,
-		})
-		f, err := os.Open(filepath.Join(dir, file.Name()))
+	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil, err
+			return err
 		}
-		io.Copy(tarWriter, f)
-	}
+		if path == dir {
+			return nil
+		}
+		relativePath, err := filepath.Rel(dir, path)
+		if err != nil {
+			return err
+		}
+
+		// TODO: Populate the second parameter when this is a symbolic link
+		header, err := tar.FileInfoHeader(info, "")
+		if err != nil {
+			return err
+		}
+		header.Name = relativePath
+		tarWriter.WriteHeader(header)
+
+		// If it's a regular file then write the contents
+		if info.Mode().IsRegular() {
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			io.Copy(tarWriter, f)
+		}
+
+		return nil
+	})
 	// TODO: This should always get called
 	tarWriter.Close()
 	gzipWriter.Close()

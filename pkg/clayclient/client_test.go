@@ -15,7 +15,15 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = os.Mkdir("test/wibble", 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
 	err = ioutil.WriteFile("test/foo.txt", []byte("foobar"), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ioutil.WriteFile("test/wibble/bar.txt", []byte("bar"), 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,6 +64,11 @@ func TestArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, "foobar", string(c))
+	c, err = ioutil.ReadFile("test/wibble/bar.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, "bar", string(c))
 
 	// And finally tidy up
 	err = os.RemoveAll("test")
