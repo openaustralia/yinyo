@@ -27,6 +27,10 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = os.Symlink("foo.txt", "test/foo2.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Create an archive
 	reader, err := createArchiveFromDirectory("test")
@@ -69,6 +73,11 @@ func TestArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, "bar", string(c))
+	n, err := os.Readlink("test/foo2.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, "test/foo.txt", n)
 
 	// And finally tidy up
 	err = os.RemoveAll("test")

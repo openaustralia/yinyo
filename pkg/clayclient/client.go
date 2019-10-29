@@ -183,7 +183,14 @@ func createArchiveFromDirectory(dir string) (io.Reader, error) {
 		}
 
 		// TODO: Populate the second parameter when this is a symbolic link
-		header, err := tar.FileInfoHeader(info, "")
+		var link string
+		if info.Mode()&os.ModeSymlink != 0 {
+			link, err = os.Readlink(path)
+			if err != nil {
+				return err
+			}
+		}
+		header, err := tar.FileInfoHeader(info, link)
 		if err != nil {
 			return err
 		}
