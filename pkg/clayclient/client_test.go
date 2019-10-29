@@ -31,23 +31,27 @@ func TestArchive(t *testing.T) {
 	}
 	io.Copy(file, reader)
 	file.Close()
+	err = os.RemoveAll("test")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Extract the archive
 	file, err = os.Open("test.tar.gz")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = os.Mkdir("test2", 0755)
+	err = os.Mkdir("test", 0755)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = extractArchiveToDirectory(file, "test2")
+	err = extractArchiveToDirectory(file, "test")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Now check the result
-	c, err := ioutil.ReadFile("test2/foo.txt")
+	c, err := ioutil.ReadFile("test/foo.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,10 +63,6 @@ func TestArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = os.Remove("test.tar.gz")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = os.RemoveAll("test2")
 	if err != nil {
 		t.Fatal(err)
 	}
