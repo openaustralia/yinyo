@@ -1,3 +1,6 @@
+####
+#### builder
+####
 FROM golang:1.13.1-alpine3.10 as builder
 
 # Install git.
@@ -23,13 +26,36 @@ RUN rm empty.go
 COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
-RUN CGO_ENABLED=0 go install github.com/openaustralia/morph-ng/cmd/clay-server
+RUN CGO_ENABLED=0 go install github.com/openaustralia/morph-ng/cmd/clay-run github.com/openaustralia/morph-ng/cmd/clay-server
 
 # Create unprivileged user
 RUN adduser -D clay
 
+####
+#### clay-run
+####
+FROM mlandauer/herokuish:for-morph-ng as clay-run
+
+RUN apt-get update && apt-get install -y libsqlite3-dev
+
+# Add prerun script which will disable output buffering for ruby
+ADD build/package/prerun.rb /usr/local/lib/prerun.rb
+
+# Add perl buildpack
+RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpack-perl.git 2da7480a8339f01968ce3979655555a0ade20564
+
+RUN apt-get install -y jq time bc net-tools
+
+ADD build/package/run.sh build/package/start.sh /bin/
+RUN chmod +x /bin/run.sh /bin/start.sh
+
+COPY --from=builder /go/bin/clay-run /bin/clay-run
+
+####
+#### clay-server
+####
 # Now make the runtime image
-FROM scratch
+FROM scratch as clay-server
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
