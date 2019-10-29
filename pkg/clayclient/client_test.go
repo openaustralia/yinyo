@@ -4,6 +4,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,7 +28,13 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = os.Symlink("foo.txt", "test/foo2.txt")
+	// Use an absolute file path so we can test that this gets converted to a relative path
+	// by the tarring and untarring
+	abs, err := filepath.Abs("test/foo.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = os.Symlink(abs, "test/foo2.txt")
 	if err != nil {
 		t.Fatal(err)
 	}

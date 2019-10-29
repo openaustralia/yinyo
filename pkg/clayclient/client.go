@@ -182,10 +182,19 @@ func createArchiveFromDirectory(dir string) (io.Reader, error) {
 			return err
 		}
 
-		// TODO: Populate the second parameter when this is a symbolic link
 		var link string
 		if info.Mode()&os.ModeSymlink != 0 {
 			link, err = os.Readlink(path)
+			if err != nil {
+				return err
+			}
+			absPath, err := filepath.Abs(path)
+			if err != nil {
+				return err
+			}
+			d := filepath.Dir(absPath)
+			// Make sure that the link is a relative path
+			link, err = filepath.Rel(d, link)
 			if err != nil {
 				return err
 			}
