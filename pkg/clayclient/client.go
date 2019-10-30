@@ -188,15 +188,17 @@ func createArchiveFromDirectory(dir string) (io.Reader, error) {
 			if err != nil {
 				return err
 			}
-			absPath, err := filepath.Abs(path)
-			if err != nil {
-				return err
-			}
-			d := filepath.Dir(absPath)
-			// Make sure that the link is a relative path
-			link, err = filepath.Rel(d, link)
-			if err != nil {
-				return err
+			if filepath.IsAbs(link) {
+				// Convert the absolute link to a relative link
+				absPath, err := filepath.Abs(path)
+				if err != nil {
+					return err
+				}
+				d := filepath.Dir(absPath)
+				link, err = filepath.Rel(d, link)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		header, err := tar.FileInfoHeader(info, link)
