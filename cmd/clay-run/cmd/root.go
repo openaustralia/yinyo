@@ -103,7 +103,10 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// TODO: Upload cache
+		err = run.PutCacheFromDirectory("/tmp/cache")
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		err = run.CreateFinishEvent("build")
 		if err != nil {
