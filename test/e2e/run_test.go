@@ -91,7 +91,7 @@ func TestSimpleRun(t *testing.T) {
 	defer ts.Close()
 
 	// Just run it and see what breaks
-	cmd := exec.Command("/bin/bash", "../../build/package/clay-scraper/run.sh", "run-name", "output.txt")
+	cmd := exec.Command("/bin/bash", "../../build/package/run.sh", "run-name", "output.txt")
 	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
 		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
