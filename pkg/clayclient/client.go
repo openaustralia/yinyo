@@ -414,7 +414,7 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 
 // CreateStartEvent sends an event signalling the start of a "build" or "run"
 func (run *Run) CreateStartEvent(stage string) error {
-	event := eventRaw{Type: "start", Stage: stage}
+	event := eventRaw{Type: "started", Stage: stage}
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -428,7 +428,7 @@ func (run *Run) CreateStartEvent(stage string) error {
 
 // CreateFinishEvent sends an event signalling the start of a "build" or "run"
 func (run *Run) CreateFinishEvent(stage string) error {
-	event := eventRaw{Type: "finish", Stage: stage}
+	event := eventRaw{Type: "finished", Stage: stage}
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
