@@ -120,8 +120,8 @@ func (app *App) CreateRun(namePrefix string) (CreateRunResult, error) {
 }
 
 // GetApp downloads the tar & gzipped application code
-func (app *App) GetApp(runName string, w io.Writer) error {
-	return app.getData(runName, filenameApp, w)
+func (app *App) GetApp(runName string) (io.Reader, error) {
+	return app.getData(runName, filenameApp)
 }
 
 // PutApp uploads the tar & gzipped application code
@@ -130,8 +130,8 @@ func (app *App) PutApp(reader io.Reader, objectSize int64, runName string) error
 }
 
 // GetCache downloads the tar & gzipped build cache
-func (app *App) GetCache(runName string, w io.Writer) error {
-	return app.getData(runName, filenameCache, w)
+func (app *App) GetCache(runName string) (io.Reader, error) {
+	return app.getData(runName, filenameCache)
 }
 
 // PutCache uploads the tar & gzipped build cache
@@ -140,8 +140,8 @@ func (app *App) PutCache(reader io.Reader, objectSize int64, runName string) err
 }
 
 // GetOutput downloads the scraper output
-func (app *App) GetOutput(runName string, w io.Writer) error {
-	return app.getData(runName, filenameOutput, w)
+func (app *App) GetOutput(runName string) (io.Reader, error) {
+	return app.getData(runName, filenameOutput)
 }
 
 // PutOutput uploads the scraper output
@@ -150,8 +150,8 @@ func (app *App) PutOutput(reader io.Reader, objectSize int64, runName string) er
 }
 
 // GetExitData downloads the json exit data
-func (app *App) GetExitData(runName string, w io.Writer) error {
-	return app.getData(runName, filenameExitData, w)
+func (app *App) GetExitData(runName string) (io.Reader, error) {
+	return app.getData(runName, filenameExitData)
 }
 
 // PutExitData uploads the (already serialised) json exit data
@@ -238,13 +238,8 @@ func storagePath(runName string, fileName string) string {
 	return runName + "/" + fileName
 }
 
-func (app *App) getData(runName string, fileName string, writer io.Writer) error {
-	reader, err := app.BlobStore.Get(storagePath(runName, fileName))
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(writer, reader)
-	return err
+func (app *App) getData(runName string, fileName string) (io.Reader, error) {
+	return app.BlobStore.Get(storagePath(runName, fileName))
 }
 
 func (app *App) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {

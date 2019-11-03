@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -35,7 +36,12 @@ func create(w http.ResponseWriter, r *http.Request) error {
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	return app.GetApp(runName, w)
+	reader, err := app.GetApp(runName)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(w, reader)
+	return err
 }
 
 func putApp(w http.ResponseWriter, r *http.Request) error {
@@ -47,7 +53,12 @@ func putApp(w http.ResponseWriter, r *http.Request) error {
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	return app.GetCache(runName, w)
+	reader, err := app.GetCache(runName)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(w, reader)
+	return err
 }
 
 func putCache(w http.ResponseWriter, r *http.Request) error {
@@ -58,7 +69,12 @@ func putCache(w http.ResponseWriter, r *http.Request) error {
 // TODO: Return 404 if there is no output
 func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return app.GetOutput(runName, w)
+	reader, err := app.GetOutput(runName)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(w, reader)
+	return err
 }
 
 func putOutput(w http.ResponseWriter, r *http.Request) error {
@@ -69,7 +85,12 @@ func putOutput(w http.ResponseWriter, r *http.Request) error {
 // TODO: Return 404 if there is no exit data
 func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return app.GetExitData(runName, w)
+	reader, err := app.GetExitData(runName)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(w, reader)
+	return err
 }
 
 func putExitData(w http.ResponseWriter, r *http.Request) error {
