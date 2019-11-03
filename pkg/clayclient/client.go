@@ -232,10 +232,10 @@ func CreateArchiveFromDirectory(dir string) (io.Reader, error) {
 // GetAppToDirectory downloads the scraper code into a pre-existing directory on the filesystem
 func (run *Run) GetAppToDirectory(dir string) error {
 	app, err := run.GetApp()
-	defer app.Close()
 	if err != nil {
 		return err
 	}
+	defer app.Close()
 	return ExtractArchiveToDirectory(app, dir)
 }
 
@@ -251,10 +251,10 @@ func (run *Run) PutAppFromDirectory(dir string) error {
 // GetCacheToDirectory downloads the cache into a pre-existing directory on the filesystem
 func (run *Run) GetCacheToDirectory(dir string) error {
 	app, err := run.GetCache()
-	defer app.Close()
 	if err != nil {
 		return err
 	}
+	defer app.Close()
 	return ExtractArchiveToDirectory(app, dir)
 }
 
