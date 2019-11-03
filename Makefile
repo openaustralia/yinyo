@@ -1,12 +1,15 @@
-.PHONY: image server test
+.PHONY: image server test build
 
 all: run
 
 run:
 	./client.sh test/scrapers/test-python data.sqlite
 
-test:
+test: install
 	go test ./...
+
+install:
+	go install ./...
 
 mocks:
 	mockery -all -inpkg

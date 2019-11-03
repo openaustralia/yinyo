@@ -4,6 +4,7 @@ package test
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/openaustralia/morph-ng/pkg/clayclient"
 )
 
 func checkRequest(t *testing.T, r *http.Request, method string, path string, body string) {
@@ -37,8 +39,19 @@ func TestSimpleRun(t *testing.T) {
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
+			w.Header().Set("Content-Type", "application/gzip")
+			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = io.Copy(w, reader)
+			if err != nil {
+				t.Fatal(err)
+			}
 		} else if count == 2 {
 			checkRequest(t, r, "GET", "/runs/run-name/cache", "")
+			w.Header().Set("Content-Type", "application/gzip")
+			// TODO: Let the client know that there is no cache in this case
 		} else if count == 3 {
 			checkRequest(t, r,
 				"POST",
@@ -104,4 +117,9 @@ func TestSimpleRun(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// TODO: Test that app is correctly downloaded 
+	// TODO: Test that cache is correctly downloaded
+	// TODO: Test that cache is correctly uploaded
+	// TODO: Test that output is correctly uploaded
 }
