@@ -119,7 +119,8 @@ func (run *Run) request(method string, path string, body io.Reader) (*http.Respo
 	return run.Client.HTTPClient.Do(req)
 }
 
-func extractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
+// ExtractArchiveToDirectory takes a tar, gzipped archive and extracts it to a directory on the filesystem
+func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 	gzipReader, err := gzip.NewReader(gzipTarContent)
 	if err != nil {
 		return err
@@ -165,8 +166,8 @@ func extractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 	return nil
 }
 
-// createArchiveFromDirectory creates an archive from a directory on the filesystem
-func createArchiveFromDirectory(dir string) (io.Reader, error) {
+// CreateArchiveFromDirectory creates an archive from a directory on the filesystem
+func CreateArchiveFromDirectory(dir string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
 	tarWriter := tar.NewWriter(gzipWriter)
@@ -235,12 +236,12 @@ func (run *Run) GetAppToDirectory(dir string) error {
 	if err != nil {
 		return err
 	}
-	return extractArchiveToDirectory(app, dir)
+	return ExtractArchiveToDirectory(app, dir)
 }
 
 // PutAppFromDirectory uploads the scraper code from a directory on the filesystem
 func (run *Run) PutAppFromDirectory(dir string) error {
-	r, err := createArchiveFromDirectory(dir)
+	r, err := CreateArchiveFromDirectory(dir)
 	if err != nil {
 		return err
 	}
@@ -254,12 +255,12 @@ func (run *Run) GetCacheToDirectory(dir string) error {
 	if err != nil {
 		return err
 	}
-	return extractArchiveToDirectory(app, dir)
+	return ExtractArchiveToDirectory(app, dir)
 }
 
 // PutCacheFromDirectory uploads the cache from a directory on the filesystem
 func (run *Run) PutCacheFromDirectory(dir string) error {
-	r, err := createArchiveFromDirectory(dir)
+	r, err := CreateArchiveFromDirectory(dir)
 	if err != nil {
 		return err
 	}

@@ -44,7 +44,7 @@ func TestArchive(t *testing.T) {
 	}
 
 	// Create an archive
-	reader, err := createArchiveFromDirectory("test")
+	reader, err := CreateArchiveFromDirectory("test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = extractArchiveToDirectory(file, "test")
+	err = ExtractArchiveToDirectory(file, "test")
 	if err != nil {
 		t.Fatal(err)
 	}
