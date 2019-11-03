@@ -31,6 +31,7 @@ func create(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// TODO: Return 404 if there is no app
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
@@ -42,6 +43,7 @@ func putApp(w http.ResponseWriter, r *http.Request) error {
 	return app.PutApp(r.Body, r.ContentLength, runName)
 }
 
+// TODO: Return 404 if there is no cache
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
@@ -53,6 +55,7 @@ func putCache(w http.ResponseWriter, r *http.Request) error {
 	return app.PutCache(r.Body, r.ContentLength, runName)
 }
 
+// TODO: Return 404 if there is no output
 func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	return app.GetOutput(runName, w)
@@ -63,6 +66,7 @@ func putOutput(w http.ResponseWriter, r *http.Request) error {
 	return app.PutOutput(r.Body, r.ContentLength, runName)
 }
 
+// TODO: Return 404 if there is no exit data
 func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	return app.GetExitData(runName, w)

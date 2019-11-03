@@ -249,6 +249,7 @@ func (run *Run) PutAppFromDirectory(dir string) error {
 }
 
 // GetCacheToDirectory downloads the cache into a pre-existing directory on the filesystem
+// TODO: If cache doesn't exist then do nothing
 func (run *Run) GetCacheToDirectory(dir string) error {
 	app, err := run.GetCache()
 	if err != nil {
