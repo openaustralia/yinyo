@@ -7,13 +7,16 @@ resources:
 secretGenerator:
   - name: minio
     namespace: clay-system
-    env: configs/secrets-minio.env
+    envs:
+      - configs/secrets-minio.env
   - name: clay-server
     namespace: clay-system
-    env: configs/secrets-clay-server.env
+    envs:
+      - configs/secrets-clay-server.env
   - name: redis
     namespace: clay-system
-    env: configs/secrets-redis.env
+    envs:
+      - configs/secrets-redis.env
 
 configurations:
   - deployments/kustomizeconfig/redis.yaml
