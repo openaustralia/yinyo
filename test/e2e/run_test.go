@@ -1,6 +1,6 @@
 package test
 
-// This tests the run.sh script without running it in a kubernetes cluster
+// This tests the clay-run executable without running it in a kubernetes cluster
 
 import (
 	"fmt"
@@ -13,8 +13,8 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/stretchr/testify/assert"
 )
 
 func checkRequest(t *testing.T, r *http.Request, method string, path string, body string) {
@@ -50,8 +50,8 @@ func TestSimpleRun(t *testing.T) {
 			}
 		} else if count == 2 {
 			checkRequest(t, r, "GET", "/runs/run-name/cache", "")
-			w.Header().Set("Content-Type", "application/gzip")
-			// TODO: Let the client know that there is no cache in this case
+			// Let the client know that there is no cache in this case
+			http.NotFound(w, r)
 		} else if count == 3 {
 			checkRequest(t, r,
 				"POST",
@@ -81,6 +81,7 @@ func TestSimpleRun(t *testing.T) {
 				"PUT",
 				"/runs/run-name/exit-data",
 				"{\"exit_code\": 0, \"usage\": {\"build\": {}, \"run\": {}}}\n",
+				// "{\"exit_code\":0,\"usage\":{\"build\":{\"wall_time\":0,\"cpu_time\":0,\"max_rss\":0,\"network_in\":0,\"network_out\":0},\"run\":{\"wall_time\":0,\"cpu_time\":0,\"max_rss\":0,\"network_in\":0,\"network_out\":0}}}",
 			)
 		} else if count == 8 {
 			checkRequest(t, r,
@@ -118,7 +119,7 @@ func TestSimpleRun(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	// TODO: Test that app is correctly downloaded 
+	// TODO: Test that app is correctly downloaded
 	// TODO: Test that cache is correctly downloaded
 	// TODO: Test that cache is correctly uploaded
 	// TODO: Test that output is correctly uploaded
