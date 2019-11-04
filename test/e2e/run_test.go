@@ -3,6 +3,7 @@ package test
 // This tests the clay-run executable without running it in a kubernetes cluster
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -26,6 +27,11 @@ func checkRequest(t *testing.T, r *http.Request, method string, path string, bod
 		t.Fatal(err)
 	}
 	assert.Equal(t, body, string(b))
+}
+
+func checkRequestNoBody(t *testing.T, r *http.Request, method string, path string) {
+	assert.Equal(t, method, r.Method)
+	assert.Equal(t, path, r.URL.EscapedPath())
 }
 
 func TestSimpleRun(t *testing.T) {
@@ -77,12 +83,27 @@ func TestSimpleRun(t *testing.T) {
 				"{\"stage\":\"run\",\"type\":\"log\",\"stream\":\"stdout\",\"text\":\"Ran\"}",
 			)
 		} else if count == 7 {
-			checkRequest(t, r,
-				"PUT",
-				"/runs/run-name/exit-data",
-				"{\"exit_code\": 0, \"usage\": {\"build\": {}, \"run\": {}}}\n",
-				// "{\"exit_code\":0,\"usage\":{\"build\":{\"wall_time\":0,\"cpu_time\":0,\"max_rss\":0,\"network_in\":0,\"network_out\":0},\"run\":{\"wall_time\":0,\"cpu_time\":0,\"max_rss\":0,\"network_in\":0,\"network_out\":0}}}",
-			)
+			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
+			decoder := json.NewDecoder(r.Body)
+			var exitData clayclient.ExitData
+			err := decoder.Decode(&exitData)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Check that the exit code is something sensible
+			assert.Equal(t, 0, exitData.ExitCode)
+			// The usage values are going to be a little different each time. So, the best we
+			// can do for the moment is just check that they are not zero
+			assert.True(t, exitData.Usage.Build.WallTime > 0)
+			assert.True(t, exitData.Usage.Build.CPUTime > 0)
+			assert.True(t, exitData.Usage.Build.MaxRSS > 0)
+			assert.True(t, exitData.Usage.Build.NetworkIn > 0)
+			assert.True(t, exitData.Usage.Build.NetworkOut > 0)
+			assert.True(t, exitData.Usage.Run.WallTime > 0)
+			assert.True(t, exitData.Usage.Run.CPUTime > 0)
+			assert.True(t, exitData.Usage.Run.MaxRSS > 0)
+			assert.True(t, exitData.Usage.Run.NetworkIn > 0)
+			assert.True(t, exitData.Usage.Run.NetworkOut > 0)
 		} else if count == 8 {
 			checkRequest(t, r,
 				"POST",
@@ -105,7 +126,7 @@ func TestSimpleRun(t *testing.T) {
 	defer ts.Close()
 
 	// Just run it and see what breaks
-	cmd := exec.Command("/bin/bash", "../../build/package/run.sh", "run-name", "output.txt")
+	cmd := exec.Command("clay-run", "run-name", "output.txt")
 	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
 		"CLAY_INTERNAL_SERVER_URL="+ts.URL,

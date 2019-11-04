@@ -46,8 +46,8 @@ RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpac
 
 RUN apt-get install -y jq time bc net-tools
 
-ADD build/package/run.sh build/package/start.sh /bin/
-RUN chmod +x /bin/run.sh /bin/start.sh
+ADD build/package/start.sh /bin/
+RUN chmod +x /bin/start.sh
 
 COPY --from=builder /go/bin/clay-run /bin/clay-run
 

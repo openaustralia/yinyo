@@ -21,7 +21,7 @@ const filenameCache = "cache.tgz"
 const filenameOutput = "output"
 const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/clay-scraper:v1"
-const runBinary = "/bin/run.sh"
+const runBinary = "/bin/clay-run"
 const reservedEnvNamespace = "CLAY_INTERNAL_"
 
 // App holds the state for the application
