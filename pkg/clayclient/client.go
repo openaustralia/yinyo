@@ -45,6 +45,12 @@ func checkOK(resp *http.Response) error {
 	return errors.New(resp.Status)
 }
 
+// IsNotFound checks whether a particular error message corresponds to a 404
+func IsNotFound(err error) bool {
+	// TODO: Don't want to depend on a hardcoded string here
+	return (err.Error() == "404 Not Found")
+}
+
 func checkContentType(resp *http.Response, expected string) error {
 	ct := resp.Header["Content-Type"]
 	if len(ct) == 1 && ct[0] == expected {
@@ -249,10 +255,13 @@ func (run *Run) PutAppFromDirectory(dir string) error {
 }
 
 // GetCacheToDirectory downloads the cache into a pre-existing directory on the filesystem
-// TODO: If cache doesn't exist then do nothing
 func (run *Run) GetCacheToDirectory(dir string) error {
 	app, err := run.GetCache()
 	if err != nil {
+		// If cache doesn't exist then do nothing
+		if IsNotFound(err) {
+			return nil
+		}
 		return err
 	}
 	defer app.Close()
