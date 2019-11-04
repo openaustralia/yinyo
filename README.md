@@ -13,6 +13,8 @@
 
 ### The main bit
 
+First, follow the links to install the [main dependencies](main-dependencies)
+
 Start Minikube if you haven't already
 
 ```bash
