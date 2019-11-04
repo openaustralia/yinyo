@@ -58,11 +58,13 @@ Now, if you run the same scraper again
 
 It should run significantly faster.
 
-## To see what's on the blob storage (Minio)
+## Notes for debugging and testing
+
+### To see what's on the blob storage (Minio)
 
 Point your web browser at [http://localhost:9000](http://localhost:9000). Login with the credentials in the file `configs/secrets-minio.env`.
 
-## To see what Kubernetes is doing
+### To see what Kubernetes is doing
 
 ```bash
 minikube dashboard
@@ -70,9 +72,7 @@ minikube dashboard
 
 You'll want to look in the "clay-system" and "clay-scrapers" namespaces.
 
-### Notes for debugging and testing
-
-## Accessing Redis
+### Accessing Redis
 
 ```bash
 > kubectl exec -it redis-0 -n clay-system sh
@@ -83,7 +83,7 @@ OK
 PONG
 ```
 
-## Testing callback URLs
+### Testing callback URLs
 
 Use [webhook.site](https://webhook.site) to see calls to a specific URL in real time. Very handy.
 You can run the test scraper and get the events directed to webhook.site. For example:
