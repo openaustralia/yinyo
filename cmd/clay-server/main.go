@@ -32,12 +32,16 @@ func create(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// TODO: Return 404 if there is no app
 func getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
 	reader, err := app.GetApp(runName)
 	if err != nil {
+		// Returns 404 if there is no app
+		if app.BlobStore.IsNotExist(err) {
+			http.NotFound(w, r)
+			return nil
+		}
 		return err
 	}
 	_, err = io.Copy(w, reader)
@@ -49,14 +53,18 @@ func putApp(w http.ResponseWriter, r *http.Request) error {
 	return app.PutApp(r.Body, r.ContentLength, runName)
 }
 
-// TODO: Return 404 if there is no cache
 func getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	w.Header().Set("Content-Type", "application/gzip")
 	reader, err := app.GetCache(runName)
 	if err != nil {
+		// Returns 404 if there is no cache
+		if app.BlobStore.IsNotExist(err) {
+			http.NotFound(w, r)
+			return nil
+		}
 		return err
 	}
+	w.Header().Set("Content-Type", "application/gzip")
 	_, err = io.Copy(w, reader)
 	return err
 }
@@ -66,11 +74,15 @@ func putCache(w http.ResponseWriter, r *http.Request) error {
 	return app.PutCache(r.Body, r.ContentLength, runName)
 }
 
-// TODO: Return 404 if there is no output
 func getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	reader, err := app.GetOutput(runName)
 	if err != nil {
+		// Returns 404 if there is no output
+		if app.BlobStore.IsNotExist(err) {
+			http.NotFound(w, r)
+			return nil
+		}
 		return err
 	}
 	_, err = io.Copy(w, reader)
@@ -82,11 +94,15 @@ func putOutput(w http.ResponseWriter, r *http.Request) error {
 	return app.PutOutput(r.Body, r.ContentLength, runName)
 }
 
-// TODO: Return 404 if there is no exit data
 func getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	reader, err := app.GetExitData(runName)
 	if err != nil {
+		// Returns 404 if there is no exit data
+		if app.BlobStore.IsNotExist(err) {
+			http.NotFound(w, r)
+			return nil
+		}
 		return err
 	}
 	_, err = io.Copy(w, reader)
