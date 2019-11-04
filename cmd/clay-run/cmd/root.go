@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,6 +19,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func streamLogs(run clayclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error) {
+	scanner := bufio.NewScanner(stream)
+	for scanner.Scan() {
+		run.CreateLogEvent(stage, streamName, scanner.Text())
+	}
+	c <- scanner.Err()
+}
+
 func runExternalCommand(run clayclient.Run, stage string, commandString string) (clayclient.Usage, int, error) {
 	var usage clayclient.Usage
 
@@ -25,6 +34,10 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 	commandParts := strings.Split(commandString, " ")
 	command := exec.Command(commandParts[0], commandParts[1:]...)
 	stdout, err := command.StdoutPipe()
+	if err != nil {
+		return usage, 0, err
+	}
+	stderr, err := command.StderrPipe()
 	if err != nil {
 		return usage, 0, err
 	}
@@ -42,11 +55,16 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 	if err := command.Start(); err != nil {
 		return usage, 0, err
 	}
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		run.CreateLogEvent(stage, "stdout", scanner.Text())
+
+	c := make(chan error)
+	go streamLogs(run, stage, "stdout", stdout, c)
+	go streamLogs(run, stage, "stderr", stderr, c)
+	err = <-c
+	if err != nil {
+		return usage, 0, err
 	}
-	if err := scanner.Err(); err != nil {
+	err = <-c
+	if err != nil {
 		return usage, 0, err
 	}
 
@@ -147,7 +165,6 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Initially do a very naive way of calling the command just to get things going
-		// TODO: Capture stdout and stderr
 		var exitData clayclient.ExitData
 
 		usage, _, err := runExternalCommand(run, "build", buildCommand)
