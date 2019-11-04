@@ -5,7 +5,7 @@
 ### Main dependencies
 
 - [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
-- [KubeDB operator](https://kubedb.com/docs/0.12.0/setup/install/)
+- [KubeDB operator](https://kubedb.com/docs/v0.13.0-rc.0/setup/install/)
 - [Skaffold](https://skaffold.dev/docs/getting-started/)
 - [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
 - [jq](https://stedolan.github.io/jq/)
@@ -24,7 +24,7 @@ minikube start --memory=3072 --disk-size='30gb' --kubernetes-version='v1.15.2'
 Minikube by default starts with 2GB of memory and 20GB of disk space for the VM which is not enough in
 our case.
 
-Now, [install the KubeDB operator](https://kubedb.com/docs/0.12.0/setup/install/).
+Now, [install the KubeDB operator](https://kubedb.com/docs/v0.13.0-rc.0/setup/install/).
 
 Run skaffold. This will build all the bits and pieces and deploy things to your local kubernetes for you. The first time it builds everything it it takes a few minutes. After that when you make any changes to the code it does everything much faster.
 
