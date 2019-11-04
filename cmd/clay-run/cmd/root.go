@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/openaustralia/morph-ng/pkg/clayclient"
 	"github.com/spf13/cobra"
@@ -84,7 +86,8 @@ var rootCmd = &cobra.Command{
 
 		// Initially do a very naive way of calling the command just to get things going
 		// TODO: Capture stdout and stderr
-		// TODO: Gather usage stats
+		var exitData clayclient.ExitData
+
 		// Nasty hacky way to split buildCommand up
 		commandParts := strings.Split(buildCommand, " ")
 		command := exec.Command(commandParts[0], commandParts[1:]...)
@@ -92,6 +95,7 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		start := time.Now()
 		if err := command.Start(); err != nil {
 			log.Fatal(err)
 		}
@@ -102,6 +106,21 @@ var rootCmd = &cobra.Command{
 		if err := scanner.Err(); err != nil {
 			log.Fatal(err)
 		}
+
+		err = command.Wait()
+		if err != nil {
+			log.Fatal(err)
+		}
+		exitData.Usage.Build.WallTime = time.Now().Sub(start).Seconds()
+		exitData.Usage.Build.CPUTime = command.ProcessState.UserTime().Seconds() +
+			command.ProcessState.SystemTime().Seconds()
+		// This bit will only return something when run on Linux I think
+		rusage, ok := command.ProcessState.SysUsage().(*syscall.Rusage)
+		if ok {
+			exitData.Usage.Build.MaxRSS = rusage.Maxrss
+		}
+
+		// TODO: Check the exit code of the build stage
 
 		// Temporarily (for the purposes of making the tests easier in the short term)
 		// if the cache directory is empty then don't try upload it
@@ -133,6 +152,7 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		start = time.Now()
 		if err := command.Start(); err != nil {
 			log.Fatal(err)
 		}
@@ -144,8 +164,22 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		var exitData clayclient.ExitData
-		// TODO: Populate exitData with actual data!
+		err = command.Wait()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		exitData.Usage.Run.WallTime = time.Now().Sub(start).Seconds()
+		exitData.Usage.Run.CPUTime = command.ProcessState.UserTime().Seconds() +
+			command.ProcessState.SystemTime().Seconds()
+		// This bit will only return something when run on Linux I think
+		rusage, ok = command.ProcessState.SysUsage().(*syscall.Rusage)
+		if ok {
+			exitData.Usage.Run.MaxRSS = rusage.Maxrss
+		}
+
+		// TODO: Add network in/out data
+
 		if err := run.PutExitData(exitData); err != nil {
 			log.Fatal(err)
 		}

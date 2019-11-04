@@ -491,9 +491,9 @@ type UsageStages struct {
 // Usage gives the usage for a single stage
 type Usage struct {
 	// TODO: Get the correct types for the different fields
-	WallTime   float32 `json:"wall_time"`
-	CPUTime    float32 `json:"cpu_time"`
-	MaxRSS     float32 `json:"max_rss"`
+	WallTime   float64 `json:"wall_time"` // In seconds
+	CPUTime    float64 `json:"cpu_time"`  // In seconds
+	MaxRSS     int64   `json:"max_rss"`   // In kilobytes
 	NetworkIn  int     `json:"network_in"`
 	NetworkOut int     `json:"network_out"`
 }
