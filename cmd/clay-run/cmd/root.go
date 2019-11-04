@@ -103,9 +103,18 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		err = run.PutCacheFromDirectory("/tmp/cache")
+		// Temporarily (for the purposes of making the tests easier in the short term)
+		// if the cache directory is empty then don't try upload it
+		// TODO: Get rid of this check and update the tests
+		files, err := ioutil.ReadDir("/tmp/cache")
 		if err != nil {
 			log.Fatal(err)
+		}
+		if len(files) > 0 {
+			err = run.PutCacheFromDirectory("/tmp/cache")
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		err = run.CreateFinishEvent("build")
