@@ -491,11 +491,11 @@ type UsageStages struct {
 // Usage gives the usage for a single stage
 type Usage struct {
 	// TODO: Get the correct types for the different fields
-	WallTime   float64 `json:"wall_time"` // In seconds
-	CPUTime    float64 `json:"cpu_time"`  // In seconds
-	MaxRSS     int64   `json:"max_rss"`   // In kilobytes
-	NetworkIn  int     `json:"network_in"`
-	NetworkOut int     `json:"network_out"`
+	WallTime   float64 `json:"wall_time"`   // In seconds
+	CPUTime    float64 `json:"cpu_time"`    // In seconds
+	MaxRSS     int64   `json:"max_rss"`     // In kilobytes
+	NetworkIn  uint64  `json:"network_in"`  // In bytes
+	NetworkOut uint64  `json:"network_out"` // In bytes
 }
 
 // PutExitData uploads information about how things ran and how much resources were used

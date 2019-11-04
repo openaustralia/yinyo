@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/shirou/gopsutil/net"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +28,17 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 	if err != nil {
 		return usage, 0, err
 	}
+	// Capture the time and the network counters
 	start := time.Now()
+	statsStart, err := net.IOCounters(false)
+	if err != nil {
+		return usage, 0, err
+	}
+	// Since we're asking for the aggregates we should only ever receive one answer
+	if len(statsStart) != 1 {
+		return usage, 0, errors.New("Only expected one stat")
+	}
+
 	if err := command.Start(); err != nil {
 		return usage, 0, err
 	}
@@ -42,6 +54,17 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 	if err != nil {
 		return usage, 0, err
 	}
+	statsEnd, err := net.IOCounters(false)
+	if err != nil {
+		return usage, 0, err
+	}
+	// Since we're asking for the aggregates we should only ever receive one answer
+	if len(statsEnd) != 1 {
+		return usage, 0, errors.New("Only expected one stat")
+	}
+
+	usage.NetworkIn = statsEnd[0].BytesRecv - statsStart[0].BytesRecv
+	usage.NetworkOut = statsEnd[0].BytesSent - statsStart[0].BytesSent
 	usage.WallTime = time.Now().Sub(start).Seconds()
 	usage.CPUTime = command.ProcessState.UserTime().Seconds() +
 		command.ProcessState.SystemTime().Seconds()
@@ -50,7 +73,6 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 	if ok {
 		usage.MaxRSS = rusage.Maxrss
 	}
-	// TODO: Add network in/out data
 
 	exitCode := command.ProcessState.ExitCode()
 	return usage, exitCode, nil
