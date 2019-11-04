@@ -16,6 +16,46 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func runExternalCommand(run clayclient.Run, stage string, commandString string) (clayclient.Usage, int, error) {
+	var usage clayclient.Usage
+
+	// Nasty hacky way to split buildCommand up
+	commandParts := strings.Split(commandString, " ")
+	command := exec.Command(commandParts[0], commandParts[1:]...)
+	stdout, err := command.StdoutPipe()
+	if err != nil {
+		return usage, 0, err
+	}
+	start := time.Now()
+	if err := command.Start(); err != nil {
+		return usage, 0, err
+	}
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		run.CreateLogEvent(stage, "stdout", scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		return usage, 0, err
+	}
+
+	err = command.Wait()
+	if err != nil {
+		return usage, 0, err
+	}
+	usage.WallTime = time.Now().Sub(start).Seconds()
+	usage.CPUTime = command.ProcessState.UserTime().Seconds() +
+		command.ProcessState.SystemTime().Seconds()
+	// This bit will only return something when run on Linux I think
+	rusage, ok := command.ProcessState.SysUsage().(*syscall.Rusage)
+	if ok {
+		usage.MaxRSS = rusage.Maxrss
+	}
+	// TODO: Add network in/out data
+
+	exitCode := command.ProcessState.ExitCode()
+	return usage, exitCode, nil
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "clay-run run_name run_output",
 	Short: "Builds and runs a scraper",
@@ -88,37 +128,11 @@ var rootCmd = &cobra.Command{
 		// TODO: Capture stdout and stderr
 		var exitData clayclient.ExitData
 
-		// Nasty hacky way to split buildCommand up
-		commandParts := strings.Split(buildCommand, " ")
-		command := exec.Command(commandParts[0], commandParts[1:]...)
-		stdout, err := command.StdoutPipe()
+		usage, _, err := runExternalCommand(run, "build", buildCommand)
 		if err != nil {
 			log.Fatal(err)
 		}
-		start := time.Now()
-		if err := command.Start(); err != nil {
-			log.Fatal(err)
-		}
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			run.CreateLogEvent("build", "stdout", scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			log.Fatal(err)
-		}
-
-		err = command.Wait()
-		if err != nil {
-			log.Fatal(err)
-		}
-		exitData.Usage.Build.WallTime = time.Now().Sub(start).Seconds()
-		exitData.Usage.Build.CPUTime = command.ProcessState.UserTime().Seconds() +
-			command.ProcessState.SystemTime().Seconds()
-		// This bit will only return something when run on Linux I think
-		rusage, ok := command.ProcessState.SysUsage().(*syscall.Rusage)
-		if ok {
-			exitData.Usage.Build.MaxRSS = rusage.Maxrss
-		}
+		exitData.Usage.Build = usage
 
 		// TODO: Check the exit code of the build stage
 
@@ -146,39 +160,12 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		commandParts = strings.Split(runCommand, " ")
-		command = exec.Command(commandParts[0], commandParts[1:]...)
-		stdout, err = command.StdoutPipe()
+		usage, exitCode, err := runExternalCommand(run, "run", runCommand)
 		if err != nil {
 			log.Fatal(err)
 		}
-		start = time.Now()
-		if err := command.Start(); err != nil {
-			log.Fatal(err)
-		}
-		scanner = bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			run.CreateLogEvent("run", "stdout", scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			log.Fatal(err)
-		}
-
-		err = command.Wait()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		exitData.Usage.Run.WallTime = time.Now().Sub(start).Seconds()
-		exitData.Usage.Run.CPUTime = command.ProcessState.UserTime().Seconds() +
-			command.ProcessState.SystemTime().Seconds()
-		// This bit will only return something when run on Linux I think
-		rusage, ok = command.ProcessState.SysUsage().(*syscall.Rusage)
-		if ok {
-			exitData.Usage.Run.MaxRSS = rusage.Maxrss
-		}
-
-		// TODO: Add network in/out data
+		exitData.Usage.Run = usage
+		exitData.ExitCode = exitCode
 
 		if err := run.PutExitData(exitData); err != nil {
 			log.Fatal(err)
