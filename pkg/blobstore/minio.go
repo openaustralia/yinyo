@@ -34,12 +34,25 @@ func (m *minioClient) Put(path string, reader io.Reader, objectSize int64) error
 }
 
 // Get retrieves a file at the given path from the store
+// It errors if the file doesn't exist
 func (m *minioClient) Get(path string) (io.Reader, error) {
-	return m.Client.GetObject(
+	object, err := m.Client.GetObject(
 		m.BucketName,
 		path,
 		minio.GetObjectOptions{},
 	)
+	if err != nil {
+		return object, err
+	}
+	// Just get the stats on the object just to see if it exists
+	_, err = object.Stat()
+	return object, err
+}
+
+// IsNotExist checks whether an error corresponds to an error as a result of doing a Get on
+// an object that doesn't exist
+func (m *minioClient) IsNotExist(err error) bool {
+	return (minio.ToErrorResponse(err).Code == "NoSuchKey")
 }
 
 // Delete removes a file in the store at the given path

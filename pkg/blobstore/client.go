@@ -9,4 +9,5 @@ type Client interface {
 	Put(path string, reader io.Reader, objectSize int64) error
 	Get(path string) (io.Reader, error)
 	Delete(path string) error
+	IsNotExist(error) bool
 }
