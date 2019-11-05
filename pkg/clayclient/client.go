@@ -424,8 +424,8 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 }
 
 // CreateStartEvent sends an event signalling the start of a "build" or "run"
-func (run *Run) CreateStartEvent(stage string) error {
-	event := eventRaw{Type: "started", Stage: stage}
+func (run *Run) CreateStartEvent(e StartEvent) error {
+	event := eventRaw{Type: "started", Stage: e.Stage}
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -437,9 +437,9 @@ func (run *Run) CreateStartEvent(stage string) error {
 	return checkOK(resp)
 }
 
-// CreateFinishEvent sends an event signalling the start of a "build" or "run"
-func (run *Run) CreateFinishEvent(stage string) error {
-	event := eventRaw{Type: "finished", Stage: stage}
+// CreateFinishEvent sends an event signalling the end of a "build" or "run"
+func (run *Run) CreateFinishEvent(e FinishEvent) error {
+	event := eventRaw{Type: "finished", Stage: e.Stage}
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -453,8 +453,8 @@ func (run *Run) CreateFinishEvent(stage string) error {
 
 // CreateLogEvent sends an event with a single log line
 // TODO: Factor out common code with CreateStartEvent
-func (run *Run) CreateLogEvent(stage string, stream string, text string) error {
-	event := eventRaw{Type: "log", Stage: stage, Stream: stream, Text: text}
+func (run *Run) CreateLogEvent(e LogEvent) error {
+	event := eventRaw{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text}
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
