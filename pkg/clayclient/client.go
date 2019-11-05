@@ -386,6 +386,21 @@ type EventIterator struct {
 	decoder *json.Decoder
 }
 
+// MarshalJSON converts a StartEvent to JSON
+func (e StartEvent) MarshalJSON() ([]byte, error) {
+	return json.Marshal(eventRaw{Type: "started", Stage: e.Stage})
+}
+
+// MarshalJSON converts a StartEvent to JSON
+func (e FinishEvent) MarshalJSON() ([]byte, error) {
+	return json.Marshal(eventRaw{Type: "finished", Stage: e.Stage})
+}
+
+// MarshalJSON converts a StartEvent to JSON
+func (e LogEvent) MarshalJSON() ([]byte, error) {
+	return json.Marshal(eventRaw{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text})
+}
+
 // More checks whether another event is available
 func (iterator *EventIterator) More() bool {
 	return iterator.decoder.More()
@@ -424,8 +439,7 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 }
 
 // CreateStartEvent sends an event signalling the start of a "build" or "run"
-func (run *Run) CreateStartEvent(e StartEvent) error {
-	event := eventRaw{Type: "started", Stage: e.Stage}
+func (run *Run) CreateStartEvent(event StartEvent) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -438,8 +452,7 @@ func (run *Run) CreateStartEvent(e StartEvent) error {
 }
 
 // CreateFinishEvent sends an event signalling the end of a "build" or "run"
-func (run *Run) CreateFinishEvent(e FinishEvent) error {
-	event := eventRaw{Type: "finished", Stage: e.Stage}
+func (run *Run) CreateFinishEvent(event FinishEvent) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -453,8 +466,7 @@ func (run *Run) CreateFinishEvent(e FinishEvent) error {
 
 // CreateLogEvent sends an event with a single log line
 // TODO: Factor out common code with CreateStartEvent
-func (run *Run) CreateLogEvent(e LogEvent) error {
-	event := eventRaw{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text}
+func (run *Run) CreateLogEvent(event LogEvent) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err

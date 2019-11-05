@@ -1,6 +1,7 @@
 package clayclient
 
 import (
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
@@ -104,4 +105,28 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestMarshalStartEvent(t *testing.T) {
+	b, err := json.Marshal(StartEvent{Stage: "build"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, `{"stage":"build","type":"started"}`, string(b))
+}
+
+func TestMarshalFinishEvent(t *testing.T) {
+	b, err := json.Marshal(FinishEvent{Stage: "build"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, `{"stage":"build","type":"finished"}`, string(b))
+}
+
+func TestMarshalLogEvent(t *testing.T) {
+	b, err := json.Marshal(LogEvent{Stage: "build", Stream: "stdout", Text: "Hello"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, `{"stage":"build","type":"log","stream":"stdout","text":"Hello"}`, string(b))
 }
