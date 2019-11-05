@@ -173,6 +173,12 @@ var rootCmd = &cobra.Command{
 		}
 
 		// TODO: Check the exit code of the build stage
+		// Send the build finished event immediately when the build command has finished
+		// Effectively the cache uploading happens between the build and run stages
+		err = run.CreateFinishEvent("build")
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		// Temporarily (for the purposes of making the tests easier in the short term)
 		// if the cache directory is empty then don't try upload it
@@ -186,11 +192,6 @@ var rootCmd = &cobra.Command{
 			if err != nil {
 				log.Fatal(err)
 			}
-		}
-
-		err = run.CreateFinishEvent("build")
-		if err != nil {
-			log.Fatal(err)
 		}
 
 		err = run.CreateStartEvent("run")
