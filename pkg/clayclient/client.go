@@ -406,6 +406,19 @@ func (iterator *EventIterator) More() bool {
 	return iterator.decoder.More()
 }
 
+func (e *eventRaw) toEvent() (Event, error) {
+	switch e.Type {
+	case "started":
+		return StartEvent{Stage: e.Stage}, nil
+	case "finished":
+		return FinishEvent{Stage: e.Stage}, nil
+	case "log":
+		return LogEvent{Stage: e.Stage, Stream: e.Stream, Text: e.Text}, nil
+	default:
+		return nil, errors.New("Unexpected type")
+	}
+}
+
 // Next returns the next event
 func (iterator *EventIterator) Next() (Event, error) {
 	var eventRaw eventRaw
@@ -413,14 +426,7 @@ func (iterator *EventIterator) Next() (Event, error) {
 	if err != nil {
 		return nil, err
 	}
-	if eventRaw.Type == "started" {
-		return StartEvent{Stage: eventRaw.Stage}, nil
-	} else if eventRaw.Type == "finished" {
-		return FinishEvent{Stage: eventRaw.Stage}, nil
-	} else if eventRaw.Type == "log" {
-		return LogEvent{Stage: eventRaw.Stage, Stream: eventRaw.Stream, Text: eventRaw.Text}, nil
-	}
-	return nil, errors.New("Unexpected type")
+	return eventRaw.toEvent()
 }
 
 // GetEvents returns a stream of events from the API
