@@ -438,35 +438,8 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 	return &EventIterator{decoder: json.NewDecoder(resp.Body)}, nil
 }
 
-// CreateStartEvent sends an event signalling the start of a "build" or "run"
-func (run *Run) CreateStartEvent(event StartEvent) error {
-	b, err := json.Marshal(event)
-	if err != nil {
-		return err
-	}
-	resp, err := run.request("POST", "/events", bytes.NewReader(b))
-	if err != nil {
-		return err
-	}
-	return checkOK(resp)
-}
-
-// CreateFinishEvent sends an event signalling the end of a "build" or "run"
-func (run *Run) CreateFinishEvent(event FinishEvent) error {
-	b, err := json.Marshal(event)
-	if err != nil {
-		return err
-	}
-	resp, err := run.request("POST", "/events", bytes.NewReader(b))
-	if err != nil {
-		return err
-	}
-	return checkOK(resp)
-}
-
-// CreateLogEvent sends an event with a single log line
-// TODO: Factor out common code with CreateStartEvent
-func (run *Run) CreateLogEvent(event LogEvent) error {
+// CreateEvent sends an event
+func (run *Run) CreateEvent(event Event) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err

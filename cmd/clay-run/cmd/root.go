@@ -22,7 +22,7 @@ import (
 func streamLogs(run clayclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
-		run.CreateLogEvent(clayclient.LogEvent{Stage: stage, Stream: streamName, Text: scanner.Text()})
+		run.CreateEvent(clayclient.LogEvent{Stage: stage, Stream: streamName, Text: scanner.Text()})
 	}
 	c <- scanner.Err()
 }
@@ -135,7 +135,7 @@ var rootCmd = &cobra.Command{
 
 		client := clayclient.New(serverURL)
 		run := clayclient.Run{Name: runName, Token: runToken, Client: client}
-		err := run.CreateStartEvent(clayclient.StartEvent{Stage: "build"})
+		err := run.CreateEvent(clayclient.StartEvent{Stage: "build"})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -175,7 +175,7 @@ var rootCmd = &cobra.Command{
 		// TODO: Check the exit code of the build stage
 		// Send the build finished event immediately when the build command has finished
 		// Effectively the cache uploading happens between the build and run stages
-		err = run.CreateFinishEvent(clayclient.FinishEvent{Stage: "build"})
+		err = run.CreateEvent(clayclient.FinishEvent{Stage: "build"})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -194,7 +194,7 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		err = run.CreateStartEvent(clayclient.StartEvent{Stage: "run"})
+		err = run.CreateEvent(clayclient.StartEvent{Stage: "run"})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -220,7 +220,7 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		err = run.CreateFinishEvent(clayclient.FinishEvent{Stage: "run"})
+		err = run.CreateEvent(clayclient.FinishEvent{Stage: "run"})
 		if err != nil {
 			log.Fatal(err)
 		}
