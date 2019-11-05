@@ -478,19 +478,18 @@ func (run *Run) CreateLastEvent() error {
 
 // ExitData holds information about how things ran and how much resources were used
 type ExitData struct {
-	ExitCode int         `json:"exit_code"`
-	Usage    UsageStages `json:"usage"`
+	Build ExitDataStage `json:"build"`
+	Run   ExitDataStage `json:"run"`
 }
 
-// UsageStages gives the usage for all the stages
-type UsageStages struct {
-	Build Usage `json:"build"`
-	Run   Usage `json:"run"`
+// ExitDataStage gives the exit data for a single stage
+type ExitDataStage struct {
+	ExitCode int   `json:"exit_code"`
+	Usage    Usage `json:"usage"`
 }
 
-// Usage gives the usage for a single stage
+// Usage gives the resource usage for a single stage
 type Usage struct {
-	// TODO: Get the correct types for the different fields
 	WallTime   float64 `json:"wall_time"`   // In seconds
 	CPUTime    float64 `json:"cpu_time"`    // In seconds
 	MaxRSS     int64   `json:"max_rss"`     // In kilobytes

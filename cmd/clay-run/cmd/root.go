@@ -27,33 +27,33 @@ func streamLogs(run clayclient.Run, stage string, streamName string, stream io.R
 	c <- scanner.Err()
 }
 
-func runExternalCommand(run clayclient.Run, stage string, commandString string) (clayclient.Usage, int, error) {
-	var usage clayclient.Usage
+func runExternalCommand(run clayclient.Run, stage string, commandString string) (clayclient.ExitDataStage, error) {
+	var exitData clayclient.ExitDataStage
 
 	// Nasty hacky way to split buildCommand up
 	commandParts := strings.Split(commandString, " ")
 	command := exec.Command(commandParts[0], commandParts[1:]...)
 	stdout, err := command.StdoutPipe()
 	if err != nil {
-		return usage, 0, err
+		return exitData, err
 	}
 	stderr, err := command.StderrPipe()
 	if err != nil {
-		return usage, 0, err
+		return exitData, err
 	}
 	// Capture the time and the network counters
 	start := time.Now()
 	statsStart, err := net.IOCounters(false)
 	if err != nil {
-		return usage, 0, err
+		return exitData, err
 	}
 	// Since we're asking for the aggregates we should only ever receive one answer
 	if len(statsStart) != 1 {
-		return usage, 0, errors.New("Only expected one stat")
+		return exitData, errors.New("Only expected one stat")
 	}
 
 	if err := command.Start(); err != nil {
-		return usage, 0, err
+		return exitData, err
 	}
 
 	c := make(chan error)
@@ -61,39 +61,39 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 	go streamLogs(run, stage, "stderr", stderr, c)
 	err = <-c
 	if err != nil {
-		return usage, 0, err
+		return exitData, err
 	}
 	err = <-c
 	if err != nil {
-		return usage, 0, err
+		return exitData, err
 	}
 
 	err = command.Wait()
 	if err != nil {
-		return usage, 0, err
+		return exitData, err
 	}
 	statsEnd, err := net.IOCounters(false)
 	if err != nil {
-		return usage, 0, err
+		return exitData, err
 	}
 	// Since we're asking for the aggregates we should only ever receive one answer
 	if len(statsEnd) != 1 {
-		return usage, 0, errors.New("Only expected one stat")
+		return exitData, errors.New("Only expected one stat")
 	}
 
-	usage.NetworkIn = statsEnd[0].BytesRecv - statsStart[0].BytesRecv
-	usage.NetworkOut = statsEnd[0].BytesSent - statsStart[0].BytesSent
-	usage.WallTime = time.Now().Sub(start).Seconds()
-	usage.CPUTime = command.ProcessState.UserTime().Seconds() +
+	exitData.Usage.NetworkIn = statsEnd[0].BytesRecv - statsStart[0].BytesRecv
+	exitData.Usage.NetworkOut = statsEnd[0].BytesSent - statsStart[0].BytesSent
+	exitData.Usage.WallTime = time.Now().Sub(start).Seconds()
+	exitData.Usage.CPUTime = command.ProcessState.UserTime().Seconds() +
 		command.ProcessState.SystemTime().Seconds()
 	// This bit will only return something when run on Linux I think
 	rusage, ok := command.ProcessState.SysUsage().(*syscall.Rusage)
 	if ok {
-		usage.MaxRSS = rusage.Maxrss
+		exitData.Usage.MaxRSS = rusage.Maxrss
 	}
+	exitData.ExitCode = command.ProcessState.ExitCode()
 
-	exitCode := command.ProcessState.ExitCode()
-	return usage, exitCode, nil
+	return exitData, nil
 }
 
 var rootCmd = &cobra.Command{
@@ -167,11 +167,10 @@ var rootCmd = &cobra.Command{
 		// Initially do a very naive way of calling the command just to get things going
 		var exitData clayclient.ExitData
 
-		usage, _, err := runExternalCommand(run, "build", buildCommand)
+		exitData.Build, err = runExternalCommand(run, "build", buildCommand)
 		if err != nil {
 			log.Fatal(err)
 		}
-		exitData.Usage.Build = usage
 
 		// TODO: Check the exit code of the build stage
 
@@ -199,12 +198,10 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		usage, exitCode, err := runExternalCommand(run, "run", runCommand)
+		exitData.Run, err = runExternalCommand(run, "run", runCommand)
 		if err != nil {
 			log.Fatal(err)
 		}
-		exitData.Usage.Run = usage
-		exitData.ExitCode = exitCode
 
 		if err := run.PutExitData(exitData); err != nil {
 			log.Fatal(err)

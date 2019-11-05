@@ -90,20 +90,21 @@ func TestSimpleRun(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			// Check that the exit code is something sensible
-			assert.Equal(t, 0, exitData.ExitCode)
+			// Check that the exit codes are something sensible
+			assert.Equal(t, 0, exitData.Build.ExitCode)
+			assert.Equal(t, 0, exitData.Run.ExitCode)
 			// The usage values are going to be a little different each time. So, the best we
 			// can do for the moment is just check that they are not zero
-			assert.True(t, exitData.Usage.Build.WallTime > 0)
-			assert.True(t, exitData.Usage.Build.CPUTime > 0)
-			assert.True(t, exitData.Usage.Build.MaxRSS > 0)
-			assert.True(t, exitData.Usage.Build.NetworkIn > 0)
-			assert.True(t, exitData.Usage.Build.NetworkOut > 0)
-			assert.True(t, exitData.Usage.Run.WallTime > 0)
-			assert.True(t, exitData.Usage.Run.CPUTime > 0)
-			assert.True(t, exitData.Usage.Run.MaxRSS > 0)
-			assert.True(t, exitData.Usage.Run.NetworkIn > 0)
-			assert.True(t, exitData.Usage.Run.NetworkOut > 0)
+			assert.True(t, exitData.Build.Usage.WallTime > 0)
+			assert.True(t, exitData.Build.Usage.CPUTime > 0)
+			assert.True(t, exitData.Build.Usage.MaxRSS > 0)
+			assert.True(t, exitData.Build.Usage.NetworkIn > 0)
+			assert.True(t, exitData.Build.Usage.NetworkOut > 0)
+			assert.True(t, exitData.Run.Usage.WallTime > 0)
+			assert.True(t, exitData.Run.Usage.CPUTime > 0)
+			assert.True(t, exitData.Run.Usage.MaxRSS > 0)
+			assert.True(t, exitData.Run.Usage.NetworkIn > 0)
+			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
 		} else if count == 8 {
 			checkRequest(t, r,
 				"POST",
