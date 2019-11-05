@@ -353,7 +353,8 @@ func (run *Run) Start(options *StartRunOptions) error {
 	return checkOK(resp)
 }
 
-type eventRaw struct {
+// JSONEvent is used for reading/writing JSON
+type JSONEvent struct {
 	Stage  string `json:"stage"`
 	Type   string `json:"type"`
 	Stream string `json:"stream,omitempty"`
@@ -388,17 +389,17 @@ type EventIterator struct {
 
 // MarshalJSON converts a StartEvent to JSON
 func (e StartEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(eventRaw{Type: "started", Stage: e.Stage})
+	return json.Marshal(JSONEvent{Type: "started", Stage: e.Stage})
 }
 
 // MarshalJSON converts a StartEvent to JSON
 func (e FinishEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(eventRaw{Type: "finished", Stage: e.Stage})
+	return json.Marshal(JSONEvent{Type: "finished", Stage: e.Stage})
 }
 
 // MarshalJSON converts a StartEvent to JSON
 func (e LogEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(eventRaw{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text})
+	return json.Marshal(JSONEvent{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text})
 }
 
 // More checks whether another event is available
@@ -406,7 +407,7 @@ func (iterator *EventIterator) More() bool {
 	return iterator.decoder.More()
 }
 
-func (e *eventRaw) toEvent() (Event, error) {
+func (e *JSONEvent) toEvent() (Event, error) {
 	switch e.Type {
 	case "started":
 		return StartEvent{Stage: e.Stage}, nil
@@ -421,12 +422,12 @@ func (e *eventRaw) toEvent() (Event, error) {
 
 // Next returns the next event
 func (iterator *EventIterator) Next() (Event, error) {
-	var eventRaw eventRaw
-	err := iterator.decoder.Decode(&eventRaw)
+	var JSONEvent JSONEvent
+	err := iterator.decoder.Decode(&JSONEvent)
 	if err != nil {
 		return nil, err
 	}
-	return eventRaw.toEvent()
+	return JSONEvent.toEvent()
 }
 
 // GetEvents returns a stream of events from the API
