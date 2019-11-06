@@ -41,7 +41,7 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"{\"stage\":\"build\",\"type\":\"started\"}",
+				`{"stage":"build","type":"started"}`,
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
@@ -62,25 +62,25 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"{\"stage\":\"build\",\"type\":\"log\",\"stream\":\"stdout\",\"text\":\"Built\"}",
+				`{"stage":"build","type":"log","stream":"stdout","text":"Built"}`,
 			)
 		} else if count == 4 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"{\"stage\":\"build\",\"type\":\"finished\"}",
+				`{"stage":"build","type":"finished"}`,
 			)
 		} else if count == 5 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"{\"stage\":\"run\",\"type\":\"started\"}",
+				`{"stage":"run","type":"started"}`,
 			)
 		} else if count == 6 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"{\"stage\":\"run\",\"type\":\"log\",\"stream\":\"stdout\",\"text\":\"Ran\"}",
+				`{"stage":"run","type":"log","stream":"stdout","text":"Ran"}`,
 			)
 		} else if count == 7 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
@@ -109,7 +109,7 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"{\"stage\":\"run\",\"type\":\"finished\"}",
+				`{"stage":"run","type":"finished"}`,
 			)
 		} else if count == 9 {
 			checkRequest(t, r,

@@ -77,7 +77,7 @@ func TestCreateEvent(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
+	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -95,7 +95,7 @@ func TestCreateEvent(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", "{\"some\": \"json\"}")
+	err := app.CreateEvent("run-name", `{"some": "json"}`)
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -107,7 +107,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
+	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
 	keyValueStore.On("Get", "url:run-name").Return("", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -116,7 +116,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", "{\"some\": \"json\"}")
+	err := app.CreateEvent("run-name", `{"some": "json"}`)
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -128,7 +128,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", "{\"some\": \"json\"}").Return(nil)
+	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -146,7 +146,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", "{\"some\": \"json\"}")
+	err := app.CreateEvent("run-name", `{"some": "json"}`)
 	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
 
 	stream.AssertExpectations(t)
