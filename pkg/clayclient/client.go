@@ -389,12 +389,12 @@ type EventIterator struct {
 
 // MarshalJSON converts a StartEvent to JSON
 func (e StartEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "started", Stage: e.Stage})
+	return json.Marshal(JSONEvent{Type: "start", Stage: e.Stage})
 }
 
 // MarshalJSON converts a StartEvent to JSON
 func (e FinishEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "finished", Stage: e.Stage})
+	return json.Marshal(JSONEvent{Type: "finish", Stage: e.Stage})
 }
 
 // MarshalJSON converts a StartEvent to JSON
@@ -409,9 +409,9 @@ func (iterator *EventIterator) More() bool {
 
 func (e *JSONEvent) toEvent() (Event, error) {
 	switch e.Type {
-	case "started":
+	case "start":
 		return StartEvent{Stage: e.Stage}, nil
-	case "finished":
+	case "finish":
 		return FinishEvent{Stage: e.Stage}, nil
 	case "log":
 		return LogEvent{Stage: e.Stage, Stream: e.Stream, Text: e.Text}, nil

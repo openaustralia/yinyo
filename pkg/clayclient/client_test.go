@@ -112,7 +112,7 @@ func TestMarshalStartEvent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, `{"stage":"build","type":"started"}`, string(b))
+	assert.Equal(t, `{"stage":"build","type":"start"}`, string(b))
 }
 
 func TestMarshalFinishEvent(t *testing.T) {
@@ -120,7 +120,7 @@ func TestMarshalFinishEvent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, `{"stage":"build","type":"finished"}`, string(b))
+	assert.Equal(t, `{"stage":"build","type":"finish"}`, string(b))
 }
 
 func TestMarshalLogEvent(t *testing.T) {

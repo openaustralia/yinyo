@@ -41,7 +41,7 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"started"}`,
+				`{"stage":"build","type":"start"}`,
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
@@ -68,13 +68,13 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"finished"}`,
+				`{"stage":"build","type":"finish"}`,
 			)
 		} else if count == 5 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"started"}`,
+				`{"stage":"run","type":"start"}`,
 			)
 		} else if count == 6 {
 			checkRequest(t, r,
@@ -109,7 +109,7 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"finished"}`,
+				`{"stage":"run","type":"finish"}`,
 			)
 		} else if count == 9 {
 			checkRequest(t, r,
