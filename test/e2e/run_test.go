@@ -146,3 +146,89 @@ func TestSimpleRun(t *testing.T) {
 	// TODO: Test that cache is correctly uploaded
 	// TODO: Test that output is correctly uploaded
 }
+
+func TestFailingBuild(t *testing.T) {
+	count := 0
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if count == 0 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"build","type":"start"}`,
+			)
+		} else if count == 1 {
+			checkRequest(t, r, "GET", "/runs/run-name/app", "")
+			w.Header().Set("Content-Type", "application/gzip")
+			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = io.Copy(w, reader)
+			if err != nil {
+				t.Fatal(err)
+			}
+		} else if count == 2 {
+			checkRequest(t, r, "GET", "/runs/run-name/cache", "")
+			// Let the client know that there is no cache in this case
+			http.NotFound(w, r)
+		} else if count == 3 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"build","type":"log","stream":"stderr","text":"bash: failing_command: command not found"}`,
+			)
+		} else if count == 4 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"build","type":"finish"}`,
+			)
+		} else if count == 5 {
+			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
+			decoder := json.NewDecoder(r.Body)
+			var exitData clayclient.ExitData
+			err := decoder.Decode(&exitData)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Check that the exit codes are something sensible
+			assert.Equal(t, 127, exitData.Build.ExitCode)
+			assert.Nil(t, exitData.Run)
+			// The usage values are going to be a little different each time. So, the best we
+			// can do for the moment is just check that they are not zero
+			assert.True(t, exitData.Build.Usage.WallTime > 0)
+			assert.True(t, exitData.Build.Usage.CPUTime > 0)
+			assert.True(t, exitData.Build.Usage.MaxRSS > 0)
+			assert.True(t, exitData.Build.Usage.NetworkIn > 0)
+			assert.True(t, exitData.Build.Usage.NetworkOut > 0)
+		} else if count == 6 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				"EOF",
+			)
+		}
+		// else {
+		// 	fmt.Println("Didn't expect so many requests")
+		// 	t.Fatal("Didn't expect so many requests")
+		// }
+		count++
+	}
+	ts := httptest.NewServer(http.HandlerFunc(handler))
+	defer ts.Close()
+
+	// Just run it and see what breaks
+	cmd := exec.Command("clay-run", "run-name", "output.txt")
+	cmd.Env = append(os.Environ(),
+		// Send requests for the clay server to our local test server instead (which we start here)
+		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
+		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "failing_command"`,
+		"CLAY_INTERNAL_RUN_COMMAND=echo Ran",
+	)
+
+	stdoutStderr, err := cmd.CombinedOutput()
+	fmt.Printf("%s\n", stdoutStderr)
+	if err != nil {
+		log.Fatal(err)
+	}
+}

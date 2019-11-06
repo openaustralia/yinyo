@@ -470,8 +470,8 @@ func (run *Run) CreateLastEvent() error {
 
 // ExitData holds information about how things ran and how much resources were used
 type ExitData struct {
-	Build ExitDataStage `json:"build"`
-	Run   ExitDataStage `json:"run"`
+	Build *ExitDataStage `json:"build,omitempty"`
+	Run   *ExitDataStage `json:"run,omitempty"`
 }
 
 // ExitDataStage gives the exit data for a single stage

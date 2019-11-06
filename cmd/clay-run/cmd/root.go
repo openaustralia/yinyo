@@ -69,7 +69,7 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 	}
 
 	err = command.Wait()
-	if err != nil {
+	if err != nil && command.ProcessState.ExitCode() == 0 {
 		return exitData, err
 	}
 	statsEnd, err := net.IOCounters(false)
@@ -167,12 +167,12 @@ var rootCmd = &cobra.Command{
 		// Initially do a very naive way of calling the command just to get things going
 		var exitData clayclient.ExitData
 
-		exitData.Build, err = runExternalCommand(run, "build", buildCommand)
+		exitDataStage, err := runExternalCommand(run, "build", buildCommand)
 		if err != nil {
 			log.Fatal(err)
 		}
+		exitData.Build = &exitDataStage
 
-		// TODO: Check the exit code of the build stage
 		// Send the build finished event immediately when the build command has finished
 		// Effectively the cache uploading happens between the build and run stages
 		err = run.CreateEvent(clayclient.FinishEvent{Stage: "build"})
@@ -194,35 +194,44 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		err = run.CreateEvent(clayclient.StartEvent{Stage: "run"})
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		exitData.Run, err = runExternalCommand(run, "run", runCommand)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if err := run.PutExitData(exitData); err != nil {
-			log.Fatal(err)
-		}
-
-		if _, err := os.Stat(filepath.Join("/app", runOutput)); !os.IsNotExist(err) {
-			f, err := os.Open(filepath.Join("/app", runOutput))
-			defer f.Close()
+		// Only do the main run if the build was succesful
+		if exitData.Build.ExitCode == 0 {
+			err = run.CreateEvent(clayclient.StartEvent{Stage: "run"})
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = run.PutOutput(f)
+
+			exitDataStage, err := runExternalCommand(run, "run", runCommand)
 			if err != nil {
 				log.Fatal(err)
 			}
-		}
+			exitData.Run = &exitDataStage
 
-		err = run.CreateEvent(clayclient.FinishEvent{Stage: "run"})
-		if err != nil {
-			log.Fatal(err)
+			if err := run.PutExitData(exitData); err != nil {
+				log.Fatal(err)
+			}
+
+			if _, err := os.Stat(filepath.Join("/app", runOutput)); !os.IsNotExist(err) {
+				f, err := os.Open(filepath.Join("/app", runOutput))
+				defer f.Close()
+				if err != nil {
+					log.Fatal(err)
+				}
+				err = run.PutOutput(f)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			err = run.CreateEvent(clayclient.FinishEvent{Stage: "run"})
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			// TODO: Only upload the exit data for the build
+			if err := run.PutExitData(exitData); err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		err = run.CreateLastEvent()
