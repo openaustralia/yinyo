@@ -7,6 +7,7 @@ require (
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/gorilla/mux v1.7.3
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/minio/minio-go/v6 v6.0.33
 	github.com/mitchellh/go-homedir v1.1.0

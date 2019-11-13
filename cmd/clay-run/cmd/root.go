@@ -10,10 +10,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"syscall"
 	"time"
 
+	"github.com/kballard/go-shellquote"
 	"github.com/openaustralia/morph-ng/pkg/clayclient"
 	"github.com/shirou/gopsutil/net"
 	"github.com/spf13/cobra"
@@ -30,8 +30,11 @@ func streamLogs(run clayclient.Run, stage string, streamName string, stream io.R
 func runExternalCommand(run clayclient.Run, stage string, commandString string) (clayclient.ExitDataStage, error) {
 	var exitData clayclient.ExitDataStage
 
-	// Nasty hacky way to split buildCommand up
-	commandParts := strings.Split(commandString, " ")
+	// Splits string up into pieces using shell rules
+	commandParts, err := shellquote.Split(commandString)
+	if err != nil {
+		return exitData, err
+	}
 	command := exec.Command(commandParts[0], commandParts[1:]...)
 	stdout, err := command.StdoutPipe()
 	if err != nil {
