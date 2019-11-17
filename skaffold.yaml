@@ -1,17 +1,17 @@
-apiVersion: skaffold/v1beta17
+apiVersion: skaffold/v1
 kind: Config
 build:
+  artifacts:
+  - image: openaustralia/clay-server
+    docker:
+      dockerfile: build/package/Dockerfile
+      target: clay-server
+  - image: openaustralia/clay-scraper
+    docker:
+      dockerfile: build/package/Dockerfile
+      target: clay-run
   tagPolicy:
     envTemplate:
-      template: "{{.IMAGE_NAME}}:v1"
-  artifacts:
-    - image: openaustralia/clay-server
-      docker:
-        dockerfile: build/package/Dockerfile
-        target: clay-server
-    - image: openaustralia/clay-scraper
-      docker:
-        dockerfile: build/package/Dockerfile
-        target: clay-run
+      template: '{{.IMAGE_NAME}}:v1'
 deploy:
   kustomize: {}
