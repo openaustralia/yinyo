@@ -273,6 +273,9 @@ func TestFailingBuild(t *testing.T) {
 				`{"stage":"build","type":"finish"}`,
 			)
 		} else if count == 5 {
+			// We're not testing that the correct thing is being uploaded here for the time being
+			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
+		} else if count == 6 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
 			var exitData clayclient.ExitData
@@ -290,7 +293,7 @@ func TestFailingBuild(t *testing.T) {
 			assert.True(t, exitData.Build.Usage.MaxRSS > 0)
 			assert.True(t, exitData.Build.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Build.Usage.NetworkOut > 0)
-		} else if count == 6 {
+		} else if count == 7 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
@@ -373,18 +376,21 @@ func TestFailingRun(t *testing.T) {
 				`{"stage":"build","type":"finish"}`,
 			)
 		} else if count == 5 {
+			// We're not testing that the correct thing is being uploaded here for the time being
+			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
+		} else if count == 6 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
 				`{"stage":"run","type":"start"}`,
 			)
-		} else if count == 6 {
+		} else if count == 7 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
 				`{"stage":"run","type":"log","stream":"stderr","text":"bash: failing_command: command not found"}`,
 			)
-		} else if count == 7 {
+		} else if count == 8 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
 			var exitData clayclient.ExitData
@@ -407,19 +413,19 @@ func TestFailingRun(t *testing.T) {
 			assert.True(t, exitData.Run.Usage.MaxRSS > 0)
 			assert.True(t, exitData.Run.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
-		} else if count == 8 {
+		} else if count == 9 {
 			checkRequest(t, r,
 				"PUT",
 				"/runs/run-name/output",
 				"hello\n",
 			)
-		} else if count == 9 {
+		} else if count == 10 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
 				`{"stage":"run","type":"finish"}`,
 			)
-		} else if count == 10 {
+		} else if count == 11 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
@@ -464,6 +470,4 @@ func TestFailingRun(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// TODO: Test that the cache is still uploaded in this case
 }
