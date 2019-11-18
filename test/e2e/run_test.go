@@ -73,51 +73,93 @@ func TestSimpleRun(t *testing.T) {
 			}
 		} else if count == 2 {
 			checkRequest(t, r, "GET", "/runs/run-name/cache", "")
-			// Let the client know that there is no cache in this case
-			http.NotFound(w, r)
+			// We'll just return the contents of an "arbitrary" directory here. It doesn't
+			// really matters what it has in it as long as we can test that it's correct.
+			w.Header().Set("Content-Type", "application/gzip")
+			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = io.Copy(w, reader)
+			if err != nil {
+				t.Fatal(err)
+			}
 		} else if count == 3 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"Procfile"}`,
+				`{"stage":"build","type":"log","stream":"stdout","text":"_app_"}`,
 			)
 		} else if count == 4 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"requirements.txt"}`,
+				`{"stage":"build","type":"log","stream":"stdout","text":"Procfile"}`,
 			)
 		} else if count == 5 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"runtime.txt"}`,
+				`{"stage":"build","type":"log","stream":"stdout","text":"requirements.txt"}`,
 			)
 		} else if count == 6 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"scraper.py"}`,
+				`{"stage":"build","type":"log","stream":"stdout","text":"runtime.txt"}`,
 			)
 		} else if count == 7 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"finish"}`,
+				`{"stage":"build","type":"log","stream":"stdout","text":"scraper.py"}`,
 			)
 		} else if count == 8 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"start"}`,
+				`{"stage":"build","type":"log","stream":"stdout","text":"_cache_"}`,
 			)
 		} else if count == 9 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"log","stream":"stdout","text":"Ran"}`,
+				`{"stage":"build","type":"log","stream":"stdout","text":"requirements.txt"}`,
 			)
 		} else if count == 10 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"build","type":"log","stream":"stdout","text":"runtime.txt"}`,
+			)
+		} else if count == 11 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"build","type":"log","stream":"stdout","text":"scraper.py"}`,
+			)
+		} else if count == 12 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"build","type":"finish"}`,
+			)
+		} else if count == 13 {
+			// We're not testing that the correct thing is being uploaded here for the time being
+			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
+		} else if count == 14 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"run","type":"start"}`,
+			)
+		} else if count == 15 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"run","type":"log","stream":"stdout","text":"Ran"}`,
+			)
+		} else if count == 16 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
 			var exitData clayclient.ExitData
@@ -140,13 +182,13 @@ func TestSimpleRun(t *testing.T) {
 			assert.True(t, exitData.Run.Usage.MaxRSS > 0)
 			assert.True(t, exitData.Run.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
-		} else if count == 11 {
+		} else if count == 17 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
 				`{"stage":"run","type":"finish"}`,
 			)
-		} else if count == 12 {
+		} else if count == 18 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
@@ -181,7 +223,7 @@ func TestSimpleRun(t *testing.T) {
 	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
 		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
-		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "ls /tmp/app"`,
+		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "echo _app_; ls `+importPath+`; echo _cache_; ls `+cachePath+`"`,
 		"CLAY_INTERNAL_RUN_COMMAND=echo Ran",
 	)
 
@@ -191,9 +233,6 @@ func TestSimpleRun(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	// TODO: Test that app is correctly downloaded
-	// TODO: Test that cache is correctly downloaded
-	// TODO: Test that cache is correctly uploaded
 	// TODO: Test that output is correctly uploaded
 }
 
