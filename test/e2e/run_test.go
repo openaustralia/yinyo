@@ -342,8 +342,35 @@ func TestFailingRun(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handler))
 	defer ts.Close()
 
+	currentPath, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	appPath, err := ioutil.TempDir(currentPath, "app")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(appPath)
+	importPath, err := ioutil.TempDir(currentPath, "import")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(importPath)
+	cachePath, err := ioutil.TempDir(currentPath, "cache")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(cachePath)
+
 	// Just run it and see what breaks
-	cmd := exec.Command("clay-run", "run-name", "output.txt")
+	cmd := exec.Command(
+		"clay-run",
+		"--app", appPath,
+		"--import", importPath,
+		"--cache", cachePath,
+		"run-name",
+		"output.txt",
+	)
 	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
 		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
