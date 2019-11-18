@@ -161,7 +161,7 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		// TODO: Don't fail if the cache doesn't yet exist
+		// If the cache doesn't exit this will not error
 		err = run.GetCacheToDirectory("/tmp/cache")
 		if err != nil {
 			log.Fatal(err)
