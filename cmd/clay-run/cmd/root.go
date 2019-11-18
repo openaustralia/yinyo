@@ -182,9 +182,9 @@ var rootCmd = &cobra.Command{
 		}
 
 		env := []string{
-			// "APP_PATH=" + appPath,
-			// "CACHE_PATH=" + cachePath,
-			// "IMPORT_PATH=" + importPath,
+			"APP_PATH=" + appPath,
+			"CACHE_PATH=" + cachePath,
+			"IMPORT_PATH=" + importPath,
 		}
 
 		// Initially do a very naive way of calling the command just to get things going
