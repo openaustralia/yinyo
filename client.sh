@@ -75,7 +75,11 @@ cd "$scraper_directory"
 tar -zcf - * | put "$run_name" "$run_token" app
 cd "$dir"
 
-(cat "assets/client-storage/cache/$scraper_directory.tgz" 2> /dev/null | put "$run_name" "$run_token" cache) || true
+cache_path="assets/client-storage/cache/$scraper_directory.tgz"
+# Only upload the cache if it exists
+if [ -f "$cache_path" ]; then
+  cat "$cache_path" | put "$run_name" "$run_token" cache
+fi
 start "$run_name" "$run_token" "$output" SCRAPER_NAME "$scraper_directory" "$callback_url"
 
 if [ "$run_token" = "" ]; then
