@@ -323,11 +323,17 @@ func TestFailingRun(t *testing.T) {
 			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
 		} else if count == 8 {
 			checkRequest(t, r,
+				"PUT",
+				"/runs/run-name/output",
+				"hello\n",
+			)
+		} else if count == 9 {
+			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
 				`{"stage":"run","type":"finish"}`,
 			)
-		} else if count == 9 {
+		} else if count == 10 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
@@ -376,7 +382,7 @@ func TestFailingRun(t *testing.T) {
 		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
 		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "echo build"`,
 		// Send something to the output file then fail
-		`CLAY_INTERNAL_RUN_COMMAND=bash -c "failing_command"`,
+		`CLAY_INTERNAL_RUN_COMMAND=bash -c "cd `+appPath+`; echo hello > output.txt; failing_command"`,
 	)
 
 	stdoutStderr, err := cmd.CombinedOutput()
@@ -385,6 +391,5 @@ func TestFailingRun(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	// TODO: Test that output is correctly uploaded
 	// TODO: Test that the cache is still uploaded in this case
 }
