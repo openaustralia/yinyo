@@ -34,6 +34,23 @@ func checkRequestNoBody(t *testing.T, r *http.Request, method string, path strin
 	assert.Equal(t, path, r.URL.EscapedPath())
 }
 
+func createTemporaryDirectories() (appPath string, importPath string, cachePath string, err error) {
+	currentPath, err := os.Getwd()
+	if err != nil {
+		return
+	}
+	appPath, err = ioutil.TempDir(currentPath, "app")
+	if err != nil {
+		return
+	}
+	importPath, err = ioutil.TempDir(currentPath, "import")
+	if err != nil {
+		return
+	}
+	cachePath, err = ioutil.TempDir(currentPath, "cache")
+	return
+}
+
 func TestSimpleRun(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
@@ -348,24 +365,12 @@ func TestFailingRun(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handler))
 	defer ts.Close()
 
-	currentPath, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	appPath, err := ioutil.TempDir(currentPath, "app")
+	appPath, importPath, cachePath, err := createTemporaryDirectories()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(appPath)
-	importPath, err := ioutil.TempDir(currentPath, "import")
-	if err != nil {
-		log.Fatal(err)
-	}
 	defer os.RemoveAll(importPath)
-	cachePath, err := ioutil.TempDir(currentPath, "cache")
-	if err != nil {
-		log.Fatal(err)
-	}
 	defer os.RemoveAll(cachePath)
 
 	// Just run it and see what breaks
