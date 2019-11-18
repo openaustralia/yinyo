@@ -225,11 +225,10 @@ func TestFailingBuild(t *testing.T) {
 				"/runs/run-name/events",
 				"EOF",
 			)
+		} else {
+			fmt.Println("Didn't expect so many requests")
+			t.Fatal("Didn't expect so many requests")
 		}
-		// else {
-		// 	fmt.Println("Didn't expect so many requests")
-		// 	t.Fatal("Didn't expect so many requests")
-		// }
 		count++
 	}
 	ts := httptest.NewServer(http.HandlerFunc(handler))
