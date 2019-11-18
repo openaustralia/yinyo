@@ -27,7 +27,8 @@ func streamLogs(run clayclient.Run, stage string, streamName string, stream io.R
 	c <- scanner.Err()
 }
 
-func runExternalCommand(run clayclient.Run, stage string, commandString string) (clayclient.ExitDataStage, error) {
+// env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
+func runExternalCommand(run clayclient.Run, stage string, commandString string, env []string) (clayclient.ExitDataStage, error) {
 	var exitData clayclient.ExitDataStage
 
 	// Splits string up into pieces using shell rules
@@ -36,6 +37,9 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 		return exitData, err
 	}
 	command := exec.Command(commandParts[0], commandParts[1:]...)
+	// Add the environment variables to the pre-existing environment
+	// TODO: Do we want to zero out the environment?
+	command.Env = append(os.Environ(), env...)
 	stdout, err := command.StdoutPipe()
 	if err != nil {
 		return exitData, err
@@ -99,6 +103,16 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string) 
 	return exitData, nil
 }
 
+var appPath string
+var importPath string
+var cachePath string
+
+func init() {
+	rootCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
+	rootCmd.Flags().StringVar(&importPath, "import", "/tmp/app", "herokuish import path")
+	rootCmd.Flags().StringVar(&cachePath, "cache", "/tmp/cache", "herokuish cache path")
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "clay-run run_name run_output",
 	Short: "Builds and runs a scraper",
@@ -143,34 +157,40 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// Create and populate /tmp/app and /tmp/cache
-		err = os.MkdirAll("/tmp/app", 0755)
+		// Create and populate herokuish import path and cache path
+		err = os.MkdirAll(importPath, 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = os.MkdirAll("/tmp/cache", 0755)
+		err = os.MkdirAll(cachePath, 0755)
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = run.GetAppToDirectory("/tmp/app")
+		err = run.GetAppToDirectory(importPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 		d1 := []byte("scraper: /bin/start.sh")
-		err = ioutil.WriteFile("/tmp/app/Procfile", d1, 0644)
+		err = ioutil.WriteFile(filepath.Join(importPath, "Procfile"), d1, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
 		// If the cache doesn't exit this will not error
-		err = run.GetCacheToDirectory("/tmp/cache")
+		err = run.GetCacheToDirectory(cachePath)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		env := []string{
+			// "APP_PATH=" + appPath,
+			// "CACHE_PATH=" + cachePath,
+			// "IMPORT_PATH=" + importPath,
 		}
 
 		// Initially do a very naive way of calling the command just to get things going
 		var exitData clayclient.ExitData
 
-		exitDataStage, err := runExternalCommand(run, "build", buildCommand)
+		exitDataStage, err := runExternalCommand(run, "build", buildCommand, env)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -186,12 +206,12 @@ var rootCmd = &cobra.Command{
 		// Temporarily (for the purposes of making the tests easier in the short term)
 		// if the cache directory is empty then don't try upload it
 		// TODO: Get rid of this check and update the tests
-		files, err := ioutil.ReadDir("/tmp/cache")
+		files, err := ioutil.ReadDir(cachePath)
 		if err != nil {
 			log.Fatal(err)
 		}
 		if len(files) > 0 {
-			err = run.PutCacheFromDirectory("/tmp/cache")
+			err = run.PutCacheFromDirectory(cachePath)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -204,7 +224,7 @@ var rootCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 
-			exitDataStage, err := runExternalCommand(run, "run", runCommand)
+			exitDataStage, err := runExternalCommand(run, "run", runCommand, env)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -214,8 +234,8 @@ var rootCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 
-			if _, err := os.Stat(filepath.Join("/app", runOutput)); !os.IsNotExist(err) {
-				f, err := os.Open(filepath.Join("/app", runOutput))
+			if _, err := os.Stat(filepath.Join(appPath, runOutput)); !os.IsNotExist(err) {
+				f, err := os.Open(filepath.Join(appPath, runOutput))
 				defer f.Close()
 				if err != nil {
 					log.Fatal(err)
