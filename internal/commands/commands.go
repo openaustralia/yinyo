@@ -21,7 +21,7 @@ const filenameCache = "cache.tgz"
 const filenameOutput = "output"
 const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/clay-scraper:v1"
-const runBinary = "/bin/clay-run"
+const runBinary = "/bin/clay"
 const reservedEnvNamespace = "CLAY_INTERNAL_"
 
 // App holds the state for the application
@@ -178,7 +178,7 @@ func (app *App) StartRun(
 		return err
 	}
 	env["CLAY_INTERNAL_RUN_TOKEN"] = runToken
-	command := []string{runBinary, runName, output}
+	command := []string{runBinary, "wrapper", runName, output}
 	return app.JobDispatcher.StartJob(runName, dockerImage, command, env)
 }
 

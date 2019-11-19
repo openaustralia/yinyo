@@ -108,15 +108,16 @@ var importPath string
 var cachePath string
 
 func init() {
-	rootCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
-	rootCmd.Flags().StringVar(&importPath, "import", "/tmp/app", "herokuish import path")
-	rootCmd.Flags().StringVar(&cachePath, "cache", "/tmp/cache", "herokuish cache path")
+	wrapperCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
+	wrapperCmd.Flags().StringVar(&importPath, "import", "/tmp/app", "herokuish import path")
+	wrapperCmd.Flags().StringVar(&cachePath, "cache", "/tmp/cache", "herokuish cache path")
+	rootCmd.AddCommand(wrapperCmd)
 }
 
-var rootCmd = &cobra.Command{
-	Use:   "clay-run run_name run_output",
-	Short: "Builds and runs a scraper",
-	Long:  "Builds and runs a scraper and talks back to the Clay server.",
+var wrapperCmd = &cobra.Command{
+	Use:   "wrapper run_name run_output",
+	Short: "Manages the building and running of a scraper",
+	Long:  "Manages the building and running of a scraper inside a container. Used internally by the system.",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		runName := args[0]
@@ -253,12 +254,4 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
-}
-
-// Execute makes it all happen
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 }

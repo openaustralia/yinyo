@@ -26,7 +26,7 @@ RUN rm empty.go
 COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
-RUN CGO_ENABLED=0 go install github.com/openaustralia/morph-ng/cmd/clay-run github.com/openaustralia/morph-ng/cmd/clay-server
+RUN CGO_ENABLED=0 go install github.com/openaustralia/morph-ng/cmd/clay
 
 # Create unprivileged user
 RUN adduser -D clay
@@ -49,7 +49,7 @@ RUN apt-get install -y jq time bc net-tools
 ADD build/package/start.sh /bin/
 RUN chmod +x /bin/start.sh
 
-COPY --from=builder /go/bin/clay-run /bin/clay-run
+COPY --from=builder /go/bin/clay /bin/clay
 
 ####
 #### clay-server
@@ -59,9 +59,9 @@ FROM scratch as clay-server
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /go/bin/clay-server /go/bin/clay-server
+COPY --from=builder /go/bin/clay /go/bin/clay
 
 # Run unprivileged
 USER clay
 
-CMD ["/go/bin/clay-server"]
+CMD ["/go/bin/clay", "server"]

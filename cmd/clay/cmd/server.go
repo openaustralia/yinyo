@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
 	"github.com/openaustralia/morph-ng/internal/commands"
+	"github.com/spf13/cobra"
 )
 
 func create(w http.ResponseWriter, r *http.Request) error {
@@ -258,39 +258,42 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var app *commands.App
 
 func init() {
+	rootCmd.AddCommand(serverCmd)
 }
 
-func main() {
-	// Show the source of the error with the standard logger. Don't show date & time
-	log.SetFlags(log.Lshortfile)
+var serverCmd = &cobra.Command{
+	Use:   "server",
+	Short: "Serves the Clay API",
+	Run: func(cmd *cobra.Command, args []string) {
+		var err error
+		app, err = commands.New()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	var err error
-	app, err = commands.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+		log.Println("Clay is ready and waiting.")
+		router := mux.NewRouter().StrictSlash(true)
 
-	log.Println("Clay is ready and waiting.")
-	router := mux.NewRouter().StrictSlash(true)
+		router.Handle("/", appHandler(whoAmI))
+		router.Handle("/runs", appHandler(create)).Methods("POST")
 
-	router.Handle("/", appHandler(whoAmI))
-	router.Handle("/runs", appHandler(create)).Methods("POST")
+		authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
+		authenticatedRouter.Handle("/app", appHandler(getApp)).Methods("GET")
+		authenticatedRouter.Handle("/app", appHandler(putApp)).Methods("PUT")
+		authenticatedRouter.Handle("/cache", appHandler(getCache)).Methods("GET")
+		authenticatedRouter.Handle("/cache", appHandler(putCache)).Methods("PUT")
+		authenticatedRouter.Handle("/output", appHandler(getOutput)).Methods("GET")
+		authenticatedRouter.Handle("/output", appHandler(putOutput)).Methods("PUT")
+		authenticatedRouter.Handle("/exit-data", appHandler(getExitData)).Methods("GET")
+		authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
+		authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
+		authenticatedRouter.Handle("/events", appHandler(getEvents)).Methods("GET")
+		authenticatedRouter.Handle("/events", appHandler(createEvents)).Methods("POST")
+		authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
+		authenticatedRouter.Use(authenticate)
+		router.Use(logRequests)
 
-	authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
-	authenticatedRouter.Handle("/app", appHandler(getApp)).Methods("GET")
-	authenticatedRouter.Handle("/app", appHandler(putApp)).Methods("PUT")
-	authenticatedRouter.Handle("/cache", appHandler(getCache)).Methods("GET")
-	authenticatedRouter.Handle("/cache", appHandler(putCache)).Methods("PUT")
-	authenticatedRouter.Handle("/output", appHandler(getOutput)).Methods("GET")
-	authenticatedRouter.Handle("/output", appHandler(putOutput)).Methods("PUT")
-	authenticatedRouter.Handle("/exit-data", appHandler(getExitData)).Methods("GET")
-	authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
-	authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
-	authenticatedRouter.Handle("/events", appHandler(getEvents)).Methods("GET")
-	authenticatedRouter.Handle("/events", appHandler(createEvents)).Methods("POST")
-	authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
-	authenticatedRouter.Use(authenticate)
-	router.Use(logRequests)
+		log.Fatal(http.ListenAndServe(":8080", router))
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	},
 }
