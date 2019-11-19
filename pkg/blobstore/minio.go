@@ -1,9 +1,11 @@
 package blobstore
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/minio/minio-go/v6"
+	"github.com/pkg/errors"
 )
 
 type minioClient struct {
@@ -18,7 +20,17 @@ func NewMinioClient(url string, bucketName string, accessKey string, secretKey s
 		Client:     client,
 		BucketName: bucketName,
 	}
-	return m, err
+	if err != nil {
+		return m, err
+	}
+	exists, err := client.BucketExists(bucketName)
+	if err != nil {
+		return m, errors.Wrap(err, "Couldn't access blob store")
+	}
+	if !exists {
+		return m, fmt.Errorf("Bucket %s at url %s doesn't exist", bucketName, url)
+	}
+	return m, nil
 }
 
 // Put saves a file to the store with the given path
