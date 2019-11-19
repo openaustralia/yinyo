@@ -11,6 +11,8 @@
 - [jq](https://stedolan.github.io/jq/)
 - [MinIO client (mc)](https://min.io/download)
 
+- Clay's web interface needs to be accessible on http://localhost:8080/. If you have something already listening on this port, you won't get any errors, but you won't be able to connect to Clay to start a scraper. You'll need to clear that port.
+
 ### The main bit
 
 First, follow the links to install the [main dependencies](main-dependencies)
