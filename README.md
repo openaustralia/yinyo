@@ -93,3 +93,12 @@ You can run the test scraper and get the events directed to webhook.site. For ex
 ```bash
 ./client.sh test/scrapers/test-python data.sqlite https://webhook.site/#!/uuid-specific-to-you
 ```
+
+### Reclaiming diskspace in minikube
+
+Sometimes after a while of testing and debugging the minikube VM runs out of disk space. You'll either see this as kubernetes refusing to run anything because the node is "tainted" or minio refusing to do anything because it doesn't have enough space. Luckily there is an easy way to clear space.
+
+```bash
+minikube ssh
+docker system prune
+```
