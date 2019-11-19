@@ -44,21 +44,17 @@ make buckets
 
 This might not work immediately because Minio might not be ready
 
-Now you're ready to run your first scraper.
+Now you're ready to run your first scraper. The first time you run this it will take a little while.
 
 ```bash
 ./client.sh test/scrapers/test-python data.sqlite
 ```
 
-The first time you run this it will take a little while (and you'll probably see some messages about some keys not existing. You can ignore that).
-
-Now, if you run the same scraper again
+Now, if you run the same scraper again it should run significantly faster.
 
 ```bash
 ./client.sh test/scrapers/test-python data.sqlite
 ```
-
-It should run significantly faster.
 
 ## Notes for debugging and testing
 
