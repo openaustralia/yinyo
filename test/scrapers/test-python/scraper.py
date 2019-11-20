@@ -1,5 +1,8 @@
+from __future__ import print_function
+
 import scraperwiki
 import time
+import random
 import requests
 import sys
 
@@ -21,10 +24,19 @@ if not expected_string in r.text:
 scraperwiki.sqlite.save(unique_keys=['name'], data={
                         "name": "susan", "occupation": "software developer"})
 
-sys.stderr.write("First a little test message to stderr\n")
+print("First a little test message to stderr", file=sys.stderr)
+print("A second line of error", file=sys.stderr)
 
 print("Hello from test-python!")
+print("Stdout gets some extra text")
 
 for i in range(1, 6):
     print("%i..." % i)
+    fail = random.choice([0,1])
+    if fail == 1:
+        print("Simulated oopsie!", file=sys.stderr)
+        print("Oppsie: %i" % i, file=sys.stderr)
+    else:
+        print("Success %i" % i)
+        print("This line is just filler %i..." % i)
     time.sleep(1)
