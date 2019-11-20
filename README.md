@@ -65,6 +65,14 @@ clay client test/scrapers/test-python data.sqlite
 
 ## Notes for debugging and testing
 
+### To run the tests
+
+From the top level directory:
+
+```bash
+make test
+```
+
 ### To see what's on the blob storage (Minio)
 
 Point your web browser at [http://localhost:9000](http://localhost:9000). Login with the credentials in the file `configs/secrets-minio.env`.
