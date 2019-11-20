@@ -292,6 +292,18 @@ func (run *Run) GetApp() (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
+// GetOutput downloads the output of the run. Could be any file in any format.
+func (run *Run) GetOutput() (io.ReadCloser, error) {
+	resp, err := run.request("GET", "/output", nil)
+	if err != nil {
+		return nil, err
+	}
+	if err = checkOK(resp); err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
+}
+
 // PutApp uploads the tarred & gzipped scraper code
 func (run *Run) PutApp(appData io.Reader) error {
 	resp, err := run.request("PUT", "/app", appData)
@@ -487,6 +499,20 @@ type Usage struct {
 	MaxRSS     int64   `json:"max_rss"`     // In kilobytes
 	NetworkIn  uint64  `json:"network_in"`  // In bytes
 	NetworkOut uint64  `json:"network_out"` // In bytes
+}
+
+// GetExitData gets data about resource usage after everything has finished
+func (run *Run) GetExitData() (exitData ExitData, err error) {
+	resp, err := run.request("GET", "/exit-data", nil)
+	if err != nil {
+		return
+	}
+	if err = checkOK(resp); err != nil {
+		return
+	}
+	dec := json.NewDecoder(resp.Body)
+	err = dec.Decode(&exitData)
+	return
 }
 
 // PutExitData uploads information about how things ran and how much resources were used
