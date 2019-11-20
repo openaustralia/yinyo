@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -89,37 +88,20 @@ Something like http://my-url-endpoint.com?key=special-secret-stuff would do the 
 		}
 
 		// Get the run output
-		// TODO: Extract this into a method GetOutputToFile
-		output, err := run.GetOutput()
+		path := filepath.Join(scraperDirectory, outputFile)
+		err = run.GetOutputToFile(path)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		f, err := os.Create(filepath.Join(scraperDirectory, outputFile))
-		if err != nil {
-			log.Fatal(err)
-		}
-		io.Copy(f, output)
-		f.Close()
-		output.Close()
 
 		// Get the build cache
-		// TODO: Extract to GetCacheToFile
-		cache, err := run.GetCache()
-		if err != nil {
-			log.Fatal(err)
-		}
 		// Create the directory to store the cache if it doesn't already exist
 		// TODO: This actually creates one directory too many?
 		err = os.MkdirAll(filepath.Join("assets/client-storage/cache", scraperDirectory), 0755)
+		err = run.GetCacheToFile(cachePath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		f, err = os.Create(cachePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		io.Copy(f, cache)
 
 		// Get the exit data
 		// exitData, err := run.GetExitData()

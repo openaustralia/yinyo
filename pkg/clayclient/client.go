@@ -304,6 +304,25 @@ func (run *Run) GetOutput() (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
+// GetOutputToFile downloads the output of the run and saves it in a file which it
+// will create or overwrite.
+func (run *Run) GetOutputToFile(path string) error {
+	output, err := run.GetOutput()
+	if err != nil {
+		return err
+	}
+	defer output.Close()
+
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	io.Copy(f, output)
+	return nil
+}
+
 // PutApp uploads the tarred & gzipped scraper code
 func (run *Run) PutApp(appData io.Reader) error {
 	resp, err := run.request("PUT", "/app", appData)
@@ -331,6 +350,23 @@ func (run *Run) PutOutput(data io.Reader) error {
 	return checkOK(resp)
 }
 
+// PutOutputFromFile uploads the contents of a file as the output of the scraper
+func (run *Run) PutOutputFromFile(path string) error {
+	// TODO: Don't do a separate Stat and Open
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		return run.PutOutput(f)
+	}
+	// We get here if output file doesn't exist. In that case we just want
+	// to happily carry on like nothing weird has happened
+	return nil
+}
+
 // GetCache downloads the tarred & gzipped build cache
 func (run *Run) GetCache() (io.ReadCloser, error) {
 	resp, err := run.request("GET", "/cache", nil)
@@ -344,6 +380,24 @@ func (run *Run) GetCache() (io.ReadCloser, error) {
 		return nil, err
 	}
 	return resp.Body, nil
+}
+
+// GetCacheToFile downloads the cache (as a tar & gzipped file) and saves it (without uncompressing it)
+func (run *Run) GetCacheToFile(path string) error {
+	cache, err := run.GetCache()
+	if err != nil {
+		return err
+	}
+	defer cache.Close()
+
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, cache)
+	return err
 }
 
 // StartRunOptions are options that can be used when starting a run

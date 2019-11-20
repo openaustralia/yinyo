@@ -226,17 +226,9 @@ var wrapperCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 
-			// TODO: Extract this into a method that does PutOutputFromFile
-			if _, err := os.Stat(filepath.Join(appPath, runOutput)); !os.IsNotExist(err) {
-				f, err := os.Open(filepath.Join(appPath, runOutput))
-				defer f.Close()
-				if err != nil {
-					log.Fatal(err)
-				}
-				err = run.PutOutput(f)
-				if err != nil {
-					log.Fatal(err)
-				}
+			err = run.PutOutputFromFile(filepath.Join(appPath, runOutput))
+			if err != nil {
+				log.Fatal(err)
 			}
 
 			err = run.CreateEvent(clayclient.FinishEvent{Stage: "run"})
