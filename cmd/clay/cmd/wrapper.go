@@ -226,6 +226,7 @@ var wrapperCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 
+			// TODO: Extract this into a method that does PutOutputFromFile
 			if _, err := os.Stat(filepath.Join(appPath, runOutput)); !os.IsNotExist(err) {
 				f, err := os.Open(filepath.Join(appPath, runOutput))
 				defer f.Close()
