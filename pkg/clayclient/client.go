@@ -156,7 +156,10 @@ func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 			if err != nil {
 				return err
 			}
-			io.Copy(f, tarReader)
+			_, err = io.Copy(f, tarReader)
+			if err != nil {
+				return err
+			}
 			f.Close()
 		case tar.TypeSymlink:
 			newname := filepath.Join(dir, file.Name)
@@ -221,7 +224,8 @@ func CreateArchiveFromDirectory(dir string) (io.Reader, error) {
 			if err != nil {
 				return err
 			}
-			io.Copy(tarWriter, f)
+			_, err = io.Copy(tarWriter, f)
+			return err
 		}
 
 		return nil
@@ -319,8 +323,8 @@ func (run *Run) GetOutputToFile(path string) error {
 	}
 	defer f.Close()
 
-	io.Copy(f, output)
-	return nil
+	_, err = io.Copy(f, output)
+	return err
 }
 
 // PutApp uploads the tarred & gzipped scraper code

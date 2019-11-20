@@ -53,7 +53,10 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	io.Copy(file, reader)
+	_, err = io.Copy(file, reader)
+	if err != nil {
+		t.Fatal(err)
+	}
 	file.Close()
 	err = os.RemoveAll("test")
 	if err != nil {

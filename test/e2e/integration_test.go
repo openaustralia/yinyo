@@ -190,7 +190,10 @@ func TestHelloWorld(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	io.Copy(file, cache)
+	_, err = io.Copy(file, cache)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Get the output
 	// Get the metrics
