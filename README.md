@@ -10,6 +10,7 @@
 - [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
 - [jq](https://stedolan.github.io/jq/)
 - [MinIO client (mc)](https://min.io/download)
+- [Go 1.13](https://golang.org/dl/)
 
 - Clay's web interface needs to be accessible on [http://localhost:8080/](http://localhost:8080/). If you have something already listening on this port, you won't get any errors, but you won't be able to connect to Clay to start a scraper. You'll need to clear that port.
 
@@ -44,16 +45,22 @@ make buckets
 
 This might not work immediately because Minio might not be ready
 
+Now compile and install the binary into your GOPATH that allows you to run a scraper
+
+```bash
+make install
+```
+
 Now you're ready to run your first scraper. The first time you run this it will take a little while.
 
 ```bash
-./client.sh test/scrapers/test-python data.sqlite
+clay client test/scrapers/test-python data.sqlite
 ```
 
 Now, if you run the same scraper again it should run significantly faster.
 
 ```bash
-./client.sh test/scrapers/test-python data.sqlite
+clay client test/scrapers/test-python data.sqlite
 ```
 
 ## Notes for debugging and testing
@@ -87,7 +94,7 @@ Use [webhook.site](https://webhook.site) to see calls to a specific URL in real 
 You can run the test scraper and get the events directed to webhook.site. For example:
 
 ```bash
-./client.sh test/scrapers/test-python data.sqlite https://webhook.site/#!/uuid-specific-to-you
+clay client test/scrapers/test-python data.sqlite https://webhook.site/#!/uuid-specific-to-you
 ```
 
 ### Reclaiming diskspace in minikube
