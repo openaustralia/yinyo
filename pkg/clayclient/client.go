@@ -405,8 +405,17 @@ func (run *Run) GetCacheToFile(path string) error {
 }
 
 // StartRunOptions are options that can be used when starting a run
+// TODO: Remove duplication with server types
 type StartRunOptions struct {
-	Output string
+	Output   string
+	Callback Callback
+}
+
+// Callback represents what we need to know to make a particular callback request
+// This is not just a string so that we could support adding headers or other special things
+// in the callback request
+type Callback struct {
+	URL string
 }
 
 // Start starts a run that has earlier been created

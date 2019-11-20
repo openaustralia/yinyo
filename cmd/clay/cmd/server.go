@@ -119,6 +119,7 @@ type envVariable struct {
 	Value string
 }
 
+// TODO: Remove duplication with client code
 type startBody struct {
 	Output   string
 	Env      []envVariable

@@ -28,7 +28,12 @@ Something like http://my-url-endpoint.com?key=special-secret-stuff would do the 
 		// TODO: Make the output file optional
 		// TODO: Check that the output file is a relative path and if not error
 		outputFile := args[1]
-		// callbackURL := args[2]
+		var callbackURL string
+		if len(args) > 2 {
+			callbackURL = args[2]
+		} else {
+			callbackURL = ""
+		}
 
 		client := clayclient.New("http://localhost:8080")
 		// Create the run
@@ -60,8 +65,11 @@ Something like http://my-url-endpoint.com?key=special-secret-stuff would do the 
 		}
 
 		// Start the run
-		// TODO: Add callback
-		err = run.Start(&clayclient.StartRunOptions{Output: outputFile})
+		// TODO: Add support for setting environment variables
+		err = run.Start(&clayclient.StartRunOptions{
+			Output:   outputFile,
+			Callback: clayclient.Callback{URL: callbackURL},
+		})
 		if err != nil {
 			log.Fatal(err)
 		}
