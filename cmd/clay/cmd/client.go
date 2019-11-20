@@ -45,9 +45,7 @@ Something like http://my-url-endpoint.com?key=special-secret-stuff would do the 
 		}
 
 		// Upload the cache
-		// TODO: Chop off any trailing "/" in scraperDirectory to make cachePath
-		// TODO: Use filepath.Join here instead. Will solve above problem
-		cachePath := fmt.Sprintf("assets/client-storage/cache/%v.tgz", scraperDirectory)
+		cachePath := filepath.Join("assets/client-storage/cache", scraperDirectory) + ".tgz"
 		file, err := os.Open(cachePath)
 		if err != nil {
 			// If the cache doesn't exist then skip the uploading bit
