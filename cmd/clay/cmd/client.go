@@ -99,7 +99,11 @@ Something like http://my-url-endpoint.com?key=special-secret-stuff would do the 
 		path := filepath.Join(scraperDirectory, outputFile)
 		err = run.GetOutputToFile(path)
 		if err != nil {
-			log.Fatal(err)
+			if clayclient.IsNotFound(err) {
+				log.Printf("Warning: output file %v does not exist", outputFile)
+			} else {
+				log.Fatal(err)
+			}
 		}
 
 		// Get the build cache
