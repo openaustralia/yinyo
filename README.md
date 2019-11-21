@@ -43,8 +43,6 @@ Now setup the storage buckets on Minio
 make buckets
 ```
 
-This might not work immediately because Minio might not be ready
-
 Now compile and install the binary into your GOPATH that allows you to run a scraper
 
 ```bash
