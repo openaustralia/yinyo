@@ -2,7 +2,7 @@
 
 all: run
 
-run:
+run: install
 	clay client test/scrapers/test-python data.sqlite
 
 test: install
