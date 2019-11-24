@@ -3,7 +3,7 @@
 - Easily run as many scrapers as you like across a cluster of machines without having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
 - Use the language and libraries you love for writing scrapers. Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
 - Supports many different use cases through a simple, yet flexible API that can operate synchronously or asynchronously.
-- Made specifically for developers of scraper systems be it open source or commercial. No chance of vendor lock-in because it's open source, MIT licensed.
+- Made specifically for developers of scraper systems be it open source or commercial. No chance of vendor lock-in because it's open source, Apache licensed.
 
 ## Development: Guide to getting up and running quickly
 

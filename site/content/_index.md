@@ -43,7 +43,7 @@ features:
 - text: |
     Made specifically for developers of scraper systems be it open source or
     commercial. No chance of vendor lock-in because it's open source,
-    MIT licensed.
+    Apache licensed.
 draft: true
 
 ---
