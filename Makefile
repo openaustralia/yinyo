@@ -1,4 +1,4 @@
-.PHONY: image server test build
+.PHONY: image server test build ppa
 
 all: run
 
@@ -10,6 +10,11 @@ test: install
 
 install:
 	go install ./...
+
+ppa:
+	sudo add-apt-repository ppa:longsleep/golang-backports
+	sudo apt-get update
+	sudo apt-get install golang-go
 
 mocks:
 	mockery -all -inpkg

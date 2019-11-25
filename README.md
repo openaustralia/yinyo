@@ -16,7 +16,7 @@
 - [jq](https://stedolan.github.io/jq/)
 - [MinIO client (mc)](https://min.io/download)
 - [Go 1.13](https://golang.org/dl/)
-  - [Ubuntu PPA](https://github.com/golang/go/wiki/Ubuntu)
+  - Ubuntu - use `make ppa` or [read instructions](https://github.com/golang/go/wiki/Ubuntu)
   - [MacOS package installer](https://golang.org/doc/install#macos)
 
 - Clay's web interface needs to be accessible on [http://localhost:8080/](http://localhost:8080/). If you have something already listening on this port, you won't get any errors, but you won't be able to connect to Clay to start a scraper. You'll need to clear that port.
