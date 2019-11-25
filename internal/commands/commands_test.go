@@ -52,18 +52,6 @@ func TestStartRun(t *testing.T) {
 	keyValueStore.AssertExpectations(t)
 }
 
-// Make sure that setting a reserved environment variable is not allowed
-func TestStartRunWithReservedEnv(t *testing.T) {
-	app := App{}
-	err := app.StartRun(
-		"run-name",   // Run name
-		"output.txt", // Output filename
-		map[string]string{"CLAY_INTERNAL_FOO": "bar"}, // Environment variables
-		"", // Callback URL
-	)
-	assert.EqualError(t, err, "Can't override environment variables starting with CLAY_INTERNAL_")
-}
-
 type MockRoundTripper struct {
 	mock.Mock
 }

@@ -102,13 +102,16 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string, 
 	return exitData, nil
 }
 
-var appPath, importPath, cachePath, runOutput string
+var appPath, importPath, cachePath, runOutput, serverURL, buildCommand, runCommand string
 
 func init() {
 	wrapperCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
 	wrapperCmd.Flags().StringVar(&importPath, "import", "/tmp/app", "herokuish import path")
 	wrapperCmd.Flags().StringVar(&cachePath, "cache", "/tmp/cache", "herokuish cache path")
 	wrapperCmd.Flags().StringVar(&runOutput, "output", "", "relative path to output file")
+	wrapperCmd.Flags().StringVar(&serverURL, "server", "http://clay-server.clay-system:8080", "override clay server URL")
+	wrapperCmd.Flags().StringVar(&buildCommand, "buildcommand", "/bin/herokuish buildpack build", "override the herokuish build command (for testing)")
+	wrapperCmd.Flags().StringVar(&runCommand, "runcommand", "/bin/herokuish procfile start scraper", "override the herokuish run command (for testing)")
 	rootCmd.AddCommand(wrapperCmd)
 }
 
@@ -120,26 +123,6 @@ var wrapperCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		runName := args[0]
 		runToken := args[1]
-
-		// We allow some settings to be overridden for the purposes of testing.
-		// We don't allow users to change any environment variables that start
-		// with CLAY_INTERNAL_SERVER_. So they can't change any of these
-
-		// TODO: Convert these special environment variables to command line options
-		serverURL, ok := os.LookupEnv("CLAY_INTERNAL_SERVER_URL")
-		if !ok {
-			serverURL = "http://clay-server.clay-system:8080"
-		}
-
-		buildCommand, ok := os.LookupEnv("CLAY_INTERNAL_BUILD_COMMAND")
-		if !ok {
-			buildCommand = "/bin/herokuish buildpack build"
-		}
-
-		runCommand, ok := os.LookupEnv("CLAY_INTERNAL_RUN_COMMAND")
-		if !ok {
-			runCommand = "/bin/herokuish procfile start scraper"
-		}
 
 		client := clayclient.New(serverURL)
 		run := clayclient.Run{Name: runName, Token: runToken, Client: client}

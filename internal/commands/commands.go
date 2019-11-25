@@ -1,11 +1,9 @@
 package commands
 
 import (
-	"errors"
 	"io"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
@@ -22,7 +20,6 @@ const filenameOutput = "output"
 const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/clay-scraper:v1"
 const runBinary = "/bin/clay"
-const reservedEnvNamespace = "CLAY_INTERNAL_"
 
 // App holds the state for the application
 type App struct {
@@ -163,12 +160,6 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 func (app *App) StartRun(
 	runName string, output string, env map[string]string, callbackURL string,
 ) error {
-	// Check that we're not using any reserved environment variables
-	for k := range env {
-		if strings.HasPrefix(k, reservedEnvNamespace) {
-			return errors.New("Can't override environment variables starting with " + reservedEnvNamespace)
-		}
-	}
 	err := app.setCallbackURL(runName, callbackURL)
 	if err != nil {
 		return err

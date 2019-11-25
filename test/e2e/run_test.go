@@ -221,12 +221,10 @@ func TestSimpleRun(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-	)
-	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
-		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
-		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "echo _app_; ls `+importPath+`; echo _cache_; ls `+cachePath+`"`,
-		"CLAY_INTERNAL_RUN_COMMAND=echo Ran",
+		"--server", ts.URL,
+		"--buildcommand", `bash -c "echo _app_; ls `+importPath+`; echo _cache_; ls `+cachePath+`"`,
+		"--runcommand", "echo Ran",
 	)
 
 	stdoutStderr, err := cmd.CombinedOutput()
@@ -328,12 +326,10 @@ func TestFailingBuild(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-	)
-	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
-		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
-		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "failing_command"`,
-		"CLAY_INTERNAL_RUN_COMMAND=echo Ran",
+		"--server", ts.URL,
+		"--buildcommand", `bash -c "failing_command"`,
+		"--runcommand", "echo Ran",
 	)
 
 	stdoutStderr, err := cmd.CombinedOutput()
@@ -462,13 +458,11 @@ func TestFailingRun(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-	)
-	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
-		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
-		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "echo build"`,
+		"--server", ts.URL,
+		"--buildcommand", `bash -c "echo build"`,
 		// Send something to the output file then fail
-		`CLAY_INTERNAL_RUN_COMMAND=bash -c "cd `+appPath+`; echo hello > output.txt; failing_command"`,
+		"--runcommand", `bash -c "cd `+appPath+`; echo hello > output.txt; failing_command"`,
 	)
 
 	stdoutStderr, err := cmd.CombinedOutput()
