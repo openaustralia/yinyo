@@ -102,25 +102,24 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string, 
 	return exitData, nil
 }
 
-var appPath, importPath, cachePath, runToken string
+var appPath, importPath, cachePath, runOutput string
 
 func init() {
 	wrapperCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
 	wrapperCmd.Flags().StringVar(&importPath, "import", "/tmp/app", "herokuish import path")
 	wrapperCmd.Flags().StringVar(&cachePath, "cache", "/tmp/cache", "herokuish cache path")
+	wrapperCmd.Flags().StringVar(&runOutput, "output", "", "relative path to output file")
 	rootCmd.AddCommand(wrapperCmd)
 }
 
 var wrapperCmd = &cobra.Command{
-	Use:   "wrapper run_name run_token run_output",
+	Use:   "wrapper run_name run_token",
 	Short: "Manages the building and running of a scraper",
 	Long:  "Manages the building and running of a scraper inside a container. Used internally by the system.",
-	Args:  cobra.ExactArgs(3),
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		runName := args[0]
 		runToken := args[1]
-		// TODO: Make run output a command line option
-		runOutput := args[2]
 
 		// We allow some settings to be overridden for the purposes of testing.
 		// We don't allow users to change any environment variables that start
@@ -217,9 +216,11 @@ var wrapperCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 
-			err = run.PutOutputFromFile(filepath.Join(appPath, runOutput))
-			if err != nil {
-				log.Fatal(err)
+			if runOutput != "" {
+				err = run.PutOutputFromFile(filepath.Join(appPath, runOutput))
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 
 			err = run.CreateEvent(clayclient.FinishEvent{Stage: "run"})

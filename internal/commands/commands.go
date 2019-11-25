@@ -177,7 +177,7 @@ func (app *App) StartRun(
 	if err != nil {
 		return err
 	}
-	command := []string{runBinary, "wrapper", runName, runToken, output}
+	command := []string{runBinary, "wrapper", runName, runToken, "--output", output}
 	return app.JobDispatcher.StartJob(runName, dockerImage, command, env)
 }
 

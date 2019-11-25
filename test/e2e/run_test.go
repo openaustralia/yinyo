@@ -220,7 +220,7 @@ func TestSimpleRun(t *testing.T) {
 		"--cache", cachePath,
 		"run-name",
 		"run-token",
-		"output.txt",
+		"--output", "output.txt",
 	)
 	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
@@ -327,7 +327,7 @@ func TestFailingBuild(t *testing.T) {
 		"--cache", cachePath,
 		"run-name",
 		"run-token",
-		"output.txt",
+		"--output", "output.txt",
 	)
 	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
@@ -461,7 +461,7 @@ func TestFailingRun(t *testing.T) {
 		"--cache", cachePath,
 		"run-name",
 		"run-token",
-		"output.txt",
+		"--output", "output.txt",
 	)
 	cmd.Env = append(os.Environ(),
 		// Send requests for the clay server to our local test server instead (which we start here)
