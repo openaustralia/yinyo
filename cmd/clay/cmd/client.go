@@ -10,24 +10,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var callbackURL string
+var callbackURL, outputFile string
 
 func init() {
 	clientCmd.Flags().StringVar(&callbackURL, "callback", "", "Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick")
+	// TODO: Check that the output file is a relative path and if not error
+	clientCmd.Flags().StringVar(&outputFile, "output", "", "The output is written to the same local directory at the end. The output file path is given relative to the scraper directory")
 	rootCmd.AddCommand(clientCmd)
 }
 
 var clientCmd = &cobra.Command{
-	Use:   "client scraper_directory output_file",
+	Use:   "client scraper_directory",
 	Short: "Runs a scraper in a local directory using clay",
-	Long: `Runs a scraper in a local directory using clay
-The output is written to the same local directory at the end. The output file path
-is given relative to the scraper directory`,
+	Long:  "Runs a scraper in a local directory using clay",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
-		// TODO: Make the output file optional
-		// TODO: Check that the output file is a relative path and if not error
-		outputFile := args[1]
 
 		client := clayclient.New("http://localhost:8080")
 		// Create the run
@@ -90,13 +88,15 @@ is given relative to the scraper directory`,
 		}
 
 		// Get the run output
-		path := filepath.Join(scraperDirectory, outputFile)
-		err = run.GetOutputToFile(path)
-		if err != nil {
-			if clayclient.IsNotFound(err) {
-				log.Printf("Warning: output file %v does not exist", outputFile)
-			} else {
-				log.Fatal(err)
+		if outputFile != "" {
+			path := filepath.Join(scraperDirectory, outputFile)
+			err = run.GetOutputToFile(path)
+			if err != nil {
+				if clayclient.IsNotFound(err) {
+					log.Printf("Warning: output file %v does not exist", outputFile)
+				} else {
+					log.Fatal(err)
+				}
 			}
 		}
 

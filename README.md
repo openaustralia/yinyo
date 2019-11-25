@@ -57,13 +57,13 @@ make install
 Now you're ready to run your first scraper. The first time you run this it will take a little while.
 
 ```bash
-clay client test/scrapers/test-python data.sqlite
+clay client test/scrapers/test-python --output data.sqlite
 ```
 
 Now, if you run the same scraper again it should run significantly faster.
 
 ```bash
-clay client test/scrapers/test-python data.sqlite
+clay client test/scrapers/test-python --output data.sqlite
 ```
 
 ## Notes for debugging and testing
@@ -105,7 +105,7 @@ Use [webhook.site](https://webhook.site) to see calls to a specific URL in real 
 You can run the test scraper and get the events directed to webhook.site. For example:
 
 ```bash
-clay client test/scrapers/test-python data.sqlite --callback https://webhook.site/#!/uuid-specific-to-you
+clay client test/scrapers/test-python --output data.sqlite --callback https://webhook.site/#!/uuid-specific-to-you
 ```
 
 ### Reclaiming diskspace in minikube
