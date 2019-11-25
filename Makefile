@@ -1,5 +1,8 @@
 .PHONY: image server test build
 
+SHELL := /bin/bash
+PATH := $(shell GOPATH=$$(go env GOPATH);echo $${GOPATH//://bin:}/bin:$$PATH)
+
 all: run
 
 run: install
