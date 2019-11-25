@@ -177,8 +177,7 @@ func (app *App) StartRun(
 	if err != nil {
 		return err
 	}
-	env["CLAY_INTERNAL_RUN_TOKEN"] = runToken
-	command := []string{runBinary, "wrapper", runName, output}
+	command := []string{runBinary, "wrapper", runName, runToken, output}
 	return app.JobDispatcher.StartJob(runName, dockerImage, command, env)
 }
 

@@ -219,6 +219,7 @@ func TestSimpleRun(t *testing.T) {
 		"--import", importPath,
 		"--cache", cachePath,
 		"run-name",
+		"run-token",
 		"output.txt",
 	)
 	cmd.Env = append(os.Environ(),
@@ -325,6 +326,7 @@ func TestFailingBuild(t *testing.T) {
 		"--import", importPath,
 		"--cache", cachePath,
 		"run-name",
+		"run-token",
 		"output.txt",
 	)
 	cmd.Env = append(os.Environ(),
@@ -458,6 +460,7 @@ func TestFailingRun(t *testing.T) {
 		"--import", importPath,
 		"--cache", cachePath,
 		"run-name",
+		"run-token",
 		"output.txt",
 	)
 	cmd.Env = append(os.Environ(),

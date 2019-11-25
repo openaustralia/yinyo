@@ -103,9 +103,7 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string, 
 	return exitData, nil
 }
 
-var appPath string
-var importPath string
-var cachePath string
+var appPath, importPath, cachePath, runToken string
 
 func init() {
 	wrapperCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
@@ -115,14 +113,15 @@ func init() {
 }
 
 var wrapperCmd = &cobra.Command{
-	Use:   "wrapper run_name run_output",
+	Use:   "wrapper run_name run_token run_output",
 	Short: "Manages the building and running of a scraper",
 	Long:  "Manages the building and running of a scraper inside a container. Used internally by the system.",
-	Args:  cobra.ExactArgs(2),
+	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		runName := args[0]
-		runToken := os.Getenv("CLAY_INTERNAL_RUN_TOKEN")
-		runOutput := args[1]
+		runToken := args[1]
+		// TODO: Make run output a command line option
+		runOutput := args[2]
 
 		// We allow some settings to be overridden for the purposes of testing.
 		// We don't allow users to change any environment variables that start

@@ -30,8 +30,8 @@ func TestStartRun(t *testing.T) {
 		"StartJob",
 		"run-name",
 		"openaustralia/clay-scraper:v1",
-		[]string{"/bin/clay", "wrapper", "run-name", "output.txt"},
-		map[string]string{"FOO": "bar", "CLAY_INTERNAL_RUN_TOKEN": "supersecret"},
+		[]string{"/bin/clay", "wrapper", "run-name", "supersecret", "output.txt"},
+		map[string]string{"FOO": "bar"},
 	).Return(nil)
 	// Expect that we'll need the secret token
 	job.On("GetToken", "run-name").Return("supersecret", nil)
