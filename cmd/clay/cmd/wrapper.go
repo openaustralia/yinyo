@@ -3,7 +3,6 @@ package cmd
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -142,13 +141,6 @@ var wrapperCmd = &cobra.Command{
 		if !ok {
 			runCommand = "/bin/herokuish procfile start scraper"
 		}
-
-		fmt.Println("runName", runName)
-		fmt.Println("runToken", runToken)
-		fmt.Println("runOutput", runOutput)
-		fmt.Println("serverURL", serverURL)
-		fmt.Println("buildCommand", buildCommand)
-		fmt.Println("runCommand", runCommand)
 
 		client := clayclient.New(serverURL)
 		run := clayclient.Run{Name: runName, Token: runToken, Client: client}
