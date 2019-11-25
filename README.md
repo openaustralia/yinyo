@@ -105,7 +105,7 @@ Use [webhook.site](https://webhook.site) to see calls to a specific URL in real 
 You can run the test scraper and get the events directed to webhook.site. For example:
 
 ```bash
-clay client test/scrapers/test-python data.sqlite https://webhook.site/#!/uuid-specific-to-you
+clay client test/scrapers/test-python data.sqlite --callback https://webhook.site/#!/uuid-specific-to-you
 ```
 
 ### Reclaiming diskspace in minikube

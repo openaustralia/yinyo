@@ -10,30 +10,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var callbackURL string
+
 func init() {
+	clientCmd.Flags().StringVar(&callbackURL, "callback", "", "Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick")
 	rootCmd.AddCommand(clientCmd)
 }
 
 var clientCmd = &cobra.Command{
-	Use:   "client scraper_directory output_file [callback url]",
+	Use:   "client scraper_directory output_file",
 	Short: "Runs a scraper in a local directory using clay",
 	Long: `Runs a scraper in a local directory using clay
 The output is written to the same local directory at the end. The output file path
-is given relative to the scraper directory
-Optionally provide a callback url. For every event on the scraper this will get called.
-Note: To be able to authenticate the callback you'll need to specify a secret in the url.
-Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick`,
+is given relative to the scraper directory`,
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
 		// TODO: Make the output file optional
 		// TODO: Check that the output file is a relative path and if not error
 		outputFile := args[1]
-		var callbackURL string
-		if len(args) > 2 {
-			callbackURL = args[2]
-		} else {
-			callbackURL = ""
-		}
 
 		client := clayclient.New("http://localhost:8080")
 		// Create the run
