@@ -13,12 +13,14 @@ import (
 const cacheName = ".clay-build-cache.tgz"
 
 var callbackURL, outputFile, clientServerURL string
+var environment map[string]string
 
 func init() {
 	clientCmd.Flags().StringVar(&callbackURL, "callback", "", "Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick")
 	// TODO: Check that the output file is a relative path and if not error
 	clientCmd.Flags().StringVar(&outputFile, "output", "", "The output is written to the same local directory at the end. The output file path is given relative to the scraper directory")
 	clientCmd.Flags().StringVar(&clientServerURL, "server", "http://localhost:8080", "Override clay server URL")
+	clientCmd.Flags().StringToStringVar(&environment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
 	rootCmd.AddCommand(clientCmd)
 }
 
@@ -59,11 +61,17 @@ var clientCmd = &cobra.Command{
 			file.Close()
 		}
 
+		var envVariables []clayclient.EnvVariable
+		for k, v := range environment {
+			// TODO: Fix this inefficient way
+			envVariables = append(envVariables, clayclient.EnvVariable{Name: k, Value: v})
+		}
+
 		// Start the run
-		// TODO: Add support for setting environment variables
 		err = run.Start(&clayclient.StartRunOptions{
 			Output:   outputFile,
 			Callback: clayclient.Callback{URL: callbackURL},
+			Env: envVariables,
 		})
 		if err != nil {
 			log.Fatal(err)

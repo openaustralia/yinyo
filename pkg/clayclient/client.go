@@ -416,6 +416,12 @@ func (run *Run) GetCacheToFile(path string) error {
 type StartRunOptions struct {
 	Output   string
 	Callback Callback
+	Env      []EnvVariable
+}
+
+type EnvVariable struct {
+	Name  string
+	Value string
 }
 
 // Callback represents what we need to know to make a particular callback request
@@ -428,6 +434,7 @@ type Callback struct {
 // Start starts a run that has earlier been created
 // TODO: Add setting of environment variables
 func (run *Run) Start(options *StartRunOptions) error {
+	// TODO: Switch this over to using a json encoder
 	b, err := json.Marshal(options)
 	if err != nil {
 		return err
