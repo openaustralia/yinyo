@@ -54,18 +54,13 @@ func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken st
 	return created.ObjectMeta.Name, err
 }
 
-func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string, env map[string]string) error {
+func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string) error {
 	jobsClient := client.clientset.BatchV1().Jobs(namespace)
 
 	autoMountServiceAccountToken := false
 	backOffLimit := int32(0)
 	// Let this run for a maximum of 24 hours
 	activeDeadlineSeconds := int64(86400)
-
-	environment := []apiv1.EnvVar{}
-	for k, v := range env {
-		environment = append(environment, apiv1.EnvVar{Name: k, Value: v})
-	}
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -84,7 +79,6 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 							Name:    runName,
 							Image:   dockerImage,
 							Command: command,
-							Env:     environment,
 						},
 					},
 				},

@@ -103,6 +103,7 @@ func runExternalCommand(run clayclient.Run, stage string, commandString string, 
 }
 
 var appPath, importPath, cachePath, runOutput, serverURL, buildCommand, runCommand string
+var wrapperEnvironment map[string]string
 
 func init() {
 	wrapperCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
@@ -112,6 +113,7 @@ func init() {
 	wrapperCmd.Flags().StringVar(&serverURL, "server", "http://clay-server.clay-system:8080", "override clay server URL")
 	wrapperCmd.Flags().StringVar(&buildCommand, "buildcommand", "/bin/herokuish buildpack build", "override the herokuish build command (for testing)")
 	wrapperCmd.Flags().StringVar(&runCommand, "runcommand", "/bin/herokuish procfile start scraper", "override the herokuish run command (for testing)")
+	wrapperCmd.Flags().StringToStringVar(&wrapperEnvironment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
 	rootCmd.AddCommand(wrapperCmd)
 }
 
@@ -140,6 +142,26 @@ var wrapperCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		// TODO: Allow envPath to be changed by a flag
+		envPath := "/tmp/env"
+		err = os.MkdirAll(envPath, 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Write the environment variables to /tmp/env in the format defined by the buildpack API
+		for name, value := range wrapperEnvironment {
+			f, err := os.Create(filepath.Join(envPath, name))
+			if err != nil {
+				log.Fatal(err)
+			}
+			_, err = f.WriteString(value)
+			if err != nil {
+				log.Fatal(err)
+			}
+			f.Close()
+		}
+
 		err = run.GetAppToDirectory(importPath)
 		if err != nil {
 			log.Fatal(err)

@@ -1,4 +1,4 @@
-.PHONY: image server test build ppa
+.PHONY: image server test build ppa run
 
 all: run
 

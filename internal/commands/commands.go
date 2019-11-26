@@ -1,9 +1,12 @@
 package commands
 
 import (
+	"bytes"
+	"encoding/csv"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
@@ -168,8 +171,29 @@ func (app *App) StartRun(
 	if err != nil {
 		return err
 	}
-	command := []string{runBinary, "wrapper", runName, runToken, "--output", output}
-	return app.JobDispatcher.StartJob(runName, dockerImage, command, env)
+
+	// Convert environment variable values to a single string that can be passed
+	// as a flag to wrapper
+	records := make([]string, 0, len(env)>>1)
+	for k, v := range env {
+		records = append(records, k+"="+v)
+	}
+	var buf bytes.Buffer
+	w := csv.NewWriter(&buf)
+	if err := w.Write(records); err != nil {
+		return err
+	}
+	w.Flush()
+
+	command := []string{
+		runBinary,
+		"wrapper",
+		runName,
+		runToken,
+		"--output", output,
+		"--env", strings.TrimSpace(buf.String()),
+	}
+	return app.JobDispatcher.StartJob(runName, dockerImage, command)
 }
 
 // GetEvent gets the next event
