@@ -141,7 +141,9 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now start the scraper
-	err = run.Start(&clayclient.StartRunOptions{Output: "output.txt"})
+	err = run.Start(&clayclient.StartRunOptions{Output: "output.txt", Env: []clayclient.EnvVariable{
+		clayclient.EnvVariable{Name: "HELLO", Value: "Hello World!"},
+	}})
 	if err != nil {
 		t.Fatal(err)
 	}
