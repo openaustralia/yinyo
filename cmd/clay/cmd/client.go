@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const cacheName = ".clay-build-cache.tgz"
+
 var callbackURL, outputFile, clientServerURL string
 
 func init() {
@@ -36,13 +38,13 @@ var clientCmd = &cobra.Command{
 		}
 
 		// Upload the app
-		err = run.PutAppFromDirectory(scraperDirectory)
+		err = run.PutAppFromDirectory(scraperDirectory, []string{cacheName})
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		// Upload the cache
-		cachePath := filepath.Join("assets/client-storage/cache", scraperDirectory) + ".tgz"
+		cachePath := filepath.Join(scraperDirectory, cacheName)
 		file, err := os.Open(cachePath)
 		if err != nil {
 			// If the cache doesn't exist then skip the uploading bit
@@ -102,9 +104,6 @@ var clientCmd = &cobra.Command{
 		}
 
 		// Get the build cache
-		// Create the directory to store the cache if it doesn't already exist
-		// TODO: This actually creates one directory too many?
-		err = os.MkdirAll(filepath.Join("assets/client-storage/cache", scraperDirectory), 0755)
 		err = run.GetCacheToFile(cachePath)
 		if err != nil {
 			log.Fatal(err)

@@ -176,7 +176,8 @@ func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 }
 
 // CreateArchiveFromDirectory creates an archive from a directory on the filesystem
-func CreateArchiveFromDirectory(dir string) (io.Reader, error) {
+// ignorePaths is a list of paths (relative to dir) that should be ignored and not archived
+func CreateArchiveFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
 	tarWriter := tar.NewWriter(gzipWriter)
@@ -186,6 +187,11 @@ func CreateArchiveFromDirectory(dir string) (io.Reader, error) {
 		}
 		if path == dir {
 			return nil
+		}
+		for _, ignorePath := range ignorePaths {
+			if path == filepath.Join(dir, ignorePath) {
+				return nil
+			}
 		}
 		relativePath, err := filepath.Rel(dir, path)
 		if err != nil {
@@ -250,8 +256,9 @@ func (run *Run) GetAppToDirectory(dir string) error {
 }
 
 // PutAppFromDirectory uploads the scraper code from a directory on the filesystem
-func (run *Run) PutAppFromDirectory(dir string) error {
-	r, err := CreateArchiveFromDirectory(dir)
+// ignorePaths is a list of paths (relative to dir) that should be ignored and not uploaded
+func (run *Run) PutAppFromDirectory(dir string, ignorePaths []string) error {
+	r, err := CreateArchiveFromDirectory(dir, ignorePaths)
 	if err != nil {
 		return err
 	}
@@ -274,7 +281,7 @@ func (run *Run) GetCacheToDirectory(dir string) error {
 
 // PutCacheFromDirectory uploads the cache from a directory on the filesystem
 func (run *Run) PutCacheFromDirectory(dir string) error {
-	r, err := CreateArchiveFromDirectory(dir)
+	r, err := CreateArchiveFromDirectory(dir, []string{})
 	if err != nil {
 		return err
 	}

@@ -63,7 +63,7 @@ func TestSimpleRun(t *testing.T) {
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -76,7 +76,7 @@ func TestSimpleRun(t *testing.T) {
 			// We'll just return the contents of an "arbitrary" directory here. It doesn't
 			// really matters what it has in it as long as we can test that it's correct.
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -248,7 +248,7 @@ func TestFailingBuild(t *testing.T) {
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -351,7 +351,7 @@ func TestFailingRun(t *testing.T) {
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}

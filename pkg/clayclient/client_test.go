@@ -45,7 +45,7 @@ func TestArchive(t *testing.T) {
 	}
 
 	// Create an archive
-	reader, err := CreateArchiveFromDirectory("test")
+	reader, err := CreateArchiveFromDirectory("test", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}

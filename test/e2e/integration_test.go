@@ -120,7 +120,7 @@ func TestHelloWorld(t *testing.T) {
 	defer run.Delete()
 
 	// Now upload the application
-	err = run.PutAppFromDirectory("fixtures/scrapers/hello-world")
+	err = run.PutAppFromDirectory("fixtures/scrapers/hello-world", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
