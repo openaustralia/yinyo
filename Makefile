@@ -19,10 +19,6 @@ ppa:
 mocks:
 	mockery -all -inpkg
 
-# If you want an interactive shell in the container
-shell:
-	docker run --rm -i -t openaustralia/clay-scraper:v1 /bin/bash
-
 minio_access_key = $(shell grep access_key configs/secrets-minio.env | cut -d "=" -f 2)
 minio_secret_key = $(shell grep secret_key configs/secrets-minio.env | cut -d "=" -f 2)
 minio_clay_access_key = $(shell grep store_access_key configs/secrets-clay-server.env | cut -d "=" -f 2)
