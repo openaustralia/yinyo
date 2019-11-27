@@ -56,6 +56,16 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: STORE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: clay-server
+                  key: store_host
+            - name: STORE_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: clay-server
+                  key: store_bucket
             - name: STORE_ACCESS_KEY
               valueFrom:
                 secretKeyRef:

@@ -18,5 +18,11 @@ secretGenerator:
     envs:
       - configs/secrets-redis.env
 
+configMapGenerator:
+  - name: clay-server
+    namespace: clay-system
+    envs:
+      - configs/config-clay-server.env
+
 configurations:
   - deployments/kustomizeconfig/redis.yaml

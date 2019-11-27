@@ -46,8 +46,8 @@ type logMessage struct {
 
 func defaultStore() (blobstore.Client, error) {
 	return blobstore.NewMinioClient(
-		"minio-service:9000",
-		"clay",
+		os.Getenv("STORE_HOST"),
+		os.Getenv("STORE_BUCKET"),
 		os.Getenv("STORE_ACCESS_KEY"),
 		os.Getenv("STORE_SECRET_KEY"),
 	)
