@@ -93,6 +93,15 @@ make website
 
 Then point your web browser at [http://localhost:1313](http://localhost:1313).
 
+## The custom herokuish docker image
+
+The project currently depends on a custom version of the herokuish docker image [mlandauer/herokuish:for-morph-ng](https://hub.docker.com/layers/mlandauer/herokuish/for-morph-ng/images/sha256-d39b31894660dd038c05a408db260a6bb013325e843b03ae80b528477de83d92) which is built from the Github repo [mlandauer/herokuish](https://github.com/mlandauer/herokuish/tree/for-morph-ng) and pushed to docker hub manually.
+
+There is [an open pull request](https://github.com/gliderlabs/herokuish/pull/467) to try to get the bug
+fix in our modified version merged upstream.
+
+If this PR doesn't get merged we could use a [workaround used by Dokku](https://github.com/gliderlabs/herokuish/pull/467#issue-298708746).
+
 ## Notes for debugging and testing
 
 ### To run the tests
