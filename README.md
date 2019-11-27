@@ -5,6 +5,11 @@
 - Supports many different use cases through a simple, yet flexible API that can operate synchronously or asynchronously.
 - Made specifically for developers of scraper systems be it open source or commercial. No chance of vendor lock-in because it's open source, Apache licensed.
 
+## Who is this README for?
+
+This README is focused on getting developers of the core system up and running. It does not yet include
+a guide for people who are just interested in being users of the API.
+
 ## Development: Guide to getting up and running quickly
 
 ### Main dependencies
@@ -16,6 +21,7 @@
 - [jq](https://stedolan.github.io/jq/)
 - [MinIO client (mc)](https://min.io/download)
 - [Go 1.13](https://golang.org/dl/)
+
   - Ubuntu - use `make ppa` or [read instructions](https://github.com/golang/go/wiki/Ubuntu)
   - [MacOS package installer](https://golang.org/doc/install#macos)
 
