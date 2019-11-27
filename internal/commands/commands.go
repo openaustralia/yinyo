@@ -185,13 +185,16 @@ func (app *App) StartRun(
 	}
 	w.Flush()
 
+	envString := strings.TrimSpace(buf.String())
 	command := []string{
 		runBinary,
 		"wrapper",
 		runName,
 		runToken,
 		"--output", output,
-		"--env", strings.TrimSpace(buf.String()),
+	}
+	if envString != "" {
+		command = append(command, "--env", envString)
 	}
 	return app.JobDispatcher.StartJob(runName, dockerImage, command)
 }
