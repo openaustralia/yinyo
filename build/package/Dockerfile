@@ -44,8 +44,6 @@ ADD build/package/prerun.rb /usr/local/lib/prerun.rb
 # Add perl buildpack
 RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpack-perl.git 2da7480a8339f01968ce3979655555a0ade20564
 
-RUN apt-get install -y jq time bc net-tools
-
 ADD build/package/start.sh /bin/
 RUN chmod +x /bin/start.sh
 
