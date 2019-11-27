@@ -1,4 +1,4 @@
-.PHONY: image server test build ppa run
+.PHONY: image server test build ppa run website apidocs
 
 all: run
 
@@ -18,6 +18,14 @@ ppa:
 
 mocks:
 	mockery -all -inpkg
+
+website: apidocs
+	# Starts a development web server at http://localhost:1313
+	hugo server -s site -D
+
+apidocs:
+	widdershins --summary openapi/definition.yaml -o openapi/definition.md
+	shins openapi/definition.md -o site/content/api.html --inline
 
 minio_access_key = $(shell grep access_key configs/secrets-minio.env | cut -d "=" -f 2)
 minio_secret_key = $(shell grep secret_key configs/secrets-minio.env | cut -d "=" -f 2)

@@ -74,6 +74,26 @@ Now, if you run the same scraper again it should run significantly faster.
 clay client test/scrapers/test-python --output data.sqlite
 ```
 
+## Getting the website running locally
+
+### Dependencies
+
+There are some extra dependencies required for building the website and associated API documentation.
+
+- [Hugo](https://gohugo.io/) - a static website generator
+- [Shins](https://github.com/Mermade/shins) - a Node.js Slate markdown renderer
+- [Widdershins](https://github.com/mermade/widdershins) - Converts OpenAPI definitions to Slate
+
+### Running a local development server for the website
+
+Do this after you've installed the dependencies (above):
+
+```bash
+make website
+```
+
+Then point your web browser at [http://localhost:1313](http://localhost:1313).
+
 ## Notes for debugging and testing
 
 ### To run the tests
