@@ -137,7 +137,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	var l startBody
 	err := decoder.Decode(&l)
 	if err != nil {
-		return err
+		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
 	env := make(map[string]string)
@@ -251,7 +251,23 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := fn(w, r)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		err2, ok := err.(clientError)
+		if !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		body, err := err2.ResponseBody()
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		status, headers := err2.ResponseHeaders()
+		for k, v := range headers {
+			w.Header().Set(k, v)
+		}
+		w.WriteHeader(status)
+		w.Write(body)
 	}
 }
 
