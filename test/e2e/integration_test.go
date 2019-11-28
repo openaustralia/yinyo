@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/clayclient"
 	"github.com/stretchr/testify/assert"
 )
 

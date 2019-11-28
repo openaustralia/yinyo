@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/openaustralia/morph-ng/cmd/clay/cmd"
+	"github.com/openaustralia/yinyo/cmd/clay/cmd"
 )
 
 func main() {

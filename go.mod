@@ -1,4 +1,4 @@
-module github.com/openaustralia/morph-ng
+module github.com/openaustralia/yinyo
 
 go 1.13
 

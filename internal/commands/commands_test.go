@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/openaustralia/morph-ng/pkg/blobstore"
-	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
-	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
-	"github.com/openaustralia/morph-ng/pkg/stream"
+	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
+	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
 func TestStoragePath(t *testing.T) {

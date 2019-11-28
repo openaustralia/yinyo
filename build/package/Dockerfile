@@ -26,7 +26,7 @@ RUN rm empty.go
 COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
-RUN CGO_ENABLED=0 go install github.com/openaustralia/morph-ng/cmd/clay
+RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/clay
 
 # Create unprivileged user
 RUN adduser -D clay

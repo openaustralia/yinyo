@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/kballard/go-shellquote"
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/clayclient"
 	"github.com/shirou/gopsutil/net"
 	"github.com/spf13/cobra"
 )

@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/openaustralia/morph-ng/internal/commands"
+	"github.com/openaustralia/yinyo/internal/commands"
 	"github.com/spf13/cobra"
 )
 

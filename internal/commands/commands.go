@@ -11,10 +11,10 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 
-	"github.com/openaustralia/morph-ng/pkg/blobstore"
-	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
-	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
-	"github.com/openaustralia/morph-ng/pkg/stream"
+	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
+	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
 const filenameApp = "app.tgz"

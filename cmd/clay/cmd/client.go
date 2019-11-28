@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/clayclient"
 	"github.com/spf13/cobra"
 )
 

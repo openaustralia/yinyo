@@ -14,7 +14,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/clayclient"
 	"github.com/stretchr/testify/assert"
 )
 
