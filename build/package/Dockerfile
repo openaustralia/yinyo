@@ -29,7 +29,7 @@ COPY pkg pkg
 RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/yinyo
 
 # Create unprivileged user
-RUN adduser -D clay
+RUN adduser -D yinyo
 
 ####
 #### yinyo-run
@@ -60,6 +60,6 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/yinyo /go/bin/yinyo
 
 # Run unprivileged
-USER clay
+USER yinyo
 
 CMD ["/go/bin/yinyo", "server"]
