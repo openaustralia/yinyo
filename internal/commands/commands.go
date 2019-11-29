@@ -21,7 +21,7 @@ const filenameApp = "app.tgz"
 const filenameCache = "cache.tgz"
 const filenameOutput = "output"
 const filenameExitData = "exit-data.json"
-const dockerImage = "openaustralia/clay-scraper:v1"
+const dockerImage = "openaustralia/yinyo-scraper:v1"
 const runBinary = "/bin/yinyo"
 
 // App holds the state for the application

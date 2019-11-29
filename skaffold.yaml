@@ -2,11 +2,11 @@ apiVersion: skaffold/v1
 kind: Config
 build:
   artifacts:
-    - image: openaustralia/clay-server
+    - image: openaustralia/yinyo-server
       docker:
         dockerfile: build/package/Dockerfile
         target: yinyo-server
-    - image: openaustralia/clay-scraper
+    - image: openaustralia/yinyo-scraper
       docker:
         dockerfile: build/package/Dockerfile
         target: yinyo-run
