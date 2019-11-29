@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   # This name uniquely identifies the PVC. Will be used in deployment below.
   name: minio-pv-claim
-  namespace: clay-system
+  namespace: yinyo-system
   labels:
     app: minio-storage-claim
 spec:
@@ -22,7 +22,7 @@ kind: Deployment
 metadata:
   # This name uniquely identifies the Deployment
   name: minio-deployment
-  namespace: clay-system
+  namespace: yinyo-system
 spec:
   strategy:
     type: Recreate
@@ -82,7 +82,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio-service
-  namespace: clay-system
+  namespace: yinyo-system
 spec:
   type: LoadBalancer
   ports:

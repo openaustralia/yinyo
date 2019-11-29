@@ -122,12 +122,12 @@ Point your web browser at [http://localhost:9000](http://localhost:9000). Login 
 minikube dashboard
 ```
 
-You'll want to look in the "clay-system" and "clay-scrapers" namespaces.
+You'll want to look in the "yinyo-system" and "yinyo-scrapers" namespaces.
 
 ### Accessing Redis
 
 ```bash
-> kubectl exec -it redis-0 -n clay-system sh
+> kubectl exec -it redis-0 -n yinyo-system sh
 /data # redis-cli
 127.0.0.1:6379> auth changeme123
 OK
