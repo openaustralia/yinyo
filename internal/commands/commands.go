@@ -22,7 +22,7 @@ const filenameCache = "cache.tgz"
 const filenameOutput = "output"
 const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/clay-scraper:v1"
-const runBinary = "/bin/clay"
+const runBinary = "/bin/yinyo"
 
 // App holds the state for the application
 type App struct {

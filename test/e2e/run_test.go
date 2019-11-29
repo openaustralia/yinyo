@@ -1,6 +1,6 @@
 package test
 
-// This tests the "clay wrapper" executable without running it in a kubernetes cluster
+// This tests the "yinyo wrapper" executable without running it in a kubernetes cluster
 
 import (
 	"encoding/json"
@@ -213,7 +213,7 @@ func TestSimpleRun(t *testing.T) {
 
 	// Just run it and see what breaks
 	cmd := exec.Command(
-		"clay",
+		"yinyo",
 		"wrapper",
 		"--app", appPath,
 		"--import", importPath,
@@ -318,7 +318,7 @@ func TestFailingBuild(t *testing.T) {
 
 	// Just run it and see what breaks
 	cmd := exec.Command(
-		"clay",
+		"yinyo",
 		"wrapper",
 		"--app", appPath,
 		"--import", importPath,
@@ -450,7 +450,7 @@ func TestFailingRun(t *testing.T) {
 
 	// Just run it and see what breaks
 	cmd := exec.Command(
-		"clay",
+		"yinyo",
 		"wrapper",
 		"--app", appPath,
 		"--import", importPath,

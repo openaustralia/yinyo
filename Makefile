@@ -3,7 +3,7 @@
 all: run
 
 run: install
-	clay client test/scrapers/test-python --output data.sqlite
+	yinyo client test/scrapers/test-python --output data.sqlite
 
 test: install
 	go test ./...

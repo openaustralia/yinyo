@@ -26,7 +26,7 @@ RUN rm empty.go
 COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
-RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/clay
+RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/yinyo
 
 # Create unprivileged user
 RUN adduser -D clay
@@ -47,7 +47,7 @@ RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpac
 ADD build/package/start.sh /bin/
 RUN chmod +x /bin/start.sh
 
-COPY --from=builder /go/bin/clay /bin/clay
+COPY --from=builder /go/bin/yinyo /bin/yinyo
 
 ####
 #### clay-server
@@ -57,9 +57,9 @@ FROM scratch as clay-server
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /go/bin/clay /go/bin/clay
+COPY --from=builder /go/bin/yinyo /go/bin/yinyo
 
 # Run unprivileged
 USER clay
 
-CMD ["/go/bin/clay", "server"]
+CMD ["/go/bin/yinyo", "server"]
