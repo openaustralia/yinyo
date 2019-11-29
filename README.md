@@ -1,4 +1,4 @@
-# A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
+# Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
 
 - Easily run as many scrapers as you like across a cluster of machines without having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
 - Use the language and libraries you love for writing scrapers. Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
