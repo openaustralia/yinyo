@@ -32,9 +32,9 @@ RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/yinyo
 RUN adduser -D clay
 
 ####
-#### clay-run
+#### yinyo-run
 ####
-FROM mlandauer/herokuish:for-morph-ng as clay-run
+FROM mlandauer/herokuish:for-morph-ng as yinyo-run
 
 RUN apt-get update && apt-get install -y libsqlite3-dev
 
@@ -50,10 +50,10 @@ RUN chmod +x /bin/start.sh
 COPY --from=builder /go/bin/yinyo /bin/yinyo
 
 ####
-#### clay-server
+#### yinyo-server
 ####
 # Now make the runtime image
-FROM scratch as clay-server
+FROM scratch as yinyo-server
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
