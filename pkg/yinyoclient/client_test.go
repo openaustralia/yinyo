@@ -1,4 +1,4 @@
-package clayclient
+package yinyoclient
 
 import (
 	"encoding/json"

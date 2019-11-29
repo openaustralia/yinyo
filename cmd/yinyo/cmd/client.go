@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/openaustralia/yinyo/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +32,7 @@ var clientCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
 
-		client := clayclient.New(clientServerURL)
+		client := yinyoclient.New(clientServerURL)
 		// Create the run
 		run, err := client.CreateRun(scraperDirectory)
 		if err != nil {
@@ -61,16 +61,16 @@ var clientCmd = &cobra.Command{
 			file.Close()
 		}
 
-		var envVariables []clayclient.EnvVariable
+		var envVariables []yinyoclient.EnvVariable
 		for k, v := range environment {
 			// TODO: Fix this inefficient way
-			envVariables = append(envVariables, clayclient.EnvVariable{Name: k, Value: v})
+			envVariables = append(envVariables, yinyoclient.EnvVariable{Name: k, Value: v})
 		}
 
 		// Start the run
-		err = run.Start(&clayclient.StartRunOptions{
+		err = run.Start(&yinyoclient.StartRunOptions{
 			Output:   outputFile,
-			Callback: clayclient.Callback{URL: callbackURL},
+			Callback: yinyoclient.Callback{URL: callbackURL},
 			Env: envVariables,
 		})
 		if err != nil {
@@ -88,7 +88,7 @@ var clientCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			// Only display the log events to the user
-			l, ok := event.(clayclient.LogEvent)
+			l, ok := event.(yinyoclient.LogEvent)
 			if ok {
 				f, err := osStream(l.Stream)
 				if err != nil {
@@ -103,7 +103,7 @@ var clientCmd = &cobra.Command{
 			path := filepath.Join(scraperDirectory, outputFile)
 			err = run.GetOutputToFile(path)
 			if err != nil {
-				if clayclient.IsNotFound(err) {
+				if yinyoclient.IsNotFound(err) {
 					log.Printf("Warning: output file %v does not exist", outputFile)
 				} else {
 					log.Fatal(err)
