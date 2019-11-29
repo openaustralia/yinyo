@@ -221,7 +221,7 @@ func TestSimpleRun(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-		// Send requests for the clay server to our local test server instead (which we start here)
+		// Send requests for the yinyo server to our local test server instead (which we start here)
 		"--server", ts.URL,
 		"--buildcommand", `bash -c "echo _app_; ls `+importPath+`; echo _cache_; ls `+cachePath+`"`,
 		"--runcommand", "echo Ran",
@@ -326,7 +326,7 @@ func TestFailingBuild(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-		// Send requests for the clay server to our local test server instead (which we start here)
+		// Send requests for the yinyo server to our local test server instead (which we start here)
 		"--server", ts.URL,
 		"--buildcommand", `bash -c "failing_command"`,
 		"--runcommand", "echo Ran",
@@ -458,7 +458,7 @@ func TestFailingRun(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-		// Send requests for the clay server to our local test server instead (which we start here)
+		// Send requests for the yinyo server to our local test server instead (which we start here)
 		"--server", ts.URL,
 		"--buildcommand", `bash -c "echo build"`,
 		// Send something to the output file then fail

@@ -24,7 +24,7 @@ a guide for people who are just interested in being users of the API.
   - Ubuntu - use `make ppa` or [read instructions](https://github.com/golang/go/wiki/Ubuntu)
   - [MacOS package installer](https://golang.org/doc/install#macos)
 
-- Clay's web interface needs to be accessible on [http://localhost:8080/](http://localhost:8080/). If you have something already listening on this port, you won't get any errors, but you won't be able to connect to Clay to start a scraper. You'll need to clear that port.
+- Yinyo's web interface needs to be accessible on [http://localhost:8080/](http://localhost:8080/). If you have something already listening on this port, you won't get any errors, but you won't be able to connect to Yinyo to start a scraper. You'll need to clear that port.
 
 ### The main bit
 

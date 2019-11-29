@@ -22,7 +22,7 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, "Hello from Clay!\n", text)
+	assert.Equal(t, "Hello from Yinyo!\n", text)
 }
 
 func TestCreateRun(t *testing.T) {

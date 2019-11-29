@@ -192,7 +192,7 @@ func delete(w http.ResponseWriter, r *http.Request) error {
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
-	fmt.Fprintln(w, "Hello from Clay!")
+	fmt.Fprintln(w, "Hello from Yinyo!")
 	return nil
 }
 
@@ -280,7 +280,7 @@ func init() {
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
-	Short: "Serves the Clay API",
+	Short: "Serves the Yinyo API",
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		app, err = commands.New()
@@ -288,7 +288,7 @@ var serverCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		log.Println("Clay is ready and waiting.")
+		log.Println("Yinyo is ready and waiting.")
 		router := mux.NewRouter().StrictSlash(true)
 
 		router.Handle("/", appHandler(whoAmI))
