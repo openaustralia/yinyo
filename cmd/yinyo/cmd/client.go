@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const cacheName = ".clay-build-cache.tgz"
+const cacheName = ".yinyo-build-cache.tgz"
 
 var callbackURL, outputFile, clientServerURL string
 var environment map[string]string
@@ -71,7 +71,7 @@ var clientCmd = &cobra.Command{
 		err = run.Start(&yinyoclient.StartRunOptions{
 			Output:   outputFile,
 			Callback: yinyoclient.Callback{URL: callbackURL},
-			Env: envVariables,
+			Env:      envVariables,
 		})
 		if err != nil {
 			log.Fatal(err)
