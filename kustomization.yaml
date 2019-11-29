@@ -12,7 +12,7 @@ secretGenerator:
   - name: yinyo-server
     namespace: yinyo-system
     envs:
-      - configs/secrets-clay-server.env
+      - configs/secrets-yinyo-server.env
   - name: redis
     namespace: yinyo-system
     envs:
@@ -22,7 +22,7 @@ configMapGenerator:
   - name: yinyo-server
     namespace: yinyo-system
     envs:
-      - configs/config-clay-server.env
+      - configs/config-yinyo-server.env
 
 configurations:
   - deployments/kustomizeconfig/redis.yaml
