@@ -11,18 +11,18 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 
-	"github.com/openaustralia/morph-ng/pkg/blobstore"
-	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
-	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
-	"github.com/openaustralia/morph-ng/pkg/stream"
+	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
+	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
 const filenameApp = "app.tgz"
 const filenameCache = "cache.tgz"
 const filenameOutput = "output"
 const filenameExitData = "exit-data.json"
-const dockerImage = "openaustralia/clay-scraper:v1"
-const runBinary = "/bin/clay"
+const dockerImage = "openaustralia/yinyo-scraper:v1"
+const runBinary = "/bin/yinyo"
 
 // App holds the state for the application
 type App struct {

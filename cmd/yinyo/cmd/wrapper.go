@@ -13,22 +13,22 @@ import (
 	"time"
 
 	"github.com/kballard/go-shellquote"
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/shirou/gopsutil/net"
 	"github.com/spf13/cobra"
 )
 
-func streamLogs(run clayclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error) {
+func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
-		run.CreateEvent(clayclient.LogEvent{Stage: stage, Stream: streamName, Text: scanner.Text()})
+		run.CreateEvent(yinyoclient.LogEvent{Stage: stage, Stream: streamName, Text: scanner.Text()})
 	}
 	c <- scanner.Err()
 }
 
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
-func runExternalCommand(run clayclient.Run, stage string, commandString string, env []string) (clayclient.ExitDataStage, error) {
-	var exitData clayclient.ExitDataStage
+func runExternalCommand(run yinyoclient.Run, stage string, commandString string, env []string) (yinyoclient.ExitDataStage, error) {
+	var exitData yinyoclient.ExitDataStage
 
 	// Splits string up into pieces using shell rules
 	commandParts, err := shellquote.Split(commandString)
@@ -110,7 +110,7 @@ func init() {
 	wrapperCmd.Flags().StringVar(&importPath, "import", "/tmp/app", "herokuish import path")
 	wrapperCmd.Flags().StringVar(&cachePath, "cache", "/tmp/cache", "herokuish cache path")
 	wrapperCmd.Flags().StringVar(&runOutput, "output", "", "relative path to output file")
-	wrapperCmd.Flags().StringVar(&serverURL, "server", "http://clay-server.clay-system:8080", "override clay server URL")
+	wrapperCmd.Flags().StringVar(&serverURL, "server", "http://yinyo-server.yinyo-system:8080", "override yinyo server URL")
 	wrapperCmd.Flags().StringVar(&buildCommand, "buildcommand", "/bin/herokuish buildpack build", "override the herokuish build command (for testing)")
 	wrapperCmd.Flags().StringVar(&runCommand, "runcommand", "/bin/herokuish procfile start scraper", "override the herokuish run command (for testing)")
 	wrapperCmd.Flags().StringToStringVar(&wrapperEnvironment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
@@ -126,9 +126,9 @@ var wrapperCmd = &cobra.Command{
 		runName := args[0]
 		runToken := args[1]
 
-		client := clayclient.New(serverURL)
-		run := clayclient.Run{Name: runName, Token: runToken, Client: client}
-		err := run.CreateEvent(clayclient.StartEvent{Stage: "build"})
+		client := yinyoclient.New(serverURL)
+		run := yinyoclient.Run{Name: runName, Token: runToken, Client: client}
+		err := run.CreateEvent(yinyoclient.StartEvent{Stage: "build"})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -184,7 +184,7 @@ var wrapperCmd = &cobra.Command{
 		}
 
 		// Initially do a very naive way of calling the command just to get things going
-		var exitData clayclient.ExitData
+		var exitData yinyoclient.ExitData
 
 		exitDataStage, err := runExternalCommand(run, "build", buildCommand, env)
 		if err != nil {
@@ -194,7 +194,7 @@ var wrapperCmd = &cobra.Command{
 
 		// Send the build finished event immediately when the build command has finished
 		// Effectively the cache uploading happens between the build and run stages
-		err = run.CreateEvent(clayclient.FinishEvent{Stage: "build"})
+		err = run.CreateEvent(yinyoclient.FinishEvent{Stage: "build"})
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -206,7 +206,7 @@ var wrapperCmd = &cobra.Command{
 
 		// Only do the main run if the build was succesful
 		if exitData.Build.ExitCode == 0 {
-			err = run.CreateEvent(clayclient.StartEvent{Stage: "run"})
+			err = run.CreateEvent(yinyoclient.StartEvent{Stage: "run"})
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -228,7 +228,7 @@ var wrapperCmd = &cobra.Command{
 				}
 			}
 
-			err = run.CreateEvent(clayclient.FinishEvent{Stage: "run"})
+			err = run.CreateEvent(yinyoclient.FinishEvent{Stage: "run"})
 			if err != nil {
 				log.Fatal(err)
 			}

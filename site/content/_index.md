@@ -1,5 +1,5 @@
 ---
-title: Leila
+title: Yinyo
 date: 2019-09-11T21:07:08.000+00:00
 headline: |
   A wonderfully simple API to reliably execute many long running scrapers in a
@@ -53,4 +53,4 @@ A scraper is a program that collects data from the web (usually unstructured) an
 
 ### Origins and motivations
 
-Clay comes out of OpenAustralia Foundation’s many years of experience writing scrapers and hosting the world’s largest site for open scrapers, morph.io. Originally we designed morph.io to run on top of Docker. As the site has continued to grow over the years we have hit the limitations of some of the early design decisions we made. That’s why we created Clay. It is intended as a much improved, much more scaleable low level underpinnings of morph.io. But it’s a lot more than that. It’s intended as a foundation upon which other developers can build other scraper systems quite different from morph.io. Clay isn’t opinionated about how scrapers store their data or what languages they’re written in. Yet using it to develop your scraper system will save you an enormous amount of effort
+Yinyo comes out of OpenAustralia Foundation’s many years of experience writing scrapers and hosting the world’s largest site for open scrapers, morph.io. Originally we designed morph.io to run on top of Docker. As the site has continued to grow over the years we have hit the limitations of some of the early design decisions we made. That’s why we created Yinyo. It is intended as a much improved, much more scaleable low level underpinnings of morph.io. But it’s a lot more than that. It’s intended as a foundation upon which other developers can build other scraper systems quite different from morph.io. Yinyo isn’t opinionated about how scrapers store their data or what languages they’re written in. Yet using it to develop your scraper system will save you an enormous amount of effort

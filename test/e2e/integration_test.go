@@ -8,12 +8,12 @@ import (
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
 )
 
-func defaultClient() *clayclient.Client {
-	return clayclient.New("http://localhost:8080")
+func defaultClient() *yinyoclient.Client {
+	return yinyoclient.New("http://localhost:8080")
 }
 
 func TestHello(t *testing.T) {
@@ -22,7 +22,7 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, "Hello from Clay!\n", text)
+	assert.Equal(t, "Hello from Yinyo!\n", text)
 }
 
 func TestCreateRun(t *testing.T) {
@@ -141,8 +141,8 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now start the scraper
-	err = run.Start(&clayclient.StartRunOptions{Output: "output.txt", Env: []clayclient.EnvVariable{
-		clayclient.EnvVariable{Name: "HELLO", Value: "Hello World!"},
+	err = run.Start(&yinyoclient.StartRunOptions{Output: "output.txt", Env: []yinyoclient.EnvVariable{
+		yinyoclient.EnvVariable{Name: "HELLO", Value: "Hello World!"},
 	}})
 	if err != nil {
 		t.Fatal(err)
@@ -154,7 +154,7 @@ func TestHelloWorld(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var eventsList []clayclient.Event
+	var eventsList []yinyoclient.Event
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
 	for iterator.More() {
@@ -166,20 +166,20 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
-	assert.Equal(t, []clayclient.Event{
-		clayclient.StartEvent{Stage: "build"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"},
-		clayclient.FinishEvent{Stage: "build"},
-		clayclient.StartEvent{Stage: "run"},
-		clayclient.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
-		clayclient.FinishEvent{Stage: "run"},
+	assert.Equal(t, []yinyoclient.Event{
+		yinyoclient.StartEvent{Stage: "build"},
+		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"},
+		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
+		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
+		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"},
+		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
+		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "},
+		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"},
+		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"},
+		yinyoclient.FinishEvent{Stage: "build"},
+		yinyoclient.StartEvent{Stage: "run"},
+		yinyoclient.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
+		yinyoclient.FinishEvent{Stage: "run"},
 	}, eventsList)
 
 	// Get the cache

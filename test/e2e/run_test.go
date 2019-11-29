@@ -1,6 +1,6 @@
 package test
 
-// This tests the "clay wrapper" executable without running it in a kubernetes cluster
+// This tests the "yinyo wrapper" executable without running it in a kubernetes cluster
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -63,7 +63,7 @@ func TestSimpleRun(t *testing.T) {
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
+			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -76,7 +76,7 @@ func TestSimpleRun(t *testing.T) {
 			// We'll just return the contents of an "arbitrary" directory here. It doesn't
 			// really matters what it has in it as long as we can test that it's correct.
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
+			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -162,7 +162,7 @@ func TestSimpleRun(t *testing.T) {
 		} else if count == 16 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData clayclient.ExitData
+			var exitData yinyoclient.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)
@@ -213,7 +213,7 @@ func TestSimpleRun(t *testing.T) {
 
 	// Just run it and see what breaks
 	cmd := exec.Command(
-		"clay",
+		"yinyo",
 		"wrapper",
 		"--app", appPath,
 		"--import", importPath,
@@ -221,7 +221,7 @@ func TestSimpleRun(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-		// Send requests for the clay server to our local test server instead (which we start here)
+		// Send requests for the yinyo server to our local test server instead (which we start here)
 		"--server", ts.URL,
 		"--buildcommand", `bash -c "echo _app_; ls `+importPath+`; echo _cache_; ls `+cachePath+`"`,
 		"--runcommand", "echo Ran",
@@ -248,7 +248,7 @@ func TestFailingBuild(t *testing.T) {
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
+			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -278,7 +278,7 @@ func TestFailingBuild(t *testing.T) {
 		} else if count == 6 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData clayclient.ExitData
+			var exitData yinyoclient.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)
@@ -318,7 +318,7 @@ func TestFailingBuild(t *testing.T) {
 
 	// Just run it and see what breaks
 	cmd := exec.Command(
-		"clay",
+		"yinyo",
 		"wrapper",
 		"--app", appPath,
 		"--import", importPath,
@@ -326,7 +326,7 @@ func TestFailingBuild(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-		// Send requests for the clay server to our local test server instead (which we start here)
+		// Send requests for the yinyo server to our local test server instead (which we start here)
 		"--server", ts.URL,
 		"--buildcommand", `bash -c "failing_command"`,
 		"--runcommand", "echo Ran",
@@ -351,7 +351,7 @@ func TestFailingRun(t *testing.T) {
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
+			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -393,7 +393,7 @@ func TestFailingRun(t *testing.T) {
 		} else if count == 8 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData clayclient.ExitData
+			var exitData yinyoclient.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)
@@ -450,7 +450,7 @@ func TestFailingRun(t *testing.T) {
 
 	// Just run it and see what breaks
 	cmd := exec.Command(
-		"clay",
+		"yinyo",
 		"wrapper",
 		"--app", appPath,
 		"--import", importPath,
@@ -458,7 +458,7 @@ func TestFailingRun(t *testing.T) {
 		"run-name",
 		"run-token",
 		"--output", "output.txt",
-		// Send requests for the clay server to our local test server instead (which we start here)
+		// Send requests for the yinyo server to our local test server instead (which we start here)
 		"--server", ts.URL,
 		"--buildcommand", `bash -c "echo build"`,
 		// Send something to the output file then fail

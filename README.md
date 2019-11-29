@@ -1,4 +1,4 @@
-# A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
+# Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
 
 - Easily run as many scrapers as you like across a cluster of machines without having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
 - Use the language and libraries you love for writing scrapers. Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
@@ -24,7 +24,7 @@ a guide for people who are just interested in being users of the API.
   - Ubuntu - use `make ppa` or [read instructions](https://github.com/golang/go/wiki/Ubuntu)
   - [MacOS package installer](https://golang.org/doc/install#macos)
 
-- Clay's web interface needs to be accessible on [http://localhost:8080/](http://localhost:8080/). If you have something already listening on this port, you won't get any errors, but you won't be able to connect to Clay to start a scraper. You'll need to clear that port.
+- Yinyo's web interface needs to be accessible on [http://localhost:8080/](http://localhost:8080/). If you have something already listening on this port, you won't get any errors, but you won't be able to connect to Yinyo to start a scraper. You'll need to clear that port.
 
 ### The main bit
 
@@ -64,13 +64,13 @@ make install
 Now you're ready to run your first scraper. The first time you run this it will take a little while.
 
 ```bash
-clay client test/scrapers/test-python --output data.sqlite
+yinyo client test/scrapers/test-python --output data.sqlite
 ```
 
 Now, if you run the same scraper again it should run significantly faster.
 
 ```bash
-clay client test/scrapers/test-python --output data.sqlite
+yinyo client test/scrapers/test-python --output data.sqlite
 ```
 
 ## Getting the website running locally
@@ -122,12 +122,12 @@ Point your web browser at [http://localhost:9000](http://localhost:9000). Login 
 minikube dashboard
 ```
 
-You'll want to look in the "clay-system" and "clay-scrapers" namespaces.
+You'll want to look in the "yinyo-system" and "yinyo-scrapers" namespaces.
 
 ### Accessing Redis
 
 ```bash
-> kubectl exec -it redis-0 -n clay-system sh
+> kubectl exec -it redis-0 -n yinyo-system sh
 /data # redis-cli
 127.0.0.1:6379> auth changeme123
 OK
@@ -141,7 +141,7 @@ Use [webhook.site](https://webhook.site) to see calls to a specific URL in real 
 You can run the test scraper and get the events directed to webhook.site. For example:
 
 ```bash
-clay client test/scrapers/test-python --output data.sqlite --callback https://webhook.site/#!/uuid-specific-to-you
+yinyo client test/scrapers/test-python --output data.sqlite --callback https://webhook.site/#!/uuid-specific-to-you
 ```
 
 ### Reclaiming diskspace in minikube

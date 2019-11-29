@@ -6,11 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/spf13/cobra"
 )
 
-const cacheName = ".clay-build-cache.tgz"
+const cacheName = ".yinyo-build-cache.tgz"
 
 var callbackURL, outputFile, clientServerURL string
 var environment map[string]string
@@ -19,20 +19,20 @@ func init() {
 	clientCmd.Flags().StringVar(&callbackURL, "callback", "", "Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick")
 	// TODO: Check that the output file is a relative path and if not error
 	clientCmd.Flags().StringVar(&outputFile, "output", "", "The output is written to the same local directory at the end. The output file path is given relative to the scraper directory")
-	clientCmd.Flags().StringVar(&clientServerURL, "server", "http://localhost:8080", "Override clay server URL")
+	clientCmd.Flags().StringVar(&clientServerURL, "server", "http://localhost:8080", "Override yinyo server URL")
 	clientCmd.Flags().StringToStringVar(&environment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
 	rootCmd.AddCommand(clientCmd)
 }
 
 var clientCmd = &cobra.Command{
 	Use:   "client scraper_directory",
-	Short: "Runs a scraper in a local directory using clay",
-	Long:  "Runs a scraper in a local directory using clay",
+	Short: "Runs a scraper in a local directory using yinyo",
+	Long:  "Runs a scraper in a local directory using yinyo",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
 
-		client := clayclient.New(clientServerURL)
+		client := yinyoclient.New(clientServerURL)
 		// Create the run
 		run, err := client.CreateRun(scraperDirectory)
 		if err != nil {
@@ -61,17 +61,17 @@ var clientCmd = &cobra.Command{
 			file.Close()
 		}
 
-		var envVariables []clayclient.EnvVariable
+		var envVariables []yinyoclient.EnvVariable
 		for k, v := range environment {
 			// TODO: Fix this inefficient way
-			envVariables = append(envVariables, clayclient.EnvVariable{Name: k, Value: v})
+			envVariables = append(envVariables, yinyoclient.EnvVariable{Name: k, Value: v})
 		}
 
 		// Start the run
-		err = run.Start(&clayclient.StartRunOptions{
+		err = run.Start(&yinyoclient.StartRunOptions{
 			Output:   outputFile,
-			Callback: clayclient.Callback{URL: callbackURL},
-			Env: envVariables,
+			Callback: yinyoclient.Callback{URL: callbackURL},
+			Env:      envVariables,
 		})
 		if err != nil {
 			log.Fatal(err)
@@ -88,7 +88,7 @@ var clientCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			// Only display the log events to the user
-			l, ok := event.(clayclient.LogEvent)
+			l, ok := event.(yinyoclient.LogEvent)
 			if ok {
 				f, err := osStream(l.Stream)
 				if err != nil {
@@ -103,7 +103,7 @@ var clientCmd = &cobra.Command{
 			path := filepath.Join(scraperDirectory, outputFile)
 			err = run.GetOutputToFile(path)
 			if err != nil {
-				if clayclient.IsNotFound(err) {
+				if yinyoclient.IsNotFound(err) {
 					log.Printf("Warning: output file %v does not exist", outputFile)
 				} else {
 					log.Fatal(err)

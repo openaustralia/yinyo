@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/openaustralia/morph-ng/pkg/blobstore"
-	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
-	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
-	"github.com/openaustralia/morph-ng/pkg/stream"
+	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
+	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
 func TestStoragePath(t *testing.T) {
@@ -29,8 +29,8 @@ func TestStartRun(t *testing.T) {
 	job.On(
 		"StartJob",
 		"run-name",
-		"openaustralia/clay-scraper:v1",
-		[]string{"/bin/clay", "wrapper", "run-name", "supersecret", "--output", "output.txt", "--env", "FOO=bar"},
+		"openaustralia/yinyo-scraper:v1",
+		[]string{"/bin/yinyo", "wrapper", "run-name", "supersecret", "--output", "output.txt", "--env", "FOO=bar"},
 	).Return(nil)
 	// Expect that we'll need the secret token
 	job.On("GetToken", "run-name").Return("supersecret", nil)
