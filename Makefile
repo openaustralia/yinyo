@@ -38,6 +38,6 @@ buckets:
 	echo "Minio is running..."
 	mc config host add minio http://localhost:9000 $(minio_access_key) $(minio_secret_key)
 	mc admin user add minio $(minio_yinyo_access_key) $(minio_yinyo_secret_key)
-	mc admin policy add minio clay configs/minio-yinyo-policy.json
-	mc admin policy set minio clay user=$(minio_yinyo_access_key)
-	mc mb -p minio/clay
+	mc admin policy add minio yinyo configs/minio-yinyo-policy.json
+	mc admin policy set minio yinyo user=$(minio_yinyo_access_key)
+	mc mb -p minio/yinyo

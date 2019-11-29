@@ -1,14 +1,10 @@
 {
-  "Version":"2012-10-17",
-  "Statement":[
+  "Version": "2012-10-17",
+  "Statement": [
     {
-      "Effect":"Allow",
-      "Action":[
-        "s3:*"
-      ],
-      "Resource":[
-        "arn:aws:s3:::clay/*"
-      ]
+      "Effect": "Allow",
+      "Action": ["s3:*"],
+      "Resource": ["arn:aws:s3:::yinyo/*"]
     }
   ]
 }
