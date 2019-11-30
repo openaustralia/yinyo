@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <title></title>
+
+    <link
+      rel="canonical"
+      href="https://getbootstrap.com/docs/4.3/examples/starter-template/"
+    />
+
+    
+    <link
+      href="https://getbootstrap.com/docs/4.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+
+    
+    <link
+      href="https://getbootstrap.com/docs/4.3/examples/starter-template/starter-template.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="/">Yinyo</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarsExampleDefault"
+        aria-controls="navbarsExampleDefault"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/"
+              >Home <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link disabled"
+              href="#"
+              tabindex="-1"
+              aria-disabled="true"
+              >Disabled</a
+            >
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="dropdown01"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              >Dropdown</a
+            >
+            <div class="dropdown-menu" aria-labelledby="dropdown01">
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Another action</a>
+              <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    
+  <main role="main" class="container">
+    
+
+<h1 id="design-principles">Design Principles</h1>
+
+<h2 id="purpose-of-design-principles">Purpose of design principles</h2>
+
+<p>As we work on developing and improving things we make lots of design choices. Often those choices are informed by unspoken assumptions. Here we attempt to make those underlying assumptions explicit. Also if a few people are discussing a design it can be really useful to be able to point at a specific design principle and ask “how does it relate to this?” or “what does this tell us?”</p>
+
+<h2 id="the-design-principles">The design principles</h2>
+
+<ul>
+<li>Your users are developers but don’t make the mistake that they like or want complexity. Far from it.</li>
+<li>Maintainability is crucial. This project should last and evolve long into the future.</li>
+<li>in early stages iterate quickly - don’t worry about making breaking changes - version these 0.x to make this explicit</li>
+<li>minimise <a href="https://en.wikipedia.org/wiki/Leaky_abstraction">leaky abstractions</a></li>
+<li>don’t be opinionated about how scrapers are written - you should be able to write them in different languages, use different databases. They might maintain state, they might not. All you can really say is that they’ll get stuff from the internet, probably run for between a minute and a day and produce some output. So, really they could be used for any kind of long running job.</li>
+<li>keep it simple - seems so obvious really you think it shouldn’t need to be said</li>
+<li>don’t try to do too much.</li>
+<li>the thing should feel like an integrated whole where what is does makes sense together but what it doesn’t do also feels clear. If this isn’t the case for whatever reason that probably means something is missing, something is there that shouldn’t be, or something fundamentally needs to be restructured or refactored</li>
+<li>the project should be very much a standalone project from morph.io. It’s about making something that is useful to larger set of people than those that might morph.io. We shouldn’t mention morph unless we’re talking about the history or motivation of the project.</li>
+<li>You should be able to be a user of the project without having to download it and get it running yourself</li>
+<li>Make it straightforward for people to move from being a user to a contributor</li>
+<li>When making changes always figure out how they can be broken into smaller changes. Get those changes deployed to production and used by other people as quickly as possible. Learn from that. Move to the next thing..</li>
+<li>Scaling and resource usage should be automatic and invisible as far as possible</li>
+</ul>
+
+  </main>
+
+
+    <footer class="container py-5">
+      <div class="row justify-content-between">
+        <div class="col-3">
+          
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            class="d-block mb-2"
+            role="img"
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <title>Product</title>
+            <circle cx="12" cy="12" r="10"></circle>
+            <path
+              d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94"
+            ></path>
+          </svg>
+          <small class="d-block mb-3 text-muted"
+            >Made with love by the&nbsp;OpenAustralia&nbsp;Foundation for
+            you</small
+          >
+        </div>
+        <div class="col-3"></div>
+        <div class="col-3">
+          <h5>Resources</h5>
+          <ul class="list-unstyled text-small">
+            <li><a class="text-muted" href="#">GitHub</a></li>
+            <li>
+              <a class="text-muted" href="/design-principles"
+                >Design Principles</a
+              >
+            </li>
+            <li><a class="text-muted" href="/api">API Documentation</a></li>
+          </ul>
+        </div>
+        <div class="col-3">
+          <h5>Contact</h5>
+          <ul class="list-unstyled text-small">
+            
+            <li><a class="text-muted" href="#">hello@...</a></li>
+            <li><a class="text-muted" href="#">Suggest a feature</a></li>
+            <li><a class="text-muted" href="#">Report an issue</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      window.jQuery ||
+        document.write(
+          '<script src="https://getbootstrap.com/docs/4.3/assets/js/vendor/jquery-slim.min.js"><\/script>'
+        );
+    </script>
+    <script
+      src="https://getbootstrap.com/docs/4.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
