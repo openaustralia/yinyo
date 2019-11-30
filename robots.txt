@@ -1,0 +1,4 @@
+# Disallow all robots from everything. This is only temporary until
+# the yinyo is officially released
+User-agent: *
+Disallow: /
