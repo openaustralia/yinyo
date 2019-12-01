@@ -173,7 +173,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func createEvents(w http.ResponseWriter, r *http.Request) error {
+func createEvent(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	// Read json message as is into a string
@@ -305,7 +305,7 @@ var serverCmd = &cobra.Command{
 		authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
 		authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
 		authenticatedRouter.Handle("/events", appHandler(getEvents)).Methods("GET")
-		authenticatedRouter.Handle("/events", appHandler(createEvents)).Methods("POST")
+		authenticatedRouter.Handle("/events", appHandler(createEvent)).Methods("POST")
 		authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
 		authenticatedRouter.Use(authenticate)
 		router.Use(logRequests)
