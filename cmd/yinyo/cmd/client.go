@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -13,6 +14,7 @@ import (
 const cacheName = ".yinyo-build-cache.tgz"
 
 var callbackURL, outputFile, clientServerURL string
+var showEventsJSON bool
 var environment map[string]string
 
 func init() {
@@ -21,6 +23,7 @@ func init() {
 	clientCmd.Flags().StringVar(&outputFile, "output", "", "The output is written to the same local directory at the end. The output file path is given relative to the scraper directory")
 	clientCmd.Flags().StringVar(&clientServerURL, "server", "http://localhost:8080", "Override yinyo server URL")
 	clientCmd.Flags().StringToStringVar(&environment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
+	clientCmd.Flags().BoolVar(&showEventsJSON, "eventsjson", false, "Show the full events output as JSON instead of the default of just showing the log events as text")
 	rootCmd.AddCommand(clientCmd)
 }
 
@@ -87,14 +90,24 @@ var clientCmd = &cobra.Command{
 			if err != nil {
 				log.Fatal(err)
 			}
-			// Only display the log events to the user
-			l, ok := event.(yinyoclient.LogEvent)
-			if ok {
-				f, err := osStream(l.Stream)
+
+			if showEventsJSON {
+				// Convert the event back to JSON for display
+				b, err := json.Marshal(event)
 				if err != nil {
 					log.Fatal(err)
 				}
-				fmt.Fprintln(f, l.Text)
+				fmt.Println(string(b))
+			} else {
+				// Only display the log events to the user
+				l, ok := event.(yinyoclient.LogEvent)
+				if ok {
+					f, err := osStream(l.Stream)
+					if err != nil {
+						log.Fatal(err)
+					}
+					fmt.Fprintln(f, l.Text)
+				}
 			}
 		}
 
