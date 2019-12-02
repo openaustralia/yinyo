@@ -160,14 +160,27 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newID, jsonString, finished, err := app.GetEvent(runName, id)
+		newID, jsonString, err := app.GetEvent(runName, id)
 		id = newID
 		if err != nil {
 			return err
 		}
 		fmt.Fprintln(w, jsonString)
 		flusher.Flush()
-		if finished {
+
+		// Check if this is the last event
+		var jsonEvent yinyoclient.JSONEvent
+		err = json.Unmarshal([]byte(jsonString), &jsonEvent)
+		if err != nil {
+			return err
+		}
+		event, err := jsonEvent.ToEvent()
+		if err != nil {
+			return err
+		}
+		// If this is the last event then stop
+		_, ok := event.(yinyoclient.LastEvent)
+		if ok {
 			break
 		}
 	}

@@ -200,7 +200,7 @@ func (app *App) StartRun(
 }
 
 // GetEvent gets the next event
-func (app *App) GetEvent(runName string, id string) (newID string, jsonString string, finished bool, err error) {
+func (app *App) GetEvent(runName string, id string) (newID string, jsonString string, err error) {
 	return app.Stream.Get(runName, id)
 }
 

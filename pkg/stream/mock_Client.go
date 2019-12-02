@@ -38,7 +38,7 @@ func (_m *MockClient) Delete(key string) error {
 }
 
 // Get provides a mock function with given fields: key, id
-func (_m *MockClient) Get(key string, id string) (string, string, bool, error) {
+func (_m *MockClient) Get(key string, id string) (string, string, error) {
 	ret := _m.Called(key, id)
 
 	var r0 string
@@ -55,19 +55,12 @@ func (_m *MockClient) Get(key string, id string) (string, string, bool, error) {
 		r1 = ret.Get(1).(string)
 	}
 
-	var r2 bool
-	if rf, ok := ret.Get(2).(func(string, string) bool); ok {
+	var r2 error
+	if rf, ok := ret.Get(2).(func(string, string) error); ok {
 		r2 = rf(key, id)
 	} else {
-		r2 = ret.Get(2).(bool)
+		r2 = ret.Error(2)
 	}
 
-	var r3 error
-	if rf, ok := ret.Get(3).(func(string, string) error); ok {
-		r3 = rf(key, id)
-	} else {
-		r3 = ret.Error(3)
-	}
-
-	return r0, r1, r2, r3
+	return r0, r1, r2
 }

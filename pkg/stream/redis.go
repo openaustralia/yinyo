@@ -1,9 +1,7 @@
 package stream
 
 import (
-	"encoding/json"
 	"github.com/go-redis/redis"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 )
 
 type redisStream struct {
@@ -23,8 +21,8 @@ func (stream *redisStream) Add(key string, value string) error {
 }
 
 // Get the next string in the stream based on the id. It will wait until it's
-// available or the stream is finished.
-func (stream *redisStream) Get(key string, id string) (newID string, value string, finished bool, err error) {
+// available
+func (stream *redisStream) Get(key string, id string) (newID string, value string, err error) {
 	// For the moment get one event at a time
 	// TODO: Grab more than one at a time for a little more efficiency
 	result, err := stream.client.XRead(&redis.XReadArgs{
@@ -37,22 +35,6 @@ func (stream *redisStream) Get(key string, id string) (newID string, value strin
 	}
 	newID = result[0].Messages[0].ID
 	value = result[0].Messages[0].Values["json"].(string)
-
-	// TODO: Move this check out of here
-	var jsonEvent yinyoclient.JSONEvent
-	err = json.Unmarshal([]byte(value), &jsonEvent)
-	if err != nil {
-		return
-	}
-	event, err := jsonEvent.ToEvent()
-	if err != nil {
-		return
-	}
-	_, ok := event.(yinyoclient.LastEvent)
-	if ok {
-		finished = true
-	}
-
 	return
 }
 

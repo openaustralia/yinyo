@@ -7,6 +7,6 @@ package stream
 // Client is the interface for accessing the distributed stream
 type Client interface {
 	Add(key string, value string) error
-	Get(key string, id string) (newID string, value string, finished bool, err error)
+	Get(key string, id string) (newID string, value string, err error)
 	Delete(key string) error
 }
