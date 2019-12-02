@@ -192,7 +192,7 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"EOF",
+				`{"type":"last"}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
@@ -297,7 +297,7 @@ func TestFailingBuild(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"EOF",
+				`{"type":"last"}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
@@ -429,7 +429,7 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"EOF",
+				`{"type":"last"}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")

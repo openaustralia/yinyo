@@ -1,7 +1,9 @@
 package stream
 
 import (
+	"encoding/json"
 	"github.com/go-redis/redis"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 )
 
 type redisStream struct {
@@ -36,10 +38,21 @@ func (stream *redisStream) Get(key string, id string) (newID string, value strin
 	newID = result[0].Messages[0].ID
 	value = result[0].Messages[0].Values["json"].(string)
 
-	// TODO: Should this check be here?
-	if value == "EOF" {
+	// TODO: Move this check out of here
+	var jsonEvent yinyoclient.JSONEvent
+	err = json.Unmarshal([]byte(value), &jsonEvent)
+	if err != nil {
+		return
+	}
+	event, err := jsonEvent.ToEvent()
+	if err != nil {
+		return
+	}
+	_, ok := event.(yinyoclient.LastEvent)
+	if ok {
 		finished = true
 	}
+
 	return
 }
 

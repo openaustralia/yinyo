@@ -13,7 +13,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // Run is what you get when you create a run and what you need to update it
@@ -448,7 +447,7 @@ func (run *Run) Start(options *StartRunOptions) error {
 
 // JSONEvent is used for reading/writing JSON
 type JSONEvent struct {
-	Stage  string `json:"stage"`
+	Stage  string `json:"stage,omitempty"`
 	Type   string `json:"type"`
 	Stream string `json:"stream,omitempty"`
 	Text   string `json:"text,omitempty"`
@@ -475,6 +474,10 @@ type LogEvent struct {
 	Text   string
 }
 
+// LastEvent is the last event that's sent in a run
+type LastEvent struct {
+}
+
 // EventIterator is a stream of events
 type EventIterator struct {
 	decoder *json.Decoder
@@ -485,14 +488,19 @@ func (e StartEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "start", Stage: e.Stage})
 }
 
-// MarshalJSON converts a StartEvent to JSON
+// MarshalJSON converts a FinishEvent to JSON
 func (e FinishEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "finish", Stage: e.Stage})
 }
 
-// MarshalJSON converts a StartEvent to JSON
+// MarshalJSON converts a LogEvent to JSON
 func (e LogEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text})
+}
+
+// MarshalJSON converts a LastEvent to JSON
+func (e LastEvent) MarshalJSON() ([]byte, error) {
+	return json.Marshal(JSONEvent{Type: "last"})
 }
 
 // More checks whether another event is available
@@ -509,6 +517,8 @@ func (e *JSONEvent) ToEvent() (Event, error) {
 		return FinishEvent{Stage: e.Stage}, nil
 	case "log":
 		return LogEvent{Stage: e.Stage, Stream: e.Stream, Text: e.Text}, nil
+	case "last":
+		return LastEvent{}, nil
 	default:
 		return nil, errors.New("Unexpected type")
 	}
@@ -553,13 +563,9 @@ func (run *Run) CreateEvent(event Event) error {
 }
 
 // CreateLastEvent sends a special message to close the stream
-// TODO: Figure out a better way of doing this
+// TODO: Inline this method
 func (run *Run) CreateLastEvent() error {
-	resp, err := run.request("POST", "/events", strings.NewReader("EOF"))
-	if err != nil {
-		return err
-	}
-	return checkOK(resp)
+	return run.CreateEvent(LastEvent{})
 }
 
 // ExitData holds information about how things ran and how much resources were used
