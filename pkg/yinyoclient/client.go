@@ -418,6 +418,7 @@ type StartRunOptions struct {
 	Env      []EnvVariable
 }
 
+// EnvVariable is the name and value of an environment variable
 type EnvVariable struct {
 	Name  string
 	Value string
