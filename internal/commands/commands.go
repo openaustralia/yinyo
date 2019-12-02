@@ -3,6 +3,7 @@ package commands
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/stream"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 )
 
 const filenameApp = "app.tgz"
@@ -200,8 +202,15 @@ func (app *App) StartRun(
 }
 
 // GetEvent gets the next event
-func (app *App) GetEvent(runName string, id string) (newID string, jsonString string, err error) {
-	return app.Stream.Get(runName, id)
+func (app *App) GetEvent(runName string, id string) (newID string, event yinyoclient.Event, err error) {
+	newID, jsonString, err := app.Stream.Get(runName, id)
+	var jsonEvent yinyoclient.JSONEvent
+	err = json.Unmarshal([]byte(jsonString), &jsonEvent)
+	if err != nil {
+		return
+	}
+	event, err = jsonEvent.ToEvent()
+	return
 }
 
 // CreateEvent add an event to the stream
