@@ -180,6 +180,7 @@ func TestHelloWorld(t *testing.T) {
 		yinyoclient.StartEvent{Stage: "run"},
 		yinyoclient.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
 		yinyoclient.FinishEvent{Stage: "run"},
+		yinyoclient.LastEvent{},
 	}, eventsList)
 
 	// Get the cache
