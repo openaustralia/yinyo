@@ -6,47 +6,38 @@ headline: |
   super scaleable way.
   Built on top of Kubernetes.
 quotes:
-- name: Matthew Landauer
-  title: cofounder
-  company: OpenAustralia Foundation
-  photo: matthew.jpg
-  text: 'This is going to make morph.io so much better! I wish we had done this *ages*
-    ago.
-
-'
-- name: Matthew Landauer
-  title: cofounder
-  company: OpenAustralia Foundation
-  photo: matthew.jpg
-  text: 'This is going to make morph.io so much better! I wish we had done this *ages*
-    ago.
-
-'
-- name: Matthew Landauer
-  title: cofounder
-  company: OpenAustralia Foundation
-  photo: matthew.jpg
-  text: 'This is going to make morph.io so much better! I wish we had done this *ages*
-    ago.
-
-'
+  - name: Matthew Landauer
+    title: cofounder
+    company: OpenAustralia Foundation
+    photo: matthew.jpg
+    text: This is going to make morph.io so much better! I wish we had done this *ages* ago.
+  - name: Matthew Landauer
+    title: cofounder
+    company: OpenAustralia Foundation
+    photo: matthew.jpg
+    text: This is going to make morph.io so much better! I wish we had done this *ages* ago.
+  - name: Matthew Landauer
+    title: cofounder
+    company: OpenAustralia Foundation
+    photo: matthew.jpg
+    text: This is going to make morph.io so much better! I wish we had done this *ages* ago.
 features:
-- text: |
-    Easily run as many scrapers as you like across a cluster of machines without
-    having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
-- text: |
-    Use the language and libraries you love for writing scrapers.
-    Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
-- text: |
-    Supports many different use cases through a simple, yet flexible API that can operate synchronously
-    or asynchronously.
-- text: |
-    Made specifically for developers of scraper systems be it open source or
-    commercial. No chance of vendor lock-in because it's open source,
-    Apache licensed.
+  - text: |
+      Easily run as many scrapers as you like across a cluster of machines without
+      having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
+  - text: |
+      Use the language and libraries you love for writing scrapers.
+      Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
+  - text: |
+      Supports many different use cases through a simple, yet flexible API that can operate synchronously
+      or asynchronously.
+  - text: |
+      Made specifically for developers of scraper systems be it open source or
+      commercial. No chance of vendor lock-in because it's open source,
+      Apache licensed.
 draft: true
-
 ---
+
 ### What’s a scraper anyway?
 
 A scraper is a program that collects data from the web (usually unstructured) and reformats into structured data. The input is the whole web (and optionally some state like the output of a previous run). The output is some data. Scrapers can often run a long time because they need to traverse a large number of web pages. It’s not unusual for scrapers to run for hours. This means that many technologies are not particularly well suited to running scrapers.
