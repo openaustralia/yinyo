@@ -563,12 +563,6 @@ func (run *Run) CreateEvent(event Event) error {
 	return checkOK(resp)
 }
 
-// CreateLastEvent sends a special message to close the stream
-// TODO: Inline this method
-func (run *Run) CreateLastEvent() error {
-	return run.CreateEvent(LastEvent{})
-}
-
 // ExitData holds information about how things ran and how much resources were used
 type ExitData struct {
 	Build *ExitDataStage `json:"build,omitempty"`

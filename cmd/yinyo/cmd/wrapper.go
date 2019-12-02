@@ -239,7 +239,7 @@ var wrapperCmd = &cobra.Command{
 			}
 		}
 
-		err = run.CreateLastEvent()
+		err = run.CreateEvent(yinyoclient.LastEvent{})
 		if err != nil {
 			log.Fatal(err)
 		}
