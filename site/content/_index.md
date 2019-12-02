@@ -22,20 +22,24 @@ quotes:
     photo: matthew.jpg
     text: This is going to make morph.io so much better! I wish we had done this *ages* ago.
 features:
-  - text: |
+  - heading: Easy and scaleable
+    text: |
       Easily run as many scrapers as you like across a cluster of machines without
       having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
-  - text: |
+  - heading: The languages you love
+    text: |
       Use the language and libraries you love for writing scrapers.
       Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
-  - text: |
+  - heading: Flexible
+    text: |
       Supports many different use cases through a simple, yet flexible API that can operate synchronously
       or asynchronously.
-  - text: |
+  - heading: Open source, liberally licensed
+    text: |
       Made specifically for developers of scraper systems be it open source or
       commercial. No chance of vendor lock-in because it's open source,
       Apache licensed.
-draft: true
+    draft: true
 ---
 
 ### What’s a scraper anyway?
