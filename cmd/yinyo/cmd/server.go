@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/internal/commands"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/spf13/cobra"
 )
 
@@ -177,10 +178,27 @@ func createEvent(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	// Read json message as is into a string
+	// TODO: Switch over to json decoder
 	buf, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
+
+	// Only try to interpret the message as JSON if it isn't the EOF message
+	if string(buf) != "EOF" {
+		// Check the form of the JSON by interpreting it
+		var jsonEvent yinyoclient.JSONEvent
+		err = json.Unmarshal(buf, &jsonEvent)
+		if err != nil {
+			return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
+		}
+		_, err = jsonEvent.ToEvent()
+		if err != nil {
+			return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
+		}
+	}
+
+	// TODO: Send typed event to other methods
 
 	return app.CreateEvent(runName, string(buf))
 }

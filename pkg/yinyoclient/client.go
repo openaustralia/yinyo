@@ -500,7 +500,8 @@ func (iterator *EventIterator) More() bool {
 	return iterator.decoder.More()
 }
 
-func (e *JSONEvent) toEvent() (Event, error) {
+// ToEvent converts the generalised JSON representation of the type to one of the concrete event types
+func (e *JSONEvent) ToEvent() (Event, error) {
 	switch e.Type {
 	case "start":
 		return StartEvent{Stage: e.Stage}, nil
@@ -520,7 +521,7 @@ func (iterator *EventIterator) Next() (Event, error) {
 	if err != nil {
 		return nil, err
 	}
-	return JSONEvent.toEvent()
+	return JSONEvent.ToEvent()
 }
 
 // GetEvents returns a stream of events from the API
