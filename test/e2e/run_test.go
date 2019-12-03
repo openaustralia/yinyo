@@ -212,6 +212,7 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 
 	// Just run it and see what breaks
+	// TODO: Don't run the executable
 	cmd := exec.Command(
 		"yinyo",
 		"wrapper",
@@ -470,4 +471,67 @@ func TestFailingRun(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func TestInternalError(t *testing.T) {
+	// If the wrapper has an error, either from doing something itself or from contacting
+	// the yinyo server, it should also add something to the log to let the user know
+	count := 0
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if count == 0 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"build","type":"start"}`,
+			)
+		} else if count == 1 {
+			// Let's simulate an error with the blob storage. So, the wrapper is trying to
+			// get the application and there's a problem.
+			checkRequest(t, r, "GET", "/runs/run-name/app", "")
+			w.WriteHeader(http.StatusInternalServerError)
+		} else if count == 2 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"stage":"build","type":"log","stream":"interr","text":"There was a problem getting the code"}`,
+			)
+		}
+		count++
+	}
+	ts := httptest.NewServer(http.HandlerFunc(handler))
+	defer ts.Close()
+
+	appPath, importPath, cachePath, err := createTemporaryDirectories()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(appPath)
+	defer os.RemoveAll(importPath)
+	defer os.RemoveAll(cachePath)
+
+	// Just run it and see what breaks
+	// TODO: Don't run the executable
+	cmd := exec.Command(
+		"yinyo",
+		"wrapper",
+		"--app", appPath,
+		"--import", importPath,
+		"--cache", cachePath,
+		"run-name",
+		"run-token",
+		"--output", "output.txt",
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		"--server", ts.URL,
+		"--buildcommand", "echo Build",
+		"--runcommand", "echo Ran",
+	)
+
+	stdoutStderr, err := cmd.CombinedOutput()
+	fmt.Printf("%s\n", stdoutStderr)
+
+	// Because we expect the command to fail
+	assert.NotNil(t, err)
+	assert.NotEqual(t, 0, cmd.ProcessState.ExitCode())
+
+	assert.Equal(t, 3, count)
 }
