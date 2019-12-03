@@ -98,36 +98,57 @@ Built on top of Kubernetes.
 
     <div class="row py-5">
   
-    <div class="col">
-      
+  <div class="col">
+    
+    <div class="text-center">
+      <h3>Easy and scaleable</h3>
       Easily run as many scrapers as you like across a cluster of machines without
 having to sweat the details. Powered by <a href="https://kubernetes.io/">Kubernetes</a>.
     </div>
+  </div>
   
-    <div class="col">
-      
+  <div class="col">
+    
+    <div class="text-center">
+      <h3>The languages you love</h3>
       Use the language and libraries you love for writing scrapers.
 Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
     </div>
+  </div>
   
-    <div class="col">
-      
+  <div class="col">
+    
+    <div class="text-center">
+      <h3>Flexible</h3>
       Supports many different use cases through a simple, yet flexible API that can operate synchronously
 or asynchronously.
     </div>
+  </div>
   
-    <div class="col">
-      
+  <div class="col">
+    
+    <div class="text-center">
+      <h3>Open source, liberally licensed</h3>
       Made specifically for developers of scraper systems be it open source or
 commercial. No chance of vendor lock-in because it&rsquo;s open source,
 Apache licensed.
     </div>
+  </div>
   
 </div>
 
 
     <div class="py-5">
       
+
+<h3 id="what-s-a-scraper-anyway">What’s a scraper anyway?</h3>
+
+<p>A scraper is a program that collects data from the web (usually unstructured) and reformats into structured data. The input is the whole web (and optionally some state like the output of a previous run). The output is some data. Scrapers can often run a long time because they need to traverse a large number of web pages. It’s not unusual for scrapers to run for hours. This means that many technologies are not particularly well suited to running scrapers.</p>
+
+<h3 id="origins-and-motivations">Origins and motivations</h3>
+
+<p>Yinyo comes out of OpenAustralia Foundation’s many years of experience writing scrapers and hosting the world’s largest site for open scrapers, morph.io. Originally we designed morph.io to run on top of Docker. As the site has continued to grow over the years we have hit the limitations of some of the early design decisions we made. That’s why we created Yinyo. It is intended as a much improved, much more scaleable low level underpinnings of morph.io. But it’s a lot more than that. It’s intended as a foundation upon which other developers can build other scraper systems quite different from morph.io. Yinyo isn’t opinionated about how scrapers store their data or what languages they’re written in. Yet using it to develop your scraper system will save you an enormous amount of effort</p>
+
       <a class="btn btn-primary" href="#get-started-in-the-documentation" role="button">Get Started</a>
     </div>
 
@@ -207,7 +228,13 @@ Apache licensed.
         <div class="col-3">
           <h5>Resources</h5>
           <ul class="list-unstyled text-small">
-            <li><a class="text-muted" href="#">GitHub</a></li>
+            <li>
+              <a
+                class="text-muted"
+                href="https://github.com/openaustralia/yinyo"
+                >GitHub</a
+              >
+            </li>
             <li>
               <a class="text-muted" href="/design-principles"
                 >Design Principles</a
@@ -219,10 +246,27 @@ Apache licensed.
         <div class="col-3">
           <h5>Contact</h5>
           <ul class="list-unstyled text-small">
-            
-            <li><a class="text-muted" href="#">hello@...</a></li>
-            <li><a class="text-muted" href="#">Suggest a feature</a></li>
-            <li><a class="text-muted" href="#">Report an issue</a></li>
+            <li>
+              <a
+                class="text-muted"
+                href="mailto:contact@oaf.org.au?subject=Saying%20hello%20-%20I%20want%20to%20talk%20about%20Yinyo"
+                >contact@oaf.org.au</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-muted"
+                href="https://github.com/openaustralia/yinyo/issues/new?labels=enhancement"
+                >Suggest a feature</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-muted"
+                href="https://github.com/openaustralia/yinyo/issues/new?labels=bug"
+                >Report an issue</a
+              >
+            </li>
           </ul>
         </div>
       </div>
