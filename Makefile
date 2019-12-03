@@ -19,13 +19,17 @@ ppa:
 mocks:
 	mockery -all -inpkg
 
-website: apidocs
-	# Starts a development web server at http://localhost:1313
-	hugo server -s site -D
+shins: widdershins
+	docker run --rm -v `pwd`:/app tchaypo/shins-docker /app/openapi/definition.md -o /app/site/content/api.html --inline
 
-apidocs:
-	widdershins --summary openapi/definition.yaml -o openapi/definition.md
-	shins openapi/definition.md -o site/content/api.html --inline
+widdershins:
+	docker run --rm -v `pwd`:/app quay.io/verygoodsecurity/widdershins-docker --summary /app/openapi/definition.yaml -o /app/openapi/definition.md
+
+apidocs: widdershins shins
+
+website: apidocs
+	docker run --rm --name "yinyo-docs" -P -v $$(pwd):/src -p 1313:1313 klakegg/hugo server -s /src/site -D
+
 
 minio_access_key = $(shell grep access_key configs/secrets-minio.env | cut -d "=" -f 2)
 minio_secret_key = $(shell grep secret_key configs/secrets-minio.env | cut -d "=" -f 2)
