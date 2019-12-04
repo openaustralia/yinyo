@@ -217,7 +217,7 @@ func (app *App) GetEvent(runName string, id string) (newID string, event yinyocl
 func (app *App) CreateEvent(runName string, eventJSON string) error {
 	err1 := app.postCallbackEvent(runName, eventJSON)
 	// TODO: Use something like runName-events instead for the stream name
-	err2 := app.Stream.Add(runName, eventJSON)
+	_, err2 := app.Stream.Add(runName, eventJSON)
 
 	// Only error when we have tried sending the event to both places
 	if err1 != nil {

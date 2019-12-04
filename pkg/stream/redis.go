@@ -13,11 +13,11 @@ func NewRedis(redisClient *redis.Client) Client {
 	return &redisStream{client: redisClient}
 }
 
-func (stream *redisStream) Add(key string, value string) error {
+func (stream *redisStream) Add(key string, value string) (string, error) {
 	return stream.client.XAdd(&redis.XAddArgs{
 		Stream: key,
 		Values: map[string]interface{}{"json": value},
-	}).Err()
+	}).Result()
 }
 
 // Get the next string in the stream based on the id. It will wait until it's

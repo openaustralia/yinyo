@@ -64,7 +64,7 @@ func TestCreateEvent(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
+	stream.On("Add", "run-name", `{"some": "json"}`).Return("123", nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -94,7 +94,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
+	stream.On("Add", "run-name", `{"some": "json"}`).Return("123", nil)
 	keyValueStore.On("Get", "url:run-name").Return("", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -115,7 +115,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
+	stream.On("Add", "run-name", `{"some": "json"}`).Return("123", nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
