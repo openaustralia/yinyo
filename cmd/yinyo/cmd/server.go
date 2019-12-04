@@ -197,14 +197,12 @@ func createEvent(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
-	_, err = jsonEvent.ToEvent()
+	event, err := jsonEvent.ToEvent()
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
-	// TODO: Send typed event to other methods
-
-	return app.CreateEvent(runName, string(buf))
+	return app.CreateEvent(runName, event)
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {

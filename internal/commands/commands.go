@@ -214,10 +214,15 @@ func (app *App) GetEvent(runName string, id string) (newID string, event yinyocl
 }
 
 // CreateEvent add an event to the stream
-func (app *App) CreateEvent(runName string, eventJSON string) error {
-	err1 := app.postCallbackEvent(runName, eventJSON)
+func (app *App) CreateEvent(runName string, event yinyoclient.Event) error {
+	// Convert event back to a string
+	b, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+	err1 := app.postCallbackEvent(runName, string(b))
 	// TODO: Use something like runName-events instead for the stream name
-	_, err2 := app.Stream.Add(runName, eventJSON)
+	_, err2 := app.Stream.Add(runName, string(b))
 
 	// Only error when we have tried sending the event to both places
 	if err1 != nil {
