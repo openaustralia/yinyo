@@ -154,7 +154,7 @@ func TestHelloWorld(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var eventsList []yinyoclient.Event
+	var eventsList []yinyoclient.EventWrapper
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
 	for iterator.More() {
@@ -166,21 +166,21 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
-	assert.Equal(t, []yinyoclient.Event{
-		yinyoclient.StartEvent{Stage: "build"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"},
-		yinyoclient.FinishEvent{Stage: "build"},
-		yinyoclient.StartEvent{Stage: "run"},
-		yinyoclient.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
-		yinyoclient.FinishEvent{Stage: "run"},
-		yinyoclient.LastEvent{},
+	assert.Equal(t, []yinyoclient.EventWrapper{
+		yinyoclient.EventWrapper{Event: yinyoclient.StartEvent{Stage: "build"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.FinishEvent{Stage: "build"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.StartEvent{Stage: "run"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.FinishEvent{Stage: "run"}},
+		yinyoclient.EventWrapper{Event: yinyoclient.LastEvent{}},
 	}, eventsList)
 
 	// Get the cache

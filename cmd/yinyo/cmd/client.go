@@ -100,7 +100,7 @@ var clientCmd = &cobra.Command{
 				fmt.Println(string(b))
 			} else {
 				// Only display the log events to the user
-				l, ok := event.(yinyoclient.LogEvent)
+				l, ok := event.Event.(yinyoclient.LogEvent)
 				if ok {
 					f, err := osStream(l.Stream)
 					if err != nil {

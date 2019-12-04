@@ -454,6 +454,11 @@ type JSONEvent struct {
 	Text   string `json:"text,omitempty"`
 }
 
+// EventWrapper is the top level struct for representing events
+type EventWrapper struct {
+	Event Event
+}
+
 // Event is the interface for all event types
 type Event interface {
 }
@@ -484,6 +489,11 @@ type EventIterator struct {
 	decoder *json.Decoder
 }
 
+// MarshalJSON converts an EventWrapper to JSON
+func (e EventWrapper) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Event)
+}
+
 // MarshalJSON converts a StartEvent to JSON
 func (e StartEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "start", Stage: e.Stage})
@@ -510,27 +520,29 @@ func (iterator *EventIterator) More() bool {
 }
 
 // ToEvent converts the generalised JSON representation of the type to one of the concrete event types
-func (e *JSONEvent) ToEvent() (Event, error) {
+func (e *JSONEvent) ToEvent() (EventWrapper, error) {
+	var event Event
 	switch e.Type {
 	case "start":
-		return StartEvent{Stage: e.Stage}, nil
+		event = StartEvent{Stage: e.Stage}
 	case "finish":
-		return FinishEvent{Stage: e.Stage}, nil
+		event = FinishEvent{Stage: e.Stage}
 	case "log":
-		return LogEvent{Stage: e.Stage, Stream: e.Stream, Text: e.Text}, nil
+		event = LogEvent{Stage: e.Stage, Stream: e.Stream, Text: e.Text}
 	case "last":
-		return LastEvent{}, nil
+		event = LastEvent{}
 	default:
-		return nil, errors.New("Unexpected type")
+		return EventWrapper{}, errors.New("Unexpected type")
 	}
+	return EventWrapper{Event: event}, nil
 }
 
 // Next returns the next event
-func (iterator *EventIterator) Next() (Event, error) {
+func (iterator *EventIterator) Next() (EventWrapper, error) {
 	var JSONEvent JSONEvent
 	err := iterator.decoder.Decode(&JSONEvent)
 	if err != nil {
-		return nil, err
+		return EventWrapper{}, err
 	}
 	return JSONEvent.ToEvent()
 }

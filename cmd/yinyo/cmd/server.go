@@ -173,7 +173,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		flusher.Flush()
 
 		// If this is the last event then stop
-		_, ok := event.(yinyoclient.LastEvent)
+		_, ok := event.Event.(yinyoclient.LastEvent)
 		if ok {
 			break
 		}
