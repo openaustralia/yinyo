@@ -564,7 +564,7 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 }
 
 // CreateEvent sends an event
-func (run *Run) CreateEvent(event Event) error {
+func (run *Run) CreateEvent(event EventWrapper) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
