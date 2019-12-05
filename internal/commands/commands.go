@@ -204,12 +204,10 @@ func (app *App) StartRun(
 // GetEvent gets the next event
 func (app *App) GetEvent(runName string, id string) (newID string, event yinyoclient.EventWrapper, err error) {
 	newID, jsonString, err := app.Stream.Get(runName, id)
-	var jsonEvent yinyoclient.JSONEvent
-	err = json.Unmarshal([]byte(jsonString), &jsonEvent)
 	if err != nil {
 		return
 	}
-	event, err = jsonEvent.ToEvent()
+	err = json.Unmarshal([]byte(jsonString), &event)
 	return
 }
 

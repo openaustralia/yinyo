@@ -494,6 +494,22 @@ func (e EventWrapper) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.Event)
 }
 
+// UnmarshalJSON converts json to EventWrapper
+func (e *EventWrapper) UnmarshalJSON(data []byte) error {
+	var jsonEvent JSONEvent
+	err := json.Unmarshal(data, &jsonEvent)
+	if err != nil {
+		return err
+	}
+
+	event, err := jsonEvent.ToEvent()
+	if err != nil {
+		return err
+	}
+	e.Event = event.Event
+	return nil
+}
+
 // MarshalJSON converts a StartEvent to JSON
 func (e StartEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "start", Stage: e.Stage})
@@ -538,13 +554,9 @@ func (e *JSONEvent) ToEvent() (EventWrapper, error) {
 }
 
 // Next returns the next event
-func (iterator *EventIterator) Next() (EventWrapper, error) {
-	var JSONEvent JSONEvent
-	err := iterator.decoder.Decode(&JSONEvent)
-	if err != nil {
-		return EventWrapper{}, err
-	}
-	return JSONEvent.ToEvent()
+func (iterator *EventIterator) Next() (event EventWrapper, err error) {
+	err = iterator.decoder.Decode(&event)
+	return
 }
 
 // GetEvents returns a stream of events from the API

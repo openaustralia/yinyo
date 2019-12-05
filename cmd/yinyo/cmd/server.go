@@ -192,12 +192,8 @@ func createEvent(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Check the form of the JSON by interpreting it
-	var jsonEvent yinyoclient.JSONEvent
-	err = json.Unmarshal(buf, &jsonEvent)
-	if err != nil {
-		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
-	}
-	event, err := jsonEvent.ToEvent()
+	var event yinyoclient.EventWrapper
+	err = json.Unmarshal(buf, &event)
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
