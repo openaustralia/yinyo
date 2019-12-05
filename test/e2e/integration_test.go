@@ -168,20 +168,20 @@ func TestHelloWorld(t *testing.T) {
 	}
 	bar.Finish()
 	assert.Equal(t, []event.EventWrapper{
-		event.EventWrapper{Event: event.StartEvent{Stage: "build"}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"}},
-		event.EventWrapper{Event: event.FinishEvent{Stage: "build"}},
-		event.EventWrapper{Event: event.StartEvent{Stage: "run"}},
-		event.EventWrapper{Event: event.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"}},
-		event.EventWrapper{Event: event.FinishEvent{Stage: "run"}},
-		event.EventWrapper{Event: event.LastEvent{}},
+		event.NewStartEvent("build"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       "),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
+		event.NewFinishEvent("build"),
+		event.NewStartEvent("run"),
+		event.NewLogEvent("run", "stdout", "Hello World!"),
+		event.NewFinishEvent("run"),
+		event.NewLastEvent(),
 	}, eventsList)
 
 	// Get the cache

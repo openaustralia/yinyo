@@ -83,7 +83,7 @@ func TestCreateEvent(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.EventWrapper{Event: event.StartEvent{Stage: "build"}})
+	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -104,7 +104,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.EventWrapper{Event: event.StartEvent{Stage: "build"}})
+	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -134,7 +134,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.EventWrapper{Event: event.StartEvent{Stage: "build"}})
+	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
 	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
 
 	stream.AssertExpectations(t)

@@ -14,11 +14,13 @@ type JSONEvent struct {
 }
 
 // EventWrapper is the top level struct for representing events
+// TODO: Rename this
 type EventWrapper struct {
 	Event Event
 }
 
 // Event is the interface for all event types
+// TODO: Rename this
 type Event interface {
 }
 
@@ -89,4 +91,24 @@ func (e LogEvent) MarshalJSON() ([]byte, error) {
 // MarshalJSON converts a LastEvent to JSON
 func (e LastEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "last"})
+}
+
+// NewLogEvent creates and returns a new log event
+func NewLogEvent(stage string, stream string, text string) EventWrapper {
+	return EventWrapper{Event: LogEvent{Stage: stage, Stream: stream, Text: text}}
+}
+
+// NewStartEvent creates and returns a new start event
+func NewStartEvent(stage string) EventWrapper {
+	return EventWrapper{Event: StartEvent{Stage: stage}}
+}
+
+// NewFinishEvent creates and returns a new finish event
+func NewFinishEvent(stage string) EventWrapper {
+	return EventWrapper{Event: FinishEvent{Stage: stage}}
+}
+
+// NewLastEvent creates and returns a new last event
+func NewLastEvent() EventWrapper {
+	return EventWrapper{Event: LastEvent{}}
 }
