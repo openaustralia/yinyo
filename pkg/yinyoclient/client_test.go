@@ -1,14 +1,12 @@
 package yinyoclient
 
 import (
-	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -109,28 +107,4 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-func TestMarshalStartEvent(t *testing.T) {
-	b, err := json.Marshal(event.StartEvent{Stage: "build"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, `{"stage":"build","type":"start"}`, string(b))
-}
-
-func TestMarshalFinishEvent(t *testing.T) {
-	b, err := json.Marshal(event.FinishEvent{Stage: "build"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, `{"stage":"build","type":"finish"}`, string(b))
-}
-
-func TestMarshalLogEvent(t *testing.T) {
-	b, err := json.Marshal(event.LogEvent{Stage: "build", Stream: "stdout", Text: "Hello"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, `{"stage":"build","type":"log","stream":"stdout","text":"Hello"}`, string(b))
 }
