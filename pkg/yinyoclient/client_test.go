@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -111,7 +112,7 @@ func TestArchive(t *testing.T) {
 }
 
 func TestMarshalStartEvent(t *testing.T) {
-	b, err := json.Marshal(StartEvent{Stage: "build"})
+	b, err := json.Marshal(event.StartEvent{Stage: "build"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +120,7 @@ func TestMarshalStartEvent(t *testing.T) {
 }
 
 func TestMarshalFinishEvent(t *testing.T) {
-	b, err := json.Marshal(FinishEvent{Stage: "build"})
+	b, err := json.Marshal(event.FinishEvent{Stage: "build"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +128,7 @@ func TestMarshalFinishEvent(t *testing.T) {
 }
 
 func TestMarshalLogEvent(t *testing.T) {
-	b, err := json.Marshal(LogEvent{Stage: "build", Stream: "stdout", Text: "Hello"})
+	b, err := json.Marshal(event.LogEvent{Stage: "build", Stream: "stdout", Text: "Hello"})
 	if err != nil {
 		t.Fatal(err)
 	}

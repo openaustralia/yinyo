@@ -13,10 +13,10 @@ import (
 	"github.com/go-redis/redis"
 
 	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/stream"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 )
 
 const filenameApp = "app.tgz"
@@ -202,7 +202,7 @@ func (app *App) StartRun(
 }
 
 // GetEvent gets the next event
-func (app *App) GetEvent(runName string, id string) (newID string, event yinyoclient.EventWrapper, err error) {
+func (app *App) GetEvent(runName string, id string) (newID string, event event.EventWrapper, err error) {
 	newID, jsonString, err := app.Stream.Get(runName, id)
 	if err != nil {
 		return
@@ -212,7 +212,7 @@ func (app *App) GetEvent(runName string, id string) (newID string, event yinyocl
 }
 
 // CreateEvent add an event to the stream
-func (app *App) CreateEvent(runName string, event yinyoclient.EventWrapper) error {
+func (app *App) CreateEvent(runName string, event event.EventWrapper) error {
 	// Convert event back to a string
 	b, err := json.Marshal(event)
 	if err != nil {

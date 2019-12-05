@@ -12,7 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/internal/commands"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/spf13/cobra"
 )
 
@@ -160,12 +160,12 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newID, event, err := app.GetEvent(runName, id)
+		newID, e, err := app.GetEvent(runName, id)
 		id = newID
 		if err != nil {
 			return err
 		}
-		b, err := json.Marshal(event)
+		b, err := json.Marshal(e)
 		if err != nil {
 			return err
 		}
@@ -173,7 +173,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		flusher.Flush()
 
 		// If this is the last event then stop
-		_, ok := event.Event.(yinyoclient.LastEvent)
+		_, ok := e.Event.(event.LastEvent)
 		if ok {
 			break
 		}
@@ -192,7 +192,7 @@ func createEvent(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Check the form of the JSON by interpreting it
-	var event yinyoclient.EventWrapper
+	var event event.EventWrapper
 	err = json.Unmarshal(buf, &event)
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")

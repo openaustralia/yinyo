@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/stream"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 )
 
 func TestStoragePath(t *testing.T) {
@@ -83,7 +83,7 @@ func TestCreateEvent(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", yinyoclient.EventWrapper{Event: yinyoclient.StartEvent{Stage: "build"}})
+	err := app.CreateEvent("run-name", event.EventWrapper{Event: event.StartEvent{Stage: "build"}})
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -104,7 +104,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", yinyoclient.EventWrapper{Event: yinyoclient.StartEvent{Stage: "build"}})
+	err := app.CreateEvent("run-name", event.EventWrapper{Event: event.StartEvent{Stage: "build"}})
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -134,7 +134,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", yinyoclient.EventWrapper{Event: yinyoclient.StartEvent{Stage: "build"}})
+	err := app.CreateEvent("run-name", event.EventWrapper{Event: event.StartEvent{Stage: "build"}})
 	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
 
 	stream.AssertExpectations(t)

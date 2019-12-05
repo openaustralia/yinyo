@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/spf13/cobra"
 )
@@ -86,21 +87,21 @@ var clientCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		for events.More() {
-			event, err := events.Next()
+			e, err := events.Next()
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			if showEventsJSON {
 				// Convert the event back to JSON for display
-				b, err := json.Marshal(event)
+				b, err := json.Marshal(e)
 				if err != nil {
 					log.Fatal(err)
 				}
 				fmt.Println(string(b))
 			} else {
 				// Only display the log events to the user
-				l, ok := event.Event.(yinyoclient.LogEvent)
+				l, ok := e.Event.(event.LogEvent)
 				if ok {
 					f, err := osStream(l.Stream)
 					if err != nil {
