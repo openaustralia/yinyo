@@ -502,11 +502,18 @@ func (e *EventWrapper) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	event, err := jsonEvent.ToEvent()
-	if err != nil {
-		return err
+	switch jsonEvent.Type {
+	case "start":
+		e.Event = StartEvent{Stage: jsonEvent.Stage}
+	case "finish":
+		e.Event = FinishEvent{Stage: jsonEvent.Stage}
+	case "log":
+		e.Event = LogEvent{Stage: jsonEvent.Stage, Stream: jsonEvent.Stream, Text: jsonEvent.Text}
+	case "last":
+		e.Event = LastEvent{}
+	default:
+		return errors.New("Unexpected type")
 	}
-	e.Event = event.Event
 	return nil
 }
 
@@ -533,24 +540,6 @@ func (e LastEvent) MarshalJSON() ([]byte, error) {
 // More checks whether another event is available
 func (iterator *EventIterator) More() bool {
 	return iterator.decoder.More()
-}
-
-// ToEvent converts the generalised JSON representation of the type to one of the concrete event types
-func (e *JSONEvent) ToEvent() (EventWrapper, error) {
-	var event Event
-	switch e.Type {
-	case "start":
-		event = StartEvent{Stage: e.Stage}
-	case "finish":
-		event = FinishEvent{Stage: e.Stage}
-	case "log":
-		event = LogEvent{Stage: e.Stage, Stream: e.Stream, Text: e.Text}
-	case "last":
-		event = LastEvent{}
-	default:
-		return EventWrapper{}, errors.New("Unexpected type")
-	}
-	return EventWrapper{Event: event}, nil
 }
 
 // Next returns the next event
