@@ -1,6 +1,9 @@
 .PHONY: image server test build ppa run website apidocs
 
-all: run
+all: build
+
+build:
+	go build ./...
 
 run: install
 	yinyo client test/scrapers/test-python --output data.sqlite
