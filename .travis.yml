@@ -8,7 +8,7 @@ jobs:
 addons:
   apt:
     sources:
-    - sourceline: 'https://download.virtualbox.org/virtualbox/debian xenial contrib'
+    - sourceline: 'deb https://download.virtualbox.org/virtualbox/debian xenial contrib'
       key_url: 'https://www.virtualbox.org/download/oracle_vbox_2016.asc'
     packages:
     - virtualbox-6.0
