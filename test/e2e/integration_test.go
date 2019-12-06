@@ -167,7 +167,7 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
-	assert.Equal(t, []event.Event{
+	expected := []event.Event{
 		event.NewStartEvent("build"),
 		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
 		event.NewLogEvent("build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
@@ -182,7 +182,13 @@ func TestHelloWorld(t *testing.T) {
 		event.NewLogEvent("run", "stdout", "Hello World!"),
 		event.NewFinishEvent("run"),
 		event.NewLastEvent(),
-	}, eventsList)
+	}
+	// Copy across the IDs from the eventsList to the expected because we don't know what the
+	// IDs will be ahead of time and this make it easy to compare expected and eventsList
+	for i := range eventsList {
+		expected[i].ID = eventsList[i].ID
+	}
+	assert.Equal(t, expected, eventsList)
 
 	// Get the cache
 	cache, err := run.GetCache()

@@ -208,6 +208,8 @@ func (app *App) GetEvent(runName string, id string) (newID string, event event.E
 		return
 	}
 	err = json.Unmarshal([]byte(jsonString), &event)
+	// Add the id to the event
+	event.ID = newID
 	return
 }
 
@@ -218,18 +220,14 @@ func (app *App) CreateEvent(runName string, event event.Event) error {
 	if err != nil {
 		return err
 	}
-	err1 := app.postCallbackEvent(runName, string(b))
 	// TODO: Use something like runName-events instead for the stream name
-	_, err2 := app.Stream.Add(runName, string(b))
-
-	// Only error when we have tried sending the event to both places
-	if err1 != nil {
-		return err1
+	id, err := app.Stream.Add(runName, string(b))
+	if err != nil {
+		return err
 	}
-	if err2 != nil {
-		return err2
-	}
-	return nil
+	// Add the ID of the event
+	event.ID = id
+	return app.postCallbackEvent(runName, event)
 }
 
 // DeleteRun deletes the run. Should be the last thing called

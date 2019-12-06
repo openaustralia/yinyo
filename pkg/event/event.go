@@ -7,12 +7,14 @@ import (
 
 // JSONEvent is used for reading JSON
 type JSONEvent struct {
+	ID   string           `json:"id"`
 	Type string           `json:"type"`
 	Data *json.RawMessage `json:"data"`
 }
 
 // Event is the top level struct for representing events
 type Event struct {
+	ID   string `json:"id,omitempty"`
 	Type string `json:"type"`
 	Data Data   `json:"data"`
 }
@@ -51,6 +53,7 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	}
 
 	e.Type = jsonEvent.Type
+	e.ID = jsonEvent.ID
 	switch jsonEvent.Type {
 	case "start":
 		var d StartData
