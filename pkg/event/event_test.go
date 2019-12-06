@@ -7,26 +7,45 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMarshalStartEvent(t *testing.T) {
-	b, err := json.Marshal(NewStartEvent("build"))
+// test marshalling and unmarshalling of event
+func testMarshal(t *testing.T, event EventWrapper, jsonString string) {
+	b, err := json.Marshal(event)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, `{"stage":"build","type":"start"}`, string(b))
+	assert.Equal(t, jsonString, string(b))
+	var actual EventWrapper
+	err = json.Unmarshal(b, &actual)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, event, actual)
+}
+
+func TestMarshalStartEvent(t *testing.T) {
+	testMarshal(t,
+		NewStartEvent("build"),
+		`{"stage":"build","type":"start"}`,
+	)
 }
 
 func TestMarshalFinishEvent(t *testing.T) {
-	b, err := json.Marshal(NewFinishEvent("build"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, `{"stage":"build","type":"finish"}`, string(b))
+	testMarshal(t,
+		NewFinishEvent("build"),
+		`{"stage":"build","type":"finish"}`,
+	)
 }
 
 func TestMarshalLogEvent(t *testing.T) {
-	b, err := json.Marshal(NewLogEvent("build", "stdout", "Hello"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, `{"stage":"build","type":"log","stream":"stdout","text":"Hello"}`, string(b))
+	testMarshal(t,
+		NewLogEvent("build", "stdout", "Hello"),
+		`{"stage":"build","type":"log","stream":"stdout","text":"Hello"}`,
+	)
+}
+
+func TestMarshalLastEvent(t *testing.T) {
+	testMarshal(t,
+		NewLastEvent(),
+		`{"type":"last"}`,
+	)
 }
