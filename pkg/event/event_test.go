@@ -25,27 +25,27 @@ func testMarshal(t *testing.T, event Event, jsonString string) {
 func TestMarshalStartEvent(t *testing.T) {
 	testMarshal(t,
 		NewStartEvent("build"),
-		`{"stage":"build","type":"start"}`,
+		`{"type":"start","data":{"stage":"build"}}`,
 	)
 }
 
 func TestMarshalFinishEvent(t *testing.T) {
 	testMarshal(t,
 		NewFinishEvent("build"),
-		`{"stage":"build","type":"finish"}`,
+		`{"type":"finish","data":{"stage":"build"}}`,
 	)
 }
 
 func TestMarshalLogEvent(t *testing.T) {
 	testMarshal(t,
 		NewLogEvent("build", "stdout", "Hello"),
-		`{"stage":"build","type":"log","stream":"stdout","text":"Hello"}`,
+		`{"type":"log","data":{"stage":"build","stream":"stdout","text":"Hello"}}`,
 	)
 }
 
 func TestMarshalLastEvent(t *testing.T) {
 	testMarshal(t,
 		NewLastEvent(),
-		`{"type":"last"}`,
+		`{"type":"last","data":{}}`,
 	)
 }

@@ -58,7 +58,7 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"start"}`,
+				`{"type":"start","data":{"stage":"build"}}`,
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
@@ -88,61 +88,61 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"_app_"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"_app_"}}`,
 			)
 		} else if count == 4 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"Procfile"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"Procfile"}}`,
 			)
 		} else if count == 5 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"requirements.txt"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"requirements.txt"}}`,
 			)
 		} else if count == 6 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"runtime.txt"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"runtime.txt"}}`,
 			)
 		} else if count == 7 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"scraper.py"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"scraper.py"}}`,
 			)
 		} else if count == 8 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"_cache_"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"_cache_"}}`,
 			)
 		} else if count == 9 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"requirements.txt"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"requirements.txt"}}`,
 			)
 		} else if count == 10 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"runtime.txt"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"runtime.txt"}}`,
 			)
 		} else if count == 11 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"scraper.py"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"scraper.py"}}`,
 			)
 		} else if count == 12 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"build"}}`,
 			)
 		} else if count == 13 {
 			// We're not testing that the correct thing is being uploaded here for the time being
@@ -151,13 +151,13 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"start"}`,
+				`{"type":"start","data":{"stage":"run"}}`,
 			)
 		} else if count == 15 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"log","stream":"stdout","text":"Ran"}`,
+				`{"type":"log","data":{"stage":"run","stream":"stdout","text":"Ran"}}`,
 			)
 		} else if count == 16 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
@@ -186,13 +186,13 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"run"}}`,
 			)
 		} else if count == 18 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"type":"last"}`,
+				`{"type":"last","data":{}}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
@@ -244,7 +244,7 @@ func TestFailingBuild(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"start"}`,
+				`{"type":"start","data":{"stage":"build"}}`,
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
@@ -265,13 +265,13 @@ func TestFailingBuild(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stderr","text":"bash: failing_command: command not found"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stderr","text":"bash: failing_command: command not found"}}`,
 			)
 		} else if count == 4 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"build"}}`,
 			)
 		} else if count == 5 {
 			// We're not testing that the correct thing is being uploaded here for the time being
@@ -298,7 +298,7 @@ func TestFailingBuild(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"type":"last"}`,
+				`{"type":"last","data":{}}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
@@ -347,7 +347,7 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"start"}`,
+				`{"type":"start","data":{"stage":"build"}}`,
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
@@ -368,13 +368,13 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"build"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"build"}}`,
 			)
 		} else if count == 4 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"build"}}`,
 			)
 		} else if count == 5 {
 			// We're not testing that the correct thing is being uploaded here for the time being
@@ -383,13 +383,13 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"start"}`,
+				`{"type":"start","data":{"stage":"run"}}`,
 			)
 		} else if count == 7 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"log","stream":"stderr","text":"bash: failing_command: command not found"}`,
+				`{"type":"log","data":{"stage":"run","stream":"stderr","text":"bash: failing_command: command not found"}}`,
 			)
 		} else if count == 8 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
@@ -424,13 +424,13 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"run"}}`,
 			)
 		} else if count == 11 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"type":"last"}`,
+				`{"type":"last","data":{}}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
@@ -482,7 +482,7 @@ func TestInternalError(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"start"}`,
+				`{"type":"start","data":{"stage":"build"}}`,
 			)
 		} else if count == 1 {
 			// Let's simulate an error with the blob storage. So, the wrapper is trying to
@@ -493,7 +493,7 @@ func TestInternalError(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"interr","text":"There was a problem getting the code"}`,
+				`{"type":"log","data":{"stage":"build","stream":"interr","text":"There was a problem getting the code"}}`,
 			)
 		}
 		count++

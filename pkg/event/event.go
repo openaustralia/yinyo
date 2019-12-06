@@ -5,17 +5,16 @@ import (
 	"errors"
 )
 
-// JSONEvent is used for reading/writing JSON
+// JSONEvent is used for reading JSON
 type JSONEvent struct {
-	Stage  string `json:"stage,omitempty"`
-	Type   string `json:"type"`
-	Stream string `json:"stream,omitempty"`
-	Text   string `json:"text,omitempty"`
+	Type string           `json:"type"`
+	Data *json.RawMessage `json:"data"`
 }
 
 // Event is the top level struct for representing events
 type Event struct {
-	Data Data
+	Type string `json:"type"`
+	Data Data   `json:"data"`
 }
 
 // Data is the interface for all core event data
@@ -24,28 +23,23 @@ type Data interface {
 
 // StartData represents the start of a build or run
 type StartData struct {
-	Stage string
+	Stage string `json:"stage"`
 }
 
 // FinishData represent the completion of a build or run
 type FinishData struct {
-	Stage string
+	Stage string `json:"stage"`
 }
 
 // LogData is the output of some text from the build or run of a scraper
 type LogData struct {
-	Stage  string
-	Stream string
-	Text   string
+	Stage  string `json:"stage"`
+	Stream string `json:"stream"`
+	Text   string `json:"text"`
 }
 
 // LastData is the last event that's sent in a run
 type LastData struct {
-}
-
-// MarshalJSON converts an EventWrapper to JSON
-func (e Event) MarshalJSON() ([]byte, error) {
-	return json.Marshal(e.Data)
 }
 
 // UnmarshalJSON converts json to EventWrapper
@@ -56,57 +50,46 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	e.Type = jsonEvent.Type
 	switch jsonEvent.Type {
 	case "start":
-		e.Data = StartData{Stage: jsonEvent.Stage}
+		var d StartData
+		err = json.Unmarshal(*jsonEvent.Data, &d)
+		e.Data = d
 	case "finish":
-		e.Data = FinishData{Stage: jsonEvent.Stage}
+		var d FinishData
+		err = json.Unmarshal(*jsonEvent.Data, &d)
+		e.Data = d
 	case "log":
-		e.Data = LogData{Stage: jsonEvent.Stage, Stream: jsonEvent.Stream, Text: jsonEvent.Text}
+		var d LogData
+		err = json.Unmarshal(*jsonEvent.Data, &d)
+		e.Data = d
 	case "last":
-		e.Data = LastData{}
+		var d LastData
+		err = json.Unmarshal(*jsonEvent.Data, &d)
+		e.Data = d
 	default:
 		return errors.New("Unexpected type")
 	}
-	return nil
-}
-
-// MarshalJSON converts a StartEvent to JSON
-func (e StartData) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "start", Stage: e.Stage})
-}
-
-// MarshalJSON converts a FinishEvent to JSON
-func (e FinishData) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "finish", Stage: e.Stage})
-}
-
-// MarshalJSON converts a LogEvent to JSON
-func (e LogData) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text})
-}
-
-// MarshalJSON converts a LastEvent to JSON
-func (e LastData) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "last"})
+	return err
 }
 
 // NewLogEvent creates and returns a new log event
 func NewLogEvent(stage string, stream string, text string) Event {
-	return Event{Data: LogData{Stage: stage, Stream: stream, Text: text}}
+	return Event{Type: "log", Data: LogData{Stage: stage, Stream: stream, Text: text}}
 }
 
 // NewStartEvent creates and returns a new start event
 func NewStartEvent(stage string) Event {
-	return Event{Data: StartData{Stage: stage}}
+	return Event{Type: "start", Data: StartData{Stage: stage}}
 }
 
 // NewFinishEvent creates and returns a new finish event
 func NewFinishEvent(stage string) Event {
-	return Event{Data: FinishData{Stage: stage}}
+	return Event{Type: "finish", Data: FinishData{Stage: stage}}
 }
 
 // NewLastEvent creates and returns a new last event
 func NewLastEvent() Event {
-	return Event{Data: LastData{}}
+	return Event{Type: "last", Data: LastData{}}
 }
