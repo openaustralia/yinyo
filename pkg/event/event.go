@@ -13,45 +13,43 @@ type JSONEvent struct {
 	Text   string `json:"text,omitempty"`
 }
 
-// EventWrapper is the top level struct for representing events
-// TODO: Rename this
-type EventWrapper struct {
-	Event Event
+// Event is the top level struct for representing events
+type Event struct {
+	Data Data
 }
 
-// Event is the interface for all event types
-// TODO: Rename this
-type Event interface {
+// Data is the interface for all core event data
+type Data interface {
 }
 
-// StartEvent represents the start of a build or run
-type StartEvent struct {
+// StartData represents the start of a build or run
+type StartData struct {
 	Stage string
 }
 
-// FinishEvent represent the completion of a build or run
-type FinishEvent struct {
+// FinishData represent the completion of a build or run
+type FinishData struct {
 	Stage string
 }
 
-// LogEvent is the output of some text from the build or run of a scraper
-type LogEvent struct {
+// LogData is the output of some text from the build or run of a scraper
+type LogData struct {
 	Stage  string
 	Stream string
 	Text   string
 }
 
-// LastEvent is the last event that's sent in a run
-type LastEvent struct {
+// LastData is the last event that's sent in a run
+type LastData struct {
 }
 
 // MarshalJSON converts an EventWrapper to JSON
-func (e EventWrapper) MarshalJSON() ([]byte, error) {
-	return json.Marshal(e.Event)
+func (e Event) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Data)
 }
 
 // UnmarshalJSON converts json to EventWrapper
-func (e *EventWrapper) UnmarshalJSON(data []byte) error {
+func (e *Event) UnmarshalJSON(data []byte) error {
 	var jsonEvent JSONEvent
 	err := json.Unmarshal(data, &jsonEvent)
 	if err != nil {
@@ -60,13 +58,13 @@ func (e *EventWrapper) UnmarshalJSON(data []byte) error {
 
 	switch jsonEvent.Type {
 	case "start":
-		e.Event = StartEvent{Stage: jsonEvent.Stage}
+		e.Data = StartData{Stage: jsonEvent.Stage}
 	case "finish":
-		e.Event = FinishEvent{Stage: jsonEvent.Stage}
+		e.Data = FinishData{Stage: jsonEvent.Stage}
 	case "log":
-		e.Event = LogEvent{Stage: jsonEvent.Stage, Stream: jsonEvent.Stream, Text: jsonEvent.Text}
+		e.Data = LogData{Stage: jsonEvent.Stage, Stream: jsonEvent.Stream, Text: jsonEvent.Text}
 	case "last":
-		e.Event = LastEvent{}
+		e.Data = LastData{}
 	default:
 		return errors.New("Unexpected type")
 	}
@@ -74,41 +72,41 @@ func (e *EventWrapper) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON converts a StartEvent to JSON
-func (e StartEvent) MarshalJSON() ([]byte, error) {
+func (e StartData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "start", Stage: e.Stage})
 }
 
 // MarshalJSON converts a FinishEvent to JSON
-func (e FinishEvent) MarshalJSON() ([]byte, error) {
+func (e FinishData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "finish", Stage: e.Stage})
 }
 
 // MarshalJSON converts a LogEvent to JSON
-func (e LogEvent) MarshalJSON() ([]byte, error) {
+func (e LogData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text})
 }
 
 // MarshalJSON converts a LastEvent to JSON
-func (e LastEvent) MarshalJSON() ([]byte, error) {
+func (e LastData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(JSONEvent{Type: "last"})
 }
 
 // NewLogEvent creates and returns a new log event
-func NewLogEvent(stage string, stream string, text string) EventWrapper {
-	return EventWrapper{Event: LogEvent{Stage: stage, Stream: stream, Text: text}}
+func NewLogEvent(stage string, stream string, text string) Event {
+	return Event{Data: LogData{Stage: stage, Stream: stream, Text: text}}
 }
 
 // NewStartEvent creates and returns a new start event
-func NewStartEvent(stage string) EventWrapper {
-	return EventWrapper{Event: StartEvent{Stage: stage}}
+func NewStartEvent(stage string) Event {
+	return Event{Data: StartData{Stage: stage}}
 }
 
 // NewFinishEvent creates and returns a new finish event
-func NewFinishEvent(stage string) EventWrapper {
-	return EventWrapper{Event: FinishEvent{Stage: stage}}
+func NewFinishEvent(stage string) Event {
+	return Event{Data: FinishData{Stage: stage}}
 }
 
 // NewLastEvent creates and returns a new last event
-func NewLastEvent() EventWrapper {
-	return EventWrapper{Event: LastEvent{}}
+func NewLastEvent() Event {
+	return Event{Data: LastData{}}
 }

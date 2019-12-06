@@ -8,13 +8,13 @@ import (
 )
 
 // test marshalling and unmarshalling of event
-func testMarshal(t *testing.T, event EventWrapper, jsonString string) {
+func testMarshal(t *testing.T, event Event, jsonString string) {
 	b, err := json.Marshal(event)
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, jsonString, string(b))
-	var actual EventWrapper
+	var actual Event
 	err = json.Unmarshal(b, &actual)
 	if err != nil {
 		t.Fatal(err)

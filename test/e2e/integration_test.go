@@ -155,7 +155,7 @@ func TestHelloWorld(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var eventsList []event.EventWrapper
+	var eventsList []event.Event
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
 	for iterator.More() {
@@ -167,7 +167,7 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
-	assert.Equal(t, []event.EventWrapper{
+	assert.Equal(t, []event.Event{
 		event.NewStartEvent("build"),
 		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
 		event.NewLogEvent("build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),

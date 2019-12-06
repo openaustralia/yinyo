@@ -202,7 +202,7 @@ func (app *App) StartRun(
 }
 
 // GetEvent gets the next event
-func (app *App) GetEvent(runName string, id string) (newID string, event event.EventWrapper, err error) {
+func (app *App) GetEvent(runName string, id string) (newID string, event event.Event, err error) {
 	newID, jsonString, err := app.Stream.Get(runName, id)
 	if err != nil {
 		return
@@ -212,7 +212,7 @@ func (app *App) GetEvent(runName string, id string) (newID string, event event.E
 }
 
 // CreateEvent add an event to the stream
-func (app *App) CreateEvent(runName string, event event.EventWrapper) error {
+func (app *App) CreateEvent(runName string, event event.Event) error {
 	// Convert event back to a string
 	b, err := json.Marshal(event)
 	if err != nil {

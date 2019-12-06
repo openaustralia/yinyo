@@ -459,7 +459,7 @@ func (iterator *EventIterator) More() bool {
 }
 
 // Next returns the next event
-func (iterator *EventIterator) Next() (event event.EventWrapper, err error) {
+func (iterator *EventIterator) Next() (event event.Event, err error) {
 	err = iterator.decoder.Decode(&event)
 	return
 }
@@ -480,7 +480,7 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 }
 
 // CreateEvent sends an event
-func (run *Run) CreateEvent(event event.EventWrapper) error {
+func (run *Run) CreateEvent(event event.Event) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err

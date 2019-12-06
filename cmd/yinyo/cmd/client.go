@@ -101,7 +101,7 @@ var clientCmd = &cobra.Command{
 				fmt.Println(string(b))
 			} else {
 				// Only display the log events to the user
-				l, ok := e.Event.(event.LogEvent)
+				l, ok := e.Data.(event.LogData)
 				if ok {
 					f, err := osStream(l.Stream)
 					if err != nil {

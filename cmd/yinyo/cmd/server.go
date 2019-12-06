@@ -173,7 +173,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		flusher.Flush()
 
 		// If this is the last event then stop
-		_, ok := e.Event.(event.LastEvent)
+		_, ok := e.Data.(event.LastData)
 		if ok {
 			break
 		}
@@ -192,7 +192,7 @@ func createEvent(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Check the form of the JSON by interpreting it
-	var event event.EventWrapper
+	var event event.Event
 	err = json.Unmarshal(buf, &event)
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
