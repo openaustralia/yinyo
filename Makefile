@@ -41,12 +41,12 @@ minio_yinyo_secret_key = $(shell grep store_secret_key configs/secrets-yinyo-ser
 	sudo install ./kubectl /usr/local/bin/
 
 /usr/local/bin/minikube:
-	curl -#LO minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+	curl -#Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 	chmod +x minikube
 	sudo install ./minikube /usr/local/bin/
 
 /usr/local/bin/skaffold:
-	curl -#LO skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+	curl -#Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
 	chmod +x skaffold
 	sudo install ./skaffold /usr/local/bin
 
@@ -57,7 +57,7 @@ minio_yinyo_secret_key = $(shell grep store_secret_key configs/secrets-yinyo-ser
 	sudo install ./kustomize /usr/local/bin
 
 /usr/local/bin/mc:
-	curl -#LO https://dl.min.io/client/mc/release/linux-amd64/mc
+	curl -#Lo mc https://dl.min.io/client/mc/release/linux-amd64/mc
 	chmod +x mc
 	sudo install ./mc /usr/local/bin
 
