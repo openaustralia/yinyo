@@ -4,13 +4,5 @@ jobs:
   include:
     - script: make build
     - script:
-      - vagrant up
-addons:
-  apt:
-    sources:
-    - sourceline: 'deb https://download.virtualbox.org/virtualbox/debian xenial contrib'
-      key_url: 'https://www.virtualbox.org/download/oracle_vbox_2016.asc'
-    packages:
-    - virtualbox-6.0
-    - vagrant
-  
+      - make provision
+      - "skaffold dev --port-forward=true && sleep 60 && make buckets && make run"
