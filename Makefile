@@ -78,7 +78,7 @@ kustomize: /usr/local/bin/kustomize
 kubectl: /usr/local/bin/kubectl
 
 minikube: docker kubectl /usr/local/bin/minikube
-	minikube start --vm-driver=none  --kubernetes-version='v1.15.2'
+	sudo minikube start --vm-driver=none  --kubernetes-version='v1.15.2'
 	
 skaffold: /usr/local/bin/skaffold
 
