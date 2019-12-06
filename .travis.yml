@@ -3,6 +3,14 @@ go: "1.13"
 jobs:
   include:
     - script: make build
-    - script: 
-      - apt install -y vagrant
+    - script:
       - vagrant up
+addons:
+  apt:
+    sources:
+    - sourceline: 'https://download.virtualbox.org/virtualbox/debian xenial contrib'
+      key_url: 'https://www.virtualbox.org/download/oracle_vbox_2016.asc'
+    - packages:
+      - virtualbox-6.0
+      - vagrant
+  
