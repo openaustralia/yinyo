@@ -224,26 +224,23 @@ func (events *Events) More() bool {
 
 // Next returns the next event
 func (events *Events) Next() (e event.Event, err error) {
-	e, err = events.app.GetEvent(events.runName, events.lastID)
+	// TODO: Make app.Stream.Get return typed event
+	newID, jsonString, err := events.app.Stream.Get(events.runName, events.lastID)
 	if err != nil {
 		return
 	}
-	events.lastID = e.ID
+	err = json.Unmarshal([]byte(jsonString), &e)
+	if err != nil {
+		return
+	}
+
+	// Add the id to the event
+	e.ID = newID
+	events.lastID = newID
+
 	// Check if this is the last event
 	_, ok := e.Data.(event.LastData)
 	events.more = !ok
-	return
-}
-
-// GetEvent gets the next event
-func (app *App) GetEvent(runName string, id string) (event event.Event, err error) {
-	newID, jsonString, err := app.Stream.Get(runName, id)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal([]byte(jsonString), &event)
-	// Add the id to the event
-	event.ID = newID
 	return
 }
 

@@ -158,25 +158,18 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("Couldn't access the flusher")
 	}
 
-	var id = "0"
-	for {
-		e, err := app.GetEvent(runName, id)
+	events := app.GetEvents(runName, "0")
+	for events.More() {
+		e, err := events.Next()
 		if err != nil {
 			return err
 		}
-		id = e.ID
 		b, err := json.Marshal(e)
 		if err != nil {
 			return err
 		}
 		fmt.Fprintln(w, string(b))
 		flusher.Flush()
-
-		// If this is the last event then stop
-		_, ok := e.Data.(event.LastData)
-		if ok {
-			break
-		}
 	}
 	return nil
 }
