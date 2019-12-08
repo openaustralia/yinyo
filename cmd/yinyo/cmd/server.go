@@ -160,11 +160,11 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	var id = "0"
 	for {
-		newID, e, err := app.GetEvent(runName, id)
-		id = newID
+		e, err := app.GetEvent(runName, id)
 		if err != nil {
 			return err
 		}
+		id = e.ID
 		b, err := json.Marshal(e)
 		if err != nil {
 			return err
