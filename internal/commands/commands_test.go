@@ -142,6 +142,34 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	roundTripper.AssertExpectations(t)
 }
 
+func TestGetEvents(t *testing.T) {
+	stream := new(stream.MockClient)
+
+	stream.On("Get", "run-name", "0").Return("123", `{"type":"start","data":{"stage":"build"}}`, nil)
+	stream.On("Get", "run-name", "123").Return("456", `{"type":"last","data":{}}`, nil)
+
+	app := App{Stream: stream}
+
+	events := app.GetEvents("run-name", "0")
+
+	// We're expecting two events in the stream. Let's hardcode what would normally be in a loop
+	assert.True(t, events.More())
+	e, err := events.Next()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, e)
+	assert.True(t, events.More())
+	e, err = events.Next()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, event.Event{ID: "456", Type: "last", Data: event.LastData{}}, e)
+	assert.False(t, events.More())
+
+	stream.AssertExpectations(t)
+}
+
 func TestDeleteRun(t *testing.T) {
 	jobDispatcher := new(jobdispatcher.MockClient)
 	blobStore := new(blobstore.MockClient)

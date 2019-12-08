@@ -201,6 +201,40 @@ func (app *App) StartRun(
 	return app.JobDispatcher.StartJob(runName, dockerImage, command)
 }
 
+// Events is an iterator to retrieve events from a stream
+type Events struct {
+	app     *App
+	runName string
+	lastID  string
+	more    bool
+}
+
+// GetEvents returns an iterator to get at all the events.
+// Use "0" for lastId to start at the beginning of the stream. Otherwise use the id of the last
+// seen event to restart the stream from that point. Don't try to restart the stream from the
+// last event, otherwise More() will just wait around forever.
+func (app *App) GetEvents(runName string, lastID string) Events {
+	return Events{app: app, runName: runName, lastID: lastID, more: true}
+}
+
+// More checks whether there are more events available. If true you can then call Next()
+func (events *Events) More() bool {
+	return events.more
+}
+
+// Next returns the next event
+func (events *Events) Next() (e event.Event, err error) {
+	e, err = events.app.GetEvent(events.runName, events.lastID)
+	if err != nil {
+		return
+	}
+	events.lastID = e.ID
+	// Check if this is the last event
+	_, ok := e.Data.(event.LastData)
+	events.more = !ok
+	return
+}
+
 // GetEvent gets the next event
 func (app *App) GetEvent(runName string, id string) (event event.Event, err error) {
 	newID, jsonString, err := app.Stream.Get(runName, id)
@@ -221,6 +255,7 @@ func (app *App) CreateEvent(runName string, event event.Event) error {
 		return err
 	}
 	// TODO: Use something like runName-events instead for the stream name
+	// TODO: Change app.Stream to accept typed events rather than strings
 	id, err := app.Stream.Add(runName, string(b))
 	if err != nil {
 		return err
