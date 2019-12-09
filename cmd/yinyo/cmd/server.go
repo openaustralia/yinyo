@@ -151,6 +151,10 @@ func start(w http.ResponseWriter, r *http.Request) error {
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	lastID := mux.Vars(r)["last-id"]
+	if lastID == "" {
+		lastID = "0"
+	}
 	w.Header().Set("Content-Type", "application/ld+json")
 
 	flusher, ok := w.(http.Flusher)
@@ -158,7 +162,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("Couldn't access the flusher")
 	}
 
-	events := app.GetEvents(runName, "0")
+	events := app.GetEvents(runName, lastID)
 	enc := json.NewEncoder(w)
 	for events.More() {
 		e, err := events.Next()
