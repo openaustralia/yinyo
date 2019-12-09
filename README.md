@@ -19,7 +19,7 @@
 
 ### Main dependencies
 
-- [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
+- [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/)
 - [KubeDB operator](https://kubedb.com/docs/v0.13.0-rc.0/setup/install/)
 - [Skaffold](https://skaffold.dev/docs/quickstart/)
 - [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
@@ -35,13 +35,8 @@ First, follow the links to install the [main dependencies](main-dependencies)
 Start Minikube if you haven't already
 
 ```bash
-minikube start --memory=3072 --disk-size='30gb' --kubernetes-version='v1.15.2'
+make minikube
 ```
-
-Minikube by default starts with 2GB of memory and 20GB of disk space for the VM which is not enough in
-our case.
-
-Now, [install the KubeDB operator](https://kubedb.com/docs/v0.13.0-rc.0/setup/install/).
 
 Run skaffold. This will build all the bits and pieces and deploy things to your local kubernetes for you. The first time it builds everything it it takes a few minutes. After that when you make any changes to the code it does everything much faster.
 
@@ -49,7 +44,18 @@ Run skaffold. This will build all the bits and pieces and deploy things to your 
 skaffold dev --port-forward=true
 ```
 
-Leave `skaffold dev` running and open a new terminal window.
+You'll probably see a message similar to this at least once, maybe a few times:
+
+````
+[clay-server-754b5d5fc-cks2x clay-server] main.go:270: Couldn't access blob store: Get http://minio-service:9000/clay/?location=: dial tcp 10.102.0.211:9000: connect: connection refused
+````
+
+Eventually the error message will change to something more like this:
+````
+[clay-server-754b5d5fc-cks2x clay-server] main.go:270: Couldn't access blob store: The access key ID you provided does not exist in our records.
+````
+
+At this point, you're ready to move on. Leave `skaffold` running and open a new terminal window.
 
 Now setup the storage buckets on Minio
 
@@ -57,12 +63,16 @@ Now setup the storage buckets on Minio
 make buckets
 ```
 
-This might not work immediately because Minio might not be ready
+In your `skaffold` window, you should now see that Clay is ready:
+
+````
+[clay-server-754b5d5fc-cks2x clay-server] main.go:273: Clay is ready and waiting.
+````
 
 Now you're ready to run your first scraper.
 
 ```bash
-./client.sh test/scrapers/test-python data.sqlite
+make run
 ```
 
 The first time you run this it will take a little while (and you'll probably see some messages about some keys not existing. You can ignore that).
@@ -70,7 +80,7 @@ The first time you run this it will take a little while (and you'll probably see
 Now, if you run the same scraper again
 
 ```bash
-./client.sh test/scrapers/test-python data.sqlite
+make run
 ```
 
 It should run significantly faster.
@@ -84,7 +94,7 @@ Point your web browser at [http://localhost:9000](http://localhost:9000). Login 
 ### To see what Kubernetes is doing
 
 ```bash
-minikube dashboard
+make dashboard
 ```
 
 You'll want to look in the "clay-system" and "clay-scrapers" namespaces.
