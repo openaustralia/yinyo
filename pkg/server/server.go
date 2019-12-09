@@ -285,25 +285,24 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Server holds the internal state for the server
 type Server struct {
-	app *commands.App
+	router *mux.Router
+	app    *commands.App
 }
 
-// Run runs the server. This function will block until the server quits
-func Run() {
-	var err error
+// Initialise the server's state
+func (server *Server) Initialise() error {
 	app, err := commands.New()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	server.app = app
 
-	log.Println("Yinyo is ready and waiting.")
-	router := mux.NewRouter().StrictSlash(true)
-	server := Server{app: app}
+	server.router = mux.NewRouter().StrictSlash(true)
 
-	router.Handle("/", appHandler(server.whoAmI))
-	router.Handle("/runs", appHandler(server.create)).Methods("POST")
+	server.router.Handle("/", appHandler(server.whoAmI))
+	server.router.Handle("/runs", appHandler(server.create)).Methods("POST")
 
-	authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
+	authenticatedRouter := server.router.PathPrefix("/runs/{id}").Subrouter()
 	authenticatedRouter.Handle("/app", appHandler(server.getApp)).Methods("GET")
 	authenticatedRouter.Handle("/app", appHandler(server.putApp)).Methods("PUT")
 	authenticatedRouter.Handle("/cache", appHandler(server.getCache)).Methods("GET")
@@ -317,7 +316,13 @@ func Run() {
 	authenticatedRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
 	authenticatedRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
 	authenticatedRouter.Use(server.authenticate)
-	router.Use(logRequests)
+	server.router.Use(logRequests)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	return nil
+}
+
+// Run runs the server. This blocks until the server quits
+func (server *Server) Run(addr string) {
+	log.Println("Yinyo is ready and waiting.")
+	log.Fatal(http.ListenAndServe(addr, server.router))
 }
