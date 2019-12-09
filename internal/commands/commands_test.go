@@ -65,7 +65,7 @@ func TestCreateEvent(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"type":"start","data":{"stage":"build"}}`).Return("123", nil)
+	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -95,7 +95,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"type":"start","data":{"stage":"build"}}`).Return("123", nil)
+	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
 	keyValueStore.On("Get", "url:run-name").Return("", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -116,7 +116,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"type":"start","data":{"stage":"build"}}`).Return("123", nil)
+	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -145,8 +145,8 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 func TestGetEvents(t *testing.T) {
 	stream := new(stream.MockClient)
 
-	stream.On("Get", "run-name", "0").Return("123", `{"type":"start","data":{"stage":"build"}}`, nil)
-	stream.On("Get", "run-name", "123").Return("456", `{"type":"last","data":{}}`, nil)
+	stream.On("Get", "run-name", "0").Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
+	stream.On("Get", "run-name", "123").Return(event.Event{ID: "456", Type: "last", Data: event.LastData{}}, nil)
 
 	app := App{Stream: stream}
 

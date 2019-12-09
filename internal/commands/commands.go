@@ -3,7 +3,6 @@ package commands
 import (
 	"bytes"
 	"encoding/csv"
-	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -224,19 +223,13 @@ func (events *Events) More() bool {
 
 // Next returns the next event
 func (events *Events) Next() (e event.Event, err error) {
-	// TODO: Make app.Stream.Get return typed event
-	newID, jsonString, err := events.app.Stream.Get(events.runName, events.lastID)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal([]byte(jsonString), &e)
+	e, err = events.app.Stream.Get(events.runName, events.lastID)
 	if err != nil {
 		return
 	}
 
 	// Add the id to the event
-	e.ID = newID
-	events.lastID = newID
+	events.lastID = e.ID
 
 	// Check if this is the last event
 	_, ok := e.Data.(event.LastData)
@@ -246,19 +239,11 @@ func (events *Events) Next() (e event.Event, err error) {
 
 // CreateEvent add an event to the stream
 func (app *App) CreateEvent(runName string, event event.Event) error {
-	// Convert event back to a string
-	b, err := json.Marshal(event)
-	if err != nil {
-		return err
-	}
 	// TODO: Use something like runName-events instead for the stream name
-	// TODO: Change app.Stream to accept typed events rather than strings
-	id, err := app.Stream.Add(runName, string(b))
+	event, err := app.Stream.Add(runName, event)
 	if err != nil {
 		return err
 	}
-	// Add the ID of the event
-	event.ID = id
 	return app.postCallbackEvent(runName, event)
 }
 
