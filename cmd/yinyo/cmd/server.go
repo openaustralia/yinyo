@@ -159,16 +159,16 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	events := app.GetEvents(runName, "0")
+	enc := json.NewEncoder(w)
 	for events.More() {
 		e, err := events.Next()
 		if err != nil {
 			return err
 		}
-		b, err := json.Marshal(e)
+		err = enc.Encode(e)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(w, string(b))
 		flusher.Flush()
 	}
 	return nil
