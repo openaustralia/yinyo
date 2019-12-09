@@ -1,5 +1,20 @@
 # Some tests on what a new morph.io might look like
 
+<!-- TOC -->
+
+- [Some tests on what a new morph.io might look like](#some-tests-on-what-a-new-morphio-might-look-like)
+    - [Guide to getting up and running quickly](#guide-to-getting-up-and-running-quickly)
+        - [Main dependencies](#main-dependencies)
+        - [The main bit](#the-main-bit)
+    - [Notes for debugging and testing](#notes-for-debugging-and-testing)
+        - [To see what's on the blob storage (Minio)](#to-see-whats-on-the-blob-storage-minio)
+        - [To see what Kubernetes is doing](#to-see-what-kubernetes-is-doing)
+        - [Accessing Redis](#accessing-redis)
+        - [Testing callback URLs](#testing-callback-urls)
+        - [Reclaiming diskspace in minikube](#reclaiming-diskspace-in-minikube)
+
+<!-- /TOC -->
+
 ## Guide to getting up and running quickly
 
 ### Main dependencies
