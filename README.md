@@ -41,21 +41,9 @@ make minikube
 Run skaffold. This will build all the bits and pieces and deploy things to your local kubernetes for you. The first time it builds everything it it takes a few minutes. After that when you make any changes to the code it does everything much faster.
 
 ```bash
-skaffold dev --port-forward=true
+make skaffold
 ```
-
-You'll probably see a message similar to this at least once, maybe a few times:
-
-````
-[clay-server-754b5d5fc-cks2x clay-server] main.go:270: Couldn't access blob store: Get http://minio-service:9000/clay/?location=: dial tcp 10.102.0.211:9000: connect: connection refused
-````
-
-Eventually the error message will change to something more like this:
-````
-[clay-server-754b5d5fc-cks2x clay-server] main.go:270: Couldn't access blob store: The access key ID you provided does not exist in our records.
-````
-
-At this point, you're ready to move on. Leave `skaffold` running and open a new terminal window.
+Leave `skaffold` running and open a new terminal window.
 
 Now setup the storage buckets on Minio
 
