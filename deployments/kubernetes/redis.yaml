@@ -2,14 +2,14 @@ apiVersion: kubedb.com/v1alpha1
 kind: Redis
 metadata:
   name: redis
-  namespace: clay-system
+  namespace: yinyo-system
 spec:
   version: "5.0.3-v1"
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -18,10 +18,10 @@ spec:
   podTemplate:
     spec:
       args:
-      - "--requirepass $(REDIS_PASSWORD)"
+        - "--requirepass $(REDIS_PASSWORD)"
       env:
-      - name: REDIS_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: redis
-            key: password
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis
+              key: password

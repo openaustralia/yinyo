@@ -1,5 +1,7 @@
-file = open("output.txt","w")
+import os
+
+file = open("output.txt", "w")
 file.write("Hello World!")
 file.close()
 
-print "Hello World!"
+print(os.environ['HELLO'])

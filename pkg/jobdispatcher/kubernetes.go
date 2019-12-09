@@ -15,7 +15,8 @@ type kubernetesClient struct {
 	clientset *kubernetes.Clientset
 }
 
-const namespace = "clay-scrapers"
+// TODO: Rename this to yinyo-runs? We're avoiding using the word scrapers elsewhere
+const namespace = "yinyo-scrapers"
 
 // NewKubernetes returns the Kubernetes implementation of Client
 func NewKubernetes() (Client, error) {
@@ -54,37 +55,31 @@ func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken st
 	return created.ObjectMeta.Name, err
 }
 
-func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string, env map[string]string) error {
+func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string) error {
 	jobsClient := client.clientset.BatchV1().Jobs(namespace)
 
 	autoMountServiceAccountToken := false
-	backOffLimit := int32(0)
+	// Allow the job to get restarted up to 5 times before it's considered failed
+	backOffLimit := int32(5)
 	// Let this run for a maximum of 24 hours
 	activeDeadlineSeconds := int64(86400)
-
-	environment := []apiv1.EnvVar{}
-	for k, v := range env {
-		environment = append(environment, apiv1.EnvVar{Name: k, Value: v})
-	}
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: runName,
 		},
 		Spec: batchv1.JobSpec{
-			BackoffLimit: &backOffLimit,
-			// Let this run for a maximum of 24 hours
+			BackoffLimit:          &backOffLimit,
 			ActiveDeadlineSeconds: &activeDeadlineSeconds,
 			Template: apiv1.PodTemplateSpec{
 				Spec: apiv1.PodSpec{
 					AutomountServiceAccountToken: &autoMountServiceAccountToken,
-					RestartPolicy:                "Never",
+					RestartPolicy:                "OnFailure",
 					Containers: []apiv1.Container{
 						{
 							Name:    runName,
 							Image:   dockerImage,
 							Command: command,
-							Env:     environment,
 						},
 					},
 				},

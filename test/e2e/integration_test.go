@@ -8,12 +8,13 @@ import (
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
 )
 
-func defaultClient() *clayclient.Client {
-	return clayclient.New("http://localhost:8080")
+func defaultClient() *yinyoclient.Client {
+	return yinyoclient.New("http://localhost:8080")
 }
 
 func TestHello(t *testing.T) {
@@ -22,7 +23,7 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, "Hello from Clay!\n", text)
+	assert.Equal(t, "Hello from Yinyo!\n", text)
 }
 
 func TestCreateRun(t *testing.T) {
@@ -120,7 +121,7 @@ func TestHelloWorld(t *testing.T) {
 	defer run.Delete()
 
 	// Now upload the application
-	err = run.PutAppFromDirectory("fixtures/scrapers/hello-world")
+	err = run.PutAppFromDirectory("fixtures/scrapers/hello-world", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,18 +142,20 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now start the scraper
-	err = run.Start(&clayclient.StartRunOptions{Output: "output.txt"})
+	err = run.Start(&yinyoclient.StartRunOptions{Output: "output.txt", Env: []yinyoclient.EnvVariable{
+		yinyoclient.EnvVariable{Name: "HELLO", Value: "Hello World!"},
+	}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Get the logs (events)
-	iterator, err := run.GetEvents()
+	iterator, err := run.GetEvents("")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	var eventsList []clayclient.Event
+	var eventsList []event.Event
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
 	for iterator.More() {
@@ -164,21 +167,28 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
-	assert.Equal(t, []clayclient.Event{
-		clayclient.StartEvent{Stage: "build"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"},
-		clayclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"},
-		clayclient.FinishEvent{Stage: "build"},
-		clayclient.StartEvent{Stage: "run"},
-		clayclient.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
-		clayclient.FinishEvent{Stage: "run"},
-	}, eventsList)
+	expected := []event.Event{
+		event.NewStartEvent("build"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       "),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
+		event.NewFinishEvent("build"),
+		event.NewStartEvent("run"),
+		event.NewLogEvent("run", "stdout", "Hello World!"),
+		event.NewFinishEvent("run"),
+		event.NewLastEvent(),
+	}
+	// Copy across the IDs from the eventsList to the expected because we don't know what the
+	// IDs will be ahead of time and this make it easy to compare expected and eventsList
+	for i := range eventsList {
+		expected[i].ID = eventsList[i].ID
+	}
+	assert.Equal(t, expected, eventsList)
 
 	// Get the cache
 	cache, err := run.GetCache()
@@ -190,7 +200,10 @@ func TestHelloWorld(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	io.Copy(file, cache)
+	_, err = io.Copy(file, cache)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Get the output
 	// Get the metrics

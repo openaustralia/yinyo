@@ -1,9 +1,12 @@
 package commands
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
+
+	"github.com/openaustralia/yinyo/pkg/event"
 )
 
 func callbackURLKey(runName string) string {
@@ -30,7 +33,11 @@ func (app *App) deleteCallbackURL(runName string) error {
 	return app.KeyValueStore.Delete(callbackURLKey(runName))
 }
 
-func (app *App) postCallbackEvent(runName string, eventJSON string) error {
+func (app *App) postCallbackEvent(runName string, event event.Event) error {
+	var b bytes.Buffer
+	enc := json.NewEncoder(&b)
+	enc.Encode(event)
+
 	callbackURL, err := app.getCallbackURL(runName)
 	if err != nil {
 		return err
@@ -38,7 +45,7 @@ func (app *App) postCallbackEvent(runName string, eventJSON string) error {
 
 	// Only do the callback if there's a sensible URL
 	if callbackURL != "" {
-		resp, err := app.HTTP.Post(callbackURL, "application/json", strings.NewReader(eventJSON))
+		resp, err := app.HTTP.Post(callbackURL, "application/json", &b)
 		if err != nil {
 			return err
 		}

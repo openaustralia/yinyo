@@ -5,7 +5,7 @@ package jobdispatcher
 type Client interface {
 	// TODO: Rename to SetupJob?
 	CreateJobAndToken(namePrefix string, runToken string) (string, error)
-	StartJob(runName string, dockerImage string, command []string, env map[string]string) error
+	StartJob(runName string, dockerImage string, command []string) error
 	DeleteJobAndToken(runName string) error
 	GetToken(runName string) (string, error)
 }

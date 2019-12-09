@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
@@ -11,8 +11,9 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
-	"github.com/openaustralia/morph-ng/internal/commands"
+	"github.com/openaustralia/yinyo/internal/commands"
+	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/spf13/cobra"
 )
 
 func create(w http.ResponseWriter, r *http.Request) error {
@@ -119,6 +120,7 @@ type envVariable struct {
 	Value string
 }
 
+// TODO: Remove duplication with client code
 type startBody struct {
 	Output   string
 	Env      []envVariable
@@ -136,7 +138,7 @@ func start(w http.ResponseWriter, r *http.Request) error {
 	var l startBody
 	err := decoder.Decode(&l)
 	if err != nil {
-		return err
+		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
 	env := make(map[string]string)
@@ -149,6 +151,10 @@ func start(w http.ResponseWriter, r *http.Request) error {
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	lastID := mux.Vars(r)["last-id"]
+	if lastID == "" {
+		lastID = "0"
+	}
 	w.Header().Set("Content-Type", "application/ld+json")
 
 	flusher, ok := w.(http.Flusher)
@@ -156,32 +162,40 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("Couldn't access the flusher")
 	}
 
-	var id = "0"
-	for {
-		newID, jsonString, finished, err := app.GetEvent(runName, id)
-		id = newID
+	events := app.GetEvents(runName, lastID)
+	enc := json.NewEncoder(w)
+	for events.More() {
+		e, err := events.Next()
 		if err != nil {
 			return err
 		}
-		if finished {
-			break
+		err = enc.Encode(e)
+		if err != nil {
+			return err
 		}
-		fmt.Fprintln(w, jsonString)
 		flusher.Flush()
 	}
 	return nil
 }
 
-func createEvents(w http.ResponseWriter, r *http.Request) error {
+func createEvent(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	// Read json message as is into a string
+	// TODO: Switch over to json decoder
 	buf, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
 
-	return app.CreateEvent(runName, string(buf))
+	// Check the form of the JSON by interpreting it
+	var event event.Event
+	err = json.Unmarshal(buf, &event)
+	if err != nil {
+		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
+	}
+
+	return app.CreateEvent(runName, event)
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
@@ -191,7 +205,7 @@ func delete(w http.ResponseWriter, r *http.Request) error {
 }
 
 func whoAmI(w http.ResponseWriter, r *http.Request) error {
-	fmt.Fprintln(w, "Hello from Clay!")
+	fmt.Fprintln(w, "Hello from Yinyo!")
 	return nil
 }
 
@@ -250,7 +264,23 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := fn(w, r)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		err2, ok := err.(clientError)
+		if !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		body, err := err2.ResponseBody()
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		status, headers := err2.ResponseHeaders()
+		for k, v := range headers {
+			w.Header().Set(k, v)
+		}
+		w.WriteHeader(status)
+		w.Write(body)
 	}
 }
 
@@ -258,39 +288,42 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var app *commands.App
 
 func init() {
+	rootCmd.AddCommand(serverCmd)
 }
 
-func main() {
-	// Show the source of the error with the standard logger. Don't show date & time
-	log.SetFlags(log.Lshortfile)
+var serverCmd = &cobra.Command{
+	Use:   "server",
+	Short: "Serves the Yinyo API",
+	Run: func(cmd *cobra.Command, args []string) {
+		var err error
+		app, err = commands.New()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	var err error
-	app, err = commands.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+		log.Println("Yinyo is ready and waiting.")
+		router := mux.NewRouter().StrictSlash(true)
 
-	log.Println("Clay is ready and waiting.")
-	router := mux.NewRouter().StrictSlash(true)
+		router.Handle("/", appHandler(whoAmI))
+		router.Handle("/runs", appHandler(create)).Methods("POST")
 
-	router.Handle("/", appHandler(whoAmI))
-	router.Handle("/runs", appHandler(create)).Methods("POST")
+		authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
+		authenticatedRouter.Handle("/app", appHandler(getApp)).Methods("GET")
+		authenticatedRouter.Handle("/app", appHandler(putApp)).Methods("PUT")
+		authenticatedRouter.Handle("/cache", appHandler(getCache)).Methods("GET")
+		authenticatedRouter.Handle("/cache", appHandler(putCache)).Methods("PUT")
+		authenticatedRouter.Handle("/output", appHandler(getOutput)).Methods("GET")
+		authenticatedRouter.Handle("/output", appHandler(putOutput)).Methods("PUT")
+		authenticatedRouter.Handle("/exit-data", appHandler(getExitData)).Methods("GET")
+		authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
+		authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
+		authenticatedRouter.Handle("/events", appHandler(getEvents)).Methods("GET")
+		authenticatedRouter.Handle("/events", appHandler(createEvent)).Methods("POST")
+		authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
+		authenticatedRouter.Use(authenticate)
+		router.Use(logRequests)
 
-	authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
-	authenticatedRouter.Handle("/app", appHandler(getApp)).Methods("GET")
-	authenticatedRouter.Handle("/app", appHandler(putApp)).Methods("PUT")
-	authenticatedRouter.Handle("/cache", appHandler(getCache)).Methods("GET")
-	authenticatedRouter.Handle("/cache", appHandler(putCache)).Methods("PUT")
-	authenticatedRouter.Handle("/output", appHandler(getOutput)).Methods("GET")
-	authenticatedRouter.Handle("/output", appHandler(putOutput)).Methods("PUT")
-	authenticatedRouter.Handle("/exit-data", appHandler(getExitData)).Methods("GET")
-	authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
-	authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
-	authenticatedRouter.Handle("/events", appHandler(getEvents)).Methods("GET")
-	authenticatedRouter.Handle("/events", appHandler(createEvents)).Methods("POST")
-	authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
-	authenticatedRouter.Use(authenticate)
-	router.Use(logRequests)
+		log.Fatal(http.ListenAndServe(":8080", router))
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	},
 }

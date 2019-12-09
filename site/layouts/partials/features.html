@@ -1,8 +1,11 @@
 <div class="row py-5">
   {{ range . }}
-    <div class="col">
-      <!-- TODO: Add icon for each feature -->
+  <div class="col">
+    <!-- TODO: Add icon for each feature -->
+    <div class="text-center">
+      <h3>{{ .heading | markdownify }}</h3>
       {{ .text | markdownify }}
     </div>
+  </div>
   {{ end }}
 </div>

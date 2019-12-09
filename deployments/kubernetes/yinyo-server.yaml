@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: clay-server
-  namespace: clay-system
+  name: yinyo-server
+  namespace: yinyo-system
 ---
-# This role gives the minimal permissions necessary for clay-server to do its job
+# This role gives the minimal permissions necessary for yinyo-server to do its job
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   # "namespace" omitted since ClusterRoles are not namespaced
-  name: clay-server
+  name: yinyo-server
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -21,62 +21,80 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: clay-server
-  namespace: clay-scrapers
+  name: yinyo-server
+  namespace: yinyo-scrapers
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: clay-server
+  name: yinyo-server
 subjects:
   - kind: ServiceAccount
-    name: clay-server
-    namespace: clay-system
+    name: yinyo-server
+    namespace: yinyo-system
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: clay-server
-  namespace: clay-system
+  name: yinyo-server
+  namespace: yinyo-system
   labels:
-    app: clay-server
+    app: yinyo-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: clay-server
+      app: yinyo-server
   template:
     metadata:
       labels:
-        app: clay-server
+        app: yinyo-server
     spec:
-      serviceAccountName: clay-server
+      serviceAccountName: yinyo-server
       containers:
-        - name: clay-server
-          image: openaustralia/clay-server
+        - name: yinyo-server
+          image: openaustralia/yinyo-server
           ports:
             - containerPort: 8080
           env:
+            - name: STORE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: yinyo-server
+                  key: store_host
+            - name: STORE_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: yinyo-server
+                  key: store_bucket
             - name: STORE_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: clay-server
+                  name: yinyo-server
                   key: store_access_key
             - name: STORE_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: clay-server
+                  name: yinyo-server
                   key: store_secret_key
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: redis
                   key: password
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: clay-server
-  namespace: clay-system
+  name: yinyo-server
+  namespace: yinyo-system
 spec:
   type: LoadBalancer
   ports:
@@ -84,4 +102,4 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
-    app: clay-server
+    app: yinyo-server

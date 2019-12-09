@@ -1,22 +1,28 @@
 resources:
-  - deployments/kubernetes/000-clay-namespace.yaml
-  - deployments/kubernetes/clay-server.yaml
+  - deployments/kubernetes/000-yinyo-namespace.yaml
+  - deployments/kubernetes/yinyo-server.yaml
   - deployments/kubernetes/minio-deployment.yaml
   - deployments/kubernetes/redis.yaml
 
 secretGenerator:
   - name: minio
-    namespace: clay-system
+    namespace: yinyo-system
     envs:
       - configs/secrets-minio.env
-  - name: clay-server
-    namespace: clay-system
+  - name: yinyo-server
+    namespace: yinyo-system
     envs:
-      - configs/secrets-clay-server.env
+      - configs/secrets-yinyo-server.env
   - name: redis
-    namespace: clay-system
+    namespace: yinyo-system
     envs:
       - configs/secrets-redis.env
+
+configMapGenerator:
+  - name: yinyo-server
+    namespace: yinyo-system
+    envs:
+      - configs/config-yinyo-server.env
 
 configurations:
   - deployments/kustomizeconfig/redis.yaml

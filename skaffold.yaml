@@ -2,16 +2,16 @@ apiVersion: skaffold/v1
 kind: Config
 build:
   artifacts:
-  - image: openaustralia/clay-server
-    docker:
-      dockerfile: build/package/Dockerfile
-      target: clay-server
-  - image: openaustralia/clay-scraper
-    docker:
-      dockerfile: build/package/Dockerfile
-      target: clay-run
+    - image: openaustralia/yinyo-server
+      docker:
+        dockerfile: build/package/Dockerfile
+        target: yinyo-server
+    - image: openaustralia/yinyo-scraper
+      docker:
+        dockerfile: build/package/Dockerfile
+        target: yinyo-run
   tagPolicy:
     envTemplate:
-      template: '{{.IMAGE_NAME}}:v1'
+      template: "{{.IMAGE_NAME}}:v1"
 deploy:
   kustomize: {}

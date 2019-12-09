@@ -1,4 +1,4 @@
-package clayclient
+package yinyoclient
 
 import (
 	"archive/tar"
@@ -13,7 +13,8 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/openaustralia/yinyo/pkg/event"
 )
 
 // Run is what you get when you create a run and what you need to update it
@@ -156,7 +157,10 @@ func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 			if err != nil {
 				return err
 			}
-			io.Copy(f, tarReader)
+			_, err = io.Copy(f, tarReader)
+			if err != nil {
+				return err
+			}
 			f.Close()
 		case tar.TypeSymlink:
 			newname := filepath.Join(dir, file.Name)
@@ -173,7 +177,8 @@ func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 }
 
 // CreateArchiveFromDirectory creates an archive from a directory on the filesystem
-func CreateArchiveFromDirectory(dir string) (io.Reader, error) {
+// ignorePaths is a list of paths (relative to dir) that should be ignored and not archived
+func CreateArchiveFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
 	tarWriter := tar.NewWriter(gzipWriter)
@@ -183,6 +188,11 @@ func CreateArchiveFromDirectory(dir string) (io.Reader, error) {
 		}
 		if path == dir {
 			return nil
+		}
+		for _, ignorePath := range ignorePaths {
+			if path == filepath.Join(dir, ignorePath) {
+				return nil
+			}
 		}
 		relativePath, err := filepath.Rel(dir, path)
 		if err != nil {
@@ -221,7 +231,8 @@ func CreateArchiveFromDirectory(dir string) (io.Reader, error) {
 			if err != nil {
 				return err
 			}
-			io.Copy(tarWriter, f)
+			_, err = io.Copy(tarWriter, f)
+			return err
 		}
 
 		return nil
@@ -246,8 +257,9 @@ func (run *Run) GetAppToDirectory(dir string) error {
 }
 
 // PutAppFromDirectory uploads the scraper code from a directory on the filesystem
-func (run *Run) PutAppFromDirectory(dir string) error {
-	r, err := CreateArchiveFromDirectory(dir)
+// ignorePaths is a list of paths (relative to dir) that should be ignored and not uploaded
+func (run *Run) PutAppFromDirectory(dir string, ignorePaths []string) error {
+	r, err := CreateArchiveFromDirectory(dir, ignorePaths)
 	if err != nil {
 		return err
 	}
@@ -270,7 +282,7 @@ func (run *Run) GetCacheToDirectory(dir string) error {
 
 // PutCacheFromDirectory uploads the cache from a directory on the filesystem
 func (run *Run) PutCacheFromDirectory(dir string) error {
-	r, err := CreateArchiveFromDirectory(dir)
+	r, err := CreateArchiveFromDirectory(dir, []string{})
 	if err != nil {
 		return err
 	}
@@ -290,6 +302,37 @@ func (run *Run) GetApp() (io.ReadCloser, error) {
 		return nil, err
 	}
 	return resp.Body, nil
+}
+
+// GetOutput downloads the output of the run. Could be any file in any format.
+func (run *Run) GetOutput() (io.ReadCloser, error) {
+	resp, err := run.request("GET", "/output", nil)
+	if err != nil {
+		return nil, err
+	}
+	if err = checkOK(resp); err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
+}
+
+// GetOutputToFile downloads the output of the run and saves it in a file which it
+// will create or overwrite.
+func (run *Run) GetOutputToFile(path string) error {
+	output, err := run.GetOutput()
+	if err != nil {
+		return err
+	}
+	defer output.Close()
+
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, output)
+	return err
 }
 
 // PutApp uploads the tarred & gzipped scraper code
@@ -319,6 +362,23 @@ func (run *Run) PutOutput(data io.Reader) error {
 	return checkOK(resp)
 }
 
+// PutOutputFromFile uploads the contents of a file as the output of the scraper
+func (run *Run) PutOutputFromFile(path string) error {
+	// TODO: Don't do a separate Stat and Open
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		return run.PutOutput(f)
+	}
+	// We get here if output file doesn't exist. In that case we just want
+	// to happily carry on like nothing weird has happened
+	return nil
+}
+
 // GetCache downloads the tarred & gzipped build cache
 func (run *Run) GetCache() (io.ReadCloser, error) {
 	resp, err := run.request("GET", "/cache", nil)
@@ -334,14 +394,49 @@ func (run *Run) GetCache() (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
+// GetCacheToFile downloads the cache (as a tar & gzipped file) and saves it (without uncompressing it)
+func (run *Run) GetCacheToFile(path string) error {
+	cache, err := run.GetCache()
+	if err != nil {
+		return err
+	}
+	defer cache.Close()
+
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, cache)
+	return err
+}
+
 // StartRunOptions are options that can be used when starting a run
+// TODO: Remove duplication with server types
 type StartRunOptions struct {
-	Output string
+	Output   string
+	Callback Callback
+	Env      []EnvVariable
+}
+
+// EnvVariable is the name and value of an environment variable
+type EnvVariable struct {
+	Name  string
+	Value string
+}
+
+// Callback represents what we need to know to make a particular callback request
+// This is not just a string so that we could support adding headers or other special things
+// in the callback request
+type Callback struct {
+	URL string
 }
 
 // Start starts a run that has earlier been created
 // TODO: Add setting of environment variables
 func (run *Run) Start(options *StartRunOptions) error {
+	// TODO: Switch this over to using a json encoder
 	b, err := json.Marshal(options)
 	if err != nil {
 		return err
@@ -353,53 +448,9 @@ func (run *Run) Start(options *StartRunOptions) error {
 	return checkOK(resp)
 }
 
-// JSONEvent is used for reading/writing JSON
-type JSONEvent struct {
-	Stage  string `json:"stage"`
-	Type   string `json:"type"`
-	Stream string `json:"stream,omitempty"`
-	Text   string `json:"text,omitempty"`
-}
-
-// Event is the interface for all event types
-type Event interface {
-}
-
-// StartEvent represents the start of a build or run
-type StartEvent struct {
-	Stage string
-}
-
-// FinishEvent represent the completion of a build or run
-type FinishEvent struct {
-	Stage string
-}
-
-// LogEvent is the output of some text from the build or run of a scraper
-type LogEvent struct {
-	Stage  string
-	Stream string
-	Text   string
-}
-
 // EventIterator is a stream of events
 type EventIterator struct {
 	decoder *json.Decoder
-}
-
-// MarshalJSON converts a StartEvent to JSON
-func (e StartEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "start", Stage: e.Stage})
-}
-
-// MarshalJSON converts a StartEvent to JSON
-func (e FinishEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "finish", Stage: e.Stage})
-}
-
-// MarshalJSON converts a StartEvent to JSON
-func (e LogEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text})
 }
 
 // More checks whether another event is available
@@ -407,32 +458,19 @@ func (iterator *EventIterator) More() bool {
 	return iterator.decoder.More()
 }
 
-func (e *JSONEvent) toEvent() (Event, error) {
-	switch e.Type {
-	case "start":
-		return StartEvent{Stage: e.Stage}, nil
-	case "finish":
-		return FinishEvent{Stage: e.Stage}, nil
-	case "log":
-		return LogEvent{Stage: e.Stage, Stream: e.Stream, Text: e.Text}, nil
-	default:
-		return nil, errors.New("Unexpected type")
-	}
-}
-
 // Next returns the next event
-func (iterator *EventIterator) Next() (Event, error) {
-	var JSONEvent JSONEvent
-	err := iterator.decoder.Decode(&JSONEvent)
-	if err != nil {
-		return nil, err
-	}
-	return JSONEvent.toEvent()
+func (iterator *EventIterator) Next() (event event.Event, err error) {
+	err = iterator.decoder.Decode(&event)
+	return
 }
 
 // GetEvents returns a stream of events from the API
-func (run *Run) GetEvents() (*EventIterator, error) {
-	resp, err := run.request("GET", "/events", nil)
+// If lastID is empty ("") then the stream starts from the beginning. Otherwise
+// it starts from the first event after the one with the given ID.
+func (run *Run) GetEvents(lastID string) (*EventIterator, error) {
+	q := url.Values{}
+	q.Add("last-id", lastID)
+	resp, err := run.request("GET", "/events?"+q.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -446,22 +484,12 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 }
 
 // CreateEvent sends an event
-func (run *Run) CreateEvent(event Event) error {
+func (run *Run) CreateEvent(event event.Event) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
 	resp, err := run.request("POST", "/events", bytes.NewReader(b))
-	if err != nil {
-		return err
-	}
-	return checkOK(resp)
-}
-
-// CreateLastEvent sends a special message to close the stream
-// TODO: Figure out a better way of doing this
-func (run *Run) CreateLastEvent() error {
-	resp, err := run.request("POST", "/events", strings.NewReader("EOF"))
 	if err != nil {
 		return err
 	}
@@ -487,6 +515,20 @@ type Usage struct {
 	MaxRSS     int64   `json:"max_rss"`     // In kilobytes
 	NetworkIn  uint64  `json:"network_in"`  // In bytes
 	NetworkOut uint64  `json:"network_out"` // In bytes
+}
+
+// GetExitData gets data about resource usage after everything has finished
+func (run *Run) GetExitData() (exitData ExitData, err error) {
+	resp, err := run.request("GET", "/exit-data", nil)
+	if err != nil {
+		return
+	}
+	if err = checkOK(resp); err != nil {
+		return
+	}
+	dec := json.NewDecoder(resp.Body)
+	err = dec.Decode(&exitData)
+	return
 }
 
 // PutExitData uploads information about how things ran and how much resources were used

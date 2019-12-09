@@ -1,6 +1,6 @@
 package test
 
-// This tests the clay-run executable without running it in a kubernetes cluster
+// This tests the "yinyo wrapper" executable without running it in a kubernetes cluster
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/openaustralia/morph-ng/pkg/clayclient"
+	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -58,12 +58,12 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"start"}`,
+				`{"type":"start","data":{"stage":"build"}}`,
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -76,7 +76,7 @@ func TestSimpleRun(t *testing.T) {
 			// We'll just return the contents of an "arbitrary" directory here. It doesn't
 			// really matters what it has in it as long as we can test that it's correct.
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -88,61 +88,61 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"_app_"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"_app_"}}`,
 			)
 		} else if count == 4 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"Procfile"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"Procfile"}}`,
 			)
 		} else if count == 5 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"requirements.txt"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"requirements.txt"}}`,
 			)
 		} else if count == 6 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"runtime.txt"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"runtime.txt"}}`,
 			)
 		} else if count == 7 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"scraper.py"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"scraper.py"}}`,
 			)
 		} else if count == 8 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"_cache_"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"_cache_"}}`,
 			)
 		} else if count == 9 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"requirements.txt"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"requirements.txt"}}`,
 			)
 		} else if count == 10 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"runtime.txt"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"runtime.txt"}}`,
 			)
 		} else if count == 11 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"scraper.py"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"scraper.py"}}`,
 			)
 		} else if count == 12 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"build"}}`,
 			)
 		} else if count == 13 {
 			// We're not testing that the correct thing is being uploaded here for the time being
@@ -151,18 +151,18 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"start"}`,
+				`{"type":"start","data":{"stage":"run"}}`,
 			)
 		} else if count == 15 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"log","stream":"stdout","text":"Ran"}`,
+				`{"type":"log","data":{"stage":"run","stream":"stdout","text":"Ran"}}`,
 			)
 		} else if count == 16 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData clayclient.ExitData
+			var exitData yinyoclient.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)
@@ -186,13 +186,13 @@ func TestSimpleRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"run"}}`,
 			)
 		} else if count == 18 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"EOF",
+				`{"type":"last","data":{}}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
@@ -212,19 +212,20 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 
 	// Just run it and see what breaks
+	// TODO: Don't run the executable
 	cmd := exec.Command(
-		"clay-run",
+		"yinyo",
+		"wrapper",
 		"--app", appPath,
 		"--import", importPath,
 		"--cache", cachePath,
 		"run-name",
-		"output.txt",
-	)
-	cmd.Env = append(os.Environ(),
-		// Send requests for the clay server to our local test server instead (which we start here)
-		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
-		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "echo _app_; ls `+importPath+`; echo _cache_; ls `+cachePath+`"`,
-		"CLAY_INTERNAL_RUN_COMMAND=echo Ran",
+		"run-token",
+		"--output", "output.txt",
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		"--server", ts.URL,
+		"--buildcommand", `bash -c "echo _app_; ls `+importPath+`; echo _cache_; ls `+cachePath+`"`,
+		"--runcommand", "echo Ran",
 	)
 
 	stdoutStderr, err := cmd.CombinedOutput()
@@ -243,12 +244,12 @@ func TestFailingBuild(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"start"}`,
+				`{"type":"start","data":{"stage":"build"}}`,
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -264,13 +265,13 @@ func TestFailingBuild(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stderr","text":"bash: failing_command: command not found"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stderr","text":"bash: failing_command: command not found"}}`,
 			)
 		} else if count == 4 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"build"}}`,
 			)
 		} else if count == 5 {
 			// We're not testing that the correct thing is being uploaded here for the time being
@@ -278,7 +279,7 @@ func TestFailingBuild(t *testing.T) {
 		} else if count == 6 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData clayclient.ExitData
+			var exitData yinyoclient.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)
@@ -297,7 +298,7 @@ func TestFailingBuild(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"EOF",
+				`{"type":"last","data":{}}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
@@ -318,18 +319,18 @@ func TestFailingBuild(t *testing.T) {
 
 	// Just run it and see what breaks
 	cmd := exec.Command(
-		"clay-run",
+		"yinyo",
+		"wrapper",
 		"--app", appPath,
 		"--import", importPath,
 		"--cache", cachePath,
 		"run-name",
-		"output.txt",
-	)
-	cmd.Env = append(os.Environ(),
-		// Send requests for the clay server to our local test server instead (which we start here)
-		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
-		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "failing_command"`,
-		"CLAY_INTERNAL_RUN_COMMAND=echo Ran",
+		"run-token",
+		"--output", "output.txt",
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		"--server", ts.URL,
+		"--buildcommand", `bash -c "failing_command"`,
+		"--runcommand", "echo Ran",
 	)
 
 	stdoutStderr, err := cmd.CombinedOutput()
@@ -346,12 +347,12 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"start"}`,
+				`{"type":"start","data":{"stage":"build"}}`,
 			)
 		} else if count == 1 {
 			checkRequest(t, r, "GET", "/runs/run-name/app", "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := clayclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world")
+			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -367,13 +368,13 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"log","stream":"stdout","text":"build"}`,
+				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"build"}}`,
 			)
 		} else if count == 4 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"build","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"build"}}`,
 			)
 		} else if count == 5 {
 			// We're not testing that the correct thing is being uploaded here for the time being
@@ -382,18 +383,18 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"start"}`,
+				`{"type":"start","data":{"stage":"run"}}`,
 			)
 		} else if count == 7 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"log","stream":"stderr","text":"bash: failing_command: command not found"}`,
+				`{"type":"log","data":{"stage":"run","stream":"stderr","text":"bash: failing_command: command not found"}}`,
 			)
 		} else if count == 8 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData clayclient.ExitData
+			var exitData yinyoclient.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)
@@ -423,13 +424,13 @@ func TestFailingRun(t *testing.T) {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				`{"stage":"run","type":"finish"}`,
+				`{"type":"finish","data":{"stage":"run"}}`,
 			)
 		} else if count == 11 {
 			checkRequest(t, r,
 				"POST",
 				"/runs/run-name/events",
-				"EOF",
+				`{"type":"last","data":{}}`,
 			)
 		} else {
 			fmt.Println("Didn't expect so many requests")
@@ -450,19 +451,19 @@ func TestFailingRun(t *testing.T) {
 
 	// Just run it and see what breaks
 	cmd := exec.Command(
-		"clay-run",
+		"yinyo",
+		"wrapper",
 		"--app", appPath,
 		"--import", importPath,
 		"--cache", cachePath,
 		"run-name",
-		"output.txt",
-	)
-	cmd.Env = append(os.Environ(),
-		// Send requests for the clay server to our local test server instead (which we start here)
-		"CLAY_INTERNAL_SERVER_URL="+ts.URL,
-		`CLAY_INTERNAL_BUILD_COMMAND=bash -c "echo build"`,
+		"run-token",
+		"--output", "output.txt",
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		"--server", ts.URL,
+		"--buildcommand", `bash -c "echo build"`,
 		// Send something to the output file then fail
-		`CLAY_INTERNAL_RUN_COMMAND=bash -c "cd `+appPath+`; echo hello > output.txt; failing_command"`,
+		"--runcommand", `bash -c "cd `+appPath+`; echo hello > output.txt; failing_command"`,
 	)
 
 	stdoutStderr, err := cmd.CombinedOutput()
@@ -470,4 +471,67 @@ func TestFailingRun(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func TestInternalError(t *testing.T) {
+	// If the wrapper has an error, either from doing something itself or from contacting
+	// the yinyo server, it should also add something to the log to let the user know
+	count := 0
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if count == 0 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"type":"start","data":{"stage":"build"}}`,
+			)
+		} else if count == 1 {
+			// Let's simulate an error with the blob storage. So, the wrapper is trying to
+			// get the application and there's a problem.
+			checkRequest(t, r, "GET", "/runs/run-name/app", "")
+			w.WriteHeader(http.StatusInternalServerError)
+		} else if count == 2 {
+			checkRequest(t, r,
+				"POST",
+				"/runs/run-name/events",
+				`{"type":"log","data":{"stage":"build","stream":"interr","text":"There was a problem getting the code"}}`,
+			)
+		}
+		count++
+	}
+	ts := httptest.NewServer(http.HandlerFunc(handler))
+	defer ts.Close()
+
+	appPath, importPath, cachePath, err := createTemporaryDirectories()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(appPath)
+	defer os.RemoveAll(importPath)
+	defer os.RemoveAll(cachePath)
+
+	// Just run it and see what breaks
+	// TODO: Don't run the executable
+	cmd := exec.Command(
+		"yinyo",
+		"wrapper",
+		"--app", appPath,
+		"--import", importPath,
+		"--cache", cachePath,
+		"run-name",
+		"run-token",
+		"--output", "output.txt",
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		"--server", ts.URL,
+		"--buildcommand", "echo Build",
+		"--runcommand", "echo Ran",
+	)
+
+	stdoutStderr, err := cmd.CombinedOutput()
+	fmt.Printf("%s\n", stdoutStderr)
+
+	// Because we expect the command to fail
+	assert.NotNil(t, err)
+	assert.NotEqual(t, 0, cmd.ProcessState.ExitCode())
+
+	assert.Equal(t, 3, count)
 }

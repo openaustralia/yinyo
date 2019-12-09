@@ -1,7 +1,8 @@
 package commands
 
 import (
-	"errors"
+	"bytes"
+	"encoding/csv"
 	"io"
 	"net/http"
 	"os"
@@ -10,19 +11,19 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 
-	"github.com/openaustralia/morph-ng/pkg/blobstore"
-	"github.com/openaustralia/morph-ng/pkg/jobdispatcher"
-	"github.com/openaustralia/morph-ng/pkg/keyvaluestore"
-	"github.com/openaustralia/morph-ng/pkg/stream"
+	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
+	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
 const filenameApp = "app.tgz"
 const filenameCache = "cache.tgz"
 const filenameOutput = "output"
 const filenameExitData = "exit-data.json"
-const dockerImage = "openaustralia/clay-scraper:v1"
-const runBinary = "/bin/clay-run"
-const reservedEnvNamespace = "CLAY_INTERNAL_"
+const dockerImage = "openaustralia/yinyo-scraper:v1"
+const runBinary = "/bin/yinyo"
 
 // App holds the state for the application
 type App struct {
@@ -46,8 +47,8 @@ type logMessage struct {
 
 func defaultStore() (blobstore.Client, error) {
 	return blobstore.NewMinioClient(
-		"minio-service:9000",
-		"clay",
+		os.Getenv("STORE_HOST"),
+		os.Getenv("STORE_BUCKET"),
 		os.Getenv("STORE_ACCESS_KEY"),
 		os.Getenv("STORE_SECRET_KEY"),
 	)
@@ -163,12 +164,6 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 func (app *App) StartRun(
 	runName string, output string, env map[string]string, callbackURL string,
 ) error {
-	// Check that we're not using any reserved environment variables
-	for k := range env {
-		if strings.HasPrefix(k, reservedEnvNamespace) {
-			return errors.New("Can't override environment variables starting with " + reservedEnvNamespace)
-		}
-	}
 	err := app.setCallbackURL(runName, callbackURL)
 	if err != nil {
 		return err
@@ -177,30 +172,79 @@ func (app *App) StartRun(
 	if err != nil {
 		return err
 	}
-	env["CLAY_INTERNAL_RUN_TOKEN"] = runToken
-	command := []string{runBinary, runName, output}
-	return app.JobDispatcher.StartJob(runName, dockerImage, command, env)
+
+	// Convert environment variable values to a single string that can be passed
+	// as a flag to wrapper
+	records := make([]string, 0, len(env)>>1)
+	for k, v := range env {
+		records = append(records, k+"="+v)
+	}
+	var buf bytes.Buffer
+	w := csv.NewWriter(&buf)
+	if err := w.Write(records); err != nil {
+		return err
+	}
+	w.Flush()
+
+	envString := strings.TrimSpace(buf.String())
+	command := []string{
+		runBinary,
+		"wrapper",
+		runName,
+		runToken,
+		"--output", output,
+	}
+	if envString != "" {
+		command = append(command, "--env", envString)
+	}
+	return app.JobDispatcher.StartJob(runName, dockerImage, command)
 }
 
-// GetEvent gets the next event
-func (app *App) GetEvent(runName string, id string) (newID string, jsonString string, finished bool, err error) {
-	return app.Stream.Get(runName, id)
+// Events is an iterator to retrieve events from a stream
+type Events struct {
+	app     *App
+	runName string
+	lastID  string
+	more    bool
+}
+
+// GetEvents returns an iterator to get at all the events.
+// Use "0" for lastId to start at the beginning of the stream. Otherwise use the id of the last
+// seen event to restart the stream from that point. Don't try to restart the stream from the
+// last event, otherwise More() will just wait around forever.
+func (app *App) GetEvents(runName string, lastID string) Events {
+	return Events{app: app, runName: runName, lastID: lastID, more: true}
+}
+
+// More checks whether there are more events available. If true you can then call Next()
+func (events *Events) More() bool {
+	return events.more
+}
+
+// Next returns the next event
+func (events *Events) Next() (e event.Event, err error) {
+	e, err = events.app.Stream.Get(events.runName, events.lastID)
+	if err != nil {
+		return
+	}
+
+	// Add the id to the event
+	events.lastID = e.ID
+
+	// Check if this is the last event
+	_, ok := e.Data.(event.LastData)
+	events.more = !ok
+	return
 }
 
 // CreateEvent add an event to the stream
-func (app *App) CreateEvent(runName string, eventJSON string) error {
-	err1 := app.postCallbackEvent(runName, eventJSON)
+func (app *App) CreateEvent(runName string, event event.Event) error {
 	// TODO: Use something like runName-events instead for the stream name
-	err2 := app.Stream.Add(runName, eventJSON)
-
-	// Only error when we have tried sending the event to both places
-	if err1 != nil {
-		return err1
+	event, err := app.Stream.Add(runName, event)
+	if err != nil {
+		return err
 	}
-	if err2 != nil {
-		return err2
-	}
-	return nil
+	return app.postCallbackEvent(runName, event)
 }
 
 // DeleteRun deletes the run. Should be the last thing called
