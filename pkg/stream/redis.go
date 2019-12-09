@@ -15,19 +15,15 @@ func NewRedis(redisClient *redis.Client) Client {
 	return &redisStream{client: redisClient}
 }
 
-func (stream *redisStream) add(key string, value string) (string, error) {
-	return stream.client.XAdd(&redis.XAddArgs{
-		Stream: key,
-		Values: map[string]interface{}{"json": value},
-	}).Result()
-}
-
 func (stream *redisStream) Add(key string, event event.Event) (addedEvent event.Event, err error) {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return
 	}
-	id, err := stream.add(key, string(b))
+	id, err := stream.client.XAdd(&redis.XAddArgs{
+		Stream: key,
+		Values: map[string]interface{}{"json": string(b)},
+	}).Result()
 	if err != nil {
 		return
 	}
@@ -37,9 +33,9 @@ func (stream *redisStream) Add(key string, event event.Event) (addedEvent event.
 	return
 }
 
-// Get the next string in the stream based on the id. It will wait until it's
+// Get the next event in the stream based on the id. It will wait until it's
 // available
-func (stream *redisStream) get(key string, id string) (newID string, value string, err error) {
+func (stream *redisStream) Get(key string, id string) (event event.Event, err error) {
 	// For the moment get one event at a time
 	// TODO: Grab more than one at a time for a little more efficiency
 	result, err := stream.client.XRead(&redis.XReadArgs{
@@ -50,16 +46,9 @@ func (stream *redisStream) get(key string, id string) (newID string, value strin
 	if err != nil {
 		return
 	}
-	newID = result[0].Messages[0].ID
-	value = result[0].Messages[0].Values["json"].(string)
-	return
-}
+	newID := result[0].Messages[0].ID
+	jsonString := result[0].Messages[0].Values["json"].(string)
 
-func (stream *redisStream) Get(key string, id string) (event event.Event, err error) {
-	newID, jsonString, err := stream.get(key, id)
-	if err != nil {
-		return
-	}
 	err = json.Unmarshal([]byte(jsonString), &event)
 	// Add the id to the event
 	event.ID = newID
