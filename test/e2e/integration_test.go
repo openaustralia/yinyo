@@ -167,26 +167,23 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
-	expected := []event.Event{
-		event.NewStartEvent("build"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       "),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
-		event.NewFinishEvent("build"),
-		event.NewStartEvent("run"),
-		event.NewLogEvent("run", "stdout", "Hello World!"),
-		event.NewFinishEvent("run"),
-		event.NewLastEvent(),
-	}
 	// Copy across the IDs from the eventsList to the expected because we don't know what the
 	// IDs will be ahead of time and this make it easy to compare expected and eventsList
-	for i := range eventsList {
-		expected[i].ID = eventsList[i].ID
+	expected := []event.Event{
+		event.NewStartEvent(eventsList[0].ID, "build"),
+		event.NewLogEvent(eventsList[1].ID, "build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
+		event.NewLogEvent(eventsList[2].ID, "build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
+		event.NewLogEvent(eventsList[3].ID, "build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
+		event.NewLogEvent(eventsList[4].ID, "build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
+		event.NewLogEvent(eventsList[5].ID, "build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
+		event.NewLogEvent(eventsList[6].ID, "build", "stdout", "\u001b[1G       "),
+		event.NewLogEvent(eventsList[7].ID, "build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
+		event.NewLogEvent(eventsList[8].ID, "build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
+		event.NewFinishEvent(eventsList[9].ID, "build"),
+		event.NewStartEvent(eventsList[10].ID, "run"),
+		event.NewLogEvent(eventsList[11].ID, "run", "stdout", "Hello World!"),
+		event.NewFinishEvent(eventsList[12].ID, "run"),
+		event.NewLastEvent(eventsList[13].ID),
 	}
 	assert.Equal(t, expected, eventsList)
 

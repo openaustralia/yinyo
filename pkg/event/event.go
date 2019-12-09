@@ -78,21 +78,21 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 }
 
 // NewLogEvent creates and returns a new log event
-func NewLogEvent(stage string, stream string, text string) Event {
-	return Event{Type: "log", Data: LogData{Stage: stage, Stream: stream, Text: text}}
+func NewLogEvent(id string, stage string, stream string, text string) Event {
+	return Event{ID: id, Type: "log", Data: LogData{Stage: stage, Stream: stream, Text: text}}
 }
 
 // NewStartEvent creates and returns a new start event
-func NewStartEvent(stage string) Event {
-	return Event{Type: "start", Data: StartData{Stage: stage}}
+func NewStartEvent(id string, stage string) Event {
+	return Event{ID: id, Type: "start", Data: StartData{Stage: stage}}
 }
 
 // NewFinishEvent creates and returns a new finish event
-func NewFinishEvent(stage string) Event {
-	return Event{Type: "finish", Data: FinishData{Stage: stage}}
+func NewFinishEvent(id string, stage string) Event {
+	return Event{ID: id, Type: "finish", Data: FinishData{Stage: stage}}
 }
 
 // NewLastEvent creates and returns a new last event
-func NewLastEvent() Event {
-	return Event{Type: "last", Data: LastData{}}
+func NewLastEvent(id string) Event {
+	return Event{ID: id, Type: "last", Data: LastData{}}
 }

@@ -65,7 +65,7 @@ func TestCreateEvent(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
+	stream.On("Add", "run-name", event.NewStartEvent("", "build")).Return(event.NewStartEvent("123", "build"), nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -83,7 +83,7 @@ func TestCreateEvent(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
+	err := app.CreateEvent("run-name", event.NewStartEvent("", "build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -95,7 +95,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
+	stream.On("Add", "run-name", event.NewStartEvent("", "build")).Return(event.NewStartEvent("123", "build"), nil)
 	keyValueStore.On("Get", "url:run-name").Return("", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -104,7 +104,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
+	err := app.CreateEvent("run-name", event.NewStartEvent("", "build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -116,7 +116,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
+	stream.On("Add", "run-name", event.NewStartEvent("", "build")).Return(event.NewStartEvent("123", "build"), nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -134,7 +134,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
+	err := app.CreateEvent("run-name", event.NewStartEvent("", "build"))
 	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
 
 	stream.AssertExpectations(t)
@@ -145,8 +145,8 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 func TestGetEvents(t *testing.T) {
 	stream := new(stream.MockClient)
 
-	stream.On("Get", "run-name", "0").Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
-	stream.On("Get", "run-name", "123").Return(event.Event{ID: "456", Type: "last", Data: event.LastData{}}, nil)
+	stream.On("Get", "run-name", "0").Return(event.NewStartEvent("123", "build"), nil)
+	stream.On("Get", "run-name", "123").Return(event.NewLastEvent("456"), nil)
 
 	app := App{Stream: stream}
 
@@ -158,13 +158,13 @@ func TestGetEvents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, e)
+	assert.Equal(t, event.NewStartEvent("123", "build"), e)
 	assert.True(t, events.More())
 	e, err = events.Next()
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, event.Event{ID: "456", Type: "last", Data: event.LastData{}}, e)
+	assert.Equal(t, event.NewLastEvent("456"), e)
 	assert.False(t, events.More())
 
 	stream.AssertExpectations(t)
