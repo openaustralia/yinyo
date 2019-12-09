@@ -296,9 +296,13 @@ func (server *Server) Initialise() error {
 		return err
 	}
 	server.app = app
+	server.InitialiseRoutes()
+	return nil
+}
 
+// InitialiseRoutes sets up the routes
+func (server *Server) InitialiseRoutes() {
 	server.router = mux.NewRouter().StrictSlash(true)
-
 	server.router.Handle("/", appHandler(server.whoAmI))
 	server.router.Handle("/runs", appHandler(server.create)).Methods("POST")
 
@@ -317,8 +321,6 @@ func (server *Server) Initialise() error {
 	authenticatedRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
 	authenticatedRouter.Use(server.authenticate)
 	server.router.Use(logRequests)
-
-	return nil
 }
 
 // Run runs the server. This blocks until the server quits
