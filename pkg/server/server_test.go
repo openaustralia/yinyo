@@ -16,8 +16,10 @@ func TestStartBadBody(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	server := Server{}
+
 	rr := httptest.NewRecorder()
-	handler := appHandler(start)
+	handler := appHandler(server.start)
 
 	handler.ServeHTTP(rr, req)
 
@@ -32,8 +34,9 @@ func TestCreateEventBadBody(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	server := Server{}
 	rr := httptest.NewRecorder()
-	handler := appHandler(createEvent)
+	handler := appHandler(server.createEvent)
 
 	handler.ServeHTTP(rr, req)
 

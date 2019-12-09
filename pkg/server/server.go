@@ -15,14 +15,14 @@ import (
 	"github.com/openaustralia/yinyo/pkg/event"
 )
 
-func create(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
 	values := r.URL.Query()["name_prefix"]
 	namePrefix := ""
 	if len(values) > 0 {
 		namePrefix = values[0]
 	}
 
-	createResult, err := app.CreateRun(namePrefix)
+	createResult, err := server.app.CreateRun(namePrefix)
 	if err != nil {
 		return err
 	}
@@ -32,13 +32,13 @@ func create(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func getApp(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	reader, err := app.GetApp(runName)
+	reader, err := server.app.GetApp(runName)
 	if err != nil {
 		// Returns 404 if there is no app
-		if app.BlobStore.IsNotExist(err) {
+		if server.app.BlobStore.IsNotExist(err) {
 			http.NotFound(w, r)
 			return nil
 		}
@@ -48,17 +48,17 @@ func getApp(w http.ResponseWriter, r *http.Request) error {
 	return err
 }
 
-func putApp(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) putApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return app.PutApp(r.Body, r.ContentLength, runName)
+	return server.app.PutApp(r.Body, r.ContentLength, runName)
 }
 
-func getCache(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	reader, err := app.GetCache(runName)
+	reader, err := server.app.GetCache(runName)
 	if err != nil {
 		// Returns 404 if there is no cache
-		if app.BlobStore.IsNotExist(err) {
+		if server.app.BlobStore.IsNotExist(err) {
 			http.NotFound(w, r)
 			return nil
 		}
@@ -69,17 +69,17 @@ func getCache(w http.ResponseWriter, r *http.Request) error {
 	return err
 }
 
-func putCache(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) putCache(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return app.PutCache(r.Body, r.ContentLength, runName)
+	return server.app.PutCache(r.Body, r.ContentLength, runName)
 }
 
-func getOutput(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	reader, err := app.GetOutput(runName)
+	reader, err := server.app.GetOutput(runName)
 	if err != nil {
 		// Returns 404 if there is no output
-		if app.BlobStore.IsNotExist(err) {
+		if server.app.BlobStore.IsNotExist(err) {
 			http.NotFound(w, r)
 			return nil
 		}
@@ -89,17 +89,17 @@ func getOutput(w http.ResponseWriter, r *http.Request) error {
 	return err
 }
 
-func putOutput(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) putOutput(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return app.PutOutput(r.Body, r.ContentLength, runName)
+	return server.app.PutOutput(r.Body, r.ContentLength, runName)
 }
 
-func getExitData(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	reader, err := app.GetExitData(runName)
+	reader, err := server.app.GetExitData(runName)
 	if err != nil {
 		// Returns 404 if there is no exit data
-		if app.BlobStore.IsNotExist(err) {
+		if server.app.BlobStore.IsNotExist(err) {
 			http.NotFound(w, r)
 			return nil
 		}
@@ -109,9 +109,9 @@ func getExitData(w http.ResponseWriter, r *http.Request) error {
 	return err
 }
 
-func putExitData(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) putExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return app.PutExitData(r.Body, r.ContentLength, runName)
+	return server.app.PutExitData(r.Body, r.ContentLength, runName)
 }
 
 type envVariable struct {
@@ -130,7 +130,7 @@ type callback struct {
 	URL string
 }
 
-func start(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	decoder := json.NewDecoder(r.Body)
@@ -145,10 +145,10 @@ func start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	return app.StartRun(runName, l.Output, env, l.Callback.URL)
+	return server.app.StartRun(runName, l.Output, env, l.Callback.URL)
 }
 
-func getEvents(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 	lastID := mux.Vars(r)["last-id"]
 	if lastID == "" {
@@ -161,7 +161,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("Couldn't access the flusher")
 	}
 
-	events := app.GetEvents(runName, lastID)
+	events := server.app.GetEvents(runName, lastID)
 	enc := json.NewEncoder(w)
 	for events.More() {
 		e, err := events.Next()
@@ -177,7 +177,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func createEvent(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) createEvent(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	// Read json message as is into a string
@@ -194,16 +194,16 @@ func createEvent(w http.ResponseWriter, r *http.Request) error {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
-	return app.CreateEvent(runName, event)
+	return server.app.CreateEvent(runName, event)
 }
 
-func delete(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) delete(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
-	return app.DeleteRun(runName)
+	return server.app.DeleteRun(runName)
 }
 
-func whoAmI(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) whoAmI(w http.ResponseWriter, r *http.Request) error {
 	fmt.Fprintln(w, "Hello from Yinyo!")
 	return nil
 }
@@ -228,7 +228,7 @@ func extractBearerToken(header http.Header) (string, error) {
 }
 
 // Middleware function, which will be called for each request
-func authenticate(next http.Handler) http.Handler {
+func (server *Server) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		runName := mux.Vars(r)["id"]
 		runToken, err := extractBearerToken(r.Header)
@@ -238,7 +238,7 @@ func authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		actualRunToken, err := app.JobDispatcher.GetToken(runName)
+		actualRunToken, err := server.app.JobDispatcher.GetToken(runName)
 
 		if err != nil {
 			log.Println(err)
@@ -283,37 +283,40 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Our global state
-var app *commands.App
+// Server holds the internal state for the server
+type Server struct {
+	app *commands.App
+}
 
 // Run runs the server. This function will block until the server quits
 func Run() {
 	var err error
-	app, err = commands.New()
+	app, err := commands.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Yinyo is ready and waiting.")
 	router := mux.NewRouter().StrictSlash(true)
+	server := Server{app: app}
 
-	router.Handle("/", appHandler(whoAmI))
-	router.Handle("/runs", appHandler(create)).Methods("POST")
+	router.Handle("/", appHandler(server.whoAmI))
+	router.Handle("/runs", appHandler(server.create)).Methods("POST")
 
 	authenticatedRouter := router.PathPrefix("/runs/{id}").Subrouter()
-	authenticatedRouter.Handle("/app", appHandler(getApp)).Methods("GET")
-	authenticatedRouter.Handle("/app", appHandler(putApp)).Methods("PUT")
-	authenticatedRouter.Handle("/cache", appHandler(getCache)).Methods("GET")
-	authenticatedRouter.Handle("/cache", appHandler(putCache)).Methods("PUT")
-	authenticatedRouter.Handle("/output", appHandler(getOutput)).Methods("GET")
-	authenticatedRouter.Handle("/output", appHandler(putOutput)).Methods("PUT")
-	authenticatedRouter.Handle("/exit-data", appHandler(getExitData)).Methods("GET")
-	authenticatedRouter.Handle("/exit-data", appHandler(putExitData)).Methods("PUT")
-	authenticatedRouter.Handle("/start", appHandler(start)).Methods("POST")
-	authenticatedRouter.Handle("/events", appHandler(getEvents)).Methods("GET")
-	authenticatedRouter.Handle("/events", appHandler(createEvent)).Methods("POST")
-	authenticatedRouter.Handle("", appHandler(delete)).Methods("DELETE")
-	authenticatedRouter.Use(authenticate)
+	authenticatedRouter.Handle("/app", appHandler(server.getApp)).Methods("GET")
+	authenticatedRouter.Handle("/app", appHandler(server.putApp)).Methods("PUT")
+	authenticatedRouter.Handle("/cache", appHandler(server.getCache)).Methods("GET")
+	authenticatedRouter.Handle("/cache", appHandler(server.putCache)).Methods("PUT")
+	authenticatedRouter.Handle("/output", appHandler(server.getOutput)).Methods("GET")
+	authenticatedRouter.Handle("/output", appHandler(server.putOutput)).Methods("PUT")
+	authenticatedRouter.Handle("/exit-data", appHandler(server.getExitData)).Methods("GET")
+	authenticatedRouter.Handle("/exit-data", appHandler(server.putExitData)).Methods("PUT")
+	authenticatedRouter.Handle("/start", appHandler(server.start)).Methods("POST")
+	authenticatedRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
+	authenticatedRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
+	authenticatedRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
+	authenticatedRouter.Use(server.authenticate)
 	router.Use(logRequests)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
