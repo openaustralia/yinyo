@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/kballard/go-shellquote"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/shirou/gopsutil/net"
 	"github.com/spf13/cobra"
@@ -21,7 +22,7 @@ import (
 func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
-		run.CreateEvent(yinyoclient.LogEvent{Stage: stage, Stream: streamName, Text: scanner.Text()})
+		run.CreateEvent(event.NewLogEvent(stage, streamName, scanner.Text()))
 	}
 	c <- scanner.Err()
 }
@@ -117,6 +118,13 @@ func init() {
 	rootCmd.AddCommand(wrapperCmd)
 }
 
+func checkError(err error, run yinyoclient.Run, stage string, text string) {
+	if err != nil {
+		run.CreateEvent(event.NewLogEvent("build", "interr", "There was a problem getting the code"))
+		log.Fatal(err)
+	}
+}
+
 var wrapperCmd = &cobra.Command{
 	Use:   "wrapper run_name run_token",
 	Short: "Manages the building and running of a scraper",
@@ -128,54 +136,36 @@ var wrapperCmd = &cobra.Command{
 
 		client := yinyoclient.New(serverURL)
 		run := yinyoclient.Run{Name: runName, Token: runToken, Client: client}
-		err := run.CreateEvent(yinyoclient.StartEvent{Stage: "build"})
-		if err != nil {
-			log.Fatal(err)
-		}
+		err := run.CreateEvent(event.NewStartEvent("build"))
+		checkError(err, run, "build", "Could not create event")
 
 		// Create and populate herokuish import path and cache path
 		err = os.MkdirAll(importPath, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err, run, "build", "Could not create directory")
 		err = os.MkdirAll(cachePath, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err, run, "build", "Could not create directory")
 		// TODO: Allow envPath to be changed by a flag
 		envPath := "/tmp/env"
 		err = os.MkdirAll(envPath, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err, run, "build", "Could not create directory")
 
 		// Write the environment variables to /tmp/env in the format defined by the buildpack API
 		for name, value := range wrapperEnvironment {
 			f, err := os.Create(filepath.Join(envPath, name))
-			if err != nil {
-				log.Fatal(err)
-			}
+			checkError(err, run, "build", "Could not create environment file")
 			_, err = f.WriteString(value)
-			if err != nil {
-				log.Fatal(err)
-			}
+			checkError(err, run, "build", "Could not write to environment file")
 			f.Close()
 		}
 
 		err = run.GetAppToDirectory(importPath)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err, run, "build", "Could not get the code")
 		d1 := []byte("scraper: /bin/start.sh")
 		err = ioutil.WriteFile(filepath.Join(importPath, "Procfile"), d1, 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err, run, "build", "Could not write to a file")
 		// If the cache doesn't exit this will not error
 		err = run.GetCacheToDirectory(cachePath)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err, run, "build", "Could not get the cache")
 
 		env := []string{
 			"APP_PATH=" + appPath,
@@ -187,61 +177,44 @@ var wrapperCmd = &cobra.Command{
 		var exitData yinyoclient.ExitData
 
 		exitDataStage, err := runExternalCommand(run, "build", buildCommand, env)
-		if err != nil {
-			log.Fatal(err)
-		}
+		checkError(err, run, "build", "Unexpected error while building")
 		exitData.Build = &exitDataStage
 
 		// Send the build finished event immediately when the build command has finished
 		// Effectively the cache uploading happens between the build and run stages
-		err = run.CreateEvent(yinyoclient.FinishEvent{Stage: "build"})
-		if err != nil {
-			log.Fatal(err)
-		}
+		err = run.CreateEvent(event.NewFinishEvent("build"))
+		checkError(err, run, "build", "Could not create event")
 
 		err = run.PutCacheFromDirectory(cachePath)
-		if err != nil {
-			log.Fatal(err)
-		}
+		// TODO: We're not actually in the "build" stage here
+		checkError(err, run, "build", "Could not upload cache")
 
 		// Only do the main run if the build was succesful
 		if exitData.Build.ExitCode == 0 {
-			err = run.CreateEvent(yinyoclient.StartEvent{Stage: "run"})
-			if err != nil {
-				log.Fatal(err)
-			}
+			err = run.CreateEvent(event.NewStartEvent("run"))
+			checkError(err, run, "run", "Could not create event")
 
 			exitDataStage, err := runExternalCommand(run, "run", runCommand, env)
-			if err != nil {
-				log.Fatal(err)
-			}
+			checkError(err, run, "run", "Unexpected error while running")
 			exitData.Run = &exitDataStage
 
-			if err := run.PutExitData(exitData); err != nil {
-				log.Fatal(err)
-			}
+			err = run.PutExitData(exitData)
+			checkError(err, run, "run", "Could not upload exit data")
 
 			if runOutput != "" {
 				err = run.PutOutputFromFile(filepath.Join(appPath, runOutput))
-				if err != nil {
-					log.Fatal(err)
-				}
+				checkError(err, run, "run", "Could not upload output")
 			}
 
-			err = run.CreateEvent(yinyoclient.FinishEvent{Stage: "run"})
-			if err != nil {
-				log.Fatal(err)
-			}
+			err = run.CreateEvent(event.NewFinishEvent("run"))
+			checkError(err, run, "run", "Could not create event")
 		} else {
 			// TODO: Only upload the exit data for the build
-			if err := run.PutExitData(exitData); err != nil {
-				log.Fatal(err)
-			}
+			err := run.PutExitData(exitData)
+			checkError(err, run, "run", "Could not upload exit data")
 		}
 
-		err = run.CreateEvent(yinyoclient.LastEvent{})
-		if err != nil {
-			log.Fatal(err)
-		}
+		err = run.CreateEvent(event.NewLastEvent())
+		checkError(err, run, "run", "Could not create event")
 	},
 }

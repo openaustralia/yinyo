@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/stream"
@@ -64,7 +65,7 @@ func TestCreateEvent(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
+	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -82,7 +83,7 @@ func TestCreateEvent(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", `{"some": "json"}`)
+	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -94,7 +95,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
+	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
 	keyValueStore.On("Get", "url:run-name").Return("", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -103,7 +104,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", `{"some": "json"}`)
+	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -115,7 +116,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	stream := new(stream.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
 
-	stream.On("Add", "run-name", `{"some": "json"}`).Return(nil)
+	stream.On("Add", "run-name", event.Event{ID: "", Type: "start", Data: event.StartData{Stage: "build"}}).Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
 	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -133,12 +134,40 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", `{"some": "json"}`)
+	err := app.CreateEvent("run-name", event.NewStartEvent("build"))
 	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
 
 	stream.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
 	roundTripper.AssertExpectations(t)
+}
+
+func TestGetEvents(t *testing.T) {
+	stream := new(stream.MockClient)
+
+	stream.On("Get", "run-name", "0").Return(event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, nil)
+	stream.On("Get", "run-name", "123").Return(event.Event{ID: "456", Type: "last", Data: event.LastData{}}, nil)
+
+	app := App{Stream: stream}
+
+	events := app.GetEvents("run-name", "0")
+
+	// We're expecting two events in the stream. Let's hardcode what would normally be in a loop
+	assert.True(t, events.More())
+	e, err := events.Next()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, event.Event{ID: "123", Type: "start", Data: event.StartData{Stage: "build"}}, e)
+	assert.True(t, events.More())
+	e, err = events.Next()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, event.Event{ID: "456", Type: "last", Data: event.LastData{}}, e)
+	assert.False(t, events.More())
+
+	stream.AssertExpectations(t)
 }
 
 func TestDeleteRun(t *testing.T) {

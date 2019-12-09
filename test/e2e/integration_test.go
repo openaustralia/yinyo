@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
 )
@@ -149,12 +150,12 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Get the logs (events)
-	iterator, err := run.GetEvents()
+	iterator, err := run.GetEvents("")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	var eventsList []yinyoclient.Event
+	var eventsList []event.Event
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
 	for iterator.More() {
@@ -166,22 +167,28 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
-	assert.Equal(t, []yinyoclient.Event{
-		yinyoclient.StartEvent{Stage: "build"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Python app detected"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G-----> Installing requirements with pip"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       "},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       \u001b[1G-----> Discovering process types"},
-		yinyoclient.LogEvent{Stage: "build", Stream: "stdout", Text: "\u001b[1G       Procfile declares types -> scraper"},
-		yinyoclient.FinishEvent{Stage: "build"},
-		yinyoclient.StartEvent{Stage: "run"},
-		yinyoclient.LogEvent{Stage: "run", Stream: "stdout", Text: "Hello World!"},
-		yinyoclient.FinishEvent{Stage: "run"},
-		yinyoclient.LastEvent{},
-	}, eventsList)
+	expected := []event.Event{
+		event.NewStartEvent("build"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       "),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
+		event.NewLogEvent("build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
+		event.NewFinishEvent("build"),
+		event.NewStartEvent("run"),
+		event.NewLogEvent("run", "stdout", "Hello World!"),
+		event.NewFinishEvent("run"),
+		event.NewLastEvent(),
+	}
+	// Copy across the IDs from the eventsList to the expected because we don't know what the
+	// IDs will be ahead of time and this make it easy to compare expected and eventsList
+	for i := range eventsList {
+		expected[i].ID = eventsList[i].ID
+	}
+	assert.Equal(t, expected, eventsList)
 
 	// Get the cache
 	cache, err := run.GetCache()

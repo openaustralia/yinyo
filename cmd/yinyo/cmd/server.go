@@ -12,7 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/internal/commands"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/spf13/cobra"
 )
 
@@ -151,6 +151,10 @@ func start(w http.ResponseWriter, r *http.Request) error {
 
 func getEvents(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
+	lastID := mux.Vars(r)["last-id"]
+	if lastID == "" {
+		lastID = "0"
+	}
 	w.Header().Set("Content-Type", "application/ld+json")
 
 	flusher, ok := w.(http.Flusher)
@@ -158,25 +162,18 @@ func getEvents(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("Couldn't access the flusher")
 	}
 
-	var id = "0"
-	for {
-		newID, event, err := app.GetEvent(runName, id)
-		id = newID
+	events := app.GetEvents(runName, lastID)
+	enc := json.NewEncoder(w)
+	for events.More() {
+		e, err := events.Next()
 		if err != nil {
 			return err
 		}
-		b, err := json.Marshal(event)
+		err = enc.Encode(e)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(w, string(b))
 		flusher.Flush()
-
-		// If this is the last event then stop
-		_, ok := event.(yinyoclient.LastEvent)
-		if ok {
-			break
-		}
 	}
 	return nil
 }
@@ -192,19 +189,13 @@ func createEvent(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Check the form of the JSON by interpreting it
-	var jsonEvent yinyoclient.JSONEvent
-	err = json.Unmarshal(buf, &jsonEvent)
-	if err != nil {
-		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
-	}
-	_, err = jsonEvent.ToEvent()
+	var event event.Event
+	err = json.Unmarshal(buf, &event)
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
-	// TODO: Send typed event to other methods
-
-	return app.CreateEvent(runName, string(buf))
+	return app.CreateEvent(runName, event)
 }
 
 func delete(w http.ResponseWriter, r *http.Request) error {
