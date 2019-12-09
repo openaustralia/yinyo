@@ -82,7 +82,7 @@ var clientCmd = &cobra.Command{
 		}
 
 		// Listen for events
-		events, err := run.GetEvents()
+		events, err := run.GetEvents("")
 		if err != nil {
 			log.Fatal(err)
 		}

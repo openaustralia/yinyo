@@ -150,7 +150,7 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Get the logs (events)
-	iterator, err := run.GetEvents()
+	iterator, err := run.GetEvents("")
 	if err != nil {
 		t.Fatal(err)
 	}

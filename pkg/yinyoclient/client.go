@@ -465,8 +465,12 @@ func (iterator *EventIterator) Next() (event event.Event, err error) {
 }
 
 // GetEvents returns a stream of events from the API
-func (run *Run) GetEvents() (*EventIterator, error) {
-	resp, err := run.request("GET", "/events", nil)
+// If lastID is empty ("") then the stream starts from the beginning. Otherwise
+// it starts from the first event after the one with the given ID.
+func (run *Run) GetEvents(lastID string) (*EventIterator, error) {
+	q := url.Values{}
+	q.Add("last-id", lastID)
+	resp, err := run.request("GET", "/events?"+q.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
