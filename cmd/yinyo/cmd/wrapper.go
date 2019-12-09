@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/kballard/go-shellquote"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/shirou/gopsutil/net"
 	"github.com/spf13/cobra"
@@ -21,7 +22,7 @@ import (
 func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
-		run.CreateEvent(yinyoclient.LogEvent{Stage: stage, Stream: streamName, Text: scanner.Text()})
+		run.CreateEvent(event.NewLogEvent(stage, streamName, scanner.Text()))
 	}
 	c <- scanner.Err()
 }
@@ -119,7 +120,7 @@ func init() {
 
 func checkError(err error, run yinyoclient.Run, stage string, text string) {
 	if err != nil {
-		run.CreateEvent(yinyoclient.LogEvent{Stage: "build", Stream: "interr", Text: "There was a problem getting the code"})
+		run.CreateEvent(event.NewLogEvent("build", "interr", "There was a problem getting the code"))
 		log.Fatal(err)
 	}
 }
@@ -135,7 +136,7 @@ var wrapperCmd = &cobra.Command{
 
 		client := yinyoclient.New(serverURL)
 		run := yinyoclient.Run{Name: runName, Token: runToken, Client: client}
-		err := run.CreateEvent(yinyoclient.StartEvent{Stage: "build"})
+		err := run.CreateEvent(event.NewStartEvent("build"))
 		checkError(err, run, "build", "Could not create event")
 
 		// Create and populate herokuish import path and cache path
@@ -181,7 +182,7 @@ var wrapperCmd = &cobra.Command{
 
 		// Send the build finished event immediately when the build command has finished
 		// Effectively the cache uploading happens between the build and run stages
-		err = run.CreateEvent(yinyoclient.FinishEvent{Stage: "build"})
+		err = run.CreateEvent(event.NewFinishEvent("build"))
 		checkError(err, run, "build", "Could not create event")
 
 		err = run.PutCacheFromDirectory(cachePath)
@@ -190,7 +191,7 @@ var wrapperCmd = &cobra.Command{
 
 		// Only do the main run if the build was succesful
 		if exitData.Build.ExitCode == 0 {
-			err = run.CreateEvent(yinyoclient.StartEvent{Stage: "run"})
+			err = run.CreateEvent(event.NewStartEvent("run"))
 			checkError(err, run, "run", "Could not create event")
 
 			exitDataStage, err := runExternalCommand(run, "run", runCommand, env)
@@ -205,7 +206,7 @@ var wrapperCmd = &cobra.Command{
 				checkError(err, run, "run", "Could not upload output")
 			}
 
-			err = run.CreateEvent(yinyoclient.FinishEvent{Stage: "run"})
+			err = run.CreateEvent(event.NewFinishEvent("run"))
 			checkError(err, run, "run", "Could not create event")
 		} else {
 			// TODO: Only upload the exit data for the build
@@ -213,7 +214,7 @@ var wrapperCmd = &cobra.Command{
 			checkError(err, run, "run", "Could not upload exit data")
 		}
 
-		err = run.CreateEvent(yinyoclient.LastEvent{})
+		err = run.CreateEvent(event.NewLastEvent())
 		checkError(err, run, "run", "Could not create event")
 	},
 }

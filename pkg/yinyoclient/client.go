@@ -13,6 +13,8 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+
+	"github.com/openaustralia/yinyo/pkg/event"
 )
 
 // Run is what you get when you create a run and what you need to update it
@@ -446,62 +448,9 @@ func (run *Run) Start(options *StartRunOptions) error {
 	return checkOK(resp)
 }
 
-// JSONEvent is used for reading/writing JSON
-type JSONEvent struct {
-	Stage  string `json:"stage,omitempty"`
-	Type   string `json:"type"`
-	Stream string `json:"stream,omitempty"`
-	Text   string `json:"text,omitempty"`
-}
-
-// Event is the interface for all event types
-type Event interface {
-}
-
-// StartEvent represents the start of a build or run
-type StartEvent struct {
-	Stage string
-}
-
-// FinishEvent represent the completion of a build or run
-type FinishEvent struct {
-	Stage string
-}
-
-// LogEvent is the output of some text from the build or run of a scraper
-type LogEvent struct {
-	Stage  string
-	Stream string
-	Text   string
-}
-
-// LastEvent is the last event that's sent in a run
-type LastEvent struct {
-}
-
 // EventIterator is a stream of events
 type EventIterator struct {
 	decoder *json.Decoder
-}
-
-// MarshalJSON converts a StartEvent to JSON
-func (e StartEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "start", Stage: e.Stage})
-}
-
-// MarshalJSON converts a FinishEvent to JSON
-func (e FinishEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "finish", Stage: e.Stage})
-}
-
-// MarshalJSON converts a LogEvent to JSON
-func (e LogEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "log", Stage: e.Stage, Stream: e.Stream, Text: e.Text})
-}
-
-// MarshalJSON converts a LastEvent to JSON
-func (e LastEvent) MarshalJSON() ([]byte, error) {
-	return json.Marshal(JSONEvent{Type: "last"})
 }
 
 // More checks whether another event is available
@@ -509,35 +458,19 @@ func (iterator *EventIterator) More() bool {
 	return iterator.decoder.More()
 }
 
-// ToEvent converts the generalised JSON representation of the type to one of the concrete event types
-func (e *JSONEvent) ToEvent() (Event, error) {
-	switch e.Type {
-	case "start":
-		return StartEvent{Stage: e.Stage}, nil
-	case "finish":
-		return FinishEvent{Stage: e.Stage}, nil
-	case "log":
-		return LogEvent{Stage: e.Stage, Stream: e.Stream, Text: e.Text}, nil
-	case "last":
-		return LastEvent{}, nil
-	default:
-		return nil, errors.New("Unexpected type")
-	}
-}
-
 // Next returns the next event
-func (iterator *EventIterator) Next() (Event, error) {
-	var JSONEvent JSONEvent
-	err := iterator.decoder.Decode(&JSONEvent)
-	if err != nil {
-		return nil, err
-	}
-	return JSONEvent.ToEvent()
+func (iterator *EventIterator) Next() (event event.Event, err error) {
+	err = iterator.decoder.Decode(&event)
+	return
 }
 
 // GetEvents returns a stream of events from the API
-func (run *Run) GetEvents() (*EventIterator, error) {
-	resp, err := run.request("GET", "/events", nil)
+// If lastID is empty ("") then the stream starts from the beginning. Otherwise
+// it starts from the first event after the one with the given ID.
+func (run *Run) GetEvents(lastID string) (*EventIterator, error) {
+	q := url.Values{}
+	q.Add("last-id", lastID)
+	resp, err := run.request("GET", "/events?"+q.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -551,7 +484,7 @@ func (run *Run) GetEvents() (*EventIterator, error) {
 }
 
 // CreateEvent sends an event
-func (run *Run) CreateEvent(event Event) error {
+func (run *Run) CreateEvent(event event.Event) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err
