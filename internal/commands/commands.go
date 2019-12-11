@@ -164,7 +164,14 @@ func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) 
 func (app *App) StartRun(
 	runName string, output string, env map[string]string, callbackURL string,
 ) error {
-	err := app.setCallbackURL(runName, callbackURL)
+	// First check that the app exists
+	_, err := app.GetApp(runName)
+	if err != nil {
+		// TODO: Make this a client error
+		return err
+	}
+
+	err = app.setCallbackURL(runName, callbackURL)
 	if err != nil {
 		return err
 	}

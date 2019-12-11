@@ -145,7 +145,12 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	return server.app.StartRun(runName, l.Output, env, l.Callback.URL)
+	err = server.app.StartRun(runName, l.Output, env, l.Callback.URL)
+	// TODO: This is ugly. Assumes far too much knowledge of the internals of StartRun
+	if server.app.BlobStore.IsNotExist(err) {
+		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
+	}
+	return err
 }
 
 func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {

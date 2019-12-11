@@ -25,6 +25,7 @@ func TestStoragePath(t *testing.T) {
 func TestStartRun(t *testing.T) {
 	job := new(jobdispatcher.MockClient)
 	keyValueStore := new(keyvaluestore.MockClient)
+	blobStore := new(blobstore.MockClient)
 
 	// Expect that the job will get dispatched
 	job.On(
@@ -37,8 +38,10 @@ func TestStartRun(t *testing.T) {
 	job.On("GetToken", "run-name").Return("supersecret", nil)
 	// Expect that we save the callback url in the key value store
 	keyValueStore.On("Set", "url:run-name", "http://foo.com").Return(nil)
+	// Expect that we try to get the code just to see if it exists
+	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
-	app := App{JobDispatcher: job, KeyValueStore: keyValueStore}
+	app := App{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
 	// TODO: Pass an options struct instead (we get named parameters effectively then)
 	err := app.StartRun(
 		"run-name",                      // Run name
@@ -50,6 +53,7 @@ func TestStartRun(t *testing.T) {
 
 	job.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
+	blobStore.AssertExpectations(t)
 }
 
 type MockRoundTripper struct {
