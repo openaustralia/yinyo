@@ -9,6 +9,9 @@ run: install
 	yinyo client test/scrapers/test-python --output data.sqlite
 
 test: install
+	go test ./... -short
+
+integration: install
 	go test ./...
 
 install:
