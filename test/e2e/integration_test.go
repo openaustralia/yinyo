@@ -17,6 +17,10 @@ func defaultClient() *yinyoclient.Client {
 }
 
 func TestHello(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	text, err := client.Hello()
 	if err != nil {
@@ -26,6 +30,10 @@ func TestHello(t *testing.T) {
 }
 
 func TestCreateRun(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	run, err := client.CreateRun("foo")
 	if err != nil {
@@ -40,6 +48,10 @@ func TestCreateRun(t *testing.T) {
 }
 
 func TestCreateRunScraperNameEncoding(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	run, err := client.CreateRun("foo/b_12r")
 	if err != nil {
@@ -54,6 +66,10 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 // Check that run names are created to be unique even when the same scraper name
 // is given twice
 func TestCreateRunNamesUnique(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	run1, err := client.CreateRun("foo")
 	if err != nil {
@@ -69,6 +85,10 @@ func TestCreateRunNamesUnique(t *testing.T) {
 }
 
 func TestNamePrefixOptional(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	run, err := client.CreateRun("")
 	if err != nil {
@@ -79,6 +99,10 @@ func TestNamePrefixOptional(t *testing.T) {
 }
 
 func TestUploadDownloadApp(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	// First we need to create a run
 	client := defaultClient()
 	run, err := client.CreateRun("")
@@ -110,6 +134,10 @@ func TestUploadDownloadApp(t *testing.T) {
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
 func TestHelloWorld(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	// Test the running of a super-simple program end-to-end
 	client := defaultClient()
 	// Create the run
