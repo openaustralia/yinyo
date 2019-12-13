@@ -14,6 +14,10 @@ import (
 )
 
 func defaultClient() *yinyoclient.Client {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	return yinyoclient.New("http://localhost:8080")
 }
 
