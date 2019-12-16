@@ -9,9 +9,9 @@ var appPath, importPath, cachePath, envPath, runOutput, serverURL, buildCommand,
 var wrapperEnvironment map[string]string
 
 func init() {
-	wrapperCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
-	wrapperCmd.Flags().StringVar(&importPath, "import", "/tmp/app", "herokuish import path")
-	wrapperCmd.Flags().StringVar(&cachePath, "cache", "/tmp/cache", "herokuish cache path")
+	wrapperCmd.Flags().StringVar(&appPath, "apppath", "/app", "herokuish app path")
+	wrapperCmd.Flags().StringVar(&importPath, "importpath", "/tmp/app", "herokuish import path")
+	wrapperCmd.Flags().StringVar(&cachePath, "cachepath", "/tmp/cache", "herokuish cache path")
 	wrapperCmd.Flags().StringVar(&envPath, "envpath", "/tmp/env", "herokuish env path")
 	wrapperCmd.Flags().StringVar(&runOutput, "output", "", "relative path to output file")
 	wrapperCmd.Flags().StringVar(&serverURL, "server", "http://yinyo-server.yinyo-system:8080", "override yinyo server URL")
