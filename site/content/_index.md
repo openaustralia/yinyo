@@ -38,7 +38,7 @@ features:
     text: |
       Made specifically for developers of scraper systems be it open source or
       commercial. No chance of vendor lock-in because it's open source,
-      Apache licensed.
+      under the [Apache 2.0 license](https://github.com/openaustralia/yinyo/blob/master/LICENSE).
     draft: true
 ---
 
