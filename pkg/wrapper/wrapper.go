@@ -140,6 +140,7 @@ type Options struct {
 	ImportPath   string
 	CachePath    string
 	AppPath      string
+	EnvPath      string
 	Environment  map[string]string
 	BuildCommand string
 	RunCommand   string
@@ -158,14 +159,12 @@ func Run(options Options) {
 	checkError(err, run, "build", "Could not create directory")
 	err = os.MkdirAll(options.CachePath, 0755)
 	checkError(err, run, "build", "Could not create directory")
-	// TODO: Allow envPath to be changed by a flag
-	envPath := "/tmp/env"
-	err = os.MkdirAll(envPath, 0755)
+	err = os.MkdirAll(options.EnvPath, 0755)
 	checkError(err, run, "build", "Could not create directory")
 
 	// Write the environment variables to /tmp/env in the format defined by the buildpack API
 	for name, value := range options.Environment {
-		f, err := os.Create(filepath.Join(envPath, name))
+		f, err := os.Create(filepath.Join(options.EnvPath, name))
 		checkError(err, run, "build", "Could not create environment file")
 		_, err = f.WriteString(value)
 		checkError(err, run, "build", "Could not write to environment file")

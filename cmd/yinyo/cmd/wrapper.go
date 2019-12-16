@@ -5,13 +5,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var appPath, importPath, cachePath, runOutput, serverURL, buildCommand, runCommand string
+var appPath, importPath, cachePath, envPath, runOutput, serverURL, buildCommand, runCommand string
 var wrapperEnvironment map[string]string
 
 func init() {
 	wrapperCmd.Flags().StringVar(&appPath, "app", "/app", "herokuish app path")
 	wrapperCmd.Flags().StringVar(&importPath, "import", "/tmp/app", "herokuish import path")
 	wrapperCmd.Flags().StringVar(&cachePath, "cache", "/tmp/cache", "herokuish cache path")
+	wrapperCmd.Flags().StringVar(&envPath, "envpath", "/tmp/env", "herokuish env path")
 	wrapperCmd.Flags().StringVar(&runOutput, "output", "", "relative path to output file")
 	wrapperCmd.Flags().StringVar(&serverURL, "server", "http://yinyo-server.yinyo-system:8080", "override yinyo server URL")
 	wrapperCmd.Flags().StringVar(&buildCommand, "buildcommand", "/bin/herokuish buildpack build", "override the herokuish build command (for testing)")
@@ -33,6 +34,7 @@ var wrapperCmd = &cobra.Command{
 			ImportPath:   importPath,
 			CachePath:    cachePath,
 			AppPath:      appPath,
+			EnvPath:      envPath,
 			Environment:  wrapperEnvironment,
 			BuildCommand: buildCommand,
 			RunCommand:   runCommand,
