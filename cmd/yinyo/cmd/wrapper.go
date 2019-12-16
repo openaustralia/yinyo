@@ -9,8 +9,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"syscall"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/kballard/go-shellquote"
@@ -34,10 +34,9 @@ func eventsSender(run yinyoclient.Run, eventsChan <-chan event.Event) {
 	defer wg.Done()
 
 	// TODO: Send all events in a single http request
-    for event := range eventsChan {
-		log.Println("Events in queue:", len(eventsChan))
+	for event := range eventsChan {
 		run.CreateEvent(event)
-    }
+	}
 }
 
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
