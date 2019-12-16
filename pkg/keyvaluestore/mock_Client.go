@@ -24,16 +24,14 @@ func (_m *MockClient) Delete(key string) error {
 }
 
 // Get provides a mock function with given fields: key
-func (_m *MockClient) Get(key string) (interface{}, error) {
+func (_m *MockClient) Get(key string) (string, error) {
 	ret := _m.Called(key)
 
-	var r0 interface{}
-	if rf, ok := ret.Get(0).(func(string) interface{}); ok {
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
 		r0 = rf(key)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(interface{})
-		}
+		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
@@ -47,11 +45,11 @@ func (_m *MockClient) Get(key string) (interface{}, error) {
 }
 
 // Set provides a mock function with given fields: key, value
-func (_m *MockClient) Set(key string, value interface{}) error {
+func (_m *MockClient) Set(key string, value string) error {
 	ret := _m.Called(key, value)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, interface{}) error); ok {
+	if rf, ok := ret.Get(0).(func(string, string) error); ok {
 		r0 = rf(key, value)
 	} else {
 		r0 = ret.Error(0)

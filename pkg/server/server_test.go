@@ -9,7 +9,7 @@ import (
 
 	"github.com/openaustralia/yinyo/internal/commands"
 	"github.com/openaustralia/yinyo/pkg/blobstore"
-	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
+	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,14 +35,14 @@ func TestStartBadBody(t *testing.T) {
 // If we haven't uploaded an app error when starting a run
 func TestStartNoApp(t *testing.T) {
 	blobstoreClient := new(blobstore.MockClient)
-	jobDispatcher := new(jobdispatcher.MockClient)
-	app := &commands.App{BlobStore: blobstoreClient, JobDispatcher: jobDispatcher}
+	keyvalueStore := new(keyvaluestore.MockClient)
+	app := &commands.App{BlobStore: blobstoreClient, KeyValueStore: keyvalueStore}
 	server := Server{app: app}
 	server.InitialiseRoutes()
 
 	blobstoreClient.On("Get", "foo/app.tgz").Return(nil, errors.New("Doesn't exist"))
 	blobstoreClient.On("IsNotExist", errors.New("Doesn't exist")).Return(true)
-	jobDispatcher.On("GetToken", "foo").Return("abc123", nil)
+	keyvalueStore.On("Get", "token:foo").Return("abc123", nil)
 
 	req, err := http.NewRequest("POST", "/runs/foo/start", strings.NewReader(`{}`))
 	if err != nil {
@@ -58,7 +58,7 @@ func TestStartNoApp(t *testing.T) {
 	assert.Equal(t, `{"error":"app needs to be uploaded before starting a run"}`, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap)
 	blobstoreClient.AssertExpectations(t)
-	jobDispatcher.AssertExpectations(t)
+	keyvalueStore.AssertExpectations(t)
 }
 
 func TestCreateEventBadBody(t *testing.T) {

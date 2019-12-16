@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"syscall"
 	"time"
 
@@ -19,16 +20,34 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error) {
+func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan event.Event) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
-		run.CreateEvent(event.NewLogEvent("", stage, streamName, scanner.Text()))
+		eventsChan <- event.NewLogEvent("", stage, streamName, scanner.Text())
 	}
 	c <- scanner.Err()
 }
 
+var wg sync.WaitGroup
+
+func eventsSender(run yinyoclient.Run, eventsChan <-chan event.Event) {
+	defer wg.Done()
+
+	// TODO: Send all events in a single http request
+	for event := range eventsChan {
+		run.CreateEvent(event)
+	}
+}
+
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
 func runExternalCommand(run yinyoclient.Run, stage string, commandString string, env []string) (yinyoclient.ExitDataStage, error) {
+	// make a channel with a capacity of 100.
+	eventsChan := make(chan event.Event, 1000)
+
+	wg.Add(1)
+	// start the worker that sends the event messages
+	go eventsSender(run, eventsChan)
+
 	var exitData yinyoclient.ExitDataStage
 
 	// Splits string up into pieces using shell rules
@@ -64,8 +83,8 @@ func runExternalCommand(run yinyoclient.Run, stage string, commandString string,
 	}
 
 	c := make(chan error)
-	go streamLogs(run, stage, "stdout", stdout, c)
-	go streamLogs(run, stage, "stderr", stderr, c)
+	go streamLogs(run, stage, "stdout", stdout, c, eventsChan)
+	go streamLogs(run, stage, "stderr", stderr, c, eventsChan)
 	err = <-c
 	if err != nil {
 		return exitData, err
@@ -74,6 +93,10 @@ func runExternalCommand(run yinyoclient.Run, stage string, commandString string,
 	if err != nil {
 		return exitData, err
 	}
+
+	// Now wait for all the events to get sent via http
+	close(eventsChan)
+	wg.Wait()
 
 	err = command.Wait()
 	if err != nil && command.ProcessState.ExitCode() == 0 {

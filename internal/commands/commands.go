@@ -113,6 +113,9 @@ func (app *App) CreateRun(namePrefix string) (CreateRunResult, error) {
 	runToken := uniuri.NewLen(32)
 	runName, err := app.JobDispatcher.CreateJobAndToken(namePrefix, runToken)
 
+	// Now cache the token for quicker access
+	app.setTokenCache(runName, runToken)
+
 	createResult := CreateRunResult{
 		RunName:  runName,
 		RunToken: runToken,
@@ -282,7 +285,10 @@ func (app *App) DeleteRun(runName string) error {
 		return err
 	}
 	err = app.deleteCallbackURL(runName)
-	return nil
+	if err != nil {
+		return err
+	}
+	return app.deleteTokenCache(runName)
 }
 
 func storagePath(runName string, fileName string) string {
