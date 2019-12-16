@@ -243,7 +243,7 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		actualRunToken, err := server.app.JobDispatcher.GetToken(runName)
+		actualRunToken, err := server.app.GetTokenCache(runName)
 
 		if err != nil {
 			log.Println(err)
