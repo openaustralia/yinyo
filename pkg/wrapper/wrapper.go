@@ -33,7 +33,7 @@ func eventsSender(run yinyoclient.Run, eventsChan <-chan event.Event) {
 func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan event.Event) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
-		eventsChan <- event.NewLogEvent("", stage, streamName, scanner.Text())
+		eventsChan <- event.NewLogEvent("", time.Now(), stage, streamName, scanner.Text())
 	}
 	c <- scanner.Err()
 }
@@ -127,7 +127,7 @@ func runExternalCommand(run yinyoclient.Run, stage string, commandString string,
 
 func checkError(err error, run yinyoclient.Run, stage string, text string) {
 	if err != nil {
-		run.CreateEvent(event.NewLogEvent("", "build", "interr", "There was a problem getting the code"))
+		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", "There was a problem getting the code"))
 		log.Fatal(err)
 	}
 }
@@ -151,7 +151,7 @@ type Options struct {
 func Run(options Options) {
 	client := yinyoclient.New(options.ServerURL)
 	run := yinyoclient.Run{Name: options.RunName, Token: options.RunToken, Client: client}
-	err := run.CreateEvent(event.NewStartEvent("", "build"))
+	err := run.CreateEvent(event.NewStartEvent("", time.Now(), "build"))
 	checkError(err, run, "build", "Could not create event")
 
 	// Create and populate herokuish import path and cache path
@@ -195,7 +195,7 @@ func Run(options Options) {
 
 	// Send the build finished event immediately when the build command has finished
 	// Effectively the cache uploading happens between the build and run stages
-	err = run.CreateEvent(event.NewFinishEvent("", "build"))
+	err = run.CreateEvent(event.NewFinishEvent("", time.Now(), "build"))
 	checkError(err, run, "build", "Could not create event")
 
 	err = run.PutCacheFromDirectory(options.CachePath)
@@ -204,7 +204,7 @@ func Run(options Options) {
 
 	// Only do the main run if the build was succesful
 	if exitData.Build.ExitCode == 0 {
-		err = run.CreateEvent(event.NewStartEvent("", "run"))
+		err = run.CreateEvent(event.NewStartEvent("", time.Now(), "run"))
 		checkError(err, run, "run", "Could not create event")
 
 		exitDataStage, err := runExternalCommand(run, "run", options.RunCommand, env)
@@ -219,7 +219,7 @@ func Run(options Options) {
 			checkError(err, run, "run", "Could not upload output")
 		}
 
-		err = run.CreateEvent(event.NewFinishEvent("", "run"))
+		err = run.CreateEvent(event.NewFinishEvent("", time.Now(), "run"))
 		checkError(err, run, "run", "Could not create event")
 	} else {
 		// TODO: Only upload the exit data for the build
@@ -227,6 +227,6 @@ func Run(options Options) {
 		checkError(err, run, "run", "Could not upload exit data")
 	}
 
-	err = run.CreateEvent(event.NewLastEvent(""))
+	err = run.CreateEvent(event.NewLastEvent("", time.Now()))
 	checkError(err, run, "run", "Could not create event")
 }

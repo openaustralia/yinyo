@@ -14,13 +14,12 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
 )
 
-func checkRequest(t *testing.T, r *http.Request, method string, path string, body string) {
-	assert.Equal(t, method, r.Method)
-	assert.Equal(t, path, r.URL.EscapedPath())
+func checkRequestBody(t *testing.T, r *http.Request, body string) {
 	b, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	if err != nil {
@@ -32,6 +31,17 @@ func checkRequest(t *testing.T, r *http.Request, method string, path string, bod
 func checkRequestNoBody(t *testing.T, r *http.Request, method string, path string) {
 	assert.Equal(t, method, r.Method)
 	assert.Equal(t, path, r.URL.EscapedPath())
+}
+
+func checkRequestEvent(t *testing.T, r *http.Request, typeString string, data interface{}) {
+	dec := json.NewDecoder(r.Body)
+	var e event.Event
+	err := dec.Decode(&e)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.Equal(t, typeString, e.Type)
+	assert.Equal(t, data, e.Data)
 }
 
 func createTemporaryDirectories() (appPath string, importPath string, cachePath string, err error) {
@@ -55,13 +65,11 @@ func TestSimpleRun(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		if count == 0 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"start","data":{"stage":"build"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
 		} else if count == 1 {
-			checkRequest(t, r, "GET", "/runs/run-name/app", "")
+			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
+			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
 			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
@@ -72,7 +80,8 @@ func TestSimpleRun(t *testing.T) {
 				t.Fatal(err)
 			}
 		} else if count == 2 {
-			checkRequest(t, r, "GET", "/runs/run-name/cache", "")
+			checkRequestNoBody(t, r, "GET", "/runs/run-name/cache")
+			checkRequestBody(t, r, "")
 			// We'll just return the contents of an "arbitrary" directory here. It doesn't
 			// really matters what it has in it as long as we can test that it's correct.
 			w.Header().Set("Content-Type", "application/gzip")
@@ -85,80 +94,44 @@ func TestSimpleRun(t *testing.T) {
 				t.Fatal(err)
 			}
 		} else if count == 3 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"_app_"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "_app_"})
 		} else if count == 4 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"Procfile"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "Procfile"})
 		} else if count == 5 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"requirements.txt"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
 		} else if count == 6 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"runtime.txt"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
 		} else if count == 7 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"scraper.py"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
 		} else if count == 8 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"_cache_"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "_cache_"})
 		} else if count == 9 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"requirements.txt"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
 		} else if count == 10 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"runtime.txt"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
 		} else if count == 11 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"scraper.py"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
 		} else if count == 12 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"finish","data":{"stage":"build"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
 		} else if count == 13 {
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
 		} else if count == 14 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"start","data":{"stage":"run"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "start", event.StartData{Stage: "run"})
 		} else if count == 15 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"run","stream":"stdout","text":"Ran"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "run", Stream: "stdout", Text: "Ran"})
 		} else if count == 16 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
@@ -183,17 +156,11 @@ func TestSimpleRun(t *testing.T) {
 			assert.True(t, exitData.Run.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
 		} else if count == 17 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"finish","data":{"stage":"run"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "run"})
 		} else if count == 18 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"last","data":{}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "last", event.LastData{})
 		} else {
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
@@ -241,13 +208,11 @@ func TestFailingBuild(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		if count == 0 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"start","data":{"stage":"build"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
 		} else if count == 1 {
-			checkRequest(t, r, "GET", "/runs/run-name/app", "")
+			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
+			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
 			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
@@ -258,21 +223,16 @@ func TestFailingBuild(t *testing.T) {
 				t.Fatal(err)
 			}
 		} else if count == 2 {
-			checkRequest(t, r, "GET", "/runs/run-name/cache", "")
+			checkRequestNoBody(t, r, "GET", "/runs/run-name/cache")
+			checkRequestBody(t, r, "")
 			// Let the client know that there is no cache in this case
 			http.NotFound(w, r)
 		} else if count == 3 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stderr","text":"bash: failing_command: command not found"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stderr", Text: "bash: failing_command: command not found"})
 		} else if count == 4 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"finish","data":{"stage":"build"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
 		} else if count == 5 {
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
@@ -295,11 +255,8 @@ func TestFailingBuild(t *testing.T) {
 			assert.True(t, exitData.Build.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Build.Usage.NetworkOut > 0)
 		} else if count == 7 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"last","data":{}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "last", event.LastData{})
 		} else {
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
@@ -344,13 +301,11 @@ func TestFailingRun(t *testing.T) {
 	count := 0i
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		if count == 0 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"start","data":{"stage":"build"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
 		} else if count == 1 {
-			checkRequest(t, r, "GET", "/runs/run-name/app", "")
+			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
+			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
 			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
@@ -361,36 +316,25 @@ func TestFailingRun(t *testing.T) {
 				t.Fatal(err)
 			}
 		} else if count == 2 {
-			checkRequest(t, r, "GET", "/runs/run-name/cache", "")
+			checkRequestNoBody(t, r, "GET", "/runs/run-name/cache")
+			checkRequestBody(t, r, "")
 			// Let the client know that there is no cache in this case
 			http.NotFound(w, r)
 		} else if count == 3 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"stdout","text":"build"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "build"})
 		} else if count == 4 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"finish","data":{"stage":"build"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
 		} else if count == 5 {
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
 		} else if count == 6 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"start","data":{"stage":"run"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "start", event.StartData{Stage: "run"})
 		} else if count == 7 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"run","stream":"stderr","text":"bash: failing_command: command not found"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "run", Stream: "stderr", Text: "bash: failing_command: command not found"})
 		} else if count == 8 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
@@ -415,23 +359,14 @@ func TestFailingRun(t *testing.T) {
 			assert.True(t, exitData.Run.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
 		} else if count == 9 {
-			checkRequest(t, r,
-				"PUT",
-				"/runs/run-name/output",
-				"hello\n",
-			)
+			checkRequestNoBody(t, r, "PUT", "/runs/run-name/output")
+			checkRequestBody(t, r, "hello\n")
 		} else if count == 10 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"finish","data":{"stage":"run"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "run"})
 		} else if count == 11 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"last","data":{}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "last", event.LastData{})
 		} else {
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
@@ -479,22 +414,17 @@ func TestInternalError(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		if count == 0 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"start","data":{"stage":"build"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
 		} else if count == 1 {
 			// Let's simulate an error with the blob storage. So, the wrapper is trying to
 			// get the application and there's a problem.
-			checkRequest(t, r, "GET", "/runs/run-name/app", "")
+			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
+			checkRequestBody(t, r, "")
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if count == 2 {
-			checkRequest(t, r,
-				"POST",
-				"/runs/run-name/events",
-				`{"type":"log","data":{"stage":"build","stream":"interr","text":"There was a problem getting the code"}}`,
-			)
+			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
+			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "interr", Text: "There was a problem getting the code"})
 		}
 		count++
 	}
