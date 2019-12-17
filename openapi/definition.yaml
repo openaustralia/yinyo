@@ -1,9 +1,8 @@
 openapi: 3.0.1
 info:
-  title: Yinyo server
+  title: Yinyo
   description: |
-    First rough version of documentation for the yinyo server, a simple
-    scraper API.
+    A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
   version: "1.0"
 servers:
   # TODO: This should change as soon as there is publically available production instance of the API
@@ -174,7 +173,33 @@ paths:
                 error: JSON in body not correctly formatted
         403:
           $ref: "#/components/responses/bad_auth"
-
+      callbacks:
+        events:
+          "{$request.body#/callback}":
+            post:
+              requestBody:
+                description: Event - can be one of LogEvent, StartEvent, FinishEvent or LastEvent
+                content:
+                  application/json:
+                    schema:
+                      oneOf:
+                        - $ref: "#/components/schemas/LogEvent"
+                        - $ref: "#/components/schemas/StartEvent"
+                        - $ref: "#/components/schemas/FinishEvent"
+                        - $ref: "#/components/schemas/LastEvent"
+                      discriminator:
+                        propertyName: type
+                    example:
+                      id: "123"
+                      time: "2019-12-17T03:45:00Z"
+                      type: log
+                      data:
+                        stage: "build"
+                        stream: "stdout"
+                        text: "Hello!"
+              responses:
+                "200":
+                  description: callback successfully processed
   /runs/{name}/logs:
     get:
       tags: ["Optional"]
@@ -287,10 +312,8 @@ components:
       type: string
       description: The stage of the life-cycle of the run
       enum:
-        - queued
-        - compiling
-        - running
-        - stopped
+        - build
+        - run
     ResourceUsage:
       type: object
       properties:
@@ -319,83 +342,70 @@ components:
     Event:
       required:
         - id
-        - stage
         - time
         - type
+        - data
       type: object
       properties:
         id:
-          type: integer
+          type: string
         type:
           type: string
         time:
           type: string
           description: Date and time of event
+          # TODO: Fix time format
           format: date-time
-        stage:
-          $ref: "#/components/schemas/Stage"
       discriminator:
         propertyName: type
+    StartEvent:
+      description: Signals the start of a stage
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                stage:
+                  $ref: "#/components/schemas/Stage"
+    FinishEvent:
+      description: Signals the end of a stage
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                stage:
+                  $ref: "#/components/schemas/Stage"
+    LastEvent:
+      description: Signals the completion of the whole run
+      allOf:
+        - $ref: "#/components/schemas/Event"
     LogEvent:
-      description: Console output event (from scraper run)
+      description: Console output event (from run)
       allOf:
         - $ref: "#/components/schemas/Event"
-        - required:
-            - source
-            - text
-          type: object
+        - type: object
           properties:
-            source:
-              type: string
-              description: |
-                Source of the message. e.g. `stdout`, `stderr`
-              enum:
-                - stdout
-                - stderr
-            text:
-              type: string
-              description: Console message
-    ConnectionEvent:
-      description: http/https connection made to the outside world
-      allOf:
-        - $ref: "#/components/schemas/Event"
-        - required:
-            - domain
-            - method
-            - path
-            - request_size
-            - response_code
-            - response_size
-            - scheme
-          type: object
-          properties:
-            method:
-              type: string
-              description: REST method used (e.g. GET, PUT..)
-            scheme:
-              type: string
-              description: Whether http or https
-            domain:
-              type: string
-              description: Name of server being connected to
-            path:
-              type: string
-              description: Path bit of url from domain being connected to
-            request_size:
-              type: integer
-            response_size:
-              type: integer
-            response_code:
-              type: integer
-    StageChangeEvent:
-      type: object
-      properties:
-        exitCode:
-          type: integer
-          description: |
-            On stage "stopped", includes the exitCode of the running process.
-      description: |
-        Event for moving from one stage to another. e.g. queued, compiling, running, exited with particular exit code. The stage is the stage that we're moving into.
+            data:
+              type: object
+              properties:
+                stage:
+                  $ref: "#/components/schemas/Stage"
+                stream:
+                  type: string
+                  description: |
+                    Source of the message - standard output and standard error come from your code. In exceptional circumstances you might see a message from "internal error".
+                  enum:
+                    - stdout
+                    - stderr
+                    - interr
+                text:
+                  type: string
+                  description: Console message
   securitySchemes:
     run_token:
       type: http
