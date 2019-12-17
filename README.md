@@ -3,21 +3,21 @@
 <!-- TOC -->
 
 - [Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way](#yinyo-a-wonderfully-simple-api-driven-service-to-reliably-execute-many-long-running-scrapers-in-a-super-scaleable-way)
-    - [Who is this README for?](#who-is-this-readme-for)
-    - [Development: Guide to getting up and running quickly](#development-guide-to-getting-up-and-running-quickly)
-        - [Main dependencies](#main-dependencies)
-        - [The main bit](#the-main-bit)
-    - [Getting the website running locally](#getting-the-website-running-locally)
-        - [Dependencies](#dependencies)
-        - [Running a local development server for the website](#running-a-local-development-server-for-the-website)
-    - [The custom herokuish docker image](#the-custom-herokuish-docker-image)
-    - [Notes for debugging and testing](#notes-for-debugging-and-testing)
-        - [To run the tests](#to-run-the-tests)
-        - [To see what's on the blob storage (Minio)](#to-see-whats-on-the-blob-storage-minio)
-        - [To see what Kubernetes is doing](#to-see-what-kubernetes-is-doing)
-        - [Accessing Redis](#accessing-redis)
-        - [Testing callback URLs](#testing-callback-urls)
-        - [Reclaiming diskspace in minikube](#reclaiming-diskspace-in-minikube)
+  - [Who is this README for?](#who-is-this-readme-for)
+  - [Development: Guide to getting up and running quickly](#development-guide-to-getting-up-and-running-quickly)
+    - [Main dependencies](#main-dependencies)
+    - [The main bit](#the-main-bit)
+  - [Getting the website running locally](#getting-the-website-running-locally)
+    - [Dependencies](#dependencies)
+    - [Running a local development server for the website](#running-a-local-development-server-for-the-website)
+  - [The custom herokuish docker image](#the-custom-herokuish-docker-image)
+  - [Notes for debugging and testing](#notes-for-debugging-and-testing)
+    - [To run the tests](#to-run-the-tests)
+    - [To see what's on the blob storage (Minio)](#to-see-whats-on-the-blob-storage-minio)
+    - [To see what Kubernetes is doing](#to-see-what-kubernetes-is-doing)
+    - [Accessing Redis](#accessing-redis)
+    - [Testing callback URLs](#testing-callback-urls)
+    - [Reclaiming diskspace in minikube](#reclaiming-diskspace-in-minikube)
 
 <!-- /TOC -->
 
@@ -62,6 +62,7 @@ Run skaffold. This will build all the bits and pieces and deploy things to your 
 ```bash
 make skaffold
 ```
+
 Leave `skaffold` running and open a new terminal window.
 
 Now setup the storage buckets on Minio
@@ -96,7 +97,7 @@ There are some extra dependencies required for building the website and associat
 
 - [Hugo](https://gohugo.io/) - a static website generator
 - [Shins](https://github.com/Mermade/shins) - a Node.js Slate markdown renderer
-- [Widdershins](https://github.com/mermade/widdershins) - Converts OpenAPI definitions to Slate
+- [Widdershins](https://github.com/mermade/widdershins) - Converts OpenAPI definitions to Slate. Make sure you're using a version which includes a fix for rendering callbacks https://github.com/Mermade/widdershins/commit/5d7223f070e8d295e29a3390c3d42b4798748c55. As of December 2019 this is likely to be on master and not in one of the released versions.
 
 ### Running a local development server for the website
 
