@@ -133,16 +133,7 @@ paths:
                   description: |
                     Optionally set environment variables for the run.
                   items:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        description: |
-                          Name of the environment variable
-                      value:
-                        type: string
-                        description: |
-                          Value of the environment variable
+                    $ref: "#/components/schemas/Env"
                 callback:
                   type: string
                   format: uri
@@ -326,6 +317,18 @@ components:
               text: "Hello!"
 
   schemas:
+    Env:
+      type: object
+      properties:
+        name:
+          type: string
+          description: |
+            Name of the environment variable
+        value:
+          type: string
+          description: |
+            Value of the environment variable
+
     Stage:
       type: string
       description: The stage of the life-cycle of the run
