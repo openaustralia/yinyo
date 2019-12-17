@@ -4,9 +4,11 @@ info:
   description: |
     First rough version of documentation for the yinyo server, a simple
     scraper API.
-  version: "0.1"
+  version: "1.0"
 servers:
-  - url: /
+  # TODO: This should change as soon as there is publically available production instance of the API
+  # This is currently pointing to a local development server
+  - url: http://localhost:8080
 tags:
   - name: Core
     description: The minimum you'll need to use
@@ -19,7 +21,9 @@ paths:
       tags: ["Core"]
       summary: Create run
       description: |
-        Returns with the "run ID" which uniquely identifies this run. You will need this run ID to subsequently start, track and access this run.
+        Returns with the "run name" which uniquely identifies this run and the "run token" which is a secret to ensure that only you can access the run from here on in. You will need these values to subsequently start, track and access this run.
+
+        You can optionally provide a suggested "name prefix" which will be put at the beginning of the unique name for the run. This is only useful to give more human meaningful names to the runs if that's important in your application. However, you can not depend on the prefix being used exactly as you provide it as some characters are not possible in run names.
       parameters:
         - name: name_prefix
           description: Prefix used when generating run names
@@ -42,19 +46,22 @@ paths:
                     type: string
                     description: |
                       Secret value needed to access the run
+              example:
+                run_name: run-lvg44
+                run_token: bMMT7MnU2QbFZbk0lkut401D4uFScUI2
   /runs/{name}/app:
     put:
       tags: ["Core"]
-      summary: Upload the scraper code and local data
+      summary: Upload the code to be run and any local data
       parameters:
         - $ref: "#/components/parameters/name"
       requestBody:
         content:
-          application/octet-stream:
+          application/gzip:
             schema:
               type: string
               description: |
-                Directory with code, configuration and data to run. Everything needs to be tarred up.
+                Directory with code, configuration and data to run. Everything needs to be tarred and gzip compressed.
               format: binary
         required: true
       security:
@@ -119,23 +126,50 @@ paths:
                 output:
                   type: string
                   description: |
-                    relative path (from the directory of the scraper) to file you want access to later. This will usually be the output of the scraper.
+                    Optional relative path (from the directory of the code for the run) to file you want access to later. This will usually be the output of the run.
                 env:
                   type: array
                   description: |
-                    Environment variables to set for the scraper run.
+                    Optionally set environment variables for the run.
                   items:
                     type: object
                     properties:
                       name:
                         type: string
+                        description: |
+                          Name of the environment variable
                       value:
                         type: string
+                        description: |
+                          Value of the environment variable
+                callback:
+                  type: string
+                  format: uri
+                  description: |
+                    Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick
+            example:
+              output: my_output.txt
+              env:
+                - name: MY_ENVIRONMENT_VARIABLE
+                  value: foo
+              callback: http://my-url-endpoint.com?key=special-secret-stuff
+
       security:
         - run_token: []
       responses:
         200:
           description: Success
+        400:
+          description: There was a problem with your request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: JSON in body not correctly formatted
         403:
           description: The run token was incorrect
   /runs/{name}/logs:
@@ -211,7 +245,7 @@ paths:
       tags: ["Core"]
       summary: Finalise scraper run
       description: |
-        This does final clean up of everything associated with a run. After doing this it's not possible to get any information about the run. So, make sure you have everything you need before you call this.
+        This does final clean up of everything associated with a run. Make sure you always do this as the last API call for a run. After doing this it's not possible to get any more information about this run.
       parameters:
         - $ref: "#/components/parameters/name"
       security:
