@@ -79,7 +79,7 @@ paths:
         - $ref: "#/components/parameters/name"
       requestBody:
         content:
-          application/octet-stream:
+          application/gzip:
             schema:
               description: Build cache exactly as it was downloaded before
               type: string
@@ -102,7 +102,7 @@ paths:
       responses:
         200:
           content:
-            application/octet-stream:
+            application/gzip:
               schema:
                 description: Build cache
                 type: string
@@ -110,6 +110,8 @@ paths:
           description: Success
         403:
           $ref: "#/components/responses/bad_auth"
+        404:
+          description: The build cache doesn't yet exist
 
   /runs/{name}/start:
     post:
@@ -178,45 +180,49 @@ paths:
           "{$request.body#/callback}":
             post:
               requestBody:
-                description: Event - can be one of LogEvent, StartEvent, FinishEvent or LastEvent
-                content:
-                  application/json:
-                    schema:
-                      oneOf:
-                        - $ref: "#/components/schemas/LogEvent"
-                        - $ref: "#/components/schemas/StartEvent"
-                        - $ref: "#/components/schemas/FinishEvent"
-                        - $ref: "#/components/schemas/LastEvent"
-                      discriminator:
-                        propertyName: type
-                    example:
-                      id: "123"
-                      time: "2019-12-17T03:45:00Z"
-                      type: log
-                      data:
-                        stage: "build"
-                        stream: "stdout"
-                        text: "Hello!"
+                $ref: "#/components/responses/Event"
               responses:
                 "200":
                   description: callback successfully processed
-  /runs/{name}/logs:
+  /runs/{name}/events:
     get:
       tags: ["Optional"]
-      summary: Attach to run log stream
+      summary: Attach to run events stream
       description: |
-        Watch what is happening to a scraper in real-time as it gets compiled and runs. By default this will stream all logs that have occurred from the scraper getting started until now and then as new logs occur stream those in real-time.
+        Watch what is happening to a run in real-time as it gets built and runs. By default this will stream all events that have occurred from the very beginning until now and then as new events occur stream those in real-time.
       parameters:
         - $ref: "#/components/parameters/name"
+        - name: last-id
+          description: Restart stream immediately after the event with the given ID
+          in: query
+          schema:
+            type: string
+
       security:
         - run_token: []
       responses:
         200:
-          description: Attached
+          description: Succesfully attached to stream
           content:
-            "text/plain":
+            "application/ld+json":
               schema:
-                type: string
+                oneOf:
+                  - $ref: "#/components/schemas/LogEvent"
+                  - $ref: "#/components/schemas/StartEvent"
+                  - $ref: "#/components/schemas/FinishEvent"
+                  - $ref: "#/components/schemas/LastEvent"
+                discriminator:
+                  propertyName: type
+              example:
+                id: "123"
+                time: "2019-12-17T03:45:00Z"
+                type: log
+                data:
+                  stage: "build"
+                  stream: "stdout"
+                  text: "Hello!"
+        403:
+          $ref: "#/components/responses/bad_auth"
   /runs/{name}/exit-data:
     get:
       tags: ["Optional"]
@@ -307,6 +313,27 @@ components:
                 type: string
           example:
             error: JSON in body not correctly formatted
+    Event:
+      description: Event - can be one of LogEvent, StartEvent, FinishEvent or LastEvent
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/LogEvent"
+              - $ref: "#/components/schemas/StartEvent"
+              - $ref: "#/components/schemas/FinishEvent"
+              - $ref: "#/components/schemas/LastEvent"
+            discriminator:
+              propertyName: type
+          example:
+            id: "123"
+            time: "2019-12-17T03:45:00Z"
+            type: log
+            data:
+              stage: "build"
+              stream: "stdout"
+              text: "Hello!"
+
   schemas:
     Stage:
       type: string
