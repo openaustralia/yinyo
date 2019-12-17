@@ -5,9 +5,8 @@ info:
     A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
   version: "1.0"
 servers:
-  # TODO: This should change as soon as there is publically available production instance of the API
-  # This is currently pointing to a local development server
   - url: http://localhost:8080
+    description: Local development server
 tags:
   - name: Core
     description: The minimum you'll need to use
@@ -239,28 +238,18 @@ paths:
           content:
             "application/json":
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    exit_code:
-                      type: integer
-                    usage:
-                      type: object
-                      properties:
-                        build:
-                          $ref: "#/components/schemas/ResourceUsage"
-                        run:
-                          $ref: "#/components/schemas/ResourceUsage"
+                $ref: "#/components/schemas/ExitData"
         403:
           $ref: "#/components/responses/bad_auth"
+        404:
+          description: Exit data doesn't yet exist
 
   /runs/{name}/output:
     get:
       tags: ["Optional"]
       summary: Get output file
       description: |
-        Usually at the end of the scraper run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.
+        Usually at the end of the run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.
       parameters:
         - $ref: "#/components/parameters/name"
       security:
@@ -275,6 +264,8 @@ paths:
                 format: binary
         403:
           $ref: "#/components/responses/bad_auth"
+        404:
+          description: Exit data doesn't yet exist
   /runs/{name}:
     delete:
       tags: ["Core"]
@@ -341,31 +332,44 @@ components:
       enum:
         - build
         - run
-    ResourceUsage:
+    ExitData:
+      type: object
+      properties:
+        build:
+          $ref: "#/components/schemas/ExitDataStage"
+        run:
+          $ref: "#/components/schemas/ExitDataStage"
+    ExitDataStage:
+      type: object
+      properties:
+        exit_code:
+          type: number
+          description: Process exit code for build or run. If there was no error this should be 0.
+        usage:
+          $ref: "#/components/schemas/Usage"
+    Usage:
       type: object
       properties:
         wall_time:
           type: number
-          description: Wall clock
+          description: Wall clock (in seconds)
         cpu_time:
           type: number
           description: |
-            This is the total number of seconds spent executing by the CPU.
-            It's the sum of time spent in user and kernel mode.
+            Total time spent executing by the CPU.
+            It's the sum of time spent in user and kernel mode (in seconds)
         max_rss:
           type: integer
           description: |
-            This is the maximum resident set size used in kilobytes.
+            This is the maximum resident set size used (in kilobytes)
         network_in:
           type: integer
-          description: Total received network traffic in bytes.
+          description: Total received network traffic (in bytes)
         network_out:
           type: integer
-          description: Total transmitted network traffic in bytes.
+          description: Total transmitted network traffic (in bytes)
       description: |
-        Resources used by a process. This information is recorded as part of the metrics for a scraper run.
-
-        The names of metrics are all copied from the structure returned by `getrusage(2)` (with the exception of `wall_time`)
+        Resources used by a process. This information is recorded as part of the metrics for a run.
     Event:
       required:
         - id
