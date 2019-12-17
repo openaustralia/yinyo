@@ -70,7 +70,7 @@ paths:
         200:
           description: Success
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
   /runs/{name}/cache:
     summary: Manage build cache
     put:
@@ -92,7 +92,7 @@ paths:
         200:
           description: Success
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
     get:
       tags: ["Optional"]
       summary: Download a build cache
@@ -110,7 +110,8 @@ paths:
                 format: binary
           description: Success
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
+
   /runs/{name}/start:
     post:
       tags: ["Core"]
@@ -171,7 +172,8 @@ paths:
               example:
                 error: JSON in body not correctly formatted
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
+
   /runs/{name}/logs:
     get:
       tags: ["Optional"]
@@ -219,7 +221,8 @@ paths:
                         run:
                           $ref: "#/components/schemas/ResourceUsage"
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
+
   /runs/{name}/output:
     get:
       tags: ["Optional"]
@@ -239,7 +242,7 @@ paths:
                 type: string
                 format: binary
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
   /runs/{name}:
     delete:
       tags: ["Core"]
@@ -254,7 +257,7 @@ paths:
         200:
           description: Success
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
 components:
   parameters:
     name:
@@ -264,7 +267,9 @@ components:
       required: true
       schema:
         type: string
-
+  responses:
+    bad_auth:
+      description: The run token was incorrect
   schemas:
     Stage:
       type: string
