@@ -1,5 +1,7 @@
 # Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
 
+![](https://github.com/openaustralia/yinyo/workflows/Go/badge.svg)
+
 <!-- TOC -->
 
 - [Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way](#yinyo-a-wonderfully-simple-api-driven-service-to-reliably-execute-many-long-running-scrapers-in-a-super-scaleable-way)
