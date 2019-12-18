@@ -182,7 +182,7 @@ paths:
         Watch what is happening to a run in real-time as it gets built and runs. By default this will stream all events that have occurred from the very beginning until now and then as new events occur stream those in real-time.
       parameters:
         - $ref: "#/components/parameters/name"
-        - name: last-id
+        - name: last_id
           description: Restart stream immediately after the event with the given ID
           in: query
           schema:

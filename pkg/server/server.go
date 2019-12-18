@@ -155,7 +155,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 
 func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	lastID := mux.Vars(r)["last-id"]
+	lastID := mux.Vars(r)["last_id"]
 	if lastID == "" {
 		lastID = "0"
 	}

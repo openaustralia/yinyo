@@ -469,7 +469,7 @@ func (iterator *EventIterator) Next() (event event.Event, err error) {
 // it starts from the first event after the one with the given ID.
 func (run *Run) GetEvents(lastID string) (*EventIterator, error) {
 	q := url.Values{}
-	q.Add("last-id", lastID)
+	q.Add("last_id", lastID)
 	resp, err := run.request("GET", "/events?"+q.Encode(), nil)
 	if err != nil {
 		return nil, err
