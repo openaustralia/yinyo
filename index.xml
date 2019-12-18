@@ -1,40 +1,40 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Yinyo on My New Hugo Site</title>
-    <link>http://example.org/</link>
-    <description>Recent content in Yinyo on My New Hugo Site</description>
+    <title>Yinyo</title>
+    <link>https://yinyo.io/</link>
+    <description>Recent content on Yinyo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 11 Sep 2019 21:07:08 +0000</lastBuildDate>
     
-	<atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://yinyo.io/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title></title>
-      <link>http://example.org/api/</link>
+      <link>https://yinyo.io/api/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>http://example.org/api/</guid>
+      <guid>https://yinyo.io/api/</guid>
       <description>Yinyo v1.0   /*! normalize.css v3.0.2 | MIT License | git.io/normalize */ /** * 1. Set default font family to sans-serif. * 2. Prevent iOS text size adjust after orientation change, without disabling * user zoom. */ html { font-family: sans-serif; /* 1 */ -ms-text-size-adjust: 100%; /* 2 */ -webkit-text-size-adjust: 100%; /* 2 */ } /** * Remove default margin. */ body { margin: 0; } /* HTML5 display definitions ========================================================================== */ /** * Correct `block` display not defined for any HTML5 element in IE 8/9.</description>
     </item>
     
     <item>
       <title></title>
-      <link>http://example.org/design-principles/</link>
+      <link>https://yinyo.io/design-principles/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>http://example.org/design-principles/</guid>
+      <guid>https://yinyo.io/design-principles/</guid>
       <description>Design Principles Purpose of design principles As we work on developing and improving things we make lots of design choices. Often those choices are informed by unspoken assumptions. Here we attempt to make those underlying assumptions explicit. Also if a few people are discussing a design it can be really useful to be able to point at a specific design principle and ask “how does it relate to this?” or “what does this tell us?</description>
     </item>
     
     <item>
       <title></title>
-      <link>http://example.org/get-started/</link>
+      <link>https://yinyo.io/get-started/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>http://example.org/get-started/</guid>
+      <guid>https://yinyo.io/get-started/</guid>
       <description>Get Started 1. Go to Github and follow the instructions to setup a local Yinyo instance 2. Run your first scraper yinyo client test/scrapers/test-python --output data.sqlite  This will stream the console output of the scraper straight to you
   3. Do it all again! But this time using the API directly, step-by-step 1. Create a run curl -X POST http://localhost:8080/runs  You&amp;rsquo;ll get a name and a token back which you&amp;rsquo;ll need in the following steps</description>
     </item>

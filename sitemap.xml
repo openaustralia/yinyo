@@ -3,31 +3,31 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://example.org/</loc>
+    <loc>https://yinyo.io/</loc>
     <lastmod>2019-09-11T21:07:08+00:00</lastmod>
   </url>
   
   <url>
-    <loc>http://example.org/api/</loc>
+    <loc>https://yinyo.io/api/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://example.org/design-principles/</loc>
+    <loc>https://yinyo.io/design-principles/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://example.org/get-started/</loc>
+    <loc>https://yinyo.io/get-started/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://example.org/categories/</loc>
+    <loc>https://yinyo.io/categories/</loc>
   </url>
   
   <url>
-    <loc>http://example.org/tags/</loc>
+    <loc>https://yinyo.io/tags/</loc>
   </url>
   
 </urlset>
