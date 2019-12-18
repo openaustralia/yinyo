@@ -14,6 +14,14 @@
       href="https://getbootstrap.com/docs/4.3/examples/starter-template/"
     />
 
+    {{ $sass         := resources.Get "scss/main.scss" }}
+    {{ $sassIncludes := (slice "node_modules/") }}
+    {{ $cssTarget    := "main.css" }}
+    {{ $cssOpts      := (dict "targetPath" $cssTarget "enableSourceMap" true "includePaths" $sassIncludes "outputStyle" "compressed") }}
+
+    {{ $css := $sass | toCSS $cssOpts | resources.PostCSS | fingerprint }}
+    <link rel="stylesheet" href="{{ $css.Permalink | absURL }}" integrity="{{ $css.Data.Integrity }}">
+
     <!-- Bootstrap core CSS -->
     <link
       href="https://getbootstrap.com/docs/4.3/dist/css/bootstrap.min.css"
