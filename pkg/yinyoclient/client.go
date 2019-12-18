@@ -19,8 +19,8 @@ import (
 
 // Run is what you get when you create a run and what you need to update it
 type Run struct {
-	Name  string `json:"run_name"`
-	Token string `json:"run_token"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
 	// Ignore this field when converting from/to json
 	Client *Client
 }

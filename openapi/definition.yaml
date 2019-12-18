@@ -36,17 +36,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  run_name:
+                  name:
                     type: string
                     description: |
                       Uniquely identifies this run. Needed for any subsequent API calls for this run.
-                  run_token:
+                  token:
                     type: string
                     description: |
                       Secret value needed to access the run
               example:
-                run_name: run-lvg44
-                run_token: bMMT7MnU2QbFZbk0lkut401D4uFScUI2
+                name: run-lvg44
+                token: bMMT7MnU2QbFZbk0lkut401D4uFScUI2
   /runs/{name}/app:
     put:
       tags: ["Core"]
@@ -63,7 +63,7 @@ paths:
               format: binary
         required: true
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
@@ -85,7 +85,7 @@ paths:
               format: binary
         required: true
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
@@ -97,7 +97,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/name"
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           content:
@@ -147,7 +147,7 @@ paths:
               callback: http://my-url-endpoint.com?key=special-secret-stuff
 
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
@@ -189,7 +189,7 @@ paths:
             type: string
 
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Succesfully attached to stream
@@ -222,7 +222,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/name"
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
@@ -244,7 +244,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/name"
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
@@ -266,7 +266,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/name"
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
@@ -441,6 +441,6 @@ components:
                   type: string
                   description: Console message
   securitySchemes:
-    run_token:
+    token:
       type: http
       scheme: bearer

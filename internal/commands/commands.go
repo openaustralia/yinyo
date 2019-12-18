@@ -36,8 +36,8 @@ type App struct {
 
 // CreateRunResult is the output of CreateRun
 type CreateRunResult struct {
-	RunName  string `json:"run_name"`
-	RunToken string `json:"run_token"`
+	RunName  string `json:"name"`
+	RunToken string `json:"token"`
 }
 
 type logMessage struct {
