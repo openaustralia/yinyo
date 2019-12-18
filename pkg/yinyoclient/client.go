@@ -144,9 +144,13 @@ func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 		switch file.Typeflag {
 		case tar.TypeDir:
 			// TODO: Extract variable
-			err := os.Mkdir(filepath.Join(dir, file.Name), 0755)
-			if err != nil {
-				return err
+			dir2 := filepath.Join(dir, file.Name)
+			// Only try to create the directory if this is a new one
+			if dir2 != dir {
+				err := os.Mkdir(dir2, 0755)
+				if err != nil {
+					return err
+				}
 			}
 		case tar.TypeReg:
 			f, err := os.OpenFile(
