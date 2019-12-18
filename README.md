@@ -1,6 +1,16 @@
 # Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
 
-![](https://github.com/openaustralia/yinyo/workflows/Go/badge.svg)
+- Easily run as many scrapers as you like across a cluster of machines without having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
+- Use the language and libraries you love for writing scrapers. Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
+- Supports many different use cases through a simple, yet flexible API that can operate synchronously or asynchronously.
+- Made specifically for developers of scraper systems be it open source or commercial. No chance of vendor lock-in because it's open source, Apache licensed.
+
+## Who is this README for?
+
+This README is focused on getting developers of the core system up and running. It does not yet include
+a guide for people who are just interested in being users of the API.
+
+## Table of Contents
 
 <!-- TOC -->
 
@@ -23,17 +33,9 @@
 
 <!-- /TOC -->
 
-- Easily run as many scrapers as you like across a cluster of machines without having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
-- Use the language and libraries you love for writing scrapers. Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
-- Supports many different use cases through a simple, yet flexible API that can operate synchronously or asynchronously.
-- Made specifically for developers of scraper systems be it open source or commercial. No chance of vendor lock-in because it's open source, Apache licensed.
-
-## Who is this README for?
-
-This README is focused on getting developers of the core system up and running. It does not yet include
-a guide for people who are just interested in being users of the API.
-
 ## Development: Guide to getting up and running quickly
+
+![](https://github.com/openaustralia/yinyo/workflows/Go/badge.svg)
 
 ### Main dependencies
 
