@@ -128,7 +128,7 @@ func runExternalCommand(run yinyoclient.Run, stage string, commandString string,
 
 func checkError(err error, run yinyoclient.Run, stage string, text string) {
 	if err != nil {
-		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", "There was a problem getting the code"))
+		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", text))
 		log.Fatal(err)
 	}
 }
