@@ -9,11 +9,6 @@
     <meta name="description" content="" />
     <title>{{ .Title }}</title>
 
-    <link
-      rel="canonical"
-      href="https://getbootstrap.com/docs/4.3/examples/starter-template/"
-    />
-
     {{ $sass         := resources.Get "scss/main.scss" }}
     {{ $sassIncludes := (slice "node_modules/") }}
     {{ $cssTarget    := "main.css" }}
@@ -21,12 +16,6 @@
 
     {{ $css := $sass | toCSS $cssOpts | resources.PostCSS | fingerprint }}
     <link rel="stylesheet" href="{{ $css.Permalink | absURL }}" integrity="{{ $css.Data.Integrity }}">
-
-    <!-- Custom styles for this template -->
-    <link
-      href="https://getbootstrap.com/docs/4.3/examples/starter-template/starter-template.css"
-      rel="stylesheet"
-    />
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
