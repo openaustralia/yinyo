@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Yinyo server</title>
+    <title>Yinyo v1.0</title>
 
     <style>
     </style>
@@ -1174,9 +1174,20 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
     
     <meta name="theme-color" content="#F3F7F9" />
 
+
+
+
+
+
+
+
+
+
+
+
   </head>
 
-  <body data-languages="[&quot;shell&quot;,&quot;http&quot;,&quot;javascript&quot;,&quot;javascript--nodejs&quot;,&quot;ruby&quot;,&quot;python&quot;,&quot;java&quot;,&quot;go&quot;]">
+  <body data-languages="[&quot;shell&quot;,&quot;http&quot;,&quot;javascript&quot;,&quot;ruby&quot;,&quot;python&quot;,&quot;php&quot;,&quot;java&quot;,&quot;go&quot;]">
     <a href="#" id="nav-button">
       <span>
         NAV
@@ -1201,15 +1212,15 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
             
           
             
-              <a href="#" data-language-name="javascript--nodejs">Node.JS</a>
-            
-          
-            
               <a href="#" data-language-name="ruby">Ruby</a>
             
           
             
               <a href="#" data-language-name="python">Python</a>
+            
+          
+            
+              <a href="#" data-language-name="php">PHP</a>
             
           
             
@@ -1232,7 +1243,7 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
 	  	<ul class="toc-list-h1">
         
           <li>
-            <a href="#yinyo-server" class="toc-h1 toc-link" data-title="Yinyo server v0.1">Yinyo server v0.1</a>
+            <a href="#yinyo" class="toc-h1 toc-link" data-title="Yinyo v1.0">Yinyo v1.0</a>
             
           </li>
         
@@ -1242,7 +1253,7 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
           </li>
         
           <li>
-            <a href="#yinyo-server-core" class="toc-h1 toc-link" data-title="Core">Core</a>
+            <a href="#yinyo-core" class="toc-h1 toc-link" data-title="Core">Core</a>
             
               <ul class="toc-list-h2">
                 
@@ -1252,7 +1263,12 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
                   </li>
                 
                   <li>
-                    <a href="#upload-the-scraper-code-and-local-data" class="toc-h2 toc-link" data-title="">Upload the scraper code and local data</a>
+                    <a href="#upload-the-code-to-be-run-and-any-local-data" class="toc-h2 toc-link" data-title="">Upload the code to be run and any local data</a>
+                    
+                  </li>
+                
+                  <li>
+                    <a href="#start-the-run" class="toc-h2 toc-link" data-title="">Start the run</a>
                     
                   </li>
                 
@@ -1271,7 +1287,7 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
           </li>
         
           <li>
-            <a href="#yinyo-server-optional" class="toc-h1 toc-link" data-title="Optional">Optional</a>
+            <a href="#yinyo-optional" class="toc-h1 toc-link" data-title="Optional">Optional</a>
             
               <ul class="toc-list-h2">
                 
@@ -1286,7 +1302,7 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
                   </li>
                 
                   <li>
-                    <a href="#attach-to-run-log-stream" class="toc-h2 toc-link" data-title="">Attach to run log stream</a>
+                    <a href="#attach-to-run-events-stream" class="toc-h2 toc-link" data-title="">Attach to run events stream</a>
                     
                   </li>
                 
@@ -1310,32 +1326,52 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
               <ul class="toc-list-h2">
                 
                   <li>
-                    <a href="#tocsstage" class="toc-h2 toc-link" data-title="">Stage</a>
+                    <a href="#tocs_env" class="toc-h2 toc-link" data-title="">Env</a>
                     
                   </li>
                 
                   <li>
-                    <a href="#tocsresourceusage" class="toc-h2 toc-link" data-title="">ResourceUsage</a>
+                    <a href="#tocs_stage" class="toc-h2 toc-link" data-title="">Stage</a>
                     
                   </li>
                 
                   <li>
-                    <a href="#tocsevent" class="toc-h2 toc-link" data-title="">Event</a>
+                    <a href="#tocs_exitdata" class="toc-h2 toc-link" data-title="">ExitData</a>
                     
                   </li>
                 
                   <li>
-                    <a href="#tocslogevent" class="toc-h2 toc-link" data-title="">LogEvent</a>
+                    <a href="#tocs_exitdatastage" class="toc-h2 toc-link" data-title="">ExitDataStage</a>
                     
                   </li>
                 
                   <li>
-                    <a href="#tocsconnectionevent" class="toc-h2 toc-link" data-title="">ConnectionEvent</a>
+                    <a href="#tocs_usage" class="toc-h2 toc-link" data-title="">Usage</a>
                     
                   </li>
                 
                   <li>
-                    <a href="#tocsstagechangeevent" class="toc-h2 toc-link" data-title="">StageChangeEvent</a>
+                    <a href="#tocs_event" class="toc-h2 toc-link" data-title="">Event</a>
+                    
+                  </li>
+                
+                  <li>
+                    <a href="#tocs_startevent" class="toc-h2 toc-link" data-title="">StartEvent</a>
+                    
+                  </li>
+                
+                  <li>
+                    <a href="#tocs_finishevent" class="toc-h2 toc-link" data-title="">FinishEvent</a>
+                    
+                  </li>
+                
+                  <li>
+                    <a href="#tocs_lastevent" class="toc-h2 toc-link" data-title="">LastEvent</a>
+                    
+                  </li>
+                
+                  <li>
+                    <a href="#tocs_logevent" class="toc-h2 toc-link" data-title="">LogEvent</a>
                     
                   </li>
                 
@@ -1354,60 +1390,42 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
     <div class="page-wrapper">
       <div class="dark-box"></div>
       <div class="content">
-        <h1 id="yinyo-server">Yinyo server v0.1</h1>
+        <h1 id="yinyo">Yinyo v1.0</h1>
 <blockquote>
 <p>Scroll down for code samples, example requests and responses. Select a language for code samples from the tabs above or the mobile navigation menu.</p>
 </blockquote>
-<p>First rough version of documentation for the yinyo server, a simple
-scraper API.</p>
+<p>A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way</p>
 <p>Base URLs:</p>
 <ul>
-<li><a href="/">/</a></li>
+<li><a href="http://localhost:8080">http://localhost:8080</a></li>
 </ul>
 <h1 id="authentication">Authentication</h1>
 <ul>
 <li>HTTP Authentication, scheme: bearer</li>
 </ul>
-<h1 id="yinyo-server-core">Core</h1>
+<h1 id="yinyo-core">Core</h1>
 <p>The minimum you'll need to use</p>
 <h2 id="create-run">Create run</h2>
 <blockquote>
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X POST /runs \
+curl -X POST http://localhost:8080/runs \
   -H <span class="hljs-string">'Accept: application/json'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">POST</span> <span class="hljs-string">/runs</span> HTTP/1.1
-
-<span class="http"><span class="hljs-attribute">Accept</span>: application/json
-
-<span class="undefined"></span></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/json'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'post'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">POST</span> <span class="hljs-string">http://localhost:8080/runs</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Accept</span>: application/json
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-
+<pre class="highlight tab tab-javascript"><code>
 <span class="hljs-keyword">const</span> headers = {
   <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/json'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'POST'</span>,
 
@@ -1427,7 +1445,7 @@ headers = {
   <span class="hljs-string">'Accept'</span> =&gt; <span class="hljs-string">'application/json'</span>
 }
 
-result = RestClient.post <span class="hljs-string">'/runs'</span>,
+result = RestClient.post <span class="hljs-string">'http://localhost:8080/runs'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -1439,14 +1457,37 @@ headers = {
   <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>
 }
 
-r = requests.post(<span class="hljs-string">'/runs'</span>, params={
+r = requests.post(<span class="hljs-string">'http://localhost:8080/runs'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/json'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'POST'</span>,<span class="hljs-string">'http://localhost:8080/runs'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"POST"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -1476,7 +1517,7 @@ System.out.println(response.toString());
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"POST"</span>, <span class="hljs-string">"/runs"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"POST"</span>, <span class="hljs-string">"http://localhost:8080/runs"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -1486,7 +1527,8 @@ System.out.println(response.toString());
 
 </code></pre>
 <p><code>POST /runs</code></p>
-<p>Returns with the &quot;run ID&quot; which uniquely identifies this run. You will need this run ID to subsequently start, track and access this run.</p>
+<p>Returns with the &quot;run name&quot; which uniquely identifies this run and the &quot;run token&quot; which is a secret to ensure that only you can access the run from here on in. You will need these values to subsequently start, track and access this run.</p>
+<p>You can optionally provide a suggested &quot;name prefix&quot; which will be put at the beginning of the unique name for the run. This is only useful to give more human meaningful names to the runs if that's important in your application. However, you can not depend on the prefix being used exactly as you provide it as some characters are not possible in run names.</p>
 <h3 id="create-run-parameters">Parameters</h3>
 <table>
 <thead>
@@ -1515,8 +1557,8 @@ System.out.println(response.toString());
 <p>200 Response</p>
 </blockquote>
 <pre class="highlight tab tab-json"><code>{
-  <span class="hljs-attr">"run_name"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"run_token"</span>: <span class="hljs-string">"string"</span>
+  <span class="hljs-attr">"run_name"</span>: <span class="hljs-string">"run-lvg44"</span>,
+  <span class="hljs-attr">"run_token"</span>: <span class="hljs-string">"bMMT7MnU2QbFZbk0lkut401D4uFScUI2"</span>
 }
 </code></pre>
 <h3 id="create-run-responses">Responses</h3>
@@ -1570,47 +1612,29 @@ System.out.println(response.toString());
 <aside class="success">
 This operation does not require authentication
 </aside>
-<h2 id="upload-the-scraper-code-and-local-data">Upload the scraper code and local data</h2>
+<h2 id="upload-the-code-to-be-run-and-any-local-data">Upload the code to be run and any local data</h2>
 <blockquote>
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X PUT /runs/{name}/app \
-  -H <span class="hljs-string">'Content-Type: application/octet-stream'</span> \
+curl -X PUT http://localhost:8080/runs/{name}/app \
+  -H <span class="hljs-string">'Content-Type: application/gzip'</span> \
   -H <span class="hljs-string">'Authorization: Bearer {access-token}'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">PUT</span> <span class="hljs-string">/runs/{name}/app</span> HTTP/1.1
-
-<span class="http"><span class="hljs-attribute">Content-Type</span>: application/octet-stream
-
-<span class="undefined"></span></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/octet-stream'</span>,
-  <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs/{name}/app'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'put'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">PUT</span> <span class="hljs-string">http://localhost:8080/runs/{name}/app</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Content-Type</span>: application/gzip
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-<span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'string'</span>;
+<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'string'</span>;
 <span class="hljs-keyword">const</span> headers = {
-  <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs/{name}/app'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}/app'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'PUT'</span>,
   <span class="hljs-attr">body</span>: inputBody,
@@ -1627,11 +1651,11 @@ fetch(<span class="hljs-string">'/runs/{name}/app'</span>,
 <span class="hljs-keyword">require</span> <span class="hljs-string">'json'</span>
 
 headers = {
-  <span class="hljs-string">'Content-Type'</span> =&gt; <span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Content-Type'</span> =&gt; <span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-result = RestClient.put <span class="hljs-string">'/runs/{name}/app'</span>,
+result = RestClient.put <span class="hljs-string">'http://localhost:8080/runs/{name}/app'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -1640,18 +1664,42 @@ p JSON.parse(result)
 </code></pre>
 <pre class="highlight tab tab-python"><code><span class="hljs-keyword">import</span> requests
 headers = {
-  <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-r = requests.put(<span class="hljs-string">'/runs/{name}/app'</span>, params={
+r = requests.put(<span class="hljs-string">'http://localhost:8080/runs/{name}/app'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs/{name}/app"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/gzip'</span>,
+    <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'PUT'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}/app'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}/app"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"PUT"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -1676,13 +1724,13 @@ System.out.println(response.toString());
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
 
     headers := <span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>][]<span class="hljs-keyword">string</span>{
-        <span class="hljs-string">"Content-Type"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/octet-stream"</span>},
+        <span class="hljs-string">"Content-Type"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/gzip"</span>},
         <span class="hljs-string">"Authorization"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"Bearer {access-token}"</span>},
         
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"PUT"</span>, <span class="hljs-string">"/runs/{name}/app"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"PUT"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}/app"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -1695,10 +1743,7 @@ System.out.println(response.toString());
 <blockquote>
 <p>Body parameter</p>
 </blockquote>
-<pre class="highlight tab tab-yaml"><code><span class="hljs-string">string</span>
-
-</code></pre>
-<h3 id="upload-the-scraper-code-and-local-data-parameters">Parameters</h3>
+<h3 id="upload-the-code-to-be-run-and-any-local-data-parameters">Parameters</h3>
 <table>
 <thead>
 <tr>
@@ -1726,7 +1771,7 @@ System.out.println(response.toString());
 </tr>
 </tbody>
 </table>
-<h3 id="upload-the-scraper-code-and-local-data-responses">Responses</h3>
+<h3 id="upload-the-code-to-be-run-and-any-local-data-responses">Responses</h3>
 <table>
 <thead>
 <tr>
@@ -1760,50 +1805,36 @@ run_token
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X POST /runs/{name}/start \
+curl -X POST http://localhost:8080/runs/{name}/start \
   -H <span class="hljs-string">'Content-Type: application/json'</span> \
+  -H <span class="hljs-string">'Accept: application/json'</span> \
   -H <span class="hljs-string">'Authorization: Bearer {access-token}'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">POST</span> <span class="hljs-string">/runs/{name}/start</span> HTTP/1.1
-
-<span class="http"><span class="hljs-attribute">Content-Type</span>: application/json
-
-<span class="undefined"></span></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/json'</span>,
-  <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs/{name}/start'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'post'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">POST</span> <span class="hljs-string">http://localhost:8080/runs/{name}/start</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Content-Type</span>: application/json
+<span class="hljs-attribute">Accept</span>: application/json
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-<span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'{
+<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'{
   "output": "string",
   "env": [
     {
       "name": "string",
       "value": "string"
     }
-  ]
+  ],
+  "callback": "http://example.com"
 }'</span>;
 <span class="hljs-keyword">const</span> headers = {
   <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/json'</span>,
+  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/json'</span>,
   <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs/{name}/start'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}/start'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'POST'</span>,
   <span class="hljs-attr">body</span>: inputBody,
@@ -1821,10 +1852,11 @@ fetch(<span class="hljs-string">'/runs/{name}/start'</span>,
 
 headers = {
   <span class="hljs-string">'Content-Type'</span> =&gt; <span class="hljs-string">'application/json'</span>,
+  <span class="hljs-string">'Accept'</span> =&gt; <span class="hljs-string">'application/json'</span>,
   <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-result = RestClient.post <span class="hljs-string">'/runs/{name}/start'</span>,
+result = RestClient.post <span class="hljs-string">'http://localhost:8080/runs/{name}/start'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -1834,17 +1866,43 @@ p JSON.parse(result)
 <pre class="highlight tab tab-python"><code><span class="hljs-keyword">import</span> requests
 headers = {
   <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/json'</span>,
+  <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
   <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-r = requests.post(<span class="hljs-string">'/runs/{name}/start'</span>, params={
+r = requests.post(<span class="hljs-string">'http://localhost:8080/runs/{name}/start'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs/{name}/start"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/json'</span>,
+    <span class="hljs-string">'Accept'</span> =&gt; <span class="hljs-string">'application/json'</span>,
+    <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'POST'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}/start'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}/start"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"POST"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -1870,12 +1928,13 @@ System.out.println(response.toString());
 
     headers := <span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>][]<span class="hljs-keyword">string</span>{
         <span class="hljs-string">"Content-Type"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/json"</span>},
+        <span class="hljs-string">"Accept"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/json"</span>},
         <span class="hljs-string">"Authorization"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"Bearer {access-token}"</span>},
         
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"POST"</span>, <span class="hljs-string">"/runs/{name}/start"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"POST"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}/start"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -1895,7 +1954,8 @@ System.out.println(response.toString());
       <span class="hljs-attr">"name"</span>: <span class="hljs-string">"string"</span>,
       <span class="hljs-attr">"value"</span>: <span class="hljs-string">"string"</span>
     }
-  ]
+  ],
+  <span class="hljs-attr">"callback"</span>: <span class="hljs-string">"http://example.com"</span>
 }
 </code></pre>
 <h3 id="start-the-run-parameters">Parameters</h3>
@@ -1929,31 +1989,48 @@ System.out.println(response.toString());
 <td>body</td>
 <td>string</td>
 <td>false</td>
-<td>relative path (from the directory of the scraper) to file you want access to later. This will usually be the output of the scraper.</td>
+<td>Optional relative path (from the directory of the code for the run) to file you want access to later. This will usually be the output of the run.</td>
 </tr>
 <tr>
 <td>» env</td>
 <td>body</td>
-<td>[object]</td>
+<td>[<a href="#schemaenv">Env</a>]</td>
 <td>false</td>
-<td>Environment variables to set for the scraper run.</td>
+<td>Optionally set environment variables for the run.</td>
 </tr>
 <tr>
 <td>»» name</td>
 <td>body</td>
 <td>string</td>
 <td>false</td>
-<td>none</td>
+<td>Name of the environment variable</td>
 </tr>
 <tr>
 <td>»» value</td>
 <td>body</td>
 <td>string</td>
 <td>false</td>
-<td>none</td>
+<td>Value of the environment variable</td>
+</tr>
+<tr>
+<td>» callback</td>
+<td>body</td>
+<td>string(uri)</td>
+<td>false</td>
+<td>Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like <a href="http://my-url-endpoint.com?key=special-secret-stuff">http://my-url-endpoint.com?key=special-secret-stuff</a> would do the trick</td>
 </tr>
 </tbody>
 </table>
+<blockquote>
+<p>Example responses</p>
+</blockquote>
+<blockquote>
+<p>400 Response</p>
+</blockquote>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"error"</span>: <span class="hljs-string">"JSON in body not correctly formatted"</span>
+}
+</code></pre>
 <h3 id="start-the-run-responses">Responses</h3>
 <table>
 <thead>
@@ -1972,6 +2049,12 @@ System.out.println(response.toString());
 <td>None</td>
 </tr>
 <tr>
+<td>400</td>
+<td><a href="https://tools.ietf.org/html/rfc7231#section-6.5.1">Bad Request</a></td>
+<td>There was a problem with your request</td>
+<td>Inline</td>
+</tr>
+<tr>
 <td>403</td>
 <td><a href="https://tools.ietf.org/html/rfc7231#section-6.5.3">Forbidden</a></td>
 <td>The run token was incorrect</td>
@@ -1979,6 +2062,219 @@ System.out.println(response.toString());
 </tr>
 </tbody>
 </table>
+<h3 id="start-the-run-responseschema">Response Schema</h3>
+<p>Status Code <strong>400</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Restrictions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>» error</td>
+<td>string</td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+<h3 id="callbacks">Callbacks</h3>
+<h4 id="events">events</h4>
+<p><strong>{$request.body#/callback}</strong></p>
+<h2 id="start-the-run">Start the run</h2>
+<blockquote>
+<p>Code samples</p>
+</blockquote>
+<pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
+curl -X POST http://localhost:8080/runs/{name}/start \
+  -H <span class="hljs-string">'Content-Type: application/json'</span>
+
+</code></pre>
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">POST</span> <span class="hljs-string">http://localhost:8080/runs/{name}/start</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Content-Type</span>: application/json
+
+</code></pre>
+<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'{
+  "id": "string",
+  "type": "string",
+  "time": "2019-12-17T23:02:58Z",
+  "data": {
+    "stage": "build",
+    "stream": "stdout",
+    "text": "string"
+  }
+}'</span>;
+<span class="hljs-keyword">const</span> headers = {
+  <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/json'</span>
+
+};
+
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}/start'</span>,
+{
+  <span class="hljs-attr">method</span>: <span class="hljs-string">'POST'</span>,
+  <span class="hljs-attr">body</span>: inputBody,
+  <span class="hljs-attr">headers</span>: headers
+})
+.then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">res</span>) </span>{
+    <span class="hljs-keyword">return</span> res.json();
+}).then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">body</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(body);
+});
+
+</code></pre>
+<pre class="highlight tab tab-ruby"><code><span class="hljs-keyword">require</span> <span class="hljs-string">'rest-client'</span>
+<span class="hljs-keyword">require</span> <span class="hljs-string">'json'</span>
+
+headers = {
+  <span class="hljs-string">'Content-Type'</span> =&gt; <span class="hljs-string">'application/json'</span>
+}
+
+result = RestClient.post <span class="hljs-string">'http://localhost:8080/runs/{name}/start'</span>,
+  <span class="hljs-symbol">params:</span> {
+  }, <span class="hljs-symbol">headers:</span> headers
+
+p JSON.parse(result)
+
+</code></pre>
+<pre class="highlight tab tab-python"><code><span class="hljs-keyword">import</span> requests
+headers = {
+  <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/json'</span>
+}
+
+r = requests.post(<span class="hljs-string">'http://localhost:8080/runs/{name}/start'</span>, headers = headers)
+
+print(r.json())
+
+</code></pre>
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/json'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'POST'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}/start'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}/start"</span>);
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+con.setRequestMethod(<span class="hljs-string">"POST"</span>);
+<span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
+BufferedReader in = <span class="hljs-keyword">new</span> BufferedReader(
+    <span class="hljs-keyword">new</span> InputStreamReader(con.getInputStream()));
+String inputLine;
+StringBuffer response = <span class="hljs-keyword">new</span> StringBuffer();
+<span class="hljs-keyword">while</span> ((inputLine = in.readLine()) != <span class="hljs-keyword">null</span>) {
+    response.append(inputLine);
+}
+in.close();
+System.out.println(response.toString());
+
+</code></pre>
+<pre class="highlight tab tab-go"><code><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+       <span class="hljs-string">"bytes"</span>
+       <span class="hljs-string">"net/http"</span>
+)
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+
+    headers := <span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>][]<span class="hljs-keyword">string</span>{
+        <span class="hljs-string">"Content-Type"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/json"</span>},
+        
+    }
+
+    data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
+    req, err := http.NewRequest(<span class="hljs-string">"POST"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}/start"</span>, data)
+    req.Header = headers
+
+    client := &amp;http.Client{}
+    resp, err := client.Do(req)
+    <span class="hljs-comment">// ...</span>
+}
+
+</code></pre>
+<p><code>POST /runs/{name}/start</code></p>
+<blockquote>
+<p>Body parameter</p>
+</blockquote>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>,
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
+    <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
+    <span class="hljs-attr">"text"</span>: <span class="hljs-string">"string"</span>
+  }
+}
+</code></pre>
+<h3 id="start-the-run-parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>In</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>body</td>
+<td>any</td>
+<td>false</td>
+<td>Event - can be one of LogEvent, StartEvent, FinishEvent or LastEvent</td>
+</tr>
+</tbody>
+</table>
+<h3 id="start-the-run-responses">Responses</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td><a href="https://tools.ietf.org/html/rfc7231#section-6.3.1">OK</a></td>
+<td>callback successfully processed</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<aside class="success">
+This operation does not require authentication
+</aside>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
 run_token
@@ -1988,37 +2284,21 @@ run_token
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X DELETE /runs/{name} \
+curl -X DELETE http://localhost:8080/runs/{name} \
   -H <span class="hljs-string">'Authorization: Bearer {access-token}'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">DELETE</span> <span class="hljs-string">/runs/{name}</span> HTTP/1.1
-
-<span class="undefined"></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs/{name}'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'delete'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">DELETE</span> <span class="hljs-string">http://localhost:8080/runs/{name}</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-
+<pre class="highlight tab tab-javascript"><code>
 <span class="hljs-keyword">const</span> headers = {
   <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs/{name}'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'DELETE'</span>,
 
@@ -2038,7 +2318,7 @@ headers = {
   <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-result = RestClient.delete <span class="hljs-string">'/runs/{name}'</span>,
+result = RestClient.delete <span class="hljs-string">'http://localhost:8080/runs/{name}'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -2050,14 +2330,37 @@ headers = {
   <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-r = requests.delete(<span class="hljs-string">'/runs/{name}'</span>, params={
+r = requests.delete(<span class="hljs-string">'http://localhost:8080/runs/{name}'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs/{name}"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'Bearer {access-token}'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'DELETE'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"DELETE"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -2087,7 +2390,7 @@ System.out.println(response.toString());
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"DELETE"</span>, <span class="hljs-string">"/runs/{name}"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"DELETE"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -2097,7 +2400,7 @@ System.out.println(response.toString());
 
 </code></pre>
 <p><code>DELETE /runs/{name}</code></p>
-<p>This does final clean up of everything associated with a run. After doing this it's not possible to get any information about the run. So, make sure you have everything you need before you call this.</p>
+<p>This does final clean up of everything associated with a run. Make sure you always do this as the last API call for a run. After doing this it's not possible to get any more information about this run.</p>
 <h3 id="finalise-scraper-run-parameters">Parameters</h3>
 <table>
 <thead>
@@ -2148,49 +2451,31 @@ System.out.println(response.toString());
 To perform this operation, you must be authenticated by means of one of the following methods:
 run_token
 </aside>
-<h1 id="yinyo-server-optional">Optional</h1>
+<h1 id="yinyo-optional">Optional</h1>
 <p>Get access to more information about runs</p>
 <h2 id="upload-a-build-cache">Upload a build cache</h2>
 <blockquote>
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X PUT /runs/{name}/cache \
-  -H <span class="hljs-string">'Content-Type: application/octet-stream'</span> \
+curl -X PUT http://localhost:8080/runs/{name}/cache \
+  -H <span class="hljs-string">'Content-Type: application/gzip'</span> \
   -H <span class="hljs-string">'Authorization: Bearer {access-token}'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">PUT</span> <span class="hljs-string">/runs/{name}/cache</span> HTTP/1.1
-
-<span class="http"><span class="hljs-attribute">Content-Type</span>: application/octet-stream
-
-<span class="undefined"></span></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/octet-stream'</span>,
-  <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs/{name}/cache'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'put'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">PUT</span> <span class="hljs-string">http://localhost:8080/runs/{name}/cache</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Content-Type</span>: application/gzip
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-<span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'string'</span>;
+<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'string'</span>;
 <span class="hljs-keyword">const</span> headers = {
-  <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs/{name}/cache'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}/cache'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'PUT'</span>,
   <span class="hljs-attr">body</span>: inputBody,
@@ -2207,11 +2492,11 @@ fetch(<span class="hljs-string">'/runs/{name}/cache'</span>,
 <span class="hljs-keyword">require</span> <span class="hljs-string">'json'</span>
 
 headers = {
-  <span class="hljs-string">'Content-Type'</span> =&gt; <span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Content-Type'</span> =&gt; <span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-result = RestClient.put <span class="hljs-string">'/runs/{name}/cache'</span>,
+result = RestClient.put <span class="hljs-string">'http://localhost:8080/runs/{name}/cache'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -2220,18 +2505,42 @@ p JSON.parse(result)
 </code></pre>
 <pre class="highlight tab tab-python"><code><span class="hljs-keyword">import</span> requests
 headers = {
-  <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-r = requests.put(<span class="hljs-string">'/runs/{name}/cache'</span>, params={
+r = requests.put(<span class="hljs-string">'http://localhost:8080/runs/{name}/cache'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs/{name}/cache"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/gzip'</span>,
+    <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'PUT'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}/cache'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}/cache"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"PUT"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -2256,13 +2565,13 @@ System.out.println(response.toString());
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
 
     headers := <span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>][]<span class="hljs-keyword">string</span>{
-        <span class="hljs-string">"Content-Type"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/octet-stream"</span>},
+        <span class="hljs-string">"Content-Type"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/gzip"</span>},
         <span class="hljs-string">"Authorization"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"Bearer {access-token}"</span>},
         
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"PUT"</span>, <span class="hljs-string">"/runs/{name}/cache"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"PUT"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}/cache"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -2275,9 +2584,6 @@ System.out.println(response.toString());
 <blockquote>
 <p>Body parameter</p>
 </blockquote>
-<pre class="highlight tab tab-yaml"><code><span class="hljs-string">string</span>
-
-</code></pre>
 <h3 id="upload-a-build-cache-parameters">Parameters</h3>
 <table>
 <thead>
@@ -2340,42 +2646,24 @@ run_token
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X GET /runs/{name}/cache \
-  -H <span class="hljs-string">'Accept: application/octet-stream'</span> \
+curl -X GET http://localhost:8080/runs/{name}/cache \
+  -H <span class="hljs-string">'Accept: application/gzip'</span> \
   -H <span class="hljs-string">'Authorization: Bearer {access-token}'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">GET</span> <span class="hljs-string">/runs/{name}/cache</span> HTTP/1.1
-
-<span class="http"><span class="hljs-attribute">Accept</span>: application/octet-stream
-
-<span class="undefined"></span></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/octet-stream'</span>,
-  <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs/{name}/cache'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'get'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">GET</span> <span class="hljs-string">http://localhost:8080/runs/{name}/cache</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Accept</span>: application/gzip
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-
+<pre class="highlight tab tab-javascript"><code>
 <span class="hljs-keyword">const</span> headers = {
-  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs/{name}/cache'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}/cache'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'GET'</span>,
 
@@ -2392,11 +2680,11 @@ fetch(<span class="hljs-string">'/runs/{name}/cache'</span>,
 <span class="hljs-keyword">require</span> <span class="hljs-string">'json'</span>
 
 headers = {
-  <span class="hljs-string">'Accept'</span> =&gt; <span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Accept'</span> =&gt; <span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-result = RestClient.get <span class="hljs-string">'/runs/{name}/cache'</span>,
+result = RestClient.get <span class="hljs-string">'http://localhost:8080/runs/{name}/cache'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -2405,18 +2693,42 @@ p JSON.parse(result)
 </code></pre>
 <pre class="highlight tab tab-python"><code><span class="hljs-keyword">import</span> requests
 headers = {
-  <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/octet-stream'</span>,
+  <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/gzip'</span>,
   <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-r = requests.get(<span class="hljs-string">'/runs/{name}/cache'</span>, params={
+r = requests.get(<span class="hljs-string">'http://localhost:8080/runs/{name}/cache'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs/{name}/cache"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/gzip'</span>,
+    <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'GET'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}/cache'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}/cache"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"GET"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -2441,13 +2753,13 @@ System.out.println(response.toString());
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
 
     headers := <span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>][]<span class="hljs-keyword">string</span>{
-        <span class="hljs-string">"Accept"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/octet-stream"</span>},
+        <span class="hljs-string">"Accept"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/gzip"</span>},
         <span class="hljs-string">"Authorization"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"Bearer {access-token}"</span>},
         
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"GET"</span>, <span class="hljs-string">"/runs/{name}/cache"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"GET"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}/cache"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -2507,53 +2819,41 @@ System.out.println(response.toString());
 <td>The run token was incorrect</td>
 <td>None</td>
 </tr>
+<tr>
+<td>404</td>
+<td><a href="https://tools.ietf.org/html/rfc7231#section-6.5.4">Not Found</a></td>
+<td>The build cache doesn't yet exist</td>
+<td>None</td>
+</tr>
 </tbody>
 </table>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
 run_token
 </aside>
-<h2 id="attach-to-run-log-stream">Attach to run log stream</h2>
+<h2 id="attach-to-run-events-stream">Attach to run events stream</h2>
 <blockquote>
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X GET /runs/{name}/logs \
-  -H <span class="hljs-string">'Accept: text/plain'</span> \
+curl -X GET http://localhost:8080/runs/{name}/events \
+  -H <span class="hljs-string">'Accept: application/ld+json'</span> \
   -H <span class="hljs-string">'Authorization: Bearer {access-token}'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">GET</span> <span class="hljs-string">/runs/{name}/logs</span> HTTP/1.1
-
-<span class="http"><span class="hljs-attribute">Accept</span>: text/plain
-
-<span class="undefined"></span></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'text/plain'</span>,
-  <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs/{name}/logs'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'get'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">GET</span> <span class="hljs-string">http://localhost:8080/runs/{name}/events</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Accept</span>: application/ld+json
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-
+<pre class="highlight tab tab-javascript"><code>
 <span class="hljs-keyword">const</span> headers = {
-  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'text/plain'</span>,
+  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/ld+json'</span>,
   <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs/{name}/logs'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}/events'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'GET'</span>,
 
@@ -2570,11 +2870,11 @@ fetch(<span class="hljs-string">'/runs/{name}/logs'</span>,
 <span class="hljs-keyword">require</span> <span class="hljs-string">'json'</span>
 
 headers = {
-  <span class="hljs-string">'Accept'</span> =&gt; <span class="hljs-string">'text/plain'</span>,
+  <span class="hljs-string">'Accept'</span> =&gt; <span class="hljs-string">'application/ld+json'</span>,
   <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-result = RestClient.get <span class="hljs-string">'/runs/{name}/logs'</span>,
+result = RestClient.get <span class="hljs-string">'http://localhost:8080/runs/{name}/events'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -2583,18 +2883,42 @@ p JSON.parse(result)
 </code></pre>
 <pre class="highlight tab tab-python"><code><span class="hljs-keyword">import</span> requests
 headers = {
-  <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'text/plain'</span>,
+  <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/ld+json'</span>,
   <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-r = requests.get(<span class="hljs-string">'/runs/{name}/logs'</span>, params={
+r = requests.get(<span class="hljs-string">'http://localhost:8080/runs/{name}/events'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs/{name}/logs"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/ld+json'</span>,
+    <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'GET'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}/events'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}/events"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"GET"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -2619,13 +2943,13 @@ System.out.println(response.toString());
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
 
     headers := <span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>][]<span class="hljs-keyword">string</span>{
-        <span class="hljs-string">"Accept"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"text/plain"</span>},
+        <span class="hljs-string">"Accept"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"application/ld+json"</span>},
         <span class="hljs-string">"Authorization"</span>: []<span class="hljs-keyword">string</span>{<span class="hljs-string">"Bearer {access-token}"</span>},
         
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"GET"</span>, <span class="hljs-string">"/runs/{name}/logs"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"GET"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}/events"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -2634,9 +2958,9 @@ System.out.println(response.toString());
 }
 
 </code></pre>
-<p><code>GET /runs/{name}/logs</code></p>
-<p>Watch what is happening to a scraper in real-time as it gets compiled and runs. By default this will stream all logs that have occurred from the scraper getting started until now and then as new logs occur stream those in real-time.</p>
-<h3 id="attach-to-run-log-stream-parameters">Parameters</h3>
+<p><code>GET /runs/{name}/events</code></p>
+<p>Watch what is happening to a run in real-time as it gets built and runs. By default this will stream all events that have occurred from the very beginning until now and then as new events occur stream those in real-time.</p>
+<h3 id="attach-to-run-events-stream-parameters">Parameters</h3>
 <table>
 <thead>
 <tr>
@@ -2655,6 +2979,13 @@ System.out.println(response.toString());
 <td>true</td>
 <td>The run name (as returned by creating a run)</td>
 </tr>
+<tr>
+<td>last-id</td>
+<td>query</td>
+<td>string</td>
+<td>false</td>
+<td>Restart stream immediately after the event with the given ID</td>
+</tr>
 </tbody>
 </table>
 <blockquote>
@@ -2663,7 +2994,18 @@ System.out.println(response.toString());
 <blockquote>
 <p>200 Response</p>
 </blockquote>
-<h3 id="attach-to-run-log-stream-responses">Responses</h3>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"123"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T03:45:00Z"</span>,
+  <span class="hljs-attr">"type"</span>: <span class="hljs-string">"log"</span>,
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
+    <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
+    <span class="hljs-attr">"text"</span>: <span class="hljs-string">"Hello!"</span>
+  }
+}
+</code></pre>
+<h3 id="attach-to-run-events-stream-responses">Responses</h3>
 <table>
 <thead>
 <tr>
@@ -2677,8 +3019,62 @@ System.out.println(response.toString());
 <tr>
 <td>200</td>
 <td><a href="https://tools.ietf.org/html/rfc7231#section-6.3.1">OK</a></td>
-<td>Attached</td>
-<td>string</td>
+<td>Succesfully attached to stream</td>
+<td>Inline</td>
+</tr>
+<tr>
+<td>403</td>
+<td><a href="https://tools.ietf.org/html/rfc7231#section-6.5.3">Forbidden</a></td>
+<td>The run token was incorrect</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<h3 id="attach-to-run-events-stream-responseschema">Response Schema</h3>
+<h4 id="enumerated-values">Enumerated Values</h4>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stage</td>
+<td>build</td>
+</tr>
+<tr>
+<td>stage</td>
+<td>run</td>
+</tr>
+<tr>
+<td>stream</td>
+<td>stdout</td>
+</tr>
+<tr>
+<td>stream</td>
+<td>stderr</td>
+</tr>
+<tr>
+<td>stream</td>
+<td>interr</td>
+</tr>
+<tr>
+<td>stage</td>
+<td>build</td>
+</tr>
+<tr>
+<td>stage</td>
+<td>run</td>
+</tr>
+<tr>
+<td>stage</td>
+<td>build</td>
+</tr>
+<tr>
+<td>stage</td>
+<td>run</td>
 </tr>
 </tbody>
 </table>
@@ -2691,42 +3087,24 @@ run_token
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X GET /runs/{name}/<span class="hljs-built_in">exit</span>-data \
+curl -X GET http://localhost:8080/runs/{name}/<span class="hljs-built_in">exit</span>-data \
   -H <span class="hljs-string">'Accept: application/json'</span> \
   -H <span class="hljs-string">'Authorization: Bearer {access-token}'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">GET</span> <span class="hljs-string">/runs/{name}/exit-data</span> HTTP/1.1
-
-<span class="http"><span class="hljs-attribute">Accept</span>: application/json
-
-<span class="undefined"></span></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/json'</span>,
-  <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs/{name}/exit-data'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'get'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">GET</span> <span class="hljs-string">http://localhost:8080/runs/{name}/exit-data</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Accept</span>: application/json
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-
+<pre class="highlight tab tab-javascript"><code>
 <span class="hljs-keyword">const</span> headers = {
   <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/json'</span>,
   <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs/{name}/exit-data'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}/exit-data'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'GET'</span>,
 
@@ -2747,7 +3125,7 @@ headers = {
   <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-result = RestClient.get <span class="hljs-string">'/runs/{name}/exit-data'</span>,
+result = RestClient.get <span class="hljs-string">'http://localhost:8080/runs/{name}/exit-data'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -2760,14 +3138,38 @@ headers = {
   <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-r = requests.get(<span class="hljs-string">'/runs/{name}/exit-data'</span>, params={
+r = requests.get(<span class="hljs-string">'http://localhost:8080/runs/{name}/exit-data'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs/{name}/exit-data"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/json'</span>,
+    <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'GET'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}/exit-data'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}/exit-data"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"GET"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -2798,7 +3200,7 @@ System.out.println(response.toString());
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"GET"</span>, <span class="hljs-string">"/runs/{name}/exit-data"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"GET"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}/exit-data"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -2836,27 +3238,28 @@ System.out.println(response.toString());
 <blockquote>
 <p>200 Response</p>
 </blockquote>
-<pre class="highlight tab tab-json"><code>[
-  {
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"build"</span>: {
     <span class="hljs-attr">"exit_code"</span>: <span class="hljs-number">0</span>,
     <span class="hljs-attr">"usage"</span>: {
-      <span class="hljs-attr">"build"</span>: {
-        <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">"max_rss"</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
-      },
-      <span class="hljs-attr">"run"</span>: {
-        <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">"max_rss"</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
-      }
+      <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"max_rss"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
+    }
+  },
+  <span class="hljs-attr">"run"</span>: {
+    <span class="hljs-attr">"exit_code"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"usage"</span>: {
+      <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"max_rss"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
     }
   }
-]
+}
 </code></pre>
 <h3 id="get-exit-code-and-usage-metrics-responses">Responses</h3>
 <table>
@@ -2873,7 +3276,7 @@ System.out.println(response.toString());
 <td>200</td>
 <td><a href="https://tools.ietf.org/html/rfc7231#section-6.3.1">OK</a></td>
 <td>Success</td>
-<td>Inline</td>
+<td><a href="#schemaexitdata">ExitData</a></td>
 </tr>
 <tr>
 <td>403</td>
@@ -2881,83 +3284,11 @@ System.out.println(response.toString());
 <td>The run token was incorrect</td>
 <td>None</td>
 </tr>
-</tbody>
-</table>
-<h3 id="get-exit-code-and-usage-metrics-responseschema">Response Schema</h3>
-<p>Status Code <strong>200</strong></p>
-<table>
-<thead>
 <tr>
-<th>Name</th>
-<th>Type</th>
-<th>Required</th>
-<th>Restrictions</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>» exit_code</td>
-<td>integer</td>
-<td>false</td>
-<td>none</td>
-<td>none</td>
-</tr>
-<tr>
-<td>» usage</td>
-<td>object</td>
-<td>false</td>
-<td>none</td>
-<td>none</td>
-</tr>
-<tr>
-<td>»» build</td>
-<td><a href="#schemaresourceusage">ResourceUsage</a></td>
-<td>false</td>
-<td>none</td>
-<td>Resources used by a process. This information is recorded as part of the metrics for a scraper run.  The names of metrics are all copied from the structure returned by <code>getrusage(2)</code> (with the exception of <code>wall_time</code>)</td>
-</tr>
-<tr>
-<td>»»» wall_time</td>
-<td>number</td>
-<td>false</td>
-<td>none</td>
-<td>Wall clock</td>
-</tr>
-<tr>
-<td>»»» cpu_time</td>
-<td>number</td>
-<td>false</td>
-<td>none</td>
-<td>This is the total number of seconds spent executing by the CPU. It's the sum of time spent in user and kernel mode.</td>
-</tr>
-<tr>
-<td>»»» max_rss</td>
-<td>integer</td>
-<td>false</td>
-<td>none</td>
-<td>This is the maximum resident set size used in kilobytes.</td>
-</tr>
-<tr>
-<td>»»» network_in</td>
-<td>integer</td>
-<td>false</td>
-<td>none</td>
-<td>Total received network traffic in bytes.</td>
-</tr>
-<tr>
-<td>»»» network_out</td>
-<td>integer</td>
-<td>false</td>
-<td>none</td>
-<td>Total transmitted network traffic in bytes.</td>
-</tr>
-<tr>
-<td>»» run</td>
-<td><a href="#schemaresourceusage">ResourceUsage</a></td>
-<td>false</td>
-<td>none</td>
-<td>Resources used by a process. This information is recorded as part of the metrics for a scraper run.  The names of metrics are all copied from the structure returned by <code>getrusage(2)</code> (with the exception of <code>wall_time</code>)</td>
+<td>404</td>
+<td><a href="https://tools.ietf.org/html/rfc7231#section-6.5.4">Not Found</a></td>
+<td>Exit data doesn't yet exist</td>
+<td>None</td>
 </tr>
 </tbody>
 </table>
@@ -2970,42 +3301,24 @@ run_token
 <p>Code samples</p>
 </blockquote>
 <pre class="highlight tab tab-shell"><code><span class="hljs-comment"># You can also use wget</span>
-curl -X GET /runs/{name}/output \
+curl -X GET http://localhost:8080/runs/{name}/output \
   -H <span class="hljs-string">'Accept: application/octet-stream'</span> \
   -H <span class="hljs-string">'Authorization: Bearer {access-token}'</span>
 
 </code></pre>
-<pre class="highlight tab tab-http"><code><span class="hljs-keyword">GET</span> <span class="hljs-string">/runs/{name}/output</span> HTTP/1.1
-
-<span class="http"><span class="hljs-attribute">Accept</span>: application/octet-stream
-
-<span class="undefined"></span></span></code></pre>
-<pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">var</span> headers = {
-  <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/octet-stream'</span>,
-  <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
-
-};
-
-$.ajax({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">'/runs/{name}/output'</span>,
-  <span class="hljs-attr">method</span>: <span class="hljs-string">'get'</span>,
-
-  <span class="hljs-attr">headers</span>: headers,
-  <span class="hljs-attr">success</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(data));
-  }
-})
+<pre class="highlight tab tab-http"><code><span class="hljs-keyword">GET</span> <span class="hljs-string">http://localhost:8080/runs/{name}/output</span> HTTP/1.1
+<span class="hljs-attribute">Host</span>: localhost:8080
+<span class="hljs-attribute">Accept</span>: application/octet-stream
 
 </code></pre>
-<pre class="highlight tab tab-javascript--nodejs"><code><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">'node-fetch'</span>);
-
+<pre class="highlight tab tab-javascript"><code>
 <span class="hljs-keyword">const</span> headers = {
   <span class="hljs-string">'Accept'</span>:<span class="hljs-string">'application/octet-stream'</span>,
   <span class="hljs-string">'Authorization'</span>:<span class="hljs-string">'Bearer {access-token}'</span>
 
 };
 
-fetch(<span class="hljs-string">'/runs/{name}/output'</span>,
+fetch(<span class="hljs-string">'http://localhost:8080/runs/{name}/output'</span>,
 {
   <span class="hljs-attr">method</span>: <span class="hljs-string">'GET'</span>,
 
@@ -3026,7 +3339,7 @@ headers = {
   <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-result = RestClient.get <span class="hljs-string">'/runs/{name}/output'</span>,
+result = RestClient.get <span class="hljs-string">'http://localhost:8080/runs/{name}/output'</span>,
   <span class="hljs-symbol">params:</span> {
   }, <span class="hljs-symbol">headers:</span> headers
 
@@ -3039,14 +3352,38 @@ headers = {
   <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer {access-token}'</span>
 }
 
-r = requests.get(<span class="hljs-string">'/runs/{name}/output'</span>, params={
+r = requests.get(<span class="hljs-string">'http://localhost:8080/runs/{name}/output'</span>, headers = headers)
 
-}, headers = headers)
-
-<span class="hljs-keyword">print</span> r.json()
+print(r.json())
 
 </code></pre>
-<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"/runs/{name}/output"</span>);
+<pre class="highlight tab tab-php"><code> <span class="hljs-string">'application/octet-stream'</span>,
+    <span class="hljs-string">'Authorization'</span> =&gt; <span class="hljs-string">'Bearer {access-token}'</span>,
+    
+    );
+
+$client = <span class="hljs-keyword">new</span> \GuzzleHttp\Client();
+
+<span class="hljs-comment">// Define array of request body.</span>
+$request_body = <span class="hljs-keyword">array</span>();
+
+<span class="hljs-keyword">try</span> {
+    $response = $client-&gt;request(<span class="hljs-string">'GET'</span>,<span class="hljs-string">'http://localhost:8080/runs/{name}/output'</span>, <span class="hljs-keyword">array</span>(
+        <span class="hljs-string">'headers'</span> =&gt; $headers,
+        <span class="hljs-string">'json'</span> =&gt; $request_body,
+       )
+    );
+    print_r($response-&gt;getBody()-&gt;getContents());
+ }
+ <span class="hljs-keyword">catch</span> (\GuzzleHttp\<span class="hljs-keyword">Exception</span>\BadResponseException $e) {
+    <span class="hljs-comment">// handle exception or api errors.</span>
+    print_r($e-&gt;getMessage());
+ }
+
+ <span class="hljs-comment">// ...</span>
+
+</code></pre>
+<pre class="highlight tab tab-java"><code>URL obj = <span class="hljs-keyword">new</span> URL(<span class="hljs-string">"http://localhost:8080/runs/{name}/output"</span>);
 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 con.setRequestMethod(<span class="hljs-string">"GET"</span>);
 <span class="hljs-keyword">int</span> responseCode = con.getResponseCode();
@@ -3077,7 +3414,7 @@ System.out.println(response.toString());
     }
 
     data := bytes.NewBuffer([]<span class="hljs-keyword">byte</span>{jsonReq})
-    req, err := http.NewRequest(<span class="hljs-string">"GET"</span>, <span class="hljs-string">"/runs/{name}/output"</span>, data)
+    req, err := http.NewRequest(<span class="hljs-string">"GET"</span>, <span class="hljs-string">"http://localhost:8080/runs/{name}/output"</span>, data)
     req.Header = headers
 
     client := &amp;http.Client{}
@@ -3087,7 +3424,7 @@ System.out.println(response.toString());
 
 </code></pre>
 <p><code>GET /runs/{name}/output</code></p>
-<p>Usually at the end of the scraper run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.</p>
+<p>Usually at the end of the run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.</p>
 <h3 id="get-output-file-parameters">Parameters</h3>
 <table>
 <thead>
@@ -3138,6 +3475,12 @@ System.out.println(response.toString());
 <td>The run token was incorrect</td>
 <td>None</td>
 </tr>
+<tr>
+<td>404</td>
+<td><a href="https://tools.ietf.org/html/rfc7231#section-6.5.4">Not Found</a></td>
+<td>Exit data doesn't yet exist</td>
+<td>None</td>
+</tr>
 </tbody>
 </table>
 <aside class="warning">
@@ -3145,12 +3488,54 @@ To perform this operation, you must be authenticated by means of one of the foll
 run_token
 </aside>
 <h1 id="schemas">Schemas</h1>
-<h2 id="tocsstage">Stage</h2>
-<p><a id="schemastage"></a></p>
-<pre class="highlight tab tab-json"><code><span class="hljs-string">"queued"</span>
+<h2 id="tocs_env">Env</h2>
+<p><a id="schemaenv"></a>
+<a id="schema_Env"></a>
+<a id="tocSenv"></a>
+<a id="tocsenv"></a></p>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"value"</span>: <span class="hljs-string">"string"</span>
+}
 
 </code></pre>
-<p><em>The stage of the life-cycle of the run</em></p>
+<h3 id="properties">Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Restrictions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>string</td>
+<td>false</td>
+<td>none</td>
+<td>Name of the environment variable</td>
+</tr>
+<tr>
+<td>value</td>
+<td>string</td>
+<td>false</td>
+<td>none</td>
+<td>Value of the environment variable</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tocs_stage">Stage</h2>
+<p><a id="schemastage"></a>
+<a id="schema_Stage"></a>
+<a id="tocSstage"></a>
+<a id="tocsstage"></a></p>
+<pre class="highlight tab tab-json"><code><span class="hljs-string">"build"</span>
+
+</code></pre>
+<p>The stage of the life-cycle of the run</p>
 <h3 id="properties">Properties</h3>
 <table>
 <thead>
@@ -3183,24 +3568,121 @@ run_token
 <tbody>
 <tr>
 <td><em>anonymous</em></td>
-<td>queued</td>
+<td>build</td>
 </tr>
 <tr>
 <td><em>anonymous</em></td>
-<td>compiling</td>
-</tr>
-<tr>
-<td><em>anonymous</em></td>
-<td>running</td>
-</tr>
-<tr>
-<td><em>anonymous</em></td>
-<td>stopped</td>
+<td>run</td>
 </tr>
 </tbody>
 </table>
-<h2 id="tocsresourceusage">ResourceUsage</h2>
-<p><a id="schemaresourceusage"></a></p>
+<h2 id="tocs_exitdata">ExitData</h2>
+<p><a id="schemaexitdata"></a>
+<a id="schema_ExitData"></a>
+<a id="tocSexitdata"></a>
+<a id="tocsexitdata"></a></p>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"build"</span>: {
+    <span class="hljs-attr">"exit_code"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"usage"</span>: {
+      <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"max_rss"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
+    }
+  },
+  <span class="hljs-attr">"run"</span>: {
+    <span class="hljs-attr">"exit_code"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"usage"</span>: {
+      <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"max_rss"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
+    }
+  }
+}
+
+</code></pre>
+<h3 id="properties">Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Restrictions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>build</td>
+<td><a href="#schemaexitdatastage">ExitDataStage</a></td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<td>run</td>
+<td><a href="#schemaexitdatastage">ExitDataStage</a></td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tocs_exitdatastage">ExitDataStage</h2>
+<p><a id="schemaexitdatastage"></a>
+<a id="schema_ExitDataStage"></a>
+<a id="tocSexitdatastage"></a>
+<a id="tocsexitdatastage"></a></p>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"exit_code"</span>: <span class="hljs-number">0</span>,
+  <span class="hljs-attr">"usage"</span>: {
+    <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"max_rss"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
+  }
+}
+
+</code></pre>
+<h3 id="properties">Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Restrictions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>exit_code</td>
+<td>number</td>
+<td>false</td>
+<td>none</td>
+<td>Process exit code for build or run. If there was no error this should be 0.</td>
+</tr>
+<tr>
+<td>usage</td>
+<td><a href="#schemausage">Usage</a></td>
+<td>false</td>
+<td>none</td>
+<td>Resources used by a process. This information is recorded as part of the metrics for a run.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tocs_usage">Usage</h2>
+<p><a id="schemausage"></a>
+<a id="schema_Usage"></a>
+<a id="tocSusage"></a>
+<a id="tocsusage"></a></p>
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
   <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
@@ -3210,9 +3692,7 @@ run_token
 }
 
 </code></pre>
-<p>*Resources used by a process. This information is recorded as part of the metrics for a scraper run.</p>
-<p>The names of metrics are all copied from the structure returned by <code>getrusage(2)</code> (with the exception of <code>wall_time</code>)
-*</p>
+<p>Resources used by a process. This information is recorded as part of the metrics for a run.</p>
 <h3 id="properties">Properties</h3>
 <table>
 <thead>
@@ -3230,45 +3710,47 @@ run_token
 <td>number</td>
 <td>false</td>
 <td>none</td>
-<td>Wall clock</td>
+<td>Wall clock (in seconds)</td>
 </tr>
 <tr>
 <td>cpu_time</td>
 <td>number</td>
 <td>false</td>
 <td>none</td>
-<td>This is the total number of seconds spent executing by the CPU. It's the sum of time spent in user and kernel mode.</td>
+<td>Total time spent executing by the CPU.<br />It's the sum of time spent in user and kernel mode (in seconds)</td>
 </tr>
 <tr>
 <td>max_rss</td>
 <td>integer</td>
 <td>false</td>
 <td>none</td>
-<td>This is the maximum resident set size used in kilobytes.</td>
+<td>This is the maximum resident set size used (in kilobytes)</td>
 </tr>
 <tr>
 <td>network_in</td>
 <td>integer</td>
 <td>false</td>
 <td>none</td>
-<td>Total received network traffic in bytes.</td>
+<td>Total received network traffic (in bytes)</td>
 </tr>
 <tr>
 <td>network_out</td>
 <td>integer</td>
 <td>false</td>
 <td>none</td>
-<td>Total transmitted network traffic in bytes.</td>
+<td>Total transmitted network traffic (in bytes)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="tocsevent">Event</h2>
-<p><a id="schemaevent"></a></p>
+<h2 id="tocs_event">Event</h2>
+<p><a id="schemaevent"></a>
+<a id="schema_Event"></a>
+<a id="tocSevent"></a>
+<a id="tocsevent"></a></p>
 <pre class="highlight tab tab-json"><code>{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-number">0</span>,
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-02T21:54:49Z"</span>,
-  <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"queued"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>
 }
 
 </code></pre>
@@ -3286,7 +3768,7 @@ run_token
 <tbody>
 <tr>
 <td>id</td>
-<td>integer</td>
+<td>string</td>
 <td>true</td>
 <td>none</td>
 <td>none</td>
@@ -3305,30 +3787,26 @@ run_token
 <td>none</td>
 <td>Date and time of event</td>
 </tr>
-<tr>
-<td>stage</td>
-<td><a href="#schemastage">Stage</a></td>
-<td>true</td>
-<td>none</td>
-<td>The stage of the life-cycle of the run</td>
-</tr>
 </tbody>
 </table>
-<h2 id="tocslogevent">LogEvent</h2>
-<p><a id="schemalogevent"></a></p>
+<h2 id="tocs_startevent">StartEvent</h2>
+<p><a id="schemastartevent"></a>
+<a id="schema_StartEvent"></a>
+<a id="tocSstartevent"></a>
+<a id="tocsstartevent"></a></p>
 <pre class="highlight tab tab-json"><code>{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-number">0</span>,
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-02T21:54:49Z"</span>,
-  <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"queued"</span>,
-  <span class="hljs-attr">"source"</span>: <span class="hljs-string">"stdout"</span>,
-  <span class="hljs-attr">"text"</span>: <span class="hljs-string">"string"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>,
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
+  }
 }
 
 </code></pre>
-<p><em>Console output event (from scraper run)</em></p>
+<p>Signals the start of a stage</p>
 <h3 id="properties">Properties</h3>
-<p><em>allOf - discriminator: Event.type</em></p>
+<p>allOf - discriminator: Event.type</p>
 <table>
 <thead>
 <tr>
@@ -3349,7 +3827,7 @@ run_token
 </tr>
 </tbody>
 </table>
-<p><em>and</em></p>
+<p>and</p>
 <table>
 <thead>
 <tr>
@@ -3369,16 +3847,193 @@ run_token
 <td>none</td>
 </tr>
 <tr>
-<td>» source</td>
-<td>string</td>
-<td>true</td>
+<td>» data</td>
+<td>object</td>
+<td>false</td>
 <td>none</td>
-<td>Source of the message. e.g. <code>stdout</code>, <code>stderr</code></td>
+<td>none</td>
 </tr>
 <tr>
-<td>» text</td>
+<td>»» stage</td>
+<td><a href="#schemastage">Stage</a></td>
+<td>false</td>
+<td>none</td>
+<td>The stage of the life-cycle of the run</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tocs_finishevent">FinishEvent</h2>
+<p><a id="schemafinishevent"></a>
+<a id="schema_FinishEvent"></a>
+<a id="tocSfinishevent"></a>
+<a id="tocsfinishevent"></a></p>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>,
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
+  }
+}
+
+</code></pre>
+<p>Signals the end of a stage</p>
+<h3 id="properties">Properties</h3>
+<p>allOf - discriminator: Event.type</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Restrictions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>anonymous</em></td>
+<td><a href="#schemaevent">Event</a></td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+<p>and</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Restrictions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>anonymous</em></td>
+<td>object</td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<td>» data</td>
+<td>object</td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<td>»» stage</td>
+<td><a href="#schemastage">Stage</a></td>
+<td>false</td>
+<td>none</td>
+<td>The stage of the life-cycle of the run</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tocs_lastevent">LastEvent</h2>
+<p><a id="schemalastevent"></a>
+<a id="schema_LastEvent"></a>
+<a id="tocSlastevent"></a>
+<a id="tocslastevent"></a></p>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>
+}
+
+</code></pre>
+<p>Signals the completion of the whole run</p>
+<h3 id="properties">Properties</h3>
+<p><em>None</em></p>
+<h2 id="tocs_logevent">LogEvent</h2>
+<p><a id="schemalogevent"></a>
+<a id="schema_LogEvent"></a>
+<a id="tocSlogevent"></a>
+<a id="tocslogevent"></a></p>
+<pre class="highlight tab tab-json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>,
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
+    <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
+    <span class="hljs-attr">"text"</span>: <span class="hljs-string">"string"</span>
+  }
+}
+
+</code></pre>
+<p>Console output event (from run)</p>
+<h3 id="properties">Properties</h3>
+<p>allOf - discriminator: Event.type</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Restrictions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>anonymous</em></td>
+<td><a href="#schemaevent">Event</a></td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+<p>and</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Required</th>
+<th>Restrictions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>anonymous</em></td>
+<td>object</td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<td>» data</td>
+<td>object</td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
+<tr>
+<td>»» stage</td>
+<td><a href="#schemastage">Stage</a></td>
+<td>false</td>
+<td>none</td>
+<td>The stage of the life-cycle of the run</td>
+</tr>
+<tr>
+<td>»» stream</td>
 <td>string</td>
-<td>true</td>
+<td>false</td>
+<td>none</td>
+<td>Source of the message - standard output and standard error come from your code. In exceptional circumstances you might see a message from &quot;internal error&quot;.</td>
+</tr>
+<tr>
+<td>»» text</td>
+<td>string</td>
+<td>false</td>
 <td>none</td>
 <td>Console message</td>
 </tr>
@@ -3394,155 +4049,30 @@ run_token
 </thead>
 <tbody>
 <tr>
-<td>source</td>
+<td>stream</td>
 <td>stdout</td>
 </tr>
 <tr>
-<td>source</td>
+<td>stream</td>
 <td>stderr</td>
 </tr>
+<tr>
+<td>stream</td>
+<td>interr</td>
+</tr>
 </tbody>
 </table>
-<h2 id="tocsconnectionevent">ConnectionEvent</h2>
-<p><a id="schemaconnectionevent"></a></p>
-<pre class="highlight tab tab-json"><code>{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-number">0</span>,
-  <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-02T21:54:49Z"</span>,
-  <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"queued"</span>,
-  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"scheme"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"domain"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"path"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"request_size"</span>: <span class="hljs-number">0</span>,
-  <span class="hljs-attr">"response_size"</span>: <span class="hljs-number">0</span>,
-  <span class="hljs-attr">"response_code"</span>: <span class="hljs-number">0</span>
-}
 
-</code></pre>
-<p><em>http/https connection made to the outside world</em></p>
-<h3 id="properties">Properties</h3>
-<p><em>allOf - discriminator: Event.type</em></p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Required</th>
-<th>Restrictions</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><em>anonymous</em></td>
-<td><a href="#schemaevent">Event</a></td>
-<td>false</td>
-<td>none</td>
-<td>none</td>
-</tr>
-</tbody>
-</table>
-<p><em>and</em></p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Required</th>
-<th>Restrictions</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><em>anonymous</em></td>
-<td>object</td>
-<td>false</td>
-<td>none</td>
-<td>none</td>
-</tr>
-<tr>
-<td>» method</td>
-<td>string</td>
-<td>true</td>
-<td>none</td>
-<td>REST method used (e.g. GET, PUT..)</td>
-</tr>
-<tr>
-<td>» scheme</td>
-<td>string</td>
-<td>true</td>
-<td>none</td>
-<td>Whether http or https</td>
-</tr>
-<tr>
-<td>» domain</td>
-<td>string</td>
-<td>true</td>
-<td>none</td>
-<td>Name of server being connected to</td>
-</tr>
-<tr>
-<td>» path</td>
-<td>string</td>
-<td>true</td>
-<td>none</td>
-<td>Path bit of url from domain being connected to</td>
-</tr>
-<tr>
-<td>» request_size</td>
-<td>integer</td>
-<td>true</td>
-<td>none</td>
-<td>none</td>
-</tr>
-<tr>
-<td>» response_size</td>
-<td>integer</td>
-<td>true</td>
-<td>none</td>
-<td>none</td>
-</tr>
-<tr>
-<td>» response_code</td>
-<td>integer</td>
-<td>true</td>
-<td>none</td>
-<td>none</td>
-</tr>
-</tbody>
-</table>
-<h2 id="tocsstagechangeevent">StageChangeEvent</h2>
-<p><a id="schemastagechangeevent"></a></p>
-<pre class="highlight tab tab-json"><code>{
-  <span class="hljs-attr">"exitCode"</span>: <span class="hljs-number">0</span>
-}
 
-</code></pre>
-<p>*Event for moving from one stage to another. e.g. queued, compiling, running, exited with particular exit code. The stage is the stage that we're moving into.
-*</p>
-<h3 id="properties">Properties</h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Required</th>
-<th>Restrictions</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>exitCode</td>
-<td>integer</td>
-<td>false</td>
-<td>none</td>
-<td>On stage &quot;stopped&quot;, includes the exitCode of the running process.</td>
-</tr>
-</tbody>
-</table>
+
+
+
+
+
+
+
+
+
 
       </div>
       <div class="dark-box">
@@ -3562,15 +4092,15 @@ run_token
               
             
               
-                <a href="#" data-language-name="javascript--nodejs">Node.JS</a>
-              
-            
-              
                 <a href="#" data-language-name="ruby">Ruby</a>
               
             
               
                 <a href="#" data-language-name="python">Python</a>
+              
+            
+              
+                <a href="#" data-language-name="php">PHP</a>
               
             
               
