@@ -22,14 +22,6 @@
     {{ $css := $sass | toCSS $cssOpts | resources.PostCSS | fingerprint }}
     <link rel="stylesheet" href="{{ $css.Permalink | absURL }}" integrity="{{ $css.Data.Integrity }}">
 
-    <!-- Bootstrap core CSS -->
-    <link
-      href="https://getbootstrap.com/docs/4.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-      crossorigin="anonymous"
-    />
-
     <!-- Custom styles for this template -->
     <link
       href="https://getbootstrap.com/docs/4.3/examples/starter-template/starter-template.css"
