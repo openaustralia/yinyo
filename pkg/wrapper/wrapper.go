@@ -118,7 +118,8 @@ func runExternalCommand(run yinyoclient.Run, stage string, commandString string,
 	// This bit will only return something when run on Linux I think
 	rusage, ok := command.ProcessState.SysUsage().(*syscall.Rusage)
 	if ok {
-		exitData.Usage.MaxRSS = rusage.Maxrss
+		// rusage.Maxrss is in kilobytes, while exitData.Usage.MaxRSS is in bytes
+		exitData.Usage.MaxRSS = uint64(rusage.Maxrss) * 1024
 	}
 	exitData.ExitCode = command.ProcessState.ExitCode()
 

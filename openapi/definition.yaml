@@ -364,7 +364,7 @@ components:
         max_rss:
           type: integer
           description: |
-            This is the maximum resident set size used (in kilobytes)
+            This is the maximum resident set size used (in bytes)
         network_in:
           type: integer
           description: Total received network traffic (in bytes)
