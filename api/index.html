@@ -1557,8 +1557,8 @@ System.out.println(response.toString());
 <p>200 Response</p>
 </blockquote>
 <pre class="highlight tab tab-json"><code>{
-  <span class="hljs-attr">"run_name"</span>: <span class="hljs-string">"run-lvg44"</span>,
-  <span class="hljs-attr">"run_token"</span>: <span class="hljs-string">"bMMT7MnU2QbFZbk0lkut401D4uFScUI2"</span>
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"run-lvg44"</span>,
+  <span class="hljs-attr">"token"</span>: <span class="hljs-string">"bMMT7MnU2QbFZbk0lkut401D4uFScUI2"</span>
 }
 </code></pre>
 <h3 id="create-run-responses">Responses</h3>
@@ -1594,14 +1594,14 @@ System.out.println(response.toString());
 </thead>
 <tbody>
 <tr>
-<td>» run_name</td>
+<td>» name</td>
 <td>string</td>
 <td>false</td>
 <td>none</td>
 <td>Uniquely identifies this run. Needed for any subsequent API calls for this run.</td>
 </tr>
 <tr>
-<td>» run_token</td>
+<td>» token</td>
 <td>string</td>
 <td>false</td>
 <td>none</td>
@@ -1798,7 +1798,7 @@ System.out.println(response.toString());
 </table>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-run_token
+token
 </aside>
 <h2 id="start-the-run">Start the run</h2>
 <blockquote>
@@ -2104,7 +2104,7 @@ curl -X POST http://localhost:8080/runs/{name}/start \
 <pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'{
   "id": "string",
   "type": "string",
-  "time": "2019-12-17T23:02:58Z",
+  "time": "2019-12-18T01:03:55Z",
   "data": {
     "stage": "build",
     "stream": "stdout",
@@ -2224,7 +2224,7 @@ System.out.println(response.toString());
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-18T01:03:55Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
@@ -2277,7 +2277,7 @@ This operation does not require authentication
 </aside>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-run_token
+token
 </aside>
 <h2 id="finalise-scraper-run">Finalise scraper run</h2>
 <blockquote>
@@ -2449,7 +2449,7 @@ System.out.println(response.toString());
 </table>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-run_token
+token
 </aside>
 <h1 id="yinyo-optional">Optional</h1>
 <p>Get access to more information about runs</p>
@@ -2639,7 +2639,7 @@ System.out.println(response.toString());
 </table>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-run_token
+token
 </aside>
 <h2 id="download-a-build-cache">Download a build cache</h2>
 <blockquote>
@@ -2829,7 +2829,7 @@ System.out.println(response.toString());
 </table>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-run_token
+token
 </aside>
 <h2 id="attach-to-run-events-stream">Attach to run events stream</h2>
 <blockquote>
@@ -2980,7 +2980,7 @@ System.out.println(response.toString());
 <td>The run name (as returned by creating a run)</td>
 </tr>
 <tr>
-<td>last-id</td>
+<td>last_id</td>
 <td>query</td>
 <td>string</td>
 <td>false</td>
@@ -3080,7 +3080,7 @@ System.out.println(response.toString());
 </table>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-run_token
+token
 </aside>
 <h2 id="get-exit-code-and-usage-metrics">Get exit code and usage metrics</h2>
 <blockquote>
@@ -3294,7 +3294,7 @@ System.out.println(response.toString());
 </table>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-run_token
+token
 </aside>
 <h2 id="get-output-file">Get output file</h2>
 <blockquote>
@@ -3485,7 +3485,7 @@ System.out.println(response.toString());
 </table>
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
-run_token
+token
 </aside>
 <h1 id="schemas">Schemas</h1>
 <h2 id="tocs_env">Env</h2>
@@ -3724,7 +3724,7 @@ run_token
 <td>integer</td>
 <td>false</td>
 <td>none</td>
-<td>This is the maximum resident set size used (in kilobytes)</td>
+<td>This is the maximum resident set size used (in bytes)</td>
 </tr>
 <tr>
 <td>network_in</td>
@@ -3750,7 +3750,7 @@ run_token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-18T01:03:55Z"</span>
 }
 
 </code></pre>
@@ -3797,7 +3797,7 @@ run_token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-18T01:03:55Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
   }
@@ -3870,7 +3870,7 @@ run_token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-18T01:03:55Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
   }
@@ -3943,7 +3943,7 @@ run_token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-18T01:03:55Z"</span>
 }
 
 </code></pre>
@@ -3958,7 +3958,7 @@ run_token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-17T23:02:58Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-18T01:03:55Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
