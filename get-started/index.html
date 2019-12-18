@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <title></title>
+
+    <link
+      rel="canonical"
+      href="https://getbootstrap.com/docs/4.3/examples/starter-template/"
+    />
+
+    
+    <link
+      href="https://getbootstrap.com/docs/4.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+
+    
+    <link
+      href="https://getbootstrap.com/docs/4.3/examples/starter-template/starter-template.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="/">Yinyo</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarsExampleDefault"
+        aria-controls="navbarsExampleDefault"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/"
+              >Home <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/get-started">Get Started</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/api">API Reference</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    
+  <main role="main" class="container">
+    
+
+<h1 id="get-started">Get Started</h1>
+
+<h2 id="1-go-to-github-https-github-com-openaustralia-yinyo-and-follow-the-instructions-to-setup-a-local-yinyo-instance">1. Go to <a href="https://github.com/openaustralia/yinyo">Github</a> and follow the instructions to setup a local Yinyo instance</h2>
+
+<h2 id="2-run-your-first-scraper">2. Run your first scraper</h2>
+
+<pre><code class="language-bash">yinyo client test/scrapers/test-python --output data.sqlite
+</code></pre>
+
+<p>This will stream the console output of the scraper straight to you</p>
+
+<pre><code>
+</code></pre>
+
+<h2 id="3-do-it-all-again-but-this-time-using-the-api-directly-step-by-step">3. Do it all again! But this time using the API directly, step-by-step</h2>
+
+<h3 id="1-create-a-run">1. Create a run</h3>
+
+<pre><code class="language-bash">curl -X POST http://localhost:8080/runs
+</code></pre>
+
+<p>You&rsquo;ll get a <code>name</code> and a <code>token</code> back which you&rsquo;ll need in the following steps</p>
+
+<pre><code class="language-json">{ &quot;name&quot;: &quot;run-qjv4t&quot;, &quot;token&quot;: &quot;lLsBCZiBPYcTQb439YvPbz9GC3bPcYr5&quot; }
+</code></pre>
+
+<p>So, to make this a bit easier with less typing, let&rsquo;s set a couple of environment variables</p>
+
+<pre><code class="language-bash">NAME=run-qjv4t
+TOKEN=lLsBCZiBPYcTQb439YvPbz9GC3bPcYr5
+</code></pre>
+
+<p>(Replace the run <code>name</code> and <code>token</code> with your own values)</p>
+
+<h3 id="2-tar-and-compress-the-code">2. Tar and compress the code</h3>
+
+<pre><code class="language-bash">tar -C test/scrapers/test-python/ -zcf code.tgz .
+</code></pre>
+
+<h3 id="3-upload-the-code">3. Upload the code</h3>
+
+<pre><code class="language-bash">curl -X PUT -H &quot;Authorization: Bearer $TOKEN&quot; &quot;http://localhost:8080/runs/$NAME/app&quot; --data-binary @code.tgz
+</code></pre>
+
+<h3 id="4-start-the-run">4. Start the run</h3>
+
+<pre><code class="language-bash">curl -X POST -H &quot;Authorization: Bearer $TOKEN&quot; -H &quot;Content-Type: application/json&quot; &quot;http://localhost:8080/runs/$NAME/start&quot; -d &quot;{}&quot;
+</code></pre>
+
+<h3 id="5-stream-the-events">5. Stream the events</h3>
+
+<pre><code class="language-bash">curl -H &quot;Authorization: Bearer $TOKEN&quot; &quot;http://localhost:8080/runs/$NAME/events&quot;
+</code></pre>
+
+<p>This will output a stream of events formatted as JSON in real-time</p>
+
+<pre><code class="language-json">{&quot;id&quot;:&quot;1576640952345-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:49:12.285014316Z&quot;,&quot;type&quot;:&quot;start&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;}}
+{&quot;id&quot;:&quot;1576640962365-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:49:22.33779607Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       \u001b[1G-----\u003e Python app detected&quot;}}
+{&quot;id&quot;:&quot;1576640967054-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:49:27.048339914Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16&quot;}}
+{&quot;id&quot;:&quot;1576640967078-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:49:27.048378034Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes&quot;}}
+{&quot;id&quot;:&quot;1576640967107-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:49:27.048946543Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G-----\u003e Installing python-2.7.15&quot;}}
+{&quot;id&quot;:&quot;1576641084764-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:51:24.745406175Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G-----\u003e Installing pip&quot;}}
+{&quot;id&quot;:&quot;1576641099010-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:51:39.005971326Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G-----\u003e Installing SQLite3&quot;}}
+{&quot;id&quot;:&quot;1576641144639-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:24.624972935Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G-----\u003e Installing requirements with pip&quot;}}
+{&quot;id&quot;:&quot;1576641146085-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:26.070645396Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Obtaining scraperwiki from git+http://github.com/openaustralia/scraperwiki-python.git@morph_defaults#egg=scraperwiki (from -r /tmp/build/requirements.txt (line 2))&quot;}}
+{&quot;id&quot;:&quot;1576641146120-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:26.082751315Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Cloning http://github.com/openaustralia/scraperwiki-python.git (to morph_defaults) to /app/.heroku/src/scraperwiki&quot;}}
+{&quot;id&quot;:&quot;1576641149773-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:29.75256733Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Collecting dumptruck\u003e=0.1.2 (from scraperwiki-\u003e-r /tmp/build/requirements.txt (line 2))&quot;}}
+{&quot;id&quot;:&quot;1576641151134-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:31.131517475Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Downloading https://files.pythonhosted.org/packages/15/27/3330a343de80d6849545b6c7723f8c9a08b4b104de964ac366e7e6b318df/dumptruck-0.1.6.tar.gz&quot;}}
+{&quot;id&quot;:&quot;1576641151488-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:31.483998763Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Collecting requests (from scraperwiki-\u003e-r /tmp/build/requirements.txt (line 2))&quot;}}
+{&quot;id&quot;:&quot;1576641151896-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:31.887582711Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Downloading https://files.pythonhosted.org/packages/51/bd/23c926cd341ea6b7dd0b2a00aba99ae0f828be89d72b2190f27c11d4b7fb/requests-2.22.0-py2.py3-none-any.whl (57kB)&quot;}}
+{&quot;id&quot;:&quot;1576641152064-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:32.061817221Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Collecting urllib3!=1.25.0,!=1.25.1,\u003c1.26,\u003e=1.21.1 (from requests-\u003escraperwiki-\u003e-r /tmp/build/requirements.txt (line 2))&quot;}}
+{&quot;id&quot;:&quot;1576641152451-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:32.442629194Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Downloading https://files.pythonhosted.org/packages/b4/40/a9837291310ee1ccc242ceb6ebfd9eb21539649f193a7c8c86ba15b98539/urllib3-1.25.7-py2.py3-none-any.whl (125kB)&quot;}}
+{&quot;id&quot;:&quot;1576641152701-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:32.69377889Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Collecting certifi\u003e=2017.4.17 (from requests-\u003escraperwiki-\u003e-r /tmp/build/requirements.txt (line 2))&quot;}}
+{&quot;id&quot;:&quot;1576641153017-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:33.016132637Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Downloading https://files.pythonhosted.org/packages/b9/63/df50cac98ea0d5b006c55a399c3bf1db9da7b5a24de7890bc9cfd5dd9e99/certifi-2019.11.28-py2.py3-none-any.whl (156kB)&quot;}}
+{&quot;id&quot;:&quot;1576641153329-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:33.323776631Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Collecting chardet\u003c3.1.0,\u003e=3.0.2 (from requests-\u003escraperwiki-\u003e-r /tmp/build/requirements.txt (line 2))&quot;}}
+{&quot;id&quot;:&quot;1576641153624-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:33.616683475Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Downloading https://files.pythonhosted.org/packages/bc/a9/01ffebfb562e4274b6487b4bb1ddec7ca55ec7510b22e4c51f14098443b8/chardet-3.0.4-py2.py3-none-any.whl (133kB)&quot;}}
+{&quot;id&quot;:&quot;1576641153939-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:33.937781156Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Collecting idna\u003c2.9,\u003e=2.5 (from requests-\u003escraperwiki-\u003e-r /tmp/build/requirements.txt (line 2))&quot;}}
+{&quot;id&quot;:&quot;1576641154265-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:34.257812273Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Downloading https://files.pythonhosted.org/packages/14/2c/cd551d81dbe15200be1cf41cd03869a46fe7226e7450af7a6545bfc474c9/idna-2.8-py2.py3-none-any.whl (58kB)&quot;}}
+{&quot;id&quot;:&quot;1576641154388-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:34.382274166Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Installing collected packages: dumptruck, urllib3, certifi, chardet, idna, requests, scraperwiki&quot;}}
+{&quot;id&quot;:&quot;1576641154395-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:34.382720177Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Running setup.py install for dumptruck: started&quot;}}
+{&quot;id&quot;:&quot;1576641154689-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:34.654314862Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Running setup.py install for dumptruck: finished with status 'done'&quot;}}
+{&quot;id&quot;:&quot;1576641155319-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:35.3103251Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Running setup.py develop for scraperwiki&quot;}}
+{&quot;id&quot;:&quot;1576641155892-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:35.88213814Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Successfully installed certifi-2019.11.28 chardet-3.0.4 dumptruck-0.1.6 idna-2.8 requests-2.22.0 scraperwiki urllib3-1.25.7&quot;}}
+{&quot;id&quot;:&quot;1576641156439-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:36.431459224Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       &quot;}}
+{&quot;id&quot;:&quot;1576641158793-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:38.789674423Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       \u001b[1G-----\u003e Discovering process types&quot;}}
+{&quot;id&quot;:&quot;1576641158850-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:38.842850945Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;\u001b[1G       Procfile declares types -\u003e scraper&quot;}}
+{&quot;id&quot;:&quot;1576641158870-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:38.859658314Z&quot;,&quot;type&quot;:&quot;finish&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;build&quot;}}
+{&quot;id&quot;:&quot;1576641171742-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:51.731830713Z&quot;,&quot;type&quot;:&quot;start&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;}}
+{&quot;id&quot;:&quot;1576641175194-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:55.187718678Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;,&quot;stream&quot;:&quot;stderr&quot;,&quot;text&quot;:&quot;First a little test message to stderr&quot;}}
+{&quot;id&quot;:&quot;1576641175228-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:55.188223928Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;Hello from test-python!&quot;}}
+{&quot;id&quot;:&quot;1576641175242-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:55.188240717Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;1...&quot;}}
+{&quot;id&quot;:&quot;1576641176194-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:56.189727622Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;2...&quot;}}
+{&quot;id&quot;:&quot;1576641177193-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:57.191833268Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;3...&quot;}}
+{&quot;id&quot;:&quot;1576641178195-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:58.193058211Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;4...&quot;}}
+{&quot;id&quot;:&quot;1576641179195-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:52:59.193313896Z&quot;,&quot;type&quot;:&quot;log&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;,&quot;stream&quot;:&quot;stdout&quot;,&quot;text&quot;:&quot;5...&quot;}}
+{&quot;id&quot;:&quot;1576641180235-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:53:00.233747709Z&quot;,&quot;type&quot;:&quot;finish&quot;,&quot;data&quot;:{&quot;stage&quot;:&quot;run&quot;}}
+{&quot;id&quot;:&quot;1576641180238-0&quot;,&quot;time&quot;:&quot;2019-12-18T03:53:00.235891186Z&quot;,&quot;type&quot;:&quot;last&quot;,&quot;data&quot;:{}}
+</code></pre>
+
+<p>You might notice that this is taking longer than when we ran this with <code>yinyo client</code>. It&rsquo;s having to install python and some dependencies which takes some time. That&rsquo;s because we&rsquo;ve ignored caching here just to keep things a bit simpler</p>
+
+<h3 id="6-clean-up">6. Clean up</h3>
+
+<pre><code class="language-bash">curl -X DELETE -H &quot;Authorization: Bearer $TOKEN&quot; &quot;http://localhost:8080/runs/$NAME&quot;
+</code></pre>
+
+  </main>
+
+
+    <footer class="container py-5">
+      <div class="row justify-content-between">
+        <div class="col-3">
+          
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            class="d-block mb-2"
+            role="img"
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <title>Product</title>
+            <circle cx="12" cy="12" r="10"></circle>
+            <path
+              d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94"
+            ></path>
+          </svg>
+          <small class="d-block mb-3 text-muted"
+            >Made with love by the&nbsp;OpenAustralia&nbsp;Foundation for
+            you</small
+          >
+        </div>
+        <div class="col-3"></div>
+        <div class="col-3">
+          <h5>Resources</h5>
+          <ul class="list-unstyled text-small">
+            <li>
+              <a
+                class="text-muted"
+                href="https://github.com/openaustralia/yinyo"
+                >GitHub</a
+              >
+            </li>
+            <li>
+              <a class="text-muted" href="/design-principles"
+                >Design Principles</a
+              >
+            </li>
+            <li><a class="text-muted" href="/api">API Reference</a></li>
+          </ul>
+        </div>
+        <div class="col-3">
+          <h5>Contact</h5>
+          <ul class="list-unstyled text-small">
+            <li>
+              <a
+                class="text-muted"
+                href="mailto:contact@oaf.org.au?subject=Saying%20hello%20-%20I%20want%20to%20talk%20about%20Yinyo"
+                >contact@oaf.org.au</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-muted"
+                href="https://github.com/openaustralia/yinyo/issues/new?labels=enhancement"
+                >Suggest a feature</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-muted"
+                href="https://github.com/openaustralia/yinyo/issues/new?labels=bug"
+                >Report an issue</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      window.jQuery ||
+        document.write(
+          '<script src="https://getbootstrap.com/docs/4.3/assets/js/vendor/jquery-slim.min.js"><\/script>'
+        );
+    </script>
+    <script
+      src="https://getbootstrap.com/docs/4.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
