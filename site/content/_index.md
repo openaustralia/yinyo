@@ -24,20 +24,20 @@ quotes:
 features:
   - heading: Easy and scaleable
     text: |
-      Easily run as many scrapers as you like across a cluster of machines without
-      having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
-  - heading: The languages you love
+      Easily run as many scrapers as you like across a cluster of machines **without
+      having to sweat the details**. Powered by [Kubernetes](https://kubernetes.io/).
+  - heading: Languages you love
     text: |
       Use the language and libraries you love for writing scrapers.
-      Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
+      Supports **Python, JavaScript, Ruby, PHP and Perl** via Heroku Buildpacks.
   - heading: Flexible
     text: |
-      Supports many different use cases through a simple, yet flexible API that can operate synchronously
+      Supports **many different use cases** through a simple, yet flexible API that can operate synchronously
       or asynchronously.
-  - heading: Open source, liberally licensed
+  - heading: Open source
     text: |
       Made specifically for developers of scraper systems be it open source or
-      commercial. No chance of vendor lock-in because it's open source,
+      commercial. No chance of vendor lock-in because it's open source and **liberally licensed**
       under the [Apache 2.0 license](https://github.com/openaustralia/yinyo/blob/master/LICENSE).
     draft: true
 ---
