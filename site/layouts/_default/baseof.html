@@ -18,38 +18,40 @@
     <link rel="stylesheet" href="{{ $css.Permalink | absURL }}" integrity="{{ $css.Data.Integrity }}">
   </head>
   <body>
-    <div class="container">
-      <nav class="navbar navbar-expand-md navbar-light">
-        <a class="navbar-brand" href="/">Yinyo</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarsExampleDefault"
-          aria-controls="navbarsExampleDefault"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
+    <header>
+      <div class="container">
+        <nav class="navbar navbar-expand-md navbar-light">
+          <a class="navbar-brand" href="/">Yinyo</a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
 
-        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="/"
-                >Home <span class="sr-only">(current)</span></a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/get-started">Get Started</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/api">API Reference</a>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </div>
+          <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="/"
+                  >Home <span class="sr-only">(current)</span></a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/get-started">Get Started</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/api">API Reference</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
 
     {{ block "main" . }} {{ end }}
 

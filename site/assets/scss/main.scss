@@ -5,6 +5,23 @@
   text-align: center;
 }
 
+header {
+  background-color: #ffb6b9;
+}
+
 main {
-  margin-top: 3rem;
+  padding: 6rem 0;
+  background-color: #fae3d9;
+}
+
+section {
+  padding: 3rem 0;
+}
+
+section.features {
+  background-color: #bbded6;
+}
+
+section.why {
+  background-color: #8ac6d1;
 }
