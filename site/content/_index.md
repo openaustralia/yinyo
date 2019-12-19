@@ -11,11 +11,11 @@ quotes:
     company: OpenAustralia Foundation
     photo: matthew.jpg
     text: This is going to make morph.io so much better! I wish we had done this *ages* ago.
-  - name: Matthew Landauer
+  - name: Kat Szuminska
     title: cofounder
     company: OpenAustralia Foundation
-    photo: matthew.jpg
-    text: This is going to make morph.io so much better! I wish we had done this *ages* ago.
+    photo: kat.jpg
+    text: Yup, Yinyo is fantastic.
   - name: Matthew Landauer
     title: cofounder
     company: OpenAustralia Foundation
