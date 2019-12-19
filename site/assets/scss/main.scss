@@ -10,12 +10,20 @@ header {
 }
 
 main {
-  padding: 6rem 0;
+  padding: 0 0 6rem 0;
   background-color: #fae3d9;
 }
 
 section {
   padding: 2rem 0;
+}
+
+section.headline {
+  padding-top: 6rem;
+  background-image: url("/maria-shanina-3GrqSh8C4_E-unsplash.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 50% 90%;
 }
 
 section.features {
