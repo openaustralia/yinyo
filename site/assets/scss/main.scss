@@ -15,7 +15,7 @@ main {
 }
 
 section {
-  padding: 3rem 0;
+  padding: 2rem 0;
 }
 
 section.features {
@@ -24,4 +24,9 @@ section.features {
 
 section.why {
   background-color: #8ac6d1;
+}
+
+.feature,
+.quote {
+  padding: 1rem 1rem;
 }
