@@ -4,7 +4,7 @@
     <div class="container">
       <div class="starter-template">
         <h1>{{ .Title }}</h1>
-        <p class="lead">
+        <p class="lead text">
           {{ .Params.headline | markdownify }}
         </p>
         <a class="btn btn-primary" href="/get-started" role="button">Get Started</a>
@@ -20,9 +20,11 @@
 
   <section class="why">
     <div class="container">
-      <div class="py-5">
-        {{.Content}}
-        <a class="btn btn-primary" href="/get-started" role="button">Get Started</a>
+      <div class="text">
+        <div class="py-5">
+          {{.Content}}
+          <a class="btn btn-primary" href="/get-started" role="button">Get Started</a>
+        </div>
       </div>
     </div>
   </section>
