@@ -3,7 +3,6 @@ package commands
 import (
 	"bytes"
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -314,9 +313,6 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 func storagePath(runName string, fileName string) string {
 	return runName + "/" + fileName
 }
-
-// ErrNotFound is the error for something not being found. Use this as a sentinal value
-var ErrNotFound = errors.New("not found")
 
 func (app *AppImplementation) getData(runName string, fileName string) (io.Reader, error) {
 	p := storagePath(runName, fileName)
