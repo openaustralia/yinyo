@@ -3,6 +3,7 @@ package commands
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -189,7 +190,9 @@ func (app *AppImplementation) StartRun(
 	// First check that the app exists
 	_, err := app.GetApp(runName)
 	if err != nil {
-		// TODO: Make this a client error
+		if errors.Is(err, ErrNotFound) {
+			return ErrAppNotAvailable
+		}
 		return err
 	}
 

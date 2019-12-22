@@ -146,8 +146,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	err = server.app.StartRun(runName, l.Output, env, l.Callback.URL)
-	// TODO: This is ugly. Assumes far too much knowledge of the internals of StartRun
-	if errors.Is(err, commands.ErrNotFound) {
+	if errors.Is(err, commands.ErrAppNotAvailable) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
 	}
 	return err
