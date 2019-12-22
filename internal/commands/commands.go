@@ -3,6 +3,8 @@ package commands
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -41,8 +43,6 @@ type App interface {
 	GetEvents(runName string, lastID string) Events
 	CreateEvent(runName string, event event.Event) error
 	GetTokenCache(runName string) (string, error)
-	// TODO: Remove use of Blobstore - this is leaking an abstraction
-	GetBlobStore() blobstore.Client
 }
 
 // AppImplementation holds the state for the application
@@ -122,11 +122,6 @@ func New() (App, error) {
 		KeyValueStore: keyValueStore,
 		HTTP:          defaultHTTP(),
 	}, nil
-}
-
-// GetBlobStore gives you access to the underlying blobstore
-func (app *AppImplementation) GetBlobStore() blobstore.Client {
-	return app.BlobStore
 }
 
 // CreateRun creates a run
@@ -320,8 +315,16 @@ func storagePath(runName string, fileName string) string {
 	return runName + "/" + fileName
 }
 
+// ErrNotFound is the error for something not being found. Use this as a sentinal value
+var ErrNotFound = errors.New("not found")
+
 func (app *AppImplementation) getData(runName string, fileName string) (io.Reader, error) {
-	return app.BlobStore.Get(storagePath(runName, fileName))
+	p := storagePath(runName, fileName)
+	r, err := app.BlobStore.Get(p)
+	if err != nil && app.BlobStore.IsNotExist(err) {
+		return r, fmt.Errorf("blobstore %v: %w", p, ErrNotFound)
+	}
+	return r, err
 }
 
 func (app *AppImplementation) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {
