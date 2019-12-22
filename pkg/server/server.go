@@ -38,7 +38,7 @@ func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
 	reader, err := server.app.GetApp(runName)
 	if err != nil {
 		// Returns 404 if there is no app
-		if server.app.BlobStore.IsNotExist(err) {
+		if server.app.GetBlobStore().IsNotExist(err) {
 			http.NotFound(w, r)
 			return nil
 		}
@@ -58,7 +58,7 @@ func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
 	reader, err := server.app.GetCache(runName)
 	if err != nil {
 		// Returns 404 if there is no cache
-		if server.app.BlobStore.IsNotExist(err) {
+		if server.app.GetBlobStore().IsNotExist(err) {
 			http.NotFound(w, r)
 			return nil
 		}
@@ -79,7 +79,7 @@ func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
 	reader, err := server.app.GetOutput(runName)
 	if err != nil {
 		// Returns 404 if there is no output
-		if server.app.BlobStore.IsNotExist(err) {
+		if server.app.GetBlobStore().IsNotExist(err) {
 			http.NotFound(w, r)
 			return nil
 		}
@@ -99,7 +99,7 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 	reader, err := server.app.GetExitData(runName)
 	if err != nil {
 		// Returns 404 if there is no exit data
-		if server.app.BlobStore.IsNotExist(err) {
+		if server.app.GetBlobStore().IsNotExist(err) {
 			http.NotFound(w, r)
 			return nil
 		}
@@ -147,7 +147,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 
 	err = server.app.StartRun(runName, l.Output, env, l.Callback.URL)
 	// TODO: This is ugly. Assumes far too much knowledge of the internals of StartRun
-	if server.app.BlobStore.IsNotExist(err) {
+	if server.app.GetBlobStore().IsNotExist(err) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
 	}
 	return err
@@ -291,7 +291,7 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Server holds the internal state for the server
 type Server struct {
 	router *mux.Router
-	app    *commands.App
+	app    commands.App
 }
 
 // Initialise the server's state

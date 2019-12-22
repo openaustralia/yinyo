@@ -42,7 +42,7 @@ func TestStartRun(t *testing.T) {
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
-	app := App{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
+	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
 	// TODO: Pass an options struct instead (we get named parameters effectively then)
 	err := app.StartRun(
 		"run-name",                      // Run name
@@ -88,7 +88,7 @@ func TestCreateEvent(t *testing.T) {
 	)
 	httpClient.Transport = roundTripper
 
-	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
 	err := app.CreateEvent("run-name", event.NewStartEvent("", time, "build"))
 	assert.Nil(t, err)
 
@@ -110,7 +110,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	roundTripper := new(MockRoundTripper)
 	httpClient.Transport = roundTripper
 
-	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
 	err := app.CreateEvent("run-name", event.NewStartEvent("", time, "build"))
 	assert.Nil(t, err)
 
@@ -141,7 +141,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	)
 	httpClient.Transport = roundTripper
 
-	app := App{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
 	err := app.CreateEvent("run-name", event.NewStartEvent("", time, "build"))
 	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
 
@@ -157,7 +157,7 @@ func TestGetEvents(t *testing.T) {
 	stream.On("Get", "run-name", "0").Return(event.NewStartEvent("123", time, "build"), nil)
 	stream.On("Get", "run-name", "123").Return(event.NewLastEvent("456", time), nil)
 
-	app := App{Stream: stream}
+	app := AppImplementation{Stream: stream}
 
 	events := app.GetEvents("run-name", "0")
 
@@ -194,7 +194,7 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.On("Delete", "url:run-name").Return(nil)
 	keyValueStore.On("Delete", "token:run-name").Return(nil)
 
-	app := App{
+	app := AppImplementation{
 		JobDispatcher: jobDispatcher,
 		BlobStore:     blobStore,
 		Stream:        stream,

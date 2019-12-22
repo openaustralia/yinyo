@@ -36,7 +36,7 @@ func TestStartBadBody(t *testing.T) {
 func TestStartNoApp(t *testing.T) {
 	blobstoreClient := new(blobstore.MockClient)
 	keyvalueStore := new(keyvaluestore.MockClient)
-	app := &commands.App{BlobStore: blobstoreClient, KeyValueStore: keyvalueStore}
+	app := &commands.AppImplementation{BlobStore: blobstoreClient, KeyValueStore: keyvalueStore}
 	server := Server{app: app}
 	server.InitialiseRoutes()
 
