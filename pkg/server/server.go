@@ -234,10 +234,8 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 		runName := mux.Vars(r)["id"]
 		runToken, err := extractBearerToken(r.Header)
 		if err != nil {
-			log.Println(err)
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte(fmt.Sprintf(`{"error":"%v"}`, err.Error())))
+			err = newHTTPError(err, http.StatusForbidden, err.Error())
+			logAndReturnError(err, w)
 			return
 		}
 
@@ -246,21 +244,16 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 		if err != nil {
 			log.Println(err)
 			if errors.Is(err, commands.ErrNotFound) {
-				w.Header().Set("Content-Type", "application/json; charset=utf-8")
-				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(fmt.Sprintf(`{"error":"run %v: not found"}`, runName)))
-
-			} else {
-				w.WriteHeader(http.StatusInternalServerError)
+				err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runName))
 			}
+			logAndReturnError(err, w)
 			return
 		}
 
 		if runToken != actualRunToken {
-			log.Println("Authorization header has incorrect bearer token")
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte(fmt.Sprintf(`{"error":"%v"}`, "Authorization header has incorrect bearer token")))
+			err = errors.New("Authorization header has incorrect bearer token")
+			err = newHTTPError(err, http.StatusForbidden, err.Error())
+			logAndReturnError(err, w)
 			return
 		}
 
