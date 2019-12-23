@@ -13,6 +13,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateRunInternalServerError(t *testing.T) {
+	req, err := http.NewRequest("POST", "/runs", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	app := new(commands.MockApp)
+	// There was some kind of internal error when creating a run
+	app.On("CreateRun", "").Return(commands.CreateRunResult{}, errors.New("Something internal"))
+	server := Server{app: app}
+	server.InitialiseRoutes()
+
+	rr := httptest.NewRecorder()
+	server.router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, `{"error":"Internal server error"}`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap)
+	app.AssertExpectations(t)
+}
+
 // Make sure that when we call start with a bad json body we get a sensible error
 func TestStartBadBody(t *testing.T) {
 	req, err := http.NewRequest("POST", "/runs/foo/start", strings.NewReader(`{"env":"foo"}`))

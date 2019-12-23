@@ -273,7 +273,10 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		err2, ok := err.(clientError)
 		if !ok {
+			// TODO: Factor out common code with other error handling
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(`{"error":"Internal server error"}`))
 			return
 		}
 		body, err := err2.ResponseBody()
