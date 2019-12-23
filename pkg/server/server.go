@@ -232,6 +232,7 @@ func extractBearerToken(header http.Header) (string, error) {
 }
 
 // Middleware function, which will be called for each request
+// TODO: Refactor authenticate method to return an error
 func (server *Server) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		runName := mux.Vars(r)["id"]
@@ -247,7 +248,10 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 		if err != nil {
 			log.Println(err)
 			if errors.Is(err, commands.ErrNotFound) {
+				w.Header().Set("Content-Type", "application/json; charset=utf-8")
 				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte(fmt.Sprintf(`{"error":"run %v: not found"}`, runName)))
+
 			} else {
 				w.WriteHeader(http.StatusInternalServerError)
 			}

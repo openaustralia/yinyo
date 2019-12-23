@@ -116,6 +116,8 @@ func TestPutAppWrongRunName(t *testing.T) {
 	server.router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusNotFound, rr.Code)
+	assert.Equal(t, `{"error":"run does-not-exist: not found"}`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap)
 
 	app.AssertExpectations(t)
 }
