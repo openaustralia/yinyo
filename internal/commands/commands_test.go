@@ -208,3 +208,15 @@ func TestDeleteRun(t *testing.T) {
 	stream.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
 }
+
+func TestTokenCacheNotFound(t *testing.T) {
+	keyValueStore := new(keyvaluestore.MockClient)
+	keyValueStore.On("Get", "token:does-not-exit").Return("", keyvaluestore.ErrKeyNotExist)
+
+	app := AppImplementation{KeyValueStore: keyValueStore}
+	// This run name should not exist
+	_, err := app.GetTokenCache("does-not-exit")
+	assert.True(t, errors.Is(err, ErrNotFound))
+
+	keyValueStore.AssertExpectations(t)
+}
