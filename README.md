@@ -99,7 +99,7 @@ yinyo client test/scrapers/test-python --output data.sqlite
 
 There are some extra dependencies required for building the website and associated API documentation.
 
-- [Hugo](https://gohugo.io/) - a static website generator
+- [Hugo](https://gohugo.io/) v0.60.0 or later - a static website generator
 - [Shins](https://github.com/Mermade/shins) - a Node.js Slate markdown renderer
 - [Widdershins](https://github.com/mermade/widdershins) - Converts OpenAPI definitions to Slate. Make sure you're using a version which includes a fix for rendering callbacks https://github.com/Mermade/widdershins/commit/5d7223f070e8d295e29a3390c3d42b4798748c55. As of December 2019 this is likely to be on master and not in one of the released versions.
 
