@@ -24,7 +24,14 @@ func (client *client) Set(key string, value string) error {
 }
 
 func (client *client) Get(key string) (string, error) {
-	return client.client.Get(namespaced(key)).Result()
+	value, err := client.client.Get(namespaced(key)).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return value, ErrKeyNotExist
+		}
+		return value, err
+	}
+	return value, nil
 }
 
 func (client *client) Delete(key string) error {
