@@ -235,7 +235,9 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 		runToken, err := extractBearerToken(r.Header)
 		if err != nil {
 			log.Println(err)
-			http.Error(w, err.Error(), http.StatusForbidden)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte(fmt.Sprintf(`{"error":"%v"}`, err.Error())))
 			return
 		}
 
@@ -255,8 +257,10 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 		}
 
 		if runToken != actualRunToken {
-			log.Println("Incorrect run token")
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			log.Println("Authorization header has incorrect bearer token")
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte(fmt.Sprintf(`{"error":"%v"}`, "Authorization header has incorrect bearer token")))
 			return
 		}
 

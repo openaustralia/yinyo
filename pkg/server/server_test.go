@@ -144,3 +144,41 @@ func TestGetAppErrNotFound(t *testing.T) {
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap)
 	app.AssertExpectations(t)
 }
+
+func TestGetAppNoBearerToken(t *testing.T) {
+	server := Server{}
+	server.InitialiseRoutes()
+
+	req, err := http.NewRequest("GET", "/runs/my-run/app", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	server.router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusForbidden, rr.Code)
+	assert.Equal(t, `{"error":"Expected Authorization header with bearer token"}`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap)
+}
+
+func TestGetAppBadToken(t *testing.T) {
+	app := new(commands.MockApp)
+	app.On("GetTokenCache", "my-run").Return("def456", nil)
+	server := Server{app: app}
+	server.InitialiseRoutes()
+
+	req, err := http.NewRequest("GET", "/runs/my-run/app", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer abc123")
+
+	rr := httptest.NewRecorder()
+	server.router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusForbidden, rr.Code)
+	assert.Equal(t, `{"error":"Authorization header has incorrect bearer token"}`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap)
+	app.AssertExpectations(t)
+}
