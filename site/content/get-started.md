@@ -114,3 +114,5 @@ You might notice that this is taking longer than when we ran this with `yinyo cl
 ```bash
 curl -X DELETE -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME"
 ```
+
+## 4. Check out the [API reference](/api) to see what more you can do
