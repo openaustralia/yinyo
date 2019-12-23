@@ -36,8 +36,7 @@ features:
       or asynchronously.
   - heading: Open source
     text: |
-      Made specifically for developers of scraper systems be it open source or
-      commercial. No chance of vendor lock-in because it's open source and **liberally licensed**
+      Made specifically for developers of *open source and proprietary* scraper systems. No chance of vendor lock-in because Yinyo is open source and **liberally licensed**
       under the [Apache 2.0 license](https://github.com/openaustralia/yinyo/blob/master/LICENSE).
     draft: true
 ---
