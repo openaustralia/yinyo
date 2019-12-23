@@ -23,6 +23,7 @@ mocks:
 	mockery -all -inpkg
 
 website: apidocs
+	cd site; npm install
 	# Starts a development web server at http://localhost:1313
 	hugo server -s site -D
 
