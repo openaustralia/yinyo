@@ -1,3 +1,6 @@
 baseURL = "https://yinyo.io/"
 languageCode = "en-us"
 title = "Yinyo"
+[markup]
+  [markup.highlight]
+    style = "github"
