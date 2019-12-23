@@ -1,12 +1,13 @@
 <!-- Quotes -->
 <div class="row py-5">
 {{ range . }}
-  <div class="col">
+  <div class="col-sm-4 quote">
     <blockquote class="blockquote">
       <p>{{ .text | markdownify }}</p>
       <img src="{{ .photo }}" alt="{{ .name }}" class="img-thumbnail rounded-circle" width="100">
       <footer class="text-muted">
-        <small>{{ .name }}, {{ .title }} {{ .company }}</small>
+        <!-- <small>{{ .name }}, {{ .title }} {{ .company }}</small> -->
+        <small>{{ .name }}</small>
       </footer>
     </blockquote>
   </div>

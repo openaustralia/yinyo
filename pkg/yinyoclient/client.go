@@ -19,8 +19,8 @@ import (
 
 // Run is what you get when you create a run and what you need to update it
 type Run struct {
-	Name  string `json:"run_name"`
-	Token string `json:"run_token"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
 	// Ignore this field when converting from/to json
 	Client *Client
 }
@@ -144,9 +144,13 @@ func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 		switch file.Typeflag {
 		case tar.TypeDir:
 			// TODO: Extract variable
-			err := os.Mkdir(filepath.Join(dir, file.Name), 0755)
-			if err != nil {
-				return err
+			dir2 := filepath.Join(dir, file.Name)
+			// Only try to create the directory if this is a new one
+			if dir2 != dir {
+				err := os.Mkdir(dir2, 0755)
+				if err != nil {
+					return err
+				}
 			}
 		case tar.TypeReg:
 			f, err := os.OpenFile(
@@ -469,7 +473,7 @@ func (iterator *EventIterator) Next() (event event.Event, err error) {
 // it starts from the first event after the one with the given ID.
 func (run *Run) GetEvents(lastID string) (*EventIterator, error) {
 	q := url.Values{}
-	q.Add("last-id", lastID)
+	q.Add("last_id", lastID)
 	resp, err := run.request("GET", "/events?"+q.Encode(), nil)
 	if err != nil {
 		return nil, err
@@ -512,7 +516,7 @@ type ExitDataStage struct {
 type Usage struct {
 	WallTime   float64 `json:"wall_time"`   // In seconds
 	CPUTime    float64 `json:"cpu_time"`    // In seconds
-	MaxRSS     int64   `json:"max_rss"`     // In kilobytes
+	MaxRSS     uint64  `json:"max_rss"`     // In bytes
 	NetworkIn  uint64  `json:"network_in"`  // In bytes
 	NetworkOut uint64  `json:"network_out"` // In bytes
 }

@@ -13,27 +13,19 @@ func callbackURLKey(runName string) string {
 	return "url:" + runName
 }
 
-func (app *App) setCallbackURL(runName string, callbackURL string) error {
+func (app *AppImplementation) setCallbackURL(runName string, callbackURL string) error {
 	return app.KeyValueStore.Set(callbackURLKey(runName), callbackURL)
 }
 
-func (app *App) getCallbackURL(runName string) (string, error) {
-	r, err := app.KeyValueStore.Get(callbackURLKey(runName))
-	if err != nil {
-		return "", err
-	}
-	callbackURL, ok := r.(string)
-	if !ok {
-		return "", errors.New("Unexpected type")
-	}
-	return callbackURL, nil
+func (app *AppImplementation) getCallbackURL(runName string) (string, error) {
+	return app.KeyValueStore.Get(callbackURLKey(runName))
 }
 
-func (app *App) deleteCallbackURL(runName string) error {
+func (app *AppImplementation) deleteCallbackURL(runName string) error {
 	return app.KeyValueStore.Delete(callbackURLKey(runName))
 }
 
-func (app *App) postCallbackEvent(runName string, event event.Event) error {
+func (app *AppImplementation) postCallbackEvent(runName string, event event.Event) error {
 	var b bytes.Buffer
 	enc := json.NewEncoder(&b)
 	enc.Encode(event)

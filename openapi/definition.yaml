@@ -1,12 +1,12 @@
 openapi: 3.0.1
 info:
-  title: Yinyo server
+  title: Yinyo
   description: |
-    First rough version of documentation for the yinyo server, a simple
-    scraper API.
-  version: "0.1"
+    A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
+  version: "1.0"
 servers:
-  - url: /
+  - url: http://localhost:8080
+    description: Local development server
 tags:
   - name: Core
     description: The minimum you'll need to use
@@ -19,7 +19,9 @@ paths:
       tags: ["Core"]
       summary: Create run
       description: |
-        Returns with the "run ID" which uniquely identifies this run. You will need this run ID to subsequently start, track and access this run.
+        Returns with the "run name" which uniquely identifies this run and the "run token" which is a secret to ensure that only you can access the run from here on in. You will need these values to subsequently start, track and access this run.
+
+        You can optionally provide a suggested "name prefix" which will be put at the beginning of the unique name for the run. This is only useful to give more human meaningful names to the runs if that's important in your application. However, you can not depend on the prefix being used exactly as you provide it as some characters are not possible in run names.
       parameters:
         - name: name_prefix
           description: Prefix used when generating run names
@@ -34,36 +36,39 @@ paths:
               schema:
                 type: object
                 properties:
-                  run_name:
+                  name:
                     type: string
                     description: |
                       Uniquely identifies this run. Needed for any subsequent API calls for this run.
-                  run_token:
+                  token:
                     type: string
                     description: |
                       Secret value needed to access the run
+              example:
+                name: run-lvg44
+                token: bMMT7MnU2QbFZbk0lkut401D4uFScUI2
   /runs/{name}/app:
     put:
       tags: ["Core"]
-      summary: Upload the scraper code and local data
+      summary: Upload the code to be run and any local data
       parameters:
         - $ref: "#/components/parameters/name"
       requestBody:
         content:
-          application/octet-stream:
+          application/gzip:
             schema:
               type: string
               description: |
-                Directory with code, configuration and data to run. Everything needs to be tarred up.
+                Directory with code, configuration and data to run. Everything needs to be tarred and gzip compressed.
               format: binary
         required: true
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
   /runs/{name}/cache:
     summary: Manage build cache
     put:
@@ -73,37 +78,40 @@ paths:
         - $ref: "#/components/parameters/name"
       requestBody:
         content:
-          application/octet-stream:
+          application/gzip:
             schema:
               description: Build cache exactly as it was downloaded before
               type: string
               format: binary
         required: true
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
     get:
       tags: ["Optional"]
       summary: Download a build cache
       parameters:
         - $ref: "#/components/parameters/name"
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           content:
-            application/octet-stream:
+            application/gzip:
               schema:
                 description: Build cache
                 type: string
                 format: binary
           description: Success
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
+        404:
+          description: The build cache doesn't yet exist
+
   /runs/{name}/start:
     post:
       tags: ["Core"]
@@ -119,42 +127,92 @@ paths:
                 output:
                   type: string
                   description: |
-                    relative path (from the directory of the scraper) to file you want access to later. This will usually be the output of the scraper.
+                    Optional relative path (from the directory of the code for the run) to file you want access to later. This will usually be the output of the run.
                 env:
                   type: array
                   description: |
-                    Environment variables to set for the scraper run.
+                    Optionally set environment variables for the run.
                   items:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      value:
-                        type: string
+                    $ref: "#/components/schemas/Env"
+                callback:
+                  type: string
+                  format: uri
+                  description: |
+                    Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick
+            example:
+              output: my_output.txt
+              env:
+                - name: MY_ENVIRONMENT_VARIABLE
+                  value: foo
+              callback: http://my-url-endpoint.com?key=special-secret-stuff
+
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
+        400:
+          $ref: "#/components/responses/bad_request"
+          description: There was a problem with your request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: JSON in body not correctly formatted
         403:
-          description: The run token was incorrect
-  /runs/{name}/logs:
+          $ref: "#/components/responses/bad_auth"
+      callbacks:
+        events:
+          "{$request.body#/callback}":
+            post:
+              requestBody:
+                $ref: "#/components/responses/Event"
+              responses:
+                "200":
+                  description: callback successfully processed
+  /runs/{name}/events:
     get:
       tags: ["Optional"]
-      summary: Attach to run log stream
+      summary: Attach to run events stream
       description: |
-        Watch what is happening to a scraper in real-time as it gets compiled and runs. By default this will stream all logs that have occurred from the scraper getting started until now and then as new logs occur stream those in real-time.
+        Watch what is happening to a run in real-time as it gets built and runs. By default this will stream all events that have occurred from the very beginning until now and then as new events occur stream those in real-time.
       parameters:
         - $ref: "#/components/parameters/name"
+        - name: last_id
+          description: Restart stream immediately after the event with the given ID
+          in: query
+          schema:
+            type: string
+
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
-          description: Attached
+          description: Succesfully attached to stream
           content:
-            "text/plain":
+            "application/ld+json":
               schema:
-                type: string
+                oneOf:
+                  - $ref: "#/components/schemas/LogEvent"
+                  - $ref: "#/components/schemas/StartEvent"
+                  - $ref: "#/components/schemas/FinishEvent"
+                  - $ref: "#/components/schemas/LastEvent"
+                discriminator:
+                  propertyName: type
+              example:
+                id: "123"
+                time: "2019-12-17T03:45:00Z"
+                type: log
+                data:
+                  stage: "build"
+                  stream: "stdout"
+                  text: "Hello!"
+        403:
+          $ref: "#/components/responses/bad_auth"
   /runs/{name}/exit-data:
     get:
       tags: ["Optional"]
@@ -164,38 +222,29 @@ paths:
       parameters:
         - $ref: "#/components/parameters/name"
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
           content:
             "application/json":
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    exit_code:
-                      type: integer
-                    usage:
-                      type: object
-                      properties:
-                        build:
-                          $ref: "#/components/schemas/ResourceUsage"
-                        run:
-                          $ref: "#/components/schemas/ResourceUsage"
+                $ref: "#/components/schemas/ExitData"
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
+        404:
+          description: Exit data doesn't yet exist
+
   /runs/{name}/output:
     get:
       tags: ["Optional"]
       summary: Get output file
       description: |
-        Usually at the end of the scraper run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.
+        Usually at the end of the run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.
       parameters:
         - $ref: "#/components/parameters/name"
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
@@ -205,22 +254,24 @@ paths:
                 type: string
                 format: binary
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
+        404:
+          description: Exit data doesn't yet exist
   /runs/{name}:
     delete:
       tags: ["Core"]
       summary: Finalise scraper run
       description: |
-        This does final clean up of everything associated with a run. After doing this it's not possible to get any information about the run. So, make sure you have everything you need before you call this.
+        This does final clean up of everything associated with a run. Make sure you always do this as the last API call for a run. After doing this it's not possible to get any more information about this run.
       parameters:
         - $ref: "#/components/parameters/name"
       security:
-        - run_token: []
+        - token: []
       responses:
         200:
           description: Success
         403:
-          description: The run token was incorrect
+          $ref: "#/components/responses/bad_auth"
 components:
   parameters:
     name:
@@ -230,122 +281,166 @@ components:
       required: true
       schema:
         type: string
+  responses:
+    bad_auth:
+      description: The run token was incorrect
+    bad_request:
+      description: There was a problem with your request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: JSON in body not correctly formatted
+    Event:
+      description: Event - can be one of LogEvent, StartEvent, FinishEvent or LastEvent
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/LogEvent"
+              - $ref: "#/components/schemas/StartEvent"
+              - $ref: "#/components/schemas/FinishEvent"
+              - $ref: "#/components/schemas/LastEvent"
+            discriminator:
+              propertyName: type
+          example:
+            id: "123"
+            time: "2019-12-17T03:45:00Z"
+            type: log
+            data:
+              stage: "build"
+              stream: "stdout"
+              text: "Hello!"
 
   schemas:
+    Env:
+      type: object
+      properties:
+        name:
+          type: string
+          description: |
+            Name of the environment variable
+        value:
+          type: string
+          description: |
+            Value of the environment variable
+
     Stage:
       type: string
       description: The stage of the life-cycle of the run
       enum:
-        - queued
-        - compiling
-        - running
-        - stopped
-    ResourceUsage:
+        - build
+        - run
+    ExitData:
+      type: object
+      properties:
+        build:
+          $ref: "#/components/schemas/ExitDataStage"
+        run:
+          $ref: "#/components/schemas/ExitDataStage"
+    ExitDataStage:
+      type: object
+      properties:
+        exit_code:
+          type: number
+          description: Process exit code for build or run. If there was no error this should be 0.
+        usage:
+          $ref: "#/components/schemas/Usage"
+    Usage:
       type: object
       properties:
         wall_time:
           type: number
-          description: Wall clock
+          description: Wall clock (in seconds)
         cpu_time:
           type: number
           description: |
-            This is the total number of seconds spent executing by the CPU.
-            It's the sum of time spent in user and kernel mode.
+            Total time spent executing by the CPU.
+            It's the sum of time spent in user and kernel mode (in seconds)
         max_rss:
           type: integer
           description: |
-            This is the maximum resident set size used in kilobytes.
+            This is the maximum resident set size used (in bytes)
         network_in:
           type: integer
-          description: Total received network traffic in bytes.
+          description: Total received network traffic (in bytes)
         network_out:
           type: integer
-          description: Total transmitted network traffic in bytes.
+          description: Total transmitted network traffic (in bytes)
       description: |
-        Resources used by a process. This information is recorded as part of the metrics for a scraper run.
-
-        The names of metrics are all copied from the structure returned by `getrusage(2)` (with the exception of `wall_time`)
+        Resources used by a process. This information is recorded as part of the metrics for a run.
     Event:
       required:
         - id
-        - stage
         - time
         - type
+        - data
       type: object
       properties:
         id:
-          type: integer
+          type: string
         type:
           type: string
         time:
           type: string
           description: Date and time of event
+          # TODO: Fix time format
           format: date-time
-        stage:
-          $ref: "#/components/schemas/Stage"
       discriminator:
         propertyName: type
+    StartEvent:
+      description: Signals the start of a stage
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                stage:
+                  $ref: "#/components/schemas/Stage"
+    FinishEvent:
+      description: Signals the end of a stage
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                stage:
+                  $ref: "#/components/schemas/Stage"
+    LastEvent:
+      description: Signals the completion of the whole run
+      allOf:
+        - $ref: "#/components/schemas/Event"
     LogEvent:
-      description: Console output event (from scraper run)
+      description: Console output event (from run)
       allOf:
         - $ref: "#/components/schemas/Event"
-        - required:
-            - source
-            - text
-          type: object
+        - type: object
           properties:
-            source:
-              type: string
-              description: |
-                Source of the message. e.g. `stdout`, `stderr`
-              enum:
-                - stdout
-                - stderr
-            text:
-              type: string
-              description: Console message
-    ConnectionEvent:
-      description: http/https connection made to the outside world
-      allOf:
-        - $ref: "#/components/schemas/Event"
-        - required:
-            - domain
-            - method
-            - path
-            - request_size
-            - response_code
-            - response_size
-            - scheme
-          type: object
-          properties:
-            method:
-              type: string
-              description: REST method used (e.g. GET, PUT..)
-            scheme:
-              type: string
-              description: Whether http or https
-            domain:
-              type: string
-              description: Name of server being connected to
-            path:
-              type: string
-              description: Path bit of url from domain being connected to
-            request_size:
-              type: integer
-            response_size:
-              type: integer
-            response_code:
-              type: integer
-    StageChangeEvent:
-      type: object
-      properties:
-        exitCode:
-          type: integer
-          description: |
-            On stage "stopped", includes the exitCode of the running process.
-      description: |
-        Event for moving from one stage to another. e.g. queued, compiling, running, exited with particular exit code. The stage is the stage that we're moving into.
+            data:
+              type: object
+              properties:
+                stage:
+                  $ref: "#/components/schemas/Stage"
+                stream:
+                  type: string
+                  description: |
+                    Source of the message - standard output and standard error come from your code. In exceptional circumstances you might see a message from "internal error".
+                  enum:
+                    - stdout
+                    - stderr
+                    - interr
+                text:
+                  type: string
+                  description: Console message
   securitySchemes:
-    run_token:
+    token:
       type: http
       scheme: bearer

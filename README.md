@@ -10,11 +10,36 @@
 This README is focused on getting developers of the core system up and running. It does not yet include
 a guide for people who are just interested in being users of the API.
 
+## Table of Contents
+
+<!-- TOC -->
+
+- [Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way](#yinyo-a-wonderfully-simple-api-driven-service-to-reliably-execute-many-long-running-scrapers-in-a-super-scaleable-way)
+    - [Who is this README for?](#who-is-this-readme-for)
+    - [Table of Contents](#table-of-contents)
+    - [Development: Guide to getting up and running quickly](#development-guide-to-getting-up-and-running-quickly)
+        - [Main dependencies](#main-dependencies)
+        - [The main bit](#the-main-bit)
+    - [Getting the website running locally](#getting-the-website-running-locally)
+        - [Running a local development server for the website](#running-a-local-development-server-for-the-website)
+    - [The custom herokuish docker image](#the-custom-herokuish-docker-image)
+    - [Notes for debugging and testing](#notes-for-debugging-and-testing)
+        - [To run the tests](#to-run-the-tests)
+        - [To see what's on the blob storage (Minio)](#to-see-whats-on-the-blob-storage-minio)
+        - [To see what Kubernetes is doing](#to-see-what-kubernetes-is-doing)
+        - [Accessing Redis](#accessing-redis)
+        - [Testing callback URLs](#testing-callback-urls)
+        - [Reclaiming diskspace in minikube](#reclaiming-diskspace-in-minikube)
+
+<!-- /TOC -->
+
 ## Development: Guide to getting up and running quickly
+
+![](https://github.com/openaustralia/yinyo/workflows/Go/badge.svg)
 
 ### Main dependencies
 
-- [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/).
+- [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/)
 - [KubeDB operator](https://kubedb.com/docs/v0.13.0-rc.0/setup/install/)
 - [Skaffold](https://skaffold.dev/docs/quickstart/)
 - [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
@@ -33,21 +58,16 @@ First, follow the links to install the [main dependencies](main-dependencies)
 Start Minikube if you haven't already
 
 ```bash
-minikube start --memory=3072 --disk-size='30gb' --kubernetes-version='v1.15.2'
+make minikube
 ```
-
-Minikube by default starts with 2GB of memory and 20GB of disk space for the VM which is not enough in
-our case.
-
-Now, [install the KubeDB operator](https://kubedb.com/docs/v0.13.0-rc.0/setup/install/).
 
 Run skaffold. This will build all the bits and pieces and deploy things to your local kubernetes for you. The first time it builds everything it it takes a few minutes. After that when you make any changes to the code it does everything much faster.
 
 ```bash
-skaffold dev --port-forward=true
+make skaffold
 ```
 
-Leave `skaffold dev` running and open a new terminal window.
+Leave `skaffold` running and open a new terminal window.
 
 Now setup the storage buckets on Minio
 
@@ -109,7 +129,7 @@ Point your web browser at [http://localhost:9000](http://localhost:9000). Login 
 ### To see what Kubernetes is doing
 
 ```bash
-minikube dashboard
+make dashboard
 ```
 
 You'll want to look in the "yinyo-system" and "yinyo-scrapers" namespaces.

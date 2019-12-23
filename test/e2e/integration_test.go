@@ -18,6 +18,10 @@ func defaultClient() *yinyoclient.Client {
 }
 
 func TestHello(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	text, err := client.Hello()
 	if err != nil {
@@ -27,6 +31,10 @@ func TestHello(t *testing.T) {
 }
 
 func TestCreateRun(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	run, err := client.CreateRun("foo")
 	if err != nil {
@@ -41,6 +49,10 @@ func TestCreateRun(t *testing.T) {
 }
 
 func TestCreateRunScraperNameEncoding(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	run, err := client.CreateRun("foo/b_12r")
 	if err != nil {
@@ -55,6 +67,10 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 // Check that run names are created to be unique even when the same scraper name
 // is given twice
 func TestCreateRunNamesUnique(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	run1, err := client.CreateRun("foo")
 	if err != nil {
@@ -70,6 +86,10 @@ func TestCreateRunNamesUnique(t *testing.T) {
 }
 
 func TestNamePrefixOptional(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	client := defaultClient()
 	run, err := client.CreateRun("")
 	if err != nil {
@@ -80,6 +100,10 @@ func TestNamePrefixOptional(t *testing.T) {
 }
 
 func TestUploadDownloadApp(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	// First we need to create a run
 	client := defaultClient()
 	run, err := client.CreateRun("")
@@ -111,6 +135,10 @@ func TestUploadDownloadApp(t *testing.T) {
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
 func TestHelloWorld(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
 	// Test the running of a super-simple program end-to-end
 	client := defaultClient()
 	// Create the run
@@ -167,26 +195,23 @@ func TestHelloWorld(t *testing.T) {
 		bar.Increment()
 	}
 	bar.Finish()
+	// Copy across the IDs and times from the eventsList to the expected because we don't know what they
+	// will be ahead of time and this make it easy to compare expected and eventsList
 	expected := []event.Event{
-		event.NewStartEvent("build"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       "),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
-		event.NewLogEvent("build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
-		event.NewFinishEvent("build"),
-		event.NewStartEvent("run"),
-		event.NewLogEvent("run", "stdout", "Hello World!"),
-		event.NewFinishEvent("run"),
-		event.NewLastEvent(),
-	}
-	// Copy across the IDs from the eventsList to the expected because we don't know what the
-	// IDs will be ahead of time and this make it easy to compare expected and eventsList
-	for i := range eventsList {
-		expected[i].ID = eventsList[i].ID
+		event.NewStartEvent(eventsList[0].ID, eventsList[0].Time, "build"),
+		event.NewLogEvent(eventsList[1].ID, eventsList[1].Time, "build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
+		event.NewLogEvent(eventsList[2].ID, eventsList[2].Time, "build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
+		event.NewLogEvent(eventsList[3].ID, eventsList[3].Time, "build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
+		event.NewLogEvent(eventsList[4].ID, eventsList[4].Time, "build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
+		event.NewLogEvent(eventsList[5].ID, eventsList[5].Time, "build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
+		event.NewLogEvent(eventsList[6].ID, eventsList[6].Time, "build", "stdout", "\u001b[1G       "),
+		event.NewLogEvent(eventsList[7].ID, eventsList[7].Time, "build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
+		event.NewLogEvent(eventsList[8].ID, eventsList[8].Time, "build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
+		event.NewFinishEvent(eventsList[9].ID, eventsList[9].Time, "build"),
+		event.NewStartEvent(eventsList[10].ID, eventsList[10].Time, "run"),
+		event.NewLogEvent(eventsList[11].ID, eventsList[11].Time, "run", "stdout", "Hello World!"),
+		event.NewFinishEvent(eventsList[12].ID, eventsList[12].Time, "run"),
+		event.NewLastEvent(eventsList[13].ID, eventsList[13].Time),
 	}
 	assert.Equal(t, expected, eventsList)
 

@@ -3,6 +3,7 @@ package event
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,29 +24,41 @@ func testMarshal(t *testing.T, event Event, jsonString string) {
 }
 
 func TestMarshalStartEvent(t *testing.T) {
+	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	testMarshal(t,
-		NewStartEvent("build"),
-		`{"type":"start","data":{"stage":"build"}}`,
+		NewStartEvent("", time, "build"),
+		`{"time":"2000-01-02T03:45:00Z","type":"start","data":{"stage":"build"}}`,
 	)
 }
 
 func TestMarshalFinishEvent(t *testing.T) {
+	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	testMarshal(t,
-		NewFinishEvent("build"),
-		`{"type":"finish","data":{"stage":"build"}}`,
+		NewFinishEvent("", time, "build"),
+		`{"time":"2000-01-02T03:45:00Z","type":"finish","data":{"stage":"build"}}`,
 	)
 }
 
 func TestMarshalLogEvent(t *testing.T) {
+	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	testMarshal(t,
-		NewLogEvent("build", "stdout", "Hello"),
-		`{"type":"log","data":{"stage":"build","stream":"stdout","text":"Hello"}}`,
+		NewLogEvent("", time, "build", "stdout", "Hello"),
+		`{"time":"2000-01-02T03:45:00Z","type":"log","data":{"stage":"build","stream":"stdout","text":"Hello"}}`,
 	)
 }
 
 func TestMarshalLastEvent(t *testing.T) {
+	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	testMarshal(t,
-		NewLastEvent(),
-		`{"type":"last","data":{}}`,
+		NewLastEvent("", time),
+		`{"time":"2000-01-02T03:45:00Z","type":"last","data":{}}`,
+	)
+}
+
+func TestNewLogEvent(t *testing.T) {
+	now := time.Now()
+	assert.Equal(t,
+		Event{ID: "123", Time: now, Type: "log", Data: LogData{Stage: "build", Stream: "stdout", Text: "hello"}},
+		NewLogEvent("123", now, "build", "stdout", "hello"),
 	)
 }

@@ -3,6 +3,8 @@ package commands
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -25,8 +27,26 @@ const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/yinyo-scraper:v1"
 const runBinary = "/bin/yinyo"
 
-// App holds the state for the application
-type App struct {
+// App is the interface for the operations of the server
+type App interface {
+	CreateRun(namePrefix string) (CreateRunResult, error)
+	DeleteRun(runName string) error
+	StartRun(runName string, output string, env map[string]string, callbackURL string) error
+	GetApp(runName string) (io.Reader, error)
+	PutApp(reader io.Reader, objectSize int64, runName string) error
+	GetCache(runName string) (io.Reader, error)
+	PutCache(reader io.Reader, objectSize int64, runName string) error
+	GetOutput(runName string) (io.Reader, error)
+	PutOutput(reader io.Reader, objectSize int64, runName string) error
+	GetExitData(runName string) (io.Reader, error)
+	PutExitData(reader io.Reader, objectSize int64, runName string) error
+	GetEvents(runName string, lastID string) Events
+	CreateEvent(runName string, event event.Event) error
+	GetTokenCache(runName string) (string, error)
+}
+
+// AppImplementation holds the state for the application
+type AppImplementation struct {
 	BlobStore     blobstore.Client
 	JobDispatcher jobdispatcher.Client
 	Stream        stream.Client
@@ -36,8 +56,8 @@ type App struct {
 
 // CreateRunResult is the output of CreateRun
 type CreateRunResult struct {
-	RunName  string `json:"run_name"`
-	RunToken string `json:"run_token"`
+	RunName  string `json:"name"`
+	RunToken string `json:"token"`
 }
 
 type logMessage struct {
@@ -76,7 +96,7 @@ func defaultHTTP() *http.Client {
 }
 
 // New initialises the main state of the application
-func New() (*App, error) {
+func New() (App, error) {
 	storeAccess, err := defaultStore()
 	if err != nil {
 		return nil, err
@@ -95,7 +115,7 @@ func New() (*App, error) {
 
 	keyValueStore := keyvaluestore.NewRedis(redisClient)
 
-	return &App{
+	return &AppImplementation{
 		BlobStore:     storeAccess,
 		JobDispatcher: jobDispatcher,
 		Stream:        streamClient,
@@ -105,13 +125,16 @@ func New() (*App, error) {
 }
 
 // CreateRun creates a run
-func (app *App) CreateRun(namePrefix string) (CreateRunResult, error) {
+func (app *AppImplementation) CreateRun(namePrefix string) (CreateRunResult, error) {
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
 	// Generate random token
 	runToken := uniuri.NewLen(32)
 	runName, err := app.JobDispatcher.CreateJobAndToken(namePrefix, runToken)
+
+	// Now cache the token for quicker access
+	app.setTokenCache(runName, runToken)
 
 	createResult := CreateRunResult{
 		RunName:  runName,
@@ -121,50 +144,59 @@ func (app *App) CreateRun(namePrefix string) (CreateRunResult, error) {
 }
 
 // GetApp downloads the tar & gzipped application code
-func (app *App) GetApp(runName string) (io.Reader, error) {
+func (app *AppImplementation) GetApp(runName string) (io.Reader, error) {
 	return app.getData(runName, filenameApp)
 }
 
 // PutApp uploads the tar & gzipped application code
-func (app *App) PutApp(reader io.Reader, objectSize int64, runName string) error {
+func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameApp)
 }
 
 // GetCache downloads the tar & gzipped build cache
-func (app *App) GetCache(runName string) (io.Reader, error) {
+func (app *AppImplementation) GetCache(runName string) (io.Reader, error) {
 	return app.getData(runName, filenameCache)
 }
 
 // PutCache uploads the tar & gzipped build cache
-func (app *App) PutCache(reader io.Reader, objectSize int64, runName string) error {
+func (app *AppImplementation) PutCache(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameCache)
 }
 
 // GetOutput downloads the scraper output
-func (app *App) GetOutput(runName string) (io.Reader, error) {
+func (app *AppImplementation) GetOutput(runName string) (io.Reader, error) {
 	return app.getData(runName, filenameOutput)
 }
 
 // PutOutput uploads the scraper output
-func (app *App) PutOutput(reader io.Reader, objectSize int64, runName string) error {
+func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameOutput)
 }
 
 // GetExitData downloads the json exit data
-func (app *App) GetExitData(runName string) (io.Reader, error) {
+func (app *AppImplementation) GetExitData(runName string) (io.Reader, error) {
 	return app.getData(runName, filenameExitData)
 }
 
 // PutExitData uploads the (already serialised) json exit data
-func (app *App) PutExitData(reader io.Reader, objectSize int64, runName string) error {
+func (app *AppImplementation) PutExitData(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameExitData)
 }
 
 // StartRun starts the run
-func (app *App) StartRun(
+func (app *AppImplementation) StartRun(
 	runName string, output string, env map[string]string, callbackURL string,
 ) error {
-	err := app.setCallbackURL(runName, callbackURL)
+	// First check that the app exists
+	_, err := app.GetApp(runName)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return ErrAppNotAvailable
+		}
+		return err
+	}
+
+	err = app.setCallbackURL(runName, callbackURL)
 	if err != nil {
 		return err
 	}
@@ -202,7 +234,7 @@ func (app *App) StartRun(
 
 // Events is an iterator to retrieve events from a stream
 type Events struct {
-	app     *App
+	app     *AppImplementation
 	runName string
 	lastID  string
 	more    bool
@@ -212,7 +244,7 @@ type Events struct {
 // Use "0" for lastId to start at the beginning of the stream. Otherwise use the id of the last
 // seen event to restart the stream from that point. Don't try to restart the stream from the
 // last event, otherwise More() will just wait around forever.
-func (app *App) GetEvents(runName string, lastID string) Events {
+func (app *AppImplementation) GetEvents(runName string, lastID string) Events {
 	return Events{app: app, runName: runName, lastID: lastID, more: true}
 }
 
@@ -238,7 +270,7 @@ func (events *Events) Next() (e event.Event, err error) {
 }
 
 // CreateEvent add an event to the stream
-func (app *App) CreateEvent(runName string, event event.Event) error {
+func (app *AppImplementation) CreateEvent(runName string, event event.Event) error {
 	// TODO: Use something like runName-events instead for the stream name
 	event, err := app.Stream.Add(runName, event)
 	if err != nil {
@@ -248,7 +280,7 @@ func (app *App) CreateEvent(runName string, event event.Event) error {
 }
 
 // DeleteRun deletes the run. Should be the last thing called
-func (app *App) DeleteRun(runName string) error {
+func (app *AppImplementation) DeleteRun(runName string) error {
 	err := app.JobDispatcher.DeleteJobAndToken(runName)
 	if err != nil {
 		return err
@@ -275,18 +307,26 @@ func (app *App) DeleteRun(runName string) error {
 		return err
 	}
 	err = app.deleteCallbackURL(runName)
-	return nil
+	if err != nil {
+		return err
+	}
+	return app.deleteTokenCache(runName)
 }
 
 func storagePath(runName string, fileName string) string {
 	return runName + "/" + fileName
 }
 
-func (app *App) getData(runName string, fileName string) (io.Reader, error) {
-	return app.BlobStore.Get(storagePath(runName, fileName))
+func (app *AppImplementation) getData(runName string, fileName string) (io.Reader, error) {
+	p := storagePath(runName, fileName)
+	r, err := app.BlobStore.Get(p)
+	if err != nil && app.BlobStore.IsNotExist(err) {
+		return r, fmt.Errorf("blobstore %v: %w", p, ErrNotFound)
+	}
+	return r, err
 }
 
-func (app *App) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {
+func (app *AppImplementation) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {
 	return app.BlobStore.Put(
 		storagePath(runName, fileName),
 		reader,
@@ -294,6 +334,6 @@ func (app *App) putData(reader io.Reader, objectSize int64, runName string, file
 	)
 }
 
-func (app *App) deleteData(runName string, fileName string) error {
+func (app *AppImplementation) deleteData(runName string, fileName string) error {
 	return app.BlobStore.Delete(storagePath(runName, fileName))
 }
