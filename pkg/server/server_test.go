@@ -121,3 +121,26 @@ func TestPutAppWrongRunName(t *testing.T) {
 
 	app.AssertExpectations(t)
 }
+
+// This tests if the app isn't found (rather than the run)
+func TestGetAppErrNotFound(t *testing.T) {
+	app := new(commands.MockApp)
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetApp", "my-run").Return(nil, commands.ErrNotFound)
+	server := Server{app: app}
+	server.InitialiseRoutes()
+
+	req, err := http.NewRequest("GET", "/runs/my-run/app", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer abc123")
+
+	rr := httptest.NewRecorder()
+	server.router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusNotFound, rr.Code)
+	assert.Equal(t, `{"error":"not found"}`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap)
+	app.AssertExpectations(t)
+}

@@ -39,8 +39,7 @@ func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		// Returns 404 if there is no app
 		if errors.Is(err, commands.ErrNotFound) {
-			http.NotFound(w, r)
-			return nil
+			return newHTTPError(err, http.StatusNotFound, err.Error())
 		}
 		return err
 	}
@@ -59,8 +58,7 @@ func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		// Returns 404 if there is no cache
 		if errors.Is(err, commands.ErrNotFound) {
-			http.NotFound(w, r)
-			return nil
+			return newHTTPError(err, http.StatusNotFound, err.Error())
 		}
 		return err
 	}
@@ -80,8 +78,7 @@ func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		// Returns 404 if there is no output
 		if errors.Is(err, commands.ErrNotFound) {
-			http.NotFound(w, r)
-			return nil
+			return newHTTPError(err, http.StatusNotFound, err.Error())
 		}
 		return err
 	}
@@ -100,8 +97,7 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 	if err != nil {
 		// Returns 404 if there is no exit data
 		if errors.Is(err, commands.ErrNotFound) {
-			http.NotFound(w, r)
-			return nil
+			return newHTTPError(err, http.StatusNotFound, err.Error())
 		}
 		return err
 	}
