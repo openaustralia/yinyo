@@ -77,3 +77,25 @@ func TestCreateEventBadBody(t *testing.T) {
 	assert.Equal(t, `{"error":"JSON in body not correctly formatted"}`, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap)
 }
+
+func TestPutAppWrongRunName(t *testing.T) {
+	app := new(commands.MockApp)
+	app.On("GetTokenCache", "does-not-exist").Return("", commands.ErrNotFound)
+
+	server := Server{app: app}
+	server.InitialiseRoutes()
+
+	req, err := http.NewRequest("PUT", "/runs/does-not-exist/app", strings.NewReader(""))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer abc123")
+
+	rr := httptest.NewRecorder()
+
+	server.router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusNotFound, rr.Code)
+
+	app.AssertExpectations(t)
+}

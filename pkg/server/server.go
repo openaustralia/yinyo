@@ -246,7 +246,11 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 
 		if err != nil {
 			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			if errors.Is(err, commands.ErrNotFound) {
+				w.WriteHeader(http.StatusNotFound)
+			} else {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
 			return
 		}
 
