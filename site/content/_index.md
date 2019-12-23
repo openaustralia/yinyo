@@ -43,7 +43,7 @@ features:
 
 ### Why we created Yinyo
 
-Yinyo comes out of OpenAustralia Foundation’s many years of experience writing scrapers and _hosting the world’s largest site for open scrapers_, [morph.io](http://morph.io).
+The OpenAustralia Foundation hosts _the world’s largest site for open scrapers_, [morph.io](http://morph.io), and has many, many years of experience writing scrapers.
 
 Originally we designed morph.io to run on top of Docker. As the site has continued to grow over the years we have hit the limitations of some of the early design decisions we made. That’s why we created Yinyo.
 
