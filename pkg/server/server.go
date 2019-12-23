@@ -264,33 +264,38 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 	})
 }
 
+func logAndReturnError(err error, w http.ResponseWriter) error {
+	log.Println(err)
+	err2, ok := err.(clientError)
+	if !ok {
+		// TODO: Factor out common code with other error handling
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err = w.Write([]byte(`{"error":"Internal server error"}`))
+		return err
+	}
+	body, err := err2.ResponseBody()
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return nil
+	}
+	status, headers := err2.ResponseHeaders()
+	for k, v := range headers {
+		w.Header().Set(k, v)
+	}
+	w.WriteHeader(status)
+	_, err = w.Write(body)
+	return err
+}
+
 type appHandler func(http.ResponseWriter, *http.Request) error
 
 // Error handling
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := fn(w, r)
 	if err != nil {
-		log.Println(err)
-		err2, ok := err.(clientError)
-		if !ok {
-			// TODO: Factor out common code with other error handling
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error":"Internal server error"}`))
-			return
-		}
-		body, err := err2.ResponseBody()
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		status, headers := err2.ResponseHeaders()
-		for k, v := range headers {
-			w.Header().Set(k, v)
-		}
-		w.WriteHeader(status)
-		w.Write(body)
+		logAndReturnError(err, w)
 	}
 }
 
