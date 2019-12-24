@@ -5,6 +5,8 @@
 - Supports many different use cases through a simple, yet flexible API that can operate synchronously or asynchronously.
 - Made specifically for developers of scraper systems be it open source or commercial. No chance of vendor lock-in because it's open source, Apache licensed.
 
+[![Coverage Status](https://coveralls.io/repos/github/openaustralia/yinyo/badge.svg?t=8kV8YE)](https://coveralls.io/github/openaustralia/yinyo)
+
 ## Who is this README for?
 
 This README is focused on getting developers of the core system up and running. It does not yet include
@@ -15,21 +17,22 @@ a guide for people who are just interested in being users of the API.
 <!-- TOC -->
 
 - [Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way](#yinyo-a-wonderfully-simple-api-driven-service-to-reliably-execute-many-long-running-scrapers-in-a-super-scaleable-way)
-  - [Who is this README for?](#who-is-this-readme-for)
-  - [Development: Guide to getting up and running quickly](#development-guide-to-getting-up-and-running-quickly)
-    - [Main dependencies](#main-dependencies)
-    - [The main bit](#the-main-bit)
-  - [Getting the website running locally](#getting-the-website-running-locally)
-    - [Dependencies](#dependencies)
-    - [Running a local development server for the website](#running-a-local-development-server-for-the-website)
-  - [The custom herokuish docker image](#the-custom-herokuish-docker-image)
-  - [Notes for debugging and testing](#notes-for-debugging-and-testing)
-    - [To run the tests](#to-run-the-tests)
-    - [To see what's on the blob storage (Minio)](#to-see-whats-on-the-blob-storage-minio)
-    - [To see what Kubernetes is doing](#to-see-what-kubernetes-is-doing)
-    - [Accessing Redis](#accessing-redis)
-    - [Testing callback URLs](#testing-callback-urls)
-    - [Reclaiming diskspace in minikube](#reclaiming-diskspace-in-minikube)
+    - [Who is this README for?](#who-is-this-readme-for)
+    - [Table of Contents](#table-of-contents)
+    - [Development: Guide to getting up and running quickly](#development-guide-to-getting-up-and-running-quickly)
+        - [Main dependencies](#main-dependencies)
+        - [The main bit](#the-main-bit)
+    - [Getting the website running locally](#getting-the-website-running-locally)
+        - [Dependencies](#dependencies)
+        - [Running a local development server for the website](#running-a-local-development-server-for-the-website)
+    - [The custom herokuish docker image](#the-custom-herokuish-docker-image)
+    - [Notes for debugging and testing](#notes-for-debugging-and-testing)
+        - [To run the tests](#to-run-the-tests)
+        - [To see what's on the blob storage (Minio)](#to-see-whats-on-the-blob-storage-minio)
+        - [To see what Kubernetes is doing](#to-see-what-kubernetes-is-doing)
+        - [Accessing Redis](#accessing-redis)
+        - [Testing callback URLs](#testing-callback-urls)
+        - [Reclaiming diskspace in minikube](#reclaiming-diskspace-in-minikube)
 
 <!-- /TOC -->
 
