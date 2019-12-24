@@ -84,7 +84,7 @@ jobs:
     
     - name: Calc coverage 
       run: |
-        go test -v -short -covermode=count -coverprofile=coverage.out
+        go test -v -short -covermode=count -coverprofile=coverage.out ./...
 
     - name: Convert coverage to lcov
       uses: jandelgado/gcov2lcov-action@v1.0.0
@@ -111,8 +111,8 @@ jobs:
     - name: build
       run: |
         export GO111MODULE=on
-        GOOS=windows GOARCH=amd64 go build -o bin/ci-test-windows-amd64.exe
-        GOOS=linux   GOARCH=amd64 go build -o bin/ci-test-linux-amd64
+        GOOS=windows GOARCH=amd64 go build ./...
+        GOOS=linux   GOARCH=amd64 go build ./...
     - name: upload artifacts
       uses: actions/upload-artifact@master
       with:
