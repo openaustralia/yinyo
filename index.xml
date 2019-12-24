@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Yinyo</title>
@@ -35,8 +35,8 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://yinyo.io/get-started/</guid>
-      <description>Get Started 1. Go to Github and follow the instructions to setup a local Yinyo instance 2. Run your first scraper yinyo client test/scrapers/test-python --output data.sqlite  This will stream the console output of the scraper straight to you
-  3. Do it all again! But this time using the API directly, step-by-step 1. Create a run curl -X POST http://localhost:8080/runs  You&amp;rsquo;ll get a name and a token back which you&amp;rsquo;ll need in the following steps</description>
+      <description>Get Started 1. Go to Github and follow the instructions to setup a local Yinyo instance 2. Run your first scraper yinyo client test/scrapers/test-python --output data.sqlite This will stream the console output of the scraper straight to you
+ 3. Do it all again! But this time using the API directly, step-by-step 1. Create a run curl -X POST http://localhost:8080/runs You&#39;ll get a name and a token back which you&#39;ll need in the following steps</description>
     </item>
     
   </channel>
