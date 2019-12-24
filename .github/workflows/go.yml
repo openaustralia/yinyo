@@ -8,15 +8,24 @@ jobs:
         uses: actions/setup-go@v1
         with:
           go-version: 1.13.x
+
+      - name: setup env
+        run: |
+          echo "::set-env name=GOPATH::$(go env GOPATH)"
+          echo "::add-path::$(go env GOPATH)/bin"
+        shell: bash
+
       - name: Checkout code
         uses: actions/checkout@v1
+
       - name: Install golangci-lint
         run: |
           go get github.com/golangci/golangci-lint/cmd/golangci-lint
+
       - name: Run linters
         run: |
-          export PATH=$PATH:$(go env GOPATH)/bin   
-          ./pre-commit
+
+          golangci-lint -E bodyclose,misspell,gocyclo,dupl,gofmt,golint,unconvert,goimports,depguard,gocritic,funlen,interfacer run
 
   test:
     name: Test
