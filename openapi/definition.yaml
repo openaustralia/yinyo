@@ -69,6 +69,8 @@ paths:
           description: Success
         403:
           $ref: "#/components/responses/bad_auth"
+        404:
+          $ref: "#/components/responses/not_found"
   /runs/{name}/cache:
     summary: Manage build cache
     put:
@@ -89,8 +91,12 @@ paths:
       responses:
         200:
           description: Success
+        400:
+          $ref: "#/components/responses/bad_request"
         403:
           $ref: "#/components/responses/bad_auth"
+        404:
+          $ref: "#/components/responses/not_found"
     get:
       tags: ["Optional"]
       summary: Download a build cache
@@ -110,7 +116,7 @@ paths:
         403:
           $ref: "#/components/responses/bad_auth"
         404:
-          description: The build cache doesn't yet exist
+          $ref: "#/components/responses/not_found"
 
   /runs/{name}/start:
     post:
@@ -153,18 +159,10 @@ paths:
           description: Success
         400:
           $ref: "#/components/responses/bad_request"
-          description: There was a problem with your request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: JSON in body not correctly formatted
         403:
           $ref: "#/components/responses/bad_auth"
+        404:
+          $ref: "#/components/responses/not_found"
       callbacks:
         events:
           "{$request.body#/callback}":
@@ -213,6 +211,8 @@ paths:
                   text: "Hello!"
         403:
           $ref: "#/components/responses/bad_auth"
+        404:
+          $ref: "#/components/responses/not_found"
   /runs/{name}/exit-data:
     get:
       tags: ["Optional"]
@@ -233,7 +233,7 @@ paths:
         403:
           $ref: "#/components/responses/bad_auth"
         404:
-          description: Exit data doesn't yet exist
+          $ref: "#/components/responses/not_found"
 
   /runs/{name}/output:
     get:
@@ -256,7 +256,7 @@ paths:
         403:
           $ref: "#/components/responses/bad_auth"
         404:
-          description: Exit data doesn't yet exist
+          $ref: "#/components/responses/not_found"
   /runs/{name}:
     delete:
       tags: ["Core"]
@@ -272,6 +272,8 @@ paths:
           description: Success
         403:
           $ref: "#/components/responses/bad_auth"
+        404:
+          $ref: "#/components/responses/not_found"
 components:
   parameters:
     name:
@@ -284,17 +286,23 @@ components:
   responses:
     bad_auth:
       description: The run token was incorrect
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
     bad_request:
       description: There was a problem with your request
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              error:
-                type: string
-          example:
-            error: JSON in body not correctly formatted
+            $ref: "#/components/schemas/Error"
+    not_found:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
     Event:
       description: Event - can be one of LogEvent, StartEvent, FinishEvent or LastEvent
       content:
@@ -317,6 +325,11 @@ components:
               text: "Hello!"
 
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
     Env:
       type: object
       properties:
