@@ -11,8 +11,8 @@ import (
 )
 
 // ExtractToDirectory takes a tar, gzipped archive and extracts it to a directory on the filesystem
-func ExtractToDirectory(gzipTarContent io.ReadCloser, dir string) error {
-	gzipReader, err := gzip.NewReader(gzipTarContent)
+func ExtractToDirectory(content io.Reader, dir string) error {
+	gzipReader, err := gzip.NewReader(content)
 	if err != nil {
 		return err
 	}
