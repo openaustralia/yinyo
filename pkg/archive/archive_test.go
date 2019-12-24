@@ -1,4 +1,4 @@
-package yinyoclient
+package archive
 
 import (
 	"io"
@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,7 +44,7 @@ func TestArchive(t *testing.T) {
 	}
 
 	// Create an archive
-	reader, err := archive.CreateFromDirectory("test", []string{})
+	reader, err := CreateFromDirectory("test", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +71,7 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = archive.ExtractToDirectory(file, "test")
+	err = ExtractToDirectory(file, "test")
 	if err != nil {
 		t.Fatal(err)
 	}
