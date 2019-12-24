@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
@@ -71,7 +72,7 @@ func TestSimpleRun(t *testing.T) {
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
+			reader, err := archive.CreateFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -85,7 +86,7 @@ func TestSimpleRun(t *testing.T) {
 			// We'll just return the contents of an "arbitrary" directory here. It doesn't
 			// really matters what it has in it as long as we can test that it's correct.
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
+			reader, err := archive.CreateFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -214,7 +215,7 @@ func TestFailingBuild(t *testing.T) {
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
+			reader, err := archive.CreateFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -307,7 +308,7 @@ func TestFailingRun(t *testing.T) {
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := yinyoclient.CreateArchiveFromDirectory("fixtures/scrapers/hello-world", []string{})
+			reader, err := archive.CreateFromDirectory("fixtures/scrapers/hello-world", []string{})
 			if err != nil {
 				t.Fatal(err)
 			}
