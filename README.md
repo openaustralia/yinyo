@@ -5,7 +5,9 @@
 - Supports many different use cases through a simple, yet flexible API that can operate synchronously or asynchronously.
 - Made specifically for developers of scraper systems be it open source or commercial. No chance of vendor lock-in because it's open source, Apache licensed.
 
+[![Build Status](https://github.com/openaustralia/yinyo/workflows/test%20and%20build/badge.svg)](https://github.com/openaustralia/yinyo/actions?workflow=test%20and%20build)
 [![Coverage Status](https://coveralls.io/repos/github/openaustralia/yinyo/badge.svg?t=8kV8YE)](https://coveralls.io/github/openaustralia/yinyo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/openaustralia/yinyo)](https://goreportcard.com/report/github.com/openaustralia/yinyo) 
 
 ## Who is this README for?
 
