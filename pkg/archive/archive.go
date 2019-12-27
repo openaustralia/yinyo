@@ -10,8 +10,11 @@ import (
 	"path/filepath"
 )
 
-// ExtractToDirectory takes a tar, gzipped archive and extracts it to a directory on the filesystem
-func ExtractToDirectory(content io.Reader, dir string) error {
+func walk(content io.Reader, dir string,
+	directoryCallback func(path string, mode os.FileMode) error,
+	fileCallback func(path string, mode os.FileMode, content io.Reader) error,
+	symlinkCallback func(linkPath string, path string) error,
+) error {
 	gzipReader, err := gzip.NewReader(content)
 	if err != nil {
 		return err
@@ -40,27 +43,19 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 		case tar.TypeDir:
 			// Only try to create the directory if this is a new one
 			if nameAbsolute != dir {
-				err := os.Mkdir(nameAbsolute, 0755)
+				err := directoryCallback(nameAbsolute, 0755)
 				if err != nil {
 					return err
 				}
 			}
 		case tar.TypeReg:
-			f, err := os.OpenFile(
-				nameAbsolute,
-				os.O_RDWR|os.O_CREATE|os.O_TRUNC,
-				file.FileInfo().Mode(),
-			)
+			mode := file.FileInfo().Mode()
+			err := fileCallback(nameAbsolute, mode, tarReader)
 			if err != nil {
 				return err
 			}
-			_, err = io.Copy(f, tarReader)
-			if err != nil {
-				return err
-			}
-			f.Close()
 		case tar.TypeSymlink:
-			err = os.Symlink(linkNameAbsolute, nameAbsolute)
+			err = symlinkCallback(linkNameAbsolute, nameAbsolute)
 			if err != nil {
 				return err
 			}
@@ -69,6 +64,33 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 		}
 	}
 	return nil
+}
+
+// ExtractToDirectory takes a tar, gzipped archive and extracts it to a directory on the filesystem
+func ExtractToDirectory(content io.Reader, dir string) error {
+	createDirectory := func(path string, mode os.FileMode) error {
+		return os.Mkdir(path, mode)
+	}
+
+	createFile := func(path string, mode os.FileMode, content io.Reader) error {
+		f, err := os.OpenFile(
+			path,
+			os.O_RDWR|os.O_CREATE|os.O_TRUNC,
+			mode,
+		)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		_, err = io.Copy(f, content)
+		return err
+	}
+
+	createSymlink := func(linkPath string, path string) error {
+		return os.Symlink(linkPath, path)
+	}
+
+	return walk(content, dir, createDirectory, createFile, createSymlink)
 }
 
 // CreateFromDirectory creates an archive from a directory on the filesystem
