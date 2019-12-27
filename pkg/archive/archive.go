@@ -25,20 +25,22 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 		if err != nil {
 			return err
 		}
+
+		nameAbsolute := filepath.Join(dir, file.Name)
+		linkNameAbsolute := filepath.Join(filepath.Dir(nameAbsolute), file.Linkname)
+
 		switch file.Typeflag {
 		case tar.TypeDir:
-			// TODO: Extract variable
-			dir2 := filepath.Join(dir, file.Name)
 			// Only try to create the directory if this is a new one
-			if dir2 != dir {
-				err := os.Mkdir(dir2, 0755)
+			if nameAbsolute != dir {
+				err := os.Mkdir(nameAbsolute, 0755)
 				if err != nil {
 					return err
 				}
 			}
 		case tar.TypeReg:
 			f, err := os.OpenFile(
-				filepath.Join(dir, file.Name),
+				nameAbsolute,
 				os.O_RDWR|os.O_CREATE|os.O_TRUNC,
 				file.FileInfo().Mode(),
 			)
@@ -51,9 +53,7 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 			}
 			f.Close()
 		case tar.TypeSymlink:
-			newname := filepath.Join(dir, file.Name)
-			oldname := filepath.Join(filepath.Dir(newname), file.Linkname)
-			err = os.Symlink(oldname, newname)
+			err = os.Symlink(linkNameAbsolute, nameAbsolute)
 			if err != nil {
 				return err
 			}
