@@ -11,9 +11,9 @@ import (
 )
 
 func walk(content io.Reader, dir string,
-	directoryCallback func(path string, mode os.FileMode) error,
-	fileCallback func(path string, mode os.FileMode, content io.Reader) error,
-	symlinkCallback func(linkPath string, path string) error,
+	directoryCallback func(relativePath string, mode os.FileMode) error,
+	fileCallback func(relativePath string, mode os.FileMode, content io.Reader) error,
+	symlinkCallback func(relativeLinkPath string, path string) error,
 ) error {
 	gzipReader, err := gzip.NewReader(content)
 	if err != nil {
@@ -36,26 +36,20 @@ func walk(content io.Reader, dir string,
 			return errors.New("links should all be relative")
 
 		}
-		nameAbsolute := filepath.Join(dir, file.Name)
-		linkNameAbsolute := filepath.Join(filepath.Dir(nameAbsolute), file.Linkname)
-
 		switch file.Typeflag {
 		case tar.TypeDir:
-			// Only try to create the directory if this is a new one
-			if nameAbsolute != dir {
-				err := directoryCallback(nameAbsolute, 0755)
-				if err != nil {
-					return err
-				}
+			err := directoryCallback(file.Name, 0755)
+			if err != nil {
+				return err
 			}
 		case tar.TypeReg:
 			mode := file.FileInfo().Mode()
-			err := fileCallback(nameAbsolute, mode, tarReader)
+			err := fileCallback(file.Name, mode, tarReader)
 			if err != nil {
 				return err
 			}
 		case tar.TypeSymlink:
-			err = symlinkCallback(linkNameAbsolute, nameAbsolute)
+			err = symlinkCallback(file.Linkname, file.Name)
 			if err != nil {
 				return err
 			}
@@ -68,11 +62,17 @@ func walk(content io.Reader, dir string,
 
 // ExtractToDirectory takes a tar, gzipped archive and extracts it to a directory on the filesystem
 func ExtractToDirectory(content io.Reader, dir string) error {
-	createDirectory := func(path string, mode os.FileMode) error {
+	createDirectory := func(relativePath string, mode os.FileMode) error {
+		// Only try to create the directory if this is a new one
+		if filepath.Clean(relativePath) == "." {
+			return nil
+		}
+		path := filepath.Join(dir, relativePath)
 		return os.Mkdir(path, mode)
 	}
 
-	createFile := func(path string, mode os.FileMode, content io.Reader) error {
+	createFile := func(relativePath string, mode os.FileMode, content io.Reader) error {
+		path := filepath.Join(dir, relativePath)
 		f, err := os.OpenFile(
 			path,
 			os.O_RDWR|os.O_CREATE|os.O_TRUNC,
@@ -86,7 +86,9 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 		return err
 	}
 
-	createSymlink := func(linkPath string, path string) error {
+	createSymlink := func(relativeLinkPath string, relativePath string) error {
+		path := filepath.Join(dir, relativePath)
+		linkPath := filepath.Join(filepath.Dir(path), relativeLinkPath)
 		return os.Symlink(linkPath, path)
 	}
 
