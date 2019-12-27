@@ -26,6 +26,13 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 			return err
 		}
 
+		if filepath.IsAbs(file.Name) {
+			return errors.New("file paths should all be relative")
+		}
+		if filepath.IsAbs(file.Linkname) {
+			return errors.New("links should all be relative")
+
+		}
 		nameAbsolute := filepath.Join(dir, file.Name)
 		linkNameAbsolute := filepath.Join(filepath.Dir(nameAbsolute), file.Linkname)
 
