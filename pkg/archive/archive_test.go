@@ -108,3 +108,13 @@ func TestArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestValidArchive(t *testing.T) {
+	// Check that a zero-size file doesn't validate
+	f, err := os.Open(filepath.Join("testdata", "zero.tgz"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = Validate(f)
+	assert.Equal(t, err, io.EOF)
+}

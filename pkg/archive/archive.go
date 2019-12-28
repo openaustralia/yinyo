@@ -10,7 +10,24 @@ import (
 	"path/filepath"
 )
 
-func walk(content io.Reader, dir string,
+// Validate checks whether the archive is correctly formatted. error is nil if it validates.
+func Validate(content io.Reader) error {
+	createDirectory := func(relativePath string, mode os.FileMode) error {
+		return nil
+	}
+
+	createFile := func(relativePath string, mode os.FileMode, content io.Reader) error {
+		return nil
+	}
+
+	createSymlink := func(relativeLinkPath string, relativePath string) error {
+		return nil
+	}
+
+	return walk(content, createDirectory, createFile, createSymlink)
+}
+
+func walk(content io.Reader,
 	directoryCallback func(relativePath string, mode os.FileMode) error,
 	fileCallback func(relativePath string, mode os.FileMode, content io.Reader) error,
 	symlinkCallback func(relativeLinkPath string, path string) error,
@@ -92,7 +109,7 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 		return os.Symlink(linkPath, path)
 	}
 
-	return walk(content, dir, createDirectory, createFile, createSymlink)
+	return walk(content, createDirectory, createFile, createSymlink)
 }
 
 // CreateFromDirectory creates an archive from a directory on the filesystem
