@@ -14,6 +14,7 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 
+	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/blobstore"
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
@@ -151,19 +152,20 @@ func (app *AppImplementation) GetApp(runName string) (io.Reader, error) {
 
 // PutApp uploads the tar & gzipped application code
 func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName string) error {
-	// First just save the stream to a temporary file and use that for uploading
+	// Simultaneously check that the archive is valid and save to a temporary file
 	tmpfile, err := ioutil.TempFile("", filenameApp)
 	if err != nil {
 		return err
 	}
 	defer os.Remove(tmpfile.Name())
-	// Write to the temporary file
-	_, err = io.Copy(tmpfile, reader)
+
+	r := io.TeeReader(reader, tmpfile)
+	err = archive.Validate(r)
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %v", ErrArchiveFormat, err)
 	}
 
-	// Go back to the beginning of the file
+	// Go back to the beginning of the temporary file
 	_, err = tmpfile.Seek(0, io.SeekStart)
 	if err != nil {
 		return err

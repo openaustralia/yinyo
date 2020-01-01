@@ -111,10 +111,12 @@ func TestUploadDownloadApp(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer run.Delete()
-	// Now upload a random test pattern for the app
-	app := "Random test pattern"
-	body := strings.NewReader(app)
-	err = run.PutApp(body)
+	// Now upload an empty tar file (doing this so it validates)
+	empty, err := os.Open("fixtures/empty.tgz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = run.PutApp(empty)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +130,16 @@ func TestUploadDownloadApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, app, string(b))
+	empty2, err := os.Open("fixtures/empty.tgz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b2, err := ioutil.ReadAll(empty2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, b2, b)
 	// TODO: Clean up run
 }
 

@@ -49,7 +49,11 @@ func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
 
 func (server *Server) putApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return server.app.PutApp(r.Body, r.ContentLength, runName)
+	err := server.app.PutApp(r.Body, r.ContentLength, runName)
+	if errors.Is(err, commands.ErrArchiveFormat) {
+		return newHTTPError(err, http.StatusBadRequest, err.Error())
+	}
+	return err
 }
 
 func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
