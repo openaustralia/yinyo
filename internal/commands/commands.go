@@ -196,12 +196,15 @@ func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runN
 }
 
 // GetExitData downloads the json exit data
+// TODO: This should be returned unmarshalled
 func (app *AppImplementation) GetExitData(runName string) (io.Reader, error) {
 	return app.getData(runName, filenameExitData)
 }
 
 // PutExitData uploads the (already serialised) json exit data
 // TODO: Store this in redis rather than on the blobstore
+// TODO: Validation of the format too
+// TODO: Marshalling should be done here
 func (app *AppImplementation) PutExitData(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameExitData)
 }
