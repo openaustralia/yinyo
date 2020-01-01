@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -150,7 +151,26 @@ func (app *AppImplementation) GetApp(runName string) (io.Reader, error) {
 
 // PutApp uploads the tar & gzipped application code
 func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName string) error {
-	return app.putData(reader, objectSize, runName, filenameApp)
+	// First just save the stream to a temporary file and use that for uploading
+	tmpfile, err := ioutil.TempFile("", filenameApp)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpfile.Name())
+	// Write to the temporary file
+	_, err = io.Copy(tmpfile, reader)
+	if err != nil {
+		return err
+	}
+
+	// Go back to the beginning of the file
+	_, err = tmpfile.Seek(0, io.SeekStart)
+	if err != nil {
+		return err
+	}
+
+	// Now upload the contents of the temporary file
+	return app.putData(tmpfile, objectSize, runName, filenameApp)
 }
 
 // GetCache downloads the tar & gzipped build cache
@@ -179,6 +199,7 @@ func (app *AppImplementation) GetExitData(runName string) (io.Reader, error) {
 }
 
 // PutExitData uploads the (already serialised) json exit data
+// TODO: Store this in redis rather than on the blobstore
 func (app *AppImplementation) PutExitData(reader io.Reader, objectSize int64, runName string) error {
 	return app.putData(reader, objectSize, runName, filenameExitData)
 }
