@@ -28,7 +28,7 @@ func (app *AppImplementation) deleteCallbackURL(runName string) error {
 func (app *AppImplementation) postCallbackEvent(runName string, event event.Event) error {
 	var b bytes.Buffer
 	enc := json.NewEncoder(&b)
-	enc.Encode(event)
+	enc.Encode(event) //nolint
 
 	callbackURL, err := app.getCallbackURL(runName)
 	if err != nil {
@@ -37,7 +37,7 @@ func (app *AppImplementation) postCallbackEvent(runName string, event event.Even
 
 	// Only do the callback if there's a sensible URL
 	if callbackURL != "" {
-		resp, err := app.HTTP.Post(callbackURL, "application/json", &b)
+		resp, err := app.HTTP.Post(callbackURL, "application/json", &b) //nolint
 		if err != nil {
 			return err
 		}

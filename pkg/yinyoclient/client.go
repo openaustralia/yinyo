@@ -32,6 +32,7 @@ type Client struct {
 }
 
 // New configures a new Client
+//nolint
 func New(URL string) *Client {
 	return &Client{
 		URL:        URL,
@@ -127,6 +128,7 @@ func (run *Run) request(method string, path string, body io.Reader) (*http.Respo
 }
 
 // ExtractArchiveToDirectory takes a tar, gzipped archive and extracts it to a directory on the filesystem
+//nolint
 func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 	gzipReader, err := gzip.NewReader(gzipTarContent)
 	if err != nil {
@@ -182,6 +184,7 @@ func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
 
 // CreateArchiveFromDirectory creates an archive from a directory on the filesystem
 // ignorePaths is a list of paths (relative to dir) that should be ignored and not archived
+//nolint
 func CreateArchiveFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
@@ -227,7 +230,7 @@ func CreateArchiveFromDirectory(dir string, ignorePaths []string) (io.Reader, er
 			return err
 		}
 		header.Name = relativePath
-		tarWriter.WriteHeader(header)
+		tarWriter.WriteHeader(header) //nolint
 
 		// If it's a regular file then write the contents
 		if info.Mode().IsRegular() {

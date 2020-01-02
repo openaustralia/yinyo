@@ -60,6 +60,7 @@ type CreateRunResult struct {
 	RunToken string `json:"token"`
 }
 
+//nolint
 type logMessage struct {
 	// TODO: Make the stream, stage and type an enum
 	Log, Stream, Stage, Type string
@@ -134,7 +135,7 @@ func (app *AppImplementation) CreateRun(namePrefix string) (CreateRunResult, err
 	runName, err := app.JobDispatcher.CreateJobAndToken(namePrefix, runToken)
 
 	// Now cache the token for quicker access
-	app.setTokenCache(runName, runToken)
+	app.setTokenCache(runName, runToken) //nolint
 
 	createResult := CreateRunResult{
 		RunName:  runName,
