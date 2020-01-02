@@ -149,7 +149,7 @@ func (app *AppImplementation) CreateRun(namePrefix string) (CreateRunResult, err
 
 // GetApp downloads the tar & gzipped application code
 func (app *AppImplementation) GetApp(runName string) (io.Reader, error) {
-	return app.getData(runName, filenameApp)
+	return app.getBlobStoreData(runName, filenameApp)
 }
 
 // Simultaneously check that the archive is valid and save to a temporary file
@@ -186,12 +186,12 @@ func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName
 	defer os.Remove(tmpfile.Name())
 
 	// Now upload the contents of the temporary file
-	return app.putData(tmpfile, objectSize, runName, filenameApp)
+	return app.putBlobStoreData(tmpfile, objectSize, runName, filenameApp)
 }
 
 // GetCache downloads the tar & gzipped build cache
 func (app *AppImplementation) GetCache(runName string) (io.Reader, error) {
-	return app.getData(runName, filenameCache)
+	return app.getBlobStoreData(runName, filenameCache)
 }
 
 // PutCache uploads the tar & gzipped build cache
@@ -202,23 +202,23 @@ func (app *AppImplementation) PutCache(reader io.Reader, objectSize int64, runNa
 	}
 	defer os.Remove(tmpfile.Name())
 
-	return app.putData(tmpfile, objectSize, runName, filenameCache)
+	return app.putBlobStoreData(tmpfile, objectSize, runName, filenameCache)
 }
 
 // GetOutput downloads the scraper output
 func (app *AppImplementation) GetOutput(runName string) (io.Reader, error) {
-	return app.getData(runName, filenameOutput)
+	return app.getBlobStoreData(runName, filenameOutput)
 }
 
 // PutOutput uploads the scraper output
 func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runName string) error {
-	return app.putData(reader, objectSize, runName, filenameOutput)
+	return app.putBlobStoreData(reader, objectSize, runName, filenameOutput)
 }
 
 // GetExitData downloads the exit data
 func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	reader, err := app.getData(runName, filenameExitData)
+	reader, err := app.getBlobStoreData(runName, filenameExitData)
 	if err != nil {
 		return exitData, err
 	}
@@ -235,7 +235,7 @@ func (app *AppImplementation) PutExitData(runName string, exitData protocol.Exit
 	if err != nil {
 		return err
 	}
-	return app.putData(strings.NewReader(string(b)), int64(len(b)), runName, filenameExitData)
+	return app.putBlobStoreData(strings.NewReader(string(b)), int64(len(b)), runName, filenameExitData)
 }
 
 // StartRun starts the run
@@ -341,19 +341,19 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 		return err
 	}
 
-	err = app.deleteData(runName, filenameApp)
+	err = app.deleteBlobStoreData(runName, filenameApp)
 	if err != nil {
 		return err
 	}
-	err = app.deleteData(runName, filenameOutput)
+	err = app.deleteBlobStoreData(runName, filenameOutput)
 	if err != nil {
 		return err
 	}
-	err = app.deleteData(runName, filenameExitData)
+	err = app.deleteBlobStoreData(runName, filenameExitData)
 	if err != nil {
 		return err
 	}
-	err = app.deleteData(runName, filenameCache)
+	err = app.deleteBlobStoreData(runName, filenameCache)
 	if err != nil {
 		return err
 	}
@@ -368,12 +368,12 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 	return app.deleteTokenCache(runName)
 }
 
-func storagePath(runName string, fileName string) string {
+func blobStoreStoragePath(runName string, fileName string) string {
 	return runName + "/" + fileName
 }
 
-func (app *AppImplementation) getData(runName string, fileName string) (io.Reader, error) {
-	p := storagePath(runName, fileName)
+func (app *AppImplementation) getBlobStoreData(runName string, fileName string) (io.Reader, error) {
+	p := blobStoreStoragePath(runName, fileName)
 	r, err := app.BlobStore.Get(p)
 	if err != nil && app.BlobStore.IsNotExist(err) {
 		return r, fmt.Errorf("blobstore %v: %w", p, ErrNotFound)
@@ -381,14 +381,14 @@ func (app *AppImplementation) getData(runName string, fileName string) (io.Reade
 	return r, err
 }
 
-func (app *AppImplementation) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {
+func (app *AppImplementation) putBlobStoreData(reader io.Reader, objectSize int64, runName string, fileName string) error {
 	return app.BlobStore.Put(
-		storagePath(runName, fileName),
+		blobStoreStoragePath(runName, fileName),
 		reader,
 		objectSize,
 	)
 }
 
-func (app *AppImplementation) deleteData(runName string, fileName string) error {
-	return app.BlobStore.Delete(storagePath(runName, fileName))
+func (app *AppImplementation) deleteBlobStoreData(runName string, fileName string) error {
+	return app.BlobStore.Delete(blobStoreStoragePath(runName, fileName))
 }

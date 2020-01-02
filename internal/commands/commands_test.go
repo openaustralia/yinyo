@@ -19,8 +19,8 @@ import (
 )
 
 func TestStoragePath(t *testing.T) {
-	assert.Equal(t, storagePath("abc", "app.tgz"), "abc/app.tgz")
-	assert.Equal(t, storagePath("def", "output"), "def/output")
+	assert.Equal(t, blobStoreStoragePath("abc", "app.tgz"), "abc/app.tgz")
+	assert.Equal(t, blobStoreStoragePath("def", "output"), "def/output")
 }
 
 func TestStartRun(t *testing.T) {
