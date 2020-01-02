@@ -27,7 +27,7 @@ func eventsSender(run apiclient.Run, eventsChan <-chan event.Event) {
 
 	// TODO: Send all events in a single http request
 	for event := range eventsChan {
-		run.CreateEvent(event)
+		run.CreateEvent(event) //nolint
 	}
 }
 
@@ -40,6 +40,7 @@ func streamLogs(run apiclient.Run, stage string, streamName string, stream io.Re
 }
 
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
+//nolint
 func runExternalCommand(run apiclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
 	// make a channel with a capacity of 100.
 	eventsChan := make(chan event.Event, 1000)
@@ -113,7 +114,7 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 
 	exitData.Usage.NetworkIn = statsEnd[0].BytesRecv - statsStart[0].BytesRecv
 	exitData.Usage.NetworkOut = statsEnd[0].BytesSent - statsStart[0].BytesSent
-	exitData.Usage.WallTime = time.Now().Sub(start).Seconds()
+	exitData.Usage.WallTime = time.Now().Sub(start).Seconds() //nolint
 	exitData.Usage.CPUTime = command.ProcessState.UserTime().Seconds() +
 		command.ProcessState.SystemTime().Seconds()
 	// This bit will only return something when run on Linux I think
@@ -129,7 +130,7 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 
 func checkError(err error, run apiclient.Run, stage string, text string) {
 	if err != nil {
-		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", text))
+		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", text)) //nolint
 		log.Fatal(err)
 	}
 }
@@ -150,6 +151,7 @@ type Options struct {
 }
 
 // Run runs a scraper from inside a container
+//nolint
 func Run(options Options) {
 	client := apiclient.New(options.ServerURL)
 	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}

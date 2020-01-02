@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//nolint
 func TestArchive(t *testing.T) {
 	// First create a test directory which we want to archive
 	err := os.Mkdir("test", 0755)

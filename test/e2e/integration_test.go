@@ -41,7 +41,7 @@ func TestCreateRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete()
+	defer run.Delete() //nolint
 
 	// The only purpose of name_prefix is to make runs easier for humans to identify
 	// So, expect the run to start with the name_prefix but there's probably more
@@ -59,7 +59,7 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete()
+	defer run.Delete() //nolint
 
 	// Only certain characters are allowed in kubernetes job names
 	assert.True(t, strings.HasPrefix(run.Name, "foo-b-12r-"))
@@ -77,12 +77,12 @@ func TestCreateRunNamesUnique(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run1.Delete()
+	defer run1.Delete() //nolint
 	run2, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run2.Delete()
+	defer run2.Delete() //nolint
 	assert.NotEqual(t, run1.Name, run2.Name)
 }
 
@@ -96,7 +96,7 @@ func TestNamePrefixOptional(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete()
+	defer run.Delete() //nolint
 	assert.True(t, strings.HasPrefix(run.Name, "run-"))
 }
 
@@ -111,7 +111,7 @@ func TestUploadDownloadApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete()
+	defer run.Delete() //nolint
 	// Now upload an empty tar file (doing this so it validates)
 	empty, err := os.Open("fixtures/empty.tgz")
 	if err != nil {
@@ -146,6 +146,7 @@ func TestUploadDownloadApp(t *testing.T) {
 
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
+//nolint
 func TestHelloWorld(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode.")
@@ -158,7 +159,7 @@ func TestHelloWorld(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete()
+	defer run.Delete() //nolint
 
 	// Now upload the application
 	err = run.PutAppFromDirectory("fixtures/scrapers/hello-world", []string{})
@@ -170,6 +171,7 @@ func TestHelloWorld(t *testing.T) {
 	// TODO: If the cache doesn't exist the test will fail on its first run
 	// because the log output is slightly different. Handle this better.
 	file, err := os.Open("fixtures/caches/hello-world.tar.gz")
+	//nolint
 	if err == nil {
 		err = run.PutCache(file)
 		if err != nil {

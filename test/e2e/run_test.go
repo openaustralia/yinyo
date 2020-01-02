@@ -62,9 +62,11 @@ func createTemporaryDirectories() (appPath string, importPath string, cachePath 
 	return
 }
 
+//nolint
 func TestSimpleRun(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
+		//nolint
 		if count == 0 {
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
@@ -205,9 +207,11 @@ func TestSimpleRun(t *testing.T) {
 	// TODO: Test that output is correctly uploaded
 }
 
+//nolint
 func TestFailingBuild(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
+		//nolint
 		if count == 0 {
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
@@ -298,6 +302,7 @@ func TestFailingBuild(t *testing.T) {
 	}
 }
 
+//nolint
 func TestFailingRun(t *testing.T) {
 	count := 0i
 	handler := func(w http.ResponseWriter, r *http.Request) {
@@ -414,6 +419,7 @@ func TestInternalError(t *testing.T) {
 	// the yinyo server, it should also add something to the log to let the user know
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
+		//nolint
 		if count == 0 {
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})

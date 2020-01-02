@@ -29,7 +29,7 @@ func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(createResult)
+	json.NewEncoder(w).Encode(createResult) //nolint
 	return nil
 }
 
@@ -233,7 +233,7 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 		runToken, err := extractBearerToken(r.Header)
 		if err != nil {
 			err = newHTTPError(err, http.StatusForbidden, err.Error())
-			logAndReturnError(err, w)
+			logAndReturnError(err, w) //nolint
 			return
 		}
 
@@ -244,14 +244,14 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 			if errors.Is(err, commands.ErrNotFound) {
 				err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runName))
 			}
-			logAndReturnError(err, w)
+			logAndReturnError(err, w) //nolint
 			return
 		}
 
 		if runToken != actualRunToken {
 			err = errors.New("Authorization header has incorrect bearer token")
 			err = newHTTPError(err, http.StatusForbidden, err.Error())
-			logAndReturnError(err, w)
+			logAndReturnError(err, w) //nolint
 			return
 		}
 
@@ -290,7 +290,7 @@ type appHandler func(http.ResponseWriter, *http.Request) error
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := fn(w, r)
 	if err != nil {
-		logAndReturnError(err, w)
+		logAndReturnError(err, w) //nolint
 	}
 }
 

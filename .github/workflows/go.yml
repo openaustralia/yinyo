@@ -1,6 +1,32 @@
-name: Go
-on: [push]
+name: test and build
+on: [push, pull_request]
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.x
+
+      - name: setup env
+        run: |
+          echo "::set-env name=GOPATH::$(go env GOPATH)"
+          echo "::add-path::$(go env GOPATH)/bin"
+        shell: bash
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - name: Install golangci-lint
+        run: |
+          go get github.com/golangci/golangci-lint/cmd/golangci-lint
+
+      - name: Run linters
+        run: |
+
+          golangci-lint -E bodyclose,misspell,gocyclo,dupl,gofmt,golint,unconvert,goimports,depguard,gocritic,funlen,interfacer run
+
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -10,7 +36,6 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: 1.13
-      id: go
 
     - name: setup env
       run: |
@@ -29,11 +54,68 @@ jobs:
             dep ensure
         fi
 
-    - name: Build
-      run: go build -v ./...
-    
+    #Some of the tests invoke the yinyo binary, so we need to install it first
     - name: Install
       run: go install -v ./...
     
     - name: Test
       run: go test ./... -short
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      if: success()
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13.x
+
+    - name: setup env
+      run: |
+        echo "::set-env name=GOPATH::$(go env GOPATH)"
+        echo "::add-path::$(go env GOPATH)/bin"
+      shell: bash
+
+    - name: Checkout code
+      uses: actions/checkout@v1
+
+    - name: Install
+      run: go install -v ./...
+    
+    - name: Calc coverage 
+      run: |
+        go test -v -short -covermode=count -coverprofile=coverage.out ./...
+
+    - name: Convert coverage to lcov
+      uses: jandelgado/gcov2lcov-action@v1.0.0
+      with:
+          infile: coverage.out
+          outfile: coverage.lcov
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@v1.0.1
+      with:
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: coverage.lcov
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13.x
+    - name: Checkout code
+      uses: actions/checkout@v1
+    - name: build
+      run: |
+        export GO111MODULE=on
+        mkdir bin/
+        #GOOS=windows GOARCH=amd64 go build -o bin ./...
+        GOOS=linux   GOARCH=amd64 go build -o bin ./...
+    - name: upload artifacts
+      uses: actions/upload-artifact@master
+      with:
+        name: binaries
+        path: bin/

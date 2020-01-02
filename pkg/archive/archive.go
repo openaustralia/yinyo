@@ -114,6 +114,7 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 
 // CreateFromDirectory creates an archive from a directory on the filesystem
 // ignorePaths is a list of paths (relative to dir) that should be ignored and not archived
+//nolint
 func CreateFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)

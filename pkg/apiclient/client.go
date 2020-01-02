@@ -30,6 +30,7 @@ type Client struct {
 }
 
 // New configures a new Client
+//nolint
 func New(URL string) *Client {
 	return &Client{
 		URL:        URL,

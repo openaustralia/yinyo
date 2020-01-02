@@ -1,7 +1,7 @@
 package stream
 
 import (
-	"encoding/json"
+	"encoding/json" //nolint
 	"github.com/go-redis/redis"
 	"github.com/openaustralia/yinyo/pkg/event"
 )

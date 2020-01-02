@@ -1,5 +1,6 @@
 package empty
 
+//nolint
 import (
 	_ "bufio"
 	_ "fmt"
