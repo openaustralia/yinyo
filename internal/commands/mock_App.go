@@ -27,14 +27,14 @@ func (_m *MockApp) CreateEvent(runName string, _a1 event.Event) error {
 }
 
 // CreateRun provides a mock function with given fields: namePrefix
-func (_m *MockApp) CreateRun(namePrefix string) (CreateRunResult, error) {
+func (_m *MockApp) CreateRun(namePrefix string) (protocol.Run, error) {
 	ret := _m.Called(namePrefix)
 
-	var r0 CreateRunResult
-	if rf, ok := ret.Get(0).(func(string) CreateRunResult); ok {
+	var r0 protocol.Run
+	if rf, ok := ret.Get(0).(func(string) protocol.Run); ok {
 		r0 = rf(namePrefix)
 	} else {
-		r0 = ret.Get(0).(CreateRunResult)
+		r0 = ret.Get(0).(protocol.Run)
 	}
 
 	var r1 error

@@ -10,6 +10,7 @@ import (
 	"github.com/openaustralia/yinyo/internal/commands"
 	"github.com/openaustralia/yinyo/pkg/blobstore"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +21,7 @@ func TestCreateRunInternalServerError(t *testing.T) {
 	}
 	app := new(commands.MockApp)
 	// There was some kind of internal error when creating a run
-	app.On("CreateRun", "").Return(commands.CreateRunResult{}, errors.New("Something internal"))
+	app.On("CreateRun", "").Return(protocol.Run{}, errors.New("Something internal"))
 	server := Server{app: app}
 	server.InitialiseRoutes()
 

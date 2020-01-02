@@ -29,7 +29,7 @@ const runBinary = "/bin/yinyo"
 
 // App is the interface for the operations of the server
 type App interface {
-	CreateRun(namePrefix string) (CreateRunResult, error)
+	CreateRun(namePrefix string) (protocol.Run, error)
 	DeleteRun(runName string) error
 	StartRun(runName string, output string, env map[string]string, callbackURL string) error
 	GetApp(runName string) (io.Reader, error)
@@ -52,12 +52,6 @@ type AppImplementation struct {
 	Stream        stream.Client
 	KeyValueStore keyvaluestore.Client
 	HTTP          *http.Client
-}
-
-// CreateRunResult is the output of CreateRun
-type CreateRunResult struct {
-	RunName  string `json:"name"`
-	RunToken string `json:"token"`
 }
 
 //nolint
@@ -126,8 +120,8 @@ func New() (App, error) {
 }
 
 // CreateRun creates a run
-func (app *AppImplementation) CreateRun(namePrefix string) (CreateRunResult, error) {
-	var createResult CreateRunResult
+func (app *AppImplementation) CreateRun(namePrefix string) (protocol.Run, error) {
+	var createResult protocol.Run
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
@@ -138,9 +132,9 @@ func (app *AppImplementation) CreateRun(namePrefix string) (CreateRunResult, err
 		return createResult, err
 	}
 
-	createResult = CreateRunResult{
-		RunName:  runName,
-		RunToken: runToken,
+	createResult = protocol.Run{
+		Name:  runName,
+		Token: runToken,
 	}
 
 	// Now cache the token for quicker access
