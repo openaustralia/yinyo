@@ -44,9 +44,7 @@ func streamLogs(run apiclient.Run, stage string, streamName string, stream io.Re
 	c <- scanner.Err()
 }
 
-// env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
-//nolint
-func runExternalCommand(run apiclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
+func runExternalCommand(run apiclient.Run, stage string, commandString string, env []string) (*os.ProcessState, error) {
 	// make a channel with a capacity of 100.
 	eventsChan := make(chan event.Event, 1000)
 
@@ -54,12 +52,10 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 	// start the worker that sends the event messages
 	go eventsSender(run, eventsChan)
 
-	var exitData protocol.ExitDataStage
-
 	// Splits string up into pieces using shell rules
 	commandParts, err := shellquote.Split(commandString)
 	if err != nil {
-		return exitData, err
+		return nil, err
 	}
 	command := exec.Command(commandParts[0], commandParts[1:]...)
 	// Add the environment variables to the pre-existing environment
@@ -67,12 +63,43 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 	command.Env = append(os.Environ(), env...)
 	stdout, err := command.StdoutPipe()
 	if err != nil {
-		return exitData, err
+		return nil, err
 	}
 	stderr, err := command.StderrPipe()
 	if err != nil {
-		return exitData, err
+		return nil, err
 	}
+	if err := command.Start(); err != nil {
+		return nil, err
+	}
+
+	c := make(chan error)
+	go streamLogs(run, stage, "stdout", stdout, c, eventsChan)
+	go streamLogs(run, stage, "stderr", stderr, c, eventsChan)
+	err = <-c
+	if err != nil {
+		return nil, err
+	}
+	err = <-c
+	if err != nil {
+		return nil, err
+	}
+
+	// Now wait for all the events to get sent via http
+	close(eventsChan)
+	wg.Wait()
+
+	err = command.Wait()
+	if err != nil && command.ProcessState.ExitCode() == 0 {
+		return nil, err
+	}
+	return command.ProcessState, nil
+}
+
+// env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
+func runExternalCommandWithStats(run apiclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
+	var exitData protocol.ExitDataStage
+
 	// Capture the time and the network counters
 	start := time.Now()
 	statsStart, err := net.IOCounters(false)
@@ -84,30 +111,11 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 		return exitData, errors.New("Only expected one stat")
 	}
 
-	if err := command.Start(); err != nil {
-		return exitData, err
-	}
-
-	c := make(chan error)
-	go streamLogs(run, stage, "stdout", stdout, c, eventsChan)
-	go streamLogs(run, stage, "stderr", stderr, c, eventsChan)
-	err = <-c
-	if err != nil {
-		return exitData, err
-	}
-	err = <-c
+	state, err := runExternalCommand(run, stage, commandString, env)
 	if err != nil {
 		return exitData, err
 	}
 
-	// Now wait for all the events to get sent via http
-	close(eventsChan)
-	wg.Wait()
-
-	err = command.Wait()
-	if err != nil && command.ProcessState.ExitCode() == 0 {
-		return exitData, err
-	}
 	statsEnd, err := net.IOCounters(false)
 	if err != nil {
 		return exitData, err
@@ -120,15 +128,14 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 	exitData.Usage.NetworkIn = statsEnd[0].BytesRecv - statsStart[0].BytesRecv
 	exitData.Usage.NetworkOut = statsEnd[0].BytesSent - statsStart[0].BytesSent
 	exitData.Usage.WallTime = time.Since(start).Seconds()
-	exitData.Usage.CPUTime = command.ProcessState.UserTime().Seconds() +
-		command.ProcessState.SystemTime().Seconds()
+	exitData.Usage.CPUTime = state.UserTime().Seconds() + state.SystemTime().Seconds()
 	// This bit will only return something when run on Linux I think
-	rusage, ok := command.ProcessState.SysUsage().(*syscall.Rusage)
+	rusage, ok := state.SysUsage().(*syscall.Rusage)
 	if ok {
 		// rusage.Maxrss is in kilobytes, while exitData.Usage.MaxRSS is in bytes
 		exitData.Usage.MaxRSS = uint64(rusage.Maxrss) * 1024
 	}
-	exitData.ExitCode = command.ProcessState.ExitCode()
+	exitData.ExitCode = state.ExitCode()
 
 	return exitData, nil
 }
@@ -202,7 +209,7 @@ func Run(options Options) {
 	// Initially do a very naive way of calling the command just to get things going
 	var exitData protocol.ExitData
 
-	exitDataStage, err := runExternalCommand(run, "build", options.BuildCommand, env)
+	exitDataStage, err := runExternalCommandWithStats(run, "build", options.BuildCommand, env)
 	checkError(err, run, "build", "Unexpected error while building")
 	exitData.Build = &exitDataStage
 
@@ -220,7 +227,7 @@ func Run(options Options) {
 		err = run.CreateEvent(event.NewStartEvent("", time.Now(), "run"))
 		checkError(err, run, "run", "Could not create event")
 
-		exitDataStage, err := runExternalCommand(run, "run", options.RunCommand, env)
+		exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
 		checkError(err, run, "run", "Unexpected error while running")
 		exitData.Run = &exitDataStage
 
