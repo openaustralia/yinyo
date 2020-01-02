@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/spf13/cobra"
 )
@@ -65,16 +66,16 @@ var clientCmd = &cobra.Command{
 			file.Close()
 		}
 
-		var envVariables []yinyoclient.EnvVariable
+		var envVariables []protocol.EnvVariable
 		for k, v := range environment {
 			// TODO: Fix this inefficient way
-			envVariables = append(envVariables, yinyoclient.EnvVariable{Name: k, Value: v})
+			envVariables = append(envVariables, protocol.EnvVariable{Name: k, Value: v})
 		}
 
 		// Start the run
-		err = run.Start(&yinyoclient.StartRunOptions{
+		err = run.Start(&protocol.StartRunOptions{
 			Output:   outputFile,
-			Callback: yinyoclient.Callback{URL: callbackURL},
+			Callback: protocol.Callback{URL: callbackURL},
 			Env:      envVariables,
 		})
 		if err != nil {

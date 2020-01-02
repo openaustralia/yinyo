@@ -16,7 +16,7 @@ import (
 
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/event"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -136,7 +136,7 @@ func TestSimpleRun(t *testing.T) {
 		} else if count == 16 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData yinyoclient.ExitData
+			var exitData protocol.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)
@@ -240,7 +240,7 @@ func TestFailingBuild(t *testing.T) {
 		} else if count == 6 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData yinyoclient.ExitData
+			var exitData protocol.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)
@@ -339,7 +339,7 @@ func TestFailingRun(t *testing.T) {
 		} else if count == 8 {
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
-			var exitData yinyoclient.ExitData
+			var exitData protocol.ExitData
 			err := decoder.Decode(&exitData)
 			if err != nil {
 				t.Fatal(err)

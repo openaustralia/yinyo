@@ -15,6 +15,7 @@ import (
 
 	"github.com/kballard/go-shellquote"
 	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/shirou/gopsutil/net"
 )
@@ -39,7 +40,7 @@ func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.
 }
 
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
-func runExternalCommand(run yinyoclient.Run, stage string, commandString string, env []string) (yinyoclient.ExitDataStage, error) {
+func runExternalCommand(run yinyoclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
 	// make a channel with a capacity of 100.
 	eventsChan := make(chan event.Event, 1000)
 
@@ -47,7 +48,7 @@ func runExternalCommand(run yinyoclient.Run, stage string, commandString string,
 	// start the worker that sends the event messages
 	go eventsSender(run, eventsChan)
 
-	var exitData yinyoclient.ExitDataStage
+	var exitData protocol.ExitDataStage
 
 	// Splits string up into pieces using shell rules
 	commandParts, err := shellquote.Split(commandString)
@@ -151,7 +152,7 @@ type Options struct {
 // Run runs a scraper from inside a container
 func Run(options Options) {
 	client := yinyoclient.New(options.ServerURL)
-	run := yinyoclient.Run{Name: options.RunName, Token: options.RunToken, Client: client}
+	run := yinyoclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
 	err := run.CreateEvent(event.NewStartEvent("", time.Now(), "build"))
 	checkError(err, run, "build", "Could not create event")
 
@@ -188,7 +189,7 @@ func Run(options Options) {
 	}
 
 	// Initially do a very naive way of calling the command just to get things going
-	var exitData yinyoclient.ExitData
+	var exitData protocol.ExitData
 
 	exitDataStage, err := runExternalCommand(run, "build", options.BuildCommand, env)
 	checkError(err, run, "build", "Unexpected error while building")

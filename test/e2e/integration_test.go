@@ -9,6 +9,7 @@ import (
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
 )
@@ -181,8 +182,8 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now start the scraper
-	err = run.Start(&yinyoclient.StartRunOptions{Output: "output.txt", Env: []yinyoclient.EnvVariable{
-		yinyoclient.EnvVariable{Name: "HELLO", Value: "Hello World!"},
+	err = run.Start(&protocol.StartRunOptions{Output: "output.txt", Env: []protocol.EnvVariable{
+		protocol.EnvVariable{Name: "HELLO", Value: "Hello World!"},
 	}})
 	if err != nil {
 		t.Fatal(err)

@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/internal/commands"
 	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
 func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
@@ -114,27 +115,11 @@ func (server *Server) putExitData(w http.ResponseWriter, r *http.Request) error 
 	return server.app.PutExitData(r.Body, r.ContentLength, runName)
 }
 
-type envVariable struct {
-	Name  string
-	Value string
-}
-
-// TODO: Remove duplication with client code
-type startBody struct {
-	Output   string
-	Env      []envVariable
-	Callback callback
-}
-
-type callback struct {
-	URL string
-}
-
 func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	decoder := json.NewDecoder(r.Body)
-	var l startBody
+	var l protocol.StartRunOptions
 	err := decoder.Decode(&l)
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
