@@ -119,7 +119,7 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 
 	exitData.Usage.NetworkIn = statsEnd[0].BytesRecv - statsStart[0].BytesRecv
 	exitData.Usage.NetworkOut = statsEnd[0].BytesSent - statsStart[0].BytesSent
-	exitData.Usage.WallTime = time.Now().Sub(start).Seconds()
+	exitData.Usage.WallTime = time.Since(start).Seconds()
 	exitData.Usage.CPUTime = command.ProcessState.UserTime().Seconds() +
 		command.ProcessState.SystemTime().Seconds()
 	// This bit will only return something when run on Linux I think
