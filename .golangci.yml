@@ -1,0 +1,14 @@
+linters:
+  enable:
+    - bodyclose
+    - misspell
+    - gocyclo
+    - dupl
+    - gofmt
+    - golint
+    - unconvert
+    - goimports
+    - depguard
+    - gocritic
+    - funlen
+    - interfacer
