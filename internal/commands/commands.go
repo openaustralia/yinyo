@@ -3,6 +3,7 @@ package commands
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -19,6 +20,7 @@ import (
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
@@ -40,8 +42,8 @@ type App interface {
 	PutCache(reader io.Reader, objectSize int64, runName string) error
 	GetOutput(runName string) (io.Reader, error)
 	PutOutput(reader io.Reader, objectSize int64, runName string) error
-	GetExitData(runName string) (io.Reader, error)
-	PutExitData(reader io.Reader, objectSize int64, runName string) error
+	GetExitData(runName string) (protocol.ExitData, error)
+	PutExitData(runName string, exitData protocol.ExitData) error
 	GetEvents(runName string, lastID string) Events
 	CreateEvent(runName string, event event.Event) error
 	GetTokenCache(runName string) (string, error)
@@ -213,18 +215,27 @@ func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runN
 	return app.putData(reader, objectSize, runName, filenameOutput)
 }
 
-// GetExitData downloads the json exit data
-// TODO: This should be returned unmarshalled
-func (app *AppImplementation) GetExitData(runName string) (io.Reader, error) {
-	return app.getData(runName, filenameExitData)
+// GetExitData downloads the exit data
+func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, error) {
+	var exitData protocol.ExitData
+	reader, err := app.getData(runName, filenameExitData)
+	if err != nil {
+		return exitData, err
+	}
+
+	dec := json.NewDecoder(reader)
+	err = dec.Decode(&exitData)
+	return exitData, err
 }
 
 // PutExitData uploads the (already serialised) json exit data
 // TODO: Store this in redis rather than on the blobstore
-// TODO: Validation of the format too
-// TODO: Marshalling should be done here
-func (app *AppImplementation) PutExitData(reader io.Reader, objectSize int64, runName string) error {
-	return app.putData(reader, objectSize, runName, filenameExitData)
+func (app *AppImplementation) PutExitData(runName string, exitData protocol.ExitData) error {
+	b, err := json.Marshal(exitData)
+	if err != nil {
+		return err
+	}
+	return app.putData(strings.NewReader(string(b)), int64(len(b)), runName, filenameExitData)
 }
 
 // StartRun starts the run

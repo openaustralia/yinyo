@@ -98,7 +98,8 @@ func (server *Server) putOutput(w http.ResponseWriter, r *http.Request) error {
 
 func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	reader, err := server.app.GetExitData(runName)
+
+	exitData, err := server.app.GetExitData(runName)
 	if err != nil {
 		// Returns 404 if there is no exit data
 		if errors.Is(err, commands.ErrNotFound) {
@@ -106,13 +107,21 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 		}
 		return err
 	}
-	_, err = io.Copy(w, reader)
-	return err
+
+	enc := json.NewEncoder(w)
+	return enc.Encode(exitData)
 }
 
 func (server *Server) putExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return server.app.PutExitData(r.Body, r.ContentLength, runName)
+	dec := json.NewDecoder(r.Body)
+	var exitData protocol.ExitData
+	err := dec.Decode(&exitData)
+	if err != nil {
+		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
+	}
+
+	return server.app.PutExitData(runName, exitData)
 }
 
 func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
