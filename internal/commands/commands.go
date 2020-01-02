@@ -129,20 +129,24 @@ func New() (App, error) {
 
 // CreateRun creates a run
 func (app *AppImplementation) CreateRun(namePrefix string) (CreateRunResult, error) {
+	var createResult CreateRunResult
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
 	// Generate random token
 	runToken := uniuri.NewLen(32)
 	runName, err := app.JobDispatcher.CreateJobAndToken(namePrefix, runToken)
+	if err != nil {
+		return createResult, err
+	}
 
-	// Now cache the token for quicker access
-	app.setTokenCache(runName, runToken)
-
-	createResult := CreateRunResult{
+	createResult = CreateRunResult{
 		RunName:  runName,
 		RunToken: runToken,
 	}
+
+	// Now cache the token for quicker access
+	err = app.setKeyValueData(runName, tokenCacheKey, runToken)
 	return createResult, err
 }
 
@@ -249,7 +253,7 @@ func (app *AppImplementation) StartRun(
 		return err
 	}
 
-	err = app.setCallbackURL(runName, callbackURL)
+	err = app.setKeyValueData(runName, callbackKey, callbackURL)
 	if err != nil {
 		return err
 	}
@@ -359,11 +363,16 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 	if err != nil {
 		return err
 	}
-	err = app.deleteCallbackURL(runName)
+	err = app.deleteKeyValueData(runName, callbackKey)
 	if err != nil {
 		return err
 	}
-	return app.deleteTokenCache(runName)
+	return app.deleteKeyValueData(runName, tokenCacheKey)
+}
+
+// GetTokenCache gets the cached runToken. Returns ErrNotFound if run name doesn't exist
+func (app *AppImplementation) GetTokenCache(runName string) (string, error) {
+	return app.getKeyValueData(runName, tokenCacheKey)
 }
 
 func blobStoreStoragePath(runName string, fileName string) string {
@@ -389,4 +398,27 @@ func (app *AppImplementation) putBlobStoreData(reader io.Reader, objectSize int6
 
 func (app *AppImplementation) deleteBlobStoreData(runName string, fileName string) error {
 	return app.BlobStore.Delete(blobStoreStoragePath(runName, fileName))
+}
+
+func (app *AppImplementation) postCallbackEvent(runName string, event event.Event) error {
+	var b bytes.Buffer
+	enc := json.NewEncoder(&b)
+	enc.Encode(event)
+
+	callbackURL, err := app.getKeyValueData(runName, callbackKey)
+	if err != nil {
+		return err
+	}
+
+	// Only do the callback if there's a sensible URL
+	if callbackURL != "" {
+		resp, err := app.HTTP.Post(callbackURL, "application/json", &b)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return errors.New("callback: " + resp.Status)
+		}
+	}
+	return nil
 }
