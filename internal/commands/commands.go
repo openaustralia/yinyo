@@ -150,26 +150,38 @@ func (app *AppImplementation) GetApp(runName string) (io.Reader, error) {
 	return app.getData(runName, filenameApp)
 }
 
-// PutApp uploads the tar & gzipped application code
-func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName string) error {
-	// Simultaneously check that the archive is valid and save to a temporary file
+// Simultaneously check that the archive is valid and save to a temporary file
+// If this errors the temp file will not be created
+// Responsibility of the caller to delete the temporary file
+func (app *AppImplementation) validateArchiveToTempFile(reader io.Reader) (*os.File, error) {
 	tmpfile, err := ioutil.TempFile("", filenameApp)
 	if err != nil {
-		return err
+		return tmpfile, err
 	}
-	defer os.Remove(tmpfile.Name())
 
 	r := io.TeeReader(reader, tmpfile)
 	err = archive.Validate(r)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrArchiveFormat, err)
+		os.Remove(tmpfile.Name())
+		return tmpfile, fmt.Errorf("%w: %v", ErrArchiveFormat, err)
 	}
 
 	// Go back to the beginning of the temporary file
 	_, err = tmpfile.Seek(0, io.SeekStart)
 	if err != nil {
+		os.Remove(tmpfile.Name())
+		return tmpfile, err
+	}
+	return tmpfile, nil
+}
+
+// PutApp uploads the tar & gzipped application code
+func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName string) error {
+	tmpfile, err := app.validateArchiveToTempFile(reader)
+	if err != nil {
 		return err
 	}
+	defer os.Remove(tmpfile.Name())
 
 	// Now upload the contents of the temporary file
 	return app.putData(tmpfile, objectSize, runName, filenameApp)
@@ -182,7 +194,13 @@ func (app *AppImplementation) GetCache(runName string) (io.Reader, error) {
 
 // PutCache uploads the tar & gzipped build cache
 func (app *AppImplementation) PutCache(reader io.Reader, objectSize int64, runName string) error {
-	return app.putData(reader, objectSize, runName, filenameCache)
+	tmpfile, err := app.validateArchiveToTempFile(reader)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpfile.Name())
+
+	return app.putData(tmpfile, objectSize, runName, filenameCache)
 }
 
 // GetOutput downloads the scraper output
