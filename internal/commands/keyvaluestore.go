@@ -9,6 +9,7 @@ import (
 
 const tokenCacheKey = "token"
 const callbackKey = "url"
+const exitDataKey = "exit_data"
 
 func keyValuePath(runName string, key string) string {
 	// TODO: Reverse order of key and runName

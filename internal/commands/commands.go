@@ -215,12 +215,10 @@ func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runN
 	return app.putBlobStoreData(reader, objectSize, runName, filenameOutput)
 }
 
-const exitDataPrefix = "exit_data:"
-
 // GetExitData downloads the exit data
 func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	r, err := app.KeyValueStore.Get(exitDataPrefix + runName)
+	r, err := app.getKeyValueData(runName, exitDataKey)
 	if err != nil {
 		return exitData, err
 	}
@@ -234,7 +232,7 @@ func (app *AppImplementation) PutExitData(runName string, exitData protocol.Exit
 	if err != nil {
 		return err
 	}
-	return app.KeyValueStore.Set(exitDataPrefix+runName, string(b))
+	return app.setKeyValueData(runName, exitDataKey, string(b))
 }
 
 // StartRun starts the run
@@ -348,7 +346,7 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 	if err != nil {
 		return err
 	}
-	err = app.KeyValueStore.Delete(exitDataPrefix + runName)
+	err = app.deleteKeyValueData(runName, exitDataKey)
 	if err != nil {
 		return err
 	}
