@@ -40,6 +40,7 @@ func streamLogs(run apiclient.Run, stage string, streamName string, stream io.Re
 }
 
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
+//nolint
 func runExternalCommand(run apiclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
 	// make a channel with a capacity of 100.
 	eventsChan := make(chan event.Event, 1000)

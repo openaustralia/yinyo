@@ -1,5 +1,6 @@
 package cmd
 
+//nolint
 import (
 	"encoding/json"
 	"fmt"

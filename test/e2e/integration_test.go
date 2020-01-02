@@ -111,7 +111,7 @@ func TestUploadDownloadApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete()
+	defer run.Delete() //nolint
 	// Now upload an empty tar file (doing this so it validates)
 	empty, err := os.Open("fixtures/empty.tgz")
 	if err != nil {
