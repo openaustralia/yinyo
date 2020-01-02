@@ -29,8 +29,7 @@ func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(createResult) //nolint
-	return nil
+	return json.NewEncoder(w).Encode(createResult)
 }
 
 func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
@@ -233,7 +232,7 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 		runToken, err := extractBearerToken(r.Header)
 		if err != nil {
 			err = newHTTPError(err, http.StatusForbidden, err.Error())
-			logAndReturnError(err, w) //nolint
+			logAndReturnError(err, w)
 			return
 		}
 
@@ -244,14 +243,14 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 			if errors.Is(err, commands.ErrNotFound) {
 				err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runName))
 			}
-			logAndReturnError(err, w) //nolint
+			logAndReturnError(err, w)
 			return
 		}
 
 		if runToken != actualRunToken {
 			err = errors.New("Authorization header has incorrect bearer token")
 			err = newHTTPError(err, http.StatusForbidden, err.Error())
-			logAndReturnError(err, w) //nolint
+			logAndReturnError(err, w)
 			return
 		}
 
@@ -259,29 +258,30 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 	})
 }
 
-func logAndReturnError(err error, w http.ResponseWriter) error {
+func logAndReturnError(err error, w http.ResponseWriter) {
 	log.Println(err)
 	err2, ok := err.(clientError)
 	if !ok {
 		// TODO: Factor out common code with other error handling
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(`{"error":"Internal server error"}`))
-		return err
+		//nolint:errcheck // ignore error while logging an error
+		w.Write([]byte(`{"error":"Internal server error"}`))
+		return
 	}
 	body, err := err2.ResponseBody()
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return nil
+		return
 	}
 	status, headers := err2.ResponseHeaders()
 	for k, v := range headers {
 		w.Header().Set(k, v)
 	}
 	w.WriteHeader(status)
-	_, err = w.Write(body)
-	return err
+	//nolint:errcheck // ignore error while logging an error
+	w.Write(body)
 }
 
 type appHandler func(http.ResponseWriter, *http.Request) error
@@ -290,7 +290,7 @@ type appHandler func(http.ResponseWriter, *http.Request) error
 func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := fn(w, r)
 	if err != nil {
-		logAndReturnError(err, w) //nolint
+		logAndReturnError(err, w)
 	}
 }
 

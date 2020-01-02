@@ -41,7 +41,7 @@ func TestCreateRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete() //nolint
+	defer run.Delete()
 
 	// The only purpose of name_prefix is to make runs easier for humans to identify
 	// So, expect the run to start with the name_prefix but there's probably more
@@ -59,7 +59,7 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete() //nolint
+	defer run.Delete()
 
 	// Only certain characters are allowed in kubernetes job names
 	assert.True(t, strings.HasPrefix(run.Name, "foo-b-12r-"))
@@ -77,12 +77,12 @@ func TestCreateRunNamesUnique(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run1.Delete() //nolint
+	defer run1.Delete()
 	run2, err := client.CreateRun("foo")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run2.Delete() //nolint
+	defer run2.Delete()
 	assert.NotEqual(t, run1.Name, run2.Name)
 }
 
@@ -96,7 +96,7 @@ func TestNamePrefixOptional(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete() //nolint
+	defer run.Delete()
 	assert.True(t, strings.HasPrefix(run.Name, "run-"))
 }
 
@@ -111,7 +111,7 @@ func TestUploadDownloadApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete() //nolint
+	defer run.Delete()
 	// Now upload an empty tar file (doing this so it validates)
 	empty, err := os.Open("fixtures/empty.tgz")
 	if err != nil {
@@ -159,7 +159,7 @@ func TestHelloWorld(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete() //nolint
+	defer run.Delete()
 
 	// Now upload the application
 	err = run.PutAppFromDirectory("fixtures/scrapers/hello-world", []string{})

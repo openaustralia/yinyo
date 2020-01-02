@@ -30,10 +30,9 @@ type Client struct {
 }
 
 // New configures a new Client
-//nolint
-func New(URL string) *Client {
+func New(url string) *Client {
 	return &Client{
-		URL:        URL,
+		URL:        url,
 		HTTPClient: http.DefaultClient,
 	}
 }

@@ -1,7 +1,7 @@
 package empty
 
-//nolint
 import (
+	// importing these so we can speed up the build inside a container
 	_ "bufio"
 	_ "fmt"
 	_ "io"
@@ -9,6 +9,7 @@ import (
 	_ "net/http"
 	_ "time"
 
+	// importing these so we can speed up the build inside a container
 	_ "github.com/dchest/uniuri"
 	_ "github.com/go-redis/redis"
 	_ "github.com/gorilla/mux"

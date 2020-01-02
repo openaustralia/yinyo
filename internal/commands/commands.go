@@ -374,10 +374,11 @@ func (app *AppImplementation) postCallbackEvent(runName string, event event.Even
 
 	// Only do the callback if there's a sensible URL
 	if callbackURL != "" {
-		resp, err := app.HTTP.Post(callbackURL, "application/json", &b) //nolint
+		resp, err := app.HTTP.Post(callbackURL, "application/json", &b)
 		if err != nil {
 			return err
 		}
+		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
 			return errors.New("callback: " + resp.Status)
 		}

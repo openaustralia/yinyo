@@ -160,7 +160,10 @@ func CreateFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 			return err
 		}
 		header.Name = relativePath
-		tarWriter.WriteHeader(header)
+		err = tarWriter.WriteHeader(header)
+		if err != nil {
+			return err
+		}
 
 		// If it's a regular file then write the contents
 		if info.Mode().IsRegular() {

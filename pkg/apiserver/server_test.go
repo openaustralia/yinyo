@@ -30,7 +30,7 @@ func TestCreateRunInternalServerError(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 	assert.Equal(t, `{"error":"Internal server error"}`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap) //nolint
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 	app.AssertExpectations(t)
 }
 
@@ -50,7 +50,7 @@ func TestStartBadBody(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 	assert.Equal(t, `{"error":"JSON in body not correctly formatted"}`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap) //nolint
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 }
 
 // If we haven't uploaded an app error when starting a run
@@ -77,7 +77,7 @@ func TestStartNoApp(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 	assert.Equal(t, `{"error":"app needs to be uploaded before starting a run"}`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap) //nolint
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 	blobstoreClient.AssertExpectations(t)
 	keyvalueStore.AssertExpectations(t)
 }
@@ -96,7 +96,7 @@ func TestCreateEventBadBody(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 	assert.Equal(t, `{"error":"JSON in body not correctly formatted"}`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap) //nolint
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 }
 
 func TestPutAppWrongRunName(t *testing.T) {
@@ -118,7 +118,7 @@ func TestPutAppWrongRunName(t *testing.T) {
 
 	assert.Equal(t, http.StatusNotFound, rr.Code)
 	assert.Equal(t, `{"error":"run does-not-exist: not found"}`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap) //nolint
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 
 	app.AssertExpectations(t)
 }
@@ -142,7 +142,7 @@ func TestGetAppErrNotFound(t *testing.T) {
 
 	assert.Equal(t, http.StatusNotFound, rr.Code)
 	assert.Equal(t, `{"error":"not found"}`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap) //nolint
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 	app.AssertExpectations(t)
 }
 
@@ -160,7 +160,7 @@ func TestGetAppNoBearerToken(t *testing.T) {
 
 	assert.Equal(t, http.StatusForbidden, rr.Code)
 	assert.Equal(t, `{"error":"Expected Authorization header with bearer token"}`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap) //nolint
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 }
 
 func TestGetAppBadToken(t *testing.T) {
@@ -180,6 +180,6 @@ func TestGetAppBadToken(t *testing.T) {
 
 	assert.Equal(t, http.StatusForbidden, rr.Code)
 	assert.Equal(t, `{"error":"Authorization header has incorrect bearer token"}`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.HeaderMap) //nolint
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 	app.AssertExpectations(t)
 }
