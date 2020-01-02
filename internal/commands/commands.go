@@ -228,7 +228,7 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 	return exitData, err
 }
 
-// PutExitData uploads the (already serialised) json exit data
+// PutExitData uploads the exit data
 // TODO: Store this in redis rather than on the blobstore
 func (app *AppImplementation) PutExitData(runName string, exitData protocol.ExitData) error {
 	b, err := json.Marshal(exitData)
