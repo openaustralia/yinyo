@@ -112,9 +112,56 @@ func ExtractToDirectory(content io.Reader, dir string) error {
 	return walk(content, createDirectory, createFile, createSymlink)
 }
 
+func node(path string, info os.FileInfo, dir string, tarWriter *tar.Writer) error {
+	relativePath, err := filepath.Rel(dir, path)
+	if err != nil {
+		return err
+	}
+
+	var link string
+	if info.Mode()&os.ModeSymlink != 0 {
+		link, err = os.Readlink(path)
+		if err != nil {
+			return err
+		}
+		if filepath.IsAbs(link) {
+			// Convert the absolute link to a relative link
+			absPath, err := filepath.Abs(path)
+			if err != nil {
+				return err
+			}
+			d := filepath.Dir(absPath)
+			link, err = filepath.Rel(d, link)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	header, err := tar.FileInfoHeader(info, link)
+	if err != nil {
+		return err
+	}
+	header.Name = relativePath
+	err = tarWriter.WriteHeader(header)
+	if err != nil {
+		return err
+	}
+
+	// If it's a regular file then write the contents
+	if info.Mode().IsRegular() {
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(tarWriter, f)
+		return err
+	}
+
+	return nil
+}
+
 // CreateFromDirectory creates an archive from a directory on the filesystem
 // ignorePaths is a list of paths (relative to dir) that should be ignored and not archived
-//nolint
 func CreateFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
@@ -131,51 +178,7 @@ func CreateFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 				return nil
 			}
 		}
-		relativePath, err := filepath.Rel(dir, path)
-		if err != nil {
-			return err
-		}
-
-		var link string
-		if info.Mode()&os.ModeSymlink != 0 {
-			link, err = os.Readlink(path)
-			if err != nil {
-				return err
-			}
-			if filepath.IsAbs(link) {
-				// Convert the absolute link to a relative link
-				absPath, err := filepath.Abs(path)
-				if err != nil {
-					return err
-				}
-				d := filepath.Dir(absPath)
-				link, err = filepath.Rel(d, link)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		header, err := tar.FileInfoHeader(info, link)
-		if err != nil {
-			return err
-		}
-		header.Name = relativePath
-		err = tarWriter.WriteHeader(header)
-		if err != nil {
-			return err
-		}
-
-		// If it's a regular file then write the contents
-		if info.Mode().IsRegular() {
-			f, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(tarWriter, f)
-			return err
-		}
-
-		return nil
+		return node(path, info, dir, tarWriter)
 	})
 	if err != nil {
 		return nil, err
