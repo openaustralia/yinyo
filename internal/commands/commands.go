@@ -27,7 +27,6 @@ import (
 const filenameApp = "app.tgz"
 const filenameCache = "cache.tgz"
 const filenameOutput = "output"
-const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/yinyo-scraper:v1"
 const runBinary = "/bin/yinyo"
 
@@ -215,27 +214,26 @@ func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runN
 	return app.putBlobStoreData(reader, objectSize, runName, filenameOutput)
 }
 
+const exitDataPrefix = "exit_data:"
+
 // GetExitData downloads the exit data
 func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	reader, err := app.getBlobStoreData(runName, filenameExitData)
+	r, err := app.KeyValueStore.Get(exitDataPrefix + runName)
 	if err != nil {
 		return exitData, err
 	}
-
-	dec := json.NewDecoder(reader)
-	err = dec.Decode(&exitData)
+	err = json.Unmarshal([]byte(r), &exitData)
 	return exitData, err
 }
 
 // PutExitData uploads the exit data
-// TODO: Store this in redis rather than on the blobstore
 func (app *AppImplementation) PutExitData(runName string, exitData protocol.ExitData) error {
 	b, err := json.Marshal(exitData)
 	if err != nil {
 		return err
 	}
-	return app.putBlobStoreData(strings.NewReader(string(b)), int64(len(b)), runName, filenameExitData)
+	return app.KeyValueStore.Set(exitDataPrefix+runName, string(b))
 }
 
 // StartRun starts the run
@@ -349,7 +347,7 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 	if err != nil {
 		return err
 	}
-	err = app.deleteBlobStoreData(runName, filenameExitData)
+	err = app.KeyValueStore.Delete(exitDataPrefix + runName)
 	if err != nil {
 		return err
 	}

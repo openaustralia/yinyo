@@ -188,11 +188,11 @@ func TestDeleteRun(t *testing.T) {
 	jobDispatcher.On("DeleteJobAndToken", "run-name").Return(nil)
 	blobStore.On("Delete", "run-name/app.tgz").Return(nil)
 	blobStore.On("Delete", "run-name/output").Return(nil)
-	blobStore.On("Delete", "run-name/exit-data.json").Return(nil)
 	blobStore.On("Delete", "run-name/cache.tgz").Return(nil)
 	stream.On("Delete", "run-name").Return(nil)
 	keyValueStore.On("Delete", "url:run-name").Return(nil)
 	keyValueStore.On("Delete", "token:run-name").Return(nil)
+	keyValueStore.On("Delete", "exit_data:run-name").Return(nil)
 
 	app := AppImplementation{
 		JobDispatcher: jobDispatcher,
