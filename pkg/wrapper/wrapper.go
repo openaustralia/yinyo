@@ -14,15 +14,15 @@ import (
 	"time"
 
 	"github.com/kballard/go-shellquote"
+	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/shirou/gopsutil/net"
 )
 
 var wg sync.WaitGroup
 
-func eventsSender(run yinyoclient.Run, eventsChan <-chan event.Event) {
+func eventsSender(run apiclient.Run, eventsChan <-chan event.Event) {
 	defer wg.Done()
 
 	// TODO: Send all events in a single http request
@@ -31,7 +31,7 @@ func eventsSender(run yinyoclient.Run, eventsChan <-chan event.Event) {
 	}
 }
 
-func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan event.Event) {
+func streamLogs(run apiclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan event.Event) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
 		eventsChan <- event.NewLogEvent("", time.Now(), stage, streamName, scanner.Text())
@@ -40,7 +40,7 @@ func streamLogs(run yinyoclient.Run, stage string, streamName string, stream io.
 }
 
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
-func runExternalCommand(run yinyoclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
+func runExternalCommand(run apiclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
 	// make a channel with a capacity of 100.
 	eventsChan := make(chan event.Event, 1000)
 
@@ -127,7 +127,7 @@ func runExternalCommand(run yinyoclient.Run, stage string, commandString string,
 	return exitData, nil
 }
 
-func checkError(err error, run yinyoclient.Run, stage string, text string) {
+func checkError(err error, run apiclient.Run, stage string, text string) {
 	if err != nil {
 		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", text))
 		log.Fatal(err)
@@ -151,8 +151,8 @@ type Options struct {
 
 // Run runs a scraper from inside a container
 func Run(options Options) {
-	client := yinyoclient.New(options.ServerURL)
-	run := yinyoclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
+	client := apiclient.New(options.ServerURL)
+	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
 	err := run.CreateEvent(event.NewStartEvent("", time.Now(), "build"))
 	checkError(err, run, "build", "Could not create event")
 

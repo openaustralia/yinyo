@@ -1,4 +1,4 @@
-package yinyoclient
+package apiclient
 
 import (
 	"bytes"

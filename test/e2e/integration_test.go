@@ -8,14 +8,14 @@ import (
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
 	"github.com/stretchr/testify/assert"
 )
 
-func defaultClient() *yinyoclient.Client {
-	return yinyoclient.New("http://localhost:8080")
+func defaultClient() *apiclient.Client {
+	return apiclient.New("http://localhost:8080")
 }
 
 func TestHello(t *testing.T) {

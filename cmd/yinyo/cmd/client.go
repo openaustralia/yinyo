@@ -9,7 +9,7 @@ import (
 
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
+	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +37,7 @@ var clientCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
 
-		client := yinyoclient.New(clientServerURL)
+		client := apiclient.New(clientServerURL)
 		// Create the run
 		run, err := client.CreateRun(scraperDirectory)
 		if err != nil {
@@ -118,7 +118,7 @@ var clientCmd = &cobra.Command{
 			path := filepath.Join(scraperDirectory, outputFile)
 			err = run.GetOutputToFile(path)
 			if err != nil {
-				if yinyoclient.IsNotFound(err) {
+				if apiclient.IsNotFound(err) {
 					log.Printf("Warning: output file %v does not exist", outputFile)
 				} else {
 					log.Fatal(err)
