@@ -12,8 +12,7 @@ const callbackKey = "url"
 const exitDataKey = "exit_data"
 
 func keyValuePath(runName string, key string) string {
-	// TODO: Reverse order of key and runName
-	return key + ":" + runName
+	return runName + "/" + key
 }
 
 func (app *AppImplementation) setKeyValueData(runName string, key string, value string) error {

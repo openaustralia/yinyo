@@ -62,7 +62,7 @@ func TestStartNoApp(t *testing.T) {
 
 	blobstoreClient.On("Get", "foo/app.tgz").Return(nil, errors.New("Doesn't exist"))
 	blobstoreClient.On("IsNotExist", errors.New("Doesn't exist")).Return(true)
-	keyvalueStore.On("Get", "token:foo").Return("abc123", nil)
+	keyvalueStore.On("Get", "foo/token").Return("abc123", nil)
 
 	req, err := http.NewRequest("POST", "/runs/foo/start", strings.NewReader(`{}`))
 	if err != nil {
