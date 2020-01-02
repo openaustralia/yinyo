@@ -1,4 +1,4 @@
-package yinyoclient
+package archive
 
 import (
 	"io"
@@ -45,7 +45,7 @@ func TestArchive(t *testing.T) {
 	}
 
 	// Create an archive
-	reader, err := CreateArchiveFromDirectory("test", []string{})
+	reader, err := CreateFromDirectory("test", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +72,7 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ExtractArchiveToDirectory(file, "test")
+	err = ExtractToDirectory(file, "test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,4 +108,14 @@ func TestArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestValidArchive(t *testing.T) {
+	// Check that a zero-size file doesn't validate
+	f, err := os.Open(filepath.Join("testdata", "zero.tgz"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = Validate(f)
+	assert.Equal(t, err, io.EOF)
 }

@@ -3,9 +3,11 @@ package commands
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -13,17 +15,15 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 
+	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/blobstore"
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
-const filenameApp = "app.tgz"
-const filenameCache = "cache.tgz"
-const filenameOutput = "output"
-const filenameExitData = "exit-data.json"
 const dockerImage = "openaustralia/yinyo-scraper:v1"
 const runBinary = "/bin/yinyo"
 
@@ -38,8 +38,8 @@ type App interface {
 	PutCache(reader io.Reader, objectSize int64, runName string) error
 	GetOutput(runName string) (io.Reader, error)
 	PutOutput(reader io.Reader, objectSize int64, runName string) error
-	GetExitData(runName string) (io.Reader, error)
-	PutExitData(reader io.Reader, objectSize int64, runName string) error
+	GetExitData(runName string) (protocol.ExitData, error)
+	PutExitData(runName string, exitData protocol.ExitData) error
 	GetEvents(runName string, lastID string) Events
 	CreateEvent(runName string, event event.Event) error
 	GetTokenCache(runName string) (string, error)
@@ -127,61 +127,113 @@ func New() (App, error) {
 
 // CreateRun creates a run
 func (app *AppImplementation) CreateRun(namePrefix string) (CreateRunResult, error) {
+	var createResult CreateRunResult
 	if namePrefix == "" {
 		namePrefix = "run"
 	}
 	// Generate random token
 	runToken := uniuri.NewLen(32)
 	runName, err := app.JobDispatcher.CreateJobAndToken(namePrefix, runToken)
+	if err != nil {
+		return createResult, err
+	}
 
-	// Now cache the token for quicker access
-	app.setTokenCache(runName, runToken) //nolint
-
-	createResult := CreateRunResult{
+	createResult = CreateRunResult{
 		RunName:  runName,
 		RunToken: runToken,
 	}
+
+	// Now cache the token for quicker access
+	err = app.setKeyValueData(runName, tokenCacheKey, runToken)
 	return createResult, err
 }
 
 // GetApp downloads the tar & gzipped application code
 func (app *AppImplementation) GetApp(runName string) (io.Reader, error) {
-	return app.getData(runName, filenameApp)
+	return app.getBlobStoreData(runName, filenameApp)
+}
+
+// Simultaneously check that the archive is valid and save to a temporary file
+// If this errors the temp file will not be created
+// Responsibility of the caller to delete the temporary file
+func (app *AppImplementation) validateArchiveToTempFile(reader io.Reader) (*os.File, error) {
+	tmpfile, err := ioutil.TempFile("", filenameApp)
+	if err != nil {
+		return tmpfile, err
+	}
+
+	r := io.TeeReader(reader, tmpfile)
+	err = archive.Validate(r)
+	if err != nil {
+		os.Remove(tmpfile.Name())
+		return tmpfile, fmt.Errorf("%w: %v", ErrArchiveFormat, err)
+	}
+
+	// Go back to the beginning of the temporary file
+	_, err = tmpfile.Seek(0, io.SeekStart)
+	if err != nil {
+		os.Remove(tmpfile.Name())
+		return tmpfile, err
+	}
+	return tmpfile, nil
 }
 
 // PutApp uploads the tar & gzipped application code
 func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName string) error {
-	return app.putData(reader, objectSize, runName, filenameApp)
+	tmpfile, err := app.validateArchiveToTempFile(reader)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpfile.Name())
+
+	// Now upload the contents of the temporary file
+	return app.putBlobStoreData(tmpfile, objectSize, runName, filenameApp)
 }
 
 // GetCache downloads the tar & gzipped build cache
 func (app *AppImplementation) GetCache(runName string) (io.Reader, error) {
-	return app.getData(runName, filenameCache)
+	return app.getBlobStoreData(runName, filenameCache)
 }
 
 // PutCache uploads the tar & gzipped build cache
 func (app *AppImplementation) PutCache(reader io.Reader, objectSize int64, runName string) error {
-	return app.putData(reader, objectSize, runName, filenameCache)
+	tmpfile, err := app.validateArchiveToTempFile(reader)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpfile.Name())
+
+	return app.putBlobStoreData(tmpfile, objectSize, runName, filenameCache)
 }
 
 // GetOutput downloads the scraper output
 func (app *AppImplementation) GetOutput(runName string) (io.Reader, error) {
-	return app.getData(runName, filenameOutput)
+	return app.getBlobStoreData(runName, filenameOutput)
 }
 
 // PutOutput uploads the scraper output
 func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runName string) error {
-	return app.putData(reader, objectSize, runName, filenameOutput)
+	return app.putBlobStoreData(reader, objectSize, runName, filenameOutput)
 }
 
-// GetExitData downloads the json exit data
-func (app *AppImplementation) GetExitData(runName string) (io.Reader, error) {
-	return app.getData(runName, filenameExitData)
+// GetExitData downloads the exit data
+func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, error) {
+	var exitData protocol.ExitData
+	r, err := app.getKeyValueData(runName, exitDataKey)
+	if err != nil {
+		return exitData, err
+	}
+	err = json.Unmarshal([]byte(r), &exitData)
+	return exitData, err
 }
 
-// PutExitData uploads the (already serialised) json exit data
-func (app *AppImplementation) PutExitData(reader io.Reader, objectSize int64, runName string) error {
-	return app.putData(reader, objectSize, runName, filenameExitData)
+// PutExitData uploads the exit data
+func (app *AppImplementation) PutExitData(runName string, exitData protocol.ExitData) error {
+	b, err := json.Marshal(exitData)
+	if err != nil {
+		return err
+	}
+	return app.setKeyValueData(runName, exitDataKey, string(b))
 }
 
 // StartRun starts the run
@@ -197,7 +249,7 @@ func (app *AppImplementation) StartRun(
 		return err
 	}
 
-	err = app.setCallbackURL(runName, callbackURL)
+	err = app.setKeyValueData(runName, callbackKey, callbackURL)
 	if err != nil {
 		return err
 	}
@@ -287,19 +339,19 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 		return err
 	}
 
-	err = app.deleteData(runName, filenameApp)
+	err = app.deleteBlobStoreData(runName, filenameApp)
 	if err != nil {
 		return err
 	}
-	err = app.deleteData(runName, filenameOutput)
+	err = app.deleteBlobStoreData(runName, filenameOutput)
 	if err != nil {
 		return err
 	}
-	err = app.deleteData(runName, filenameExitData)
+	err = app.deleteKeyValueData(runName, exitDataKey)
 	if err != nil {
 		return err
 	}
-	err = app.deleteData(runName, filenameCache)
+	err = app.deleteBlobStoreData(runName, filenameCache)
 	if err != nil {
 		return err
 	}
@@ -307,34 +359,37 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 	if err != nil {
 		return err
 	}
-	err = app.deleteCallbackURL(runName)
+	err = app.deleteKeyValueData(runName, callbackKey)
 	if err != nil {
 		return err
 	}
-	return app.deleteTokenCache(runName)
+	return app.deleteKeyValueData(runName, tokenCacheKey)
 }
 
-func storagePath(runName string, fileName string) string {
-	return runName + "/" + fileName
+// GetTokenCache gets the cached runToken. Returns ErrNotFound if run name doesn't exist
+func (app *AppImplementation) GetTokenCache(runName string) (string, error) {
+	return app.getKeyValueData(runName, tokenCacheKey)
 }
 
-func (app *AppImplementation) getData(runName string, fileName string) (io.Reader, error) {
-	p := storagePath(runName, fileName)
-	r, err := app.BlobStore.Get(p)
-	if err != nil && app.BlobStore.IsNotExist(err) {
-		return r, fmt.Errorf("blobstore %v: %w", p, ErrNotFound)
+func (app *AppImplementation) postCallbackEvent(runName string, event event.Event) error {
+	var b bytes.Buffer
+	enc := json.NewEncoder(&b)
+	enc.Encode(event)
+
+	callbackURL, err := app.getKeyValueData(runName, callbackKey)
+	if err != nil {
+		return err
 	}
-	return r, err
-}
 
-func (app *AppImplementation) putData(reader io.Reader, objectSize int64, runName string, fileName string) error {
-	return app.BlobStore.Put(
-		storagePath(runName, fileName),
-		reader,
-		objectSize,
-	)
-}
-
-func (app *AppImplementation) deleteData(runName string, fileName string) error {
-	return app.BlobStore.Delete(storagePath(runName, fileName))
+	// Only do the callback if there's a sensible URL
+	if callbackURL != "" {
+		resp, err := app.HTTP.Post(callbackURL, "application/json", &b)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return errors.New("callback: " + resp.Status)
+		}
+	}
+	return nil
 }

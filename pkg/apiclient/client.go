@@ -1,9 +1,7 @@
-package yinyoclient
+package apiclient
 
 import (
-	"archive/tar"
 	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,15 +10,15 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 
+	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
 // Run is what you get when you create a run and what you need to update it
 type Run struct {
-	Name  string `json:"name"`
-	Token string `json:"token"`
+	protocol.Run
 	// Ignore this field when converting from/to json
 	Client *Client
 }
@@ -127,132 +125,6 @@ func (run *Run) request(method string, path string, body io.Reader) (*http.Respo
 	return run.Client.HTTPClient.Do(req)
 }
 
-// ExtractArchiveToDirectory takes a tar, gzipped archive and extracts it to a directory on the filesystem
-//nolint
-func ExtractArchiveToDirectory(gzipTarContent io.ReadCloser, dir string) error {
-	gzipReader, err := gzip.NewReader(gzipTarContent)
-	if err != nil {
-		return err
-	}
-	tarReader := tar.NewReader(gzipReader)
-	for {
-		file, err := tarReader.Next()
-		if err == io.EOF {
-			break // End of archive
-		}
-		if err != nil {
-			return err
-		}
-		switch file.Typeflag {
-		case tar.TypeDir:
-			// TODO: Extract variable
-			dir2 := filepath.Join(dir, file.Name)
-			// Only try to create the directory if this is a new one
-			if dir2 != dir {
-				err := os.Mkdir(dir2, 0755)
-				if err != nil {
-					return err
-				}
-			}
-		case tar.TypeReg:
-			f, err := os.OpenFile(
-				filepath.Join(dir, file.Name),
-				os.O_RDWR|os.O_CREATE|os.O_TRUNC,
-				file.FileInfo().Mode(),
-			)
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(f, tarReader)
-			if err != nil {
-				return err
-			}
-			f.Close()
-		case tar.TypeSymlink:
-			newname := filepath.Join(dir, file.Name)
-			oldname := filepath.Join(filepath.Dir(newname), file.Linkname)
-			err = os.Symlink(oldname, newname)
-			if err != nil {
-				return err
-			}
-		default:
-			return errors.New("Unexpected type in tar")
-		}
-	}
-	return nil
-}
-
-// CreateArchiveFromDirectory creates an archive from a directory on the filesystem
-// ignorePaths is a list of paths (relative to dir) that should be ignored and not archived
-//nolint
-func CreateArchiveFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
-	var buffer bytes.Buffer
-	gzipWriter := gzip.NewWriter(&buffer)
-	tarWriter := tar.NewWriter(gzipWriter)
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if path == dir {
-			return nil
-		}
-		for _, ignorePath := range ignorePaths {
-			if path == filepath.Join(dir, ignorePath) {
-				return nil
-			}
-		}
-		relativePath, err := filepath.Rel(dir, path)
-		if err != nil {
-			return err
-		}
-
-		var link string
-		if info.Mode()&os.ModeSymlink != 0 {
-			link, err = os.Readlink(path)
-			if err != nil {
-				return err
-			}
-			if filepath.IsAbs(link) {
-				// Convert the absolute link to a relative link
-				absPath, err := filepath.Abs(path)
-				if err != nil {
-					return err
-				}
-				d := filepath.Dir(absPath)
-				link, err = filepath.Rel(d, link)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		header, err := tar.FileInfoHeader(info, link)
-		if err != nil {
-			return err
-		}
-		header.Name = relativePath
-		tarWriter.WriteHeader(header) //nolint
-
-		// If it's a regular file then write the contents
-		if info.Mode().IsRegular() {
-			f, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(tarWriter, f)
-			return err
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	// TODO: This should always get called
-	tarWriter.Close()
-	gzipWriter.Close()
-	return &buffer, nil
-}
-
 // GetAppToDirectory downloads the scraper code into a pre-existing directory on the filesystem
 func (run *Run) GetAppToDirectory(dir string) error {
 	app, err := run.GetApp()
@@ -260,13 +132,13 @@ func (run *Run) GetAppToDirectory(dir string) error {
 		return err
 	}
 	defer app.Close()
-	return ExtractArchiveToDirectory(app, dir)
+	return archive.ExtractToDirectory(app, dir)
 }
 
 // PutAppFromDirectory uploads the scraper code from a directory on the filesystem
 // ignorePaths is a list of paths (relative to dir) that should be ignored and not uploaded
 func (run *Run) PutAppFromDirectory(dir string, ignorePaths []string) error {
-	r, err := CreateArchiveFromDirectory(dir, ignorePaths)
+	r, err := archive.CreateFromDirectory(dir, ignorePaths)
 	if err != nil {
 		return err
 	}
@@ -284,12 +156,12 @@ func (run *Run) GetCacheToDirectory(dir string) error {
 		return err
 	}
 	defer app.Close()
-	return ExtractArchiveToDirectory(app, dir)
+	return archive.ExtractToDirectory(app, dir)
 }
 
 // PutCacheFromDirectory uploads the cache from a directory on the filesystem
 func (run *Run) PutCacheFromDirectory(dir string) error {
-	r, err := CreateArchiveFromDirectory(dir, []string{})
+	r, err := archive.CreateFromDirectory(dir, []string{})
 	if err != nil {
 		return err
 	}
@@ -419,30 +291,9 @@ func (run *Run) GetCacheToFile(path string) error {
 	return err
 }
 
-// StartRunOptions are options that can be used when starting a run
-// TODO: Remove duplication with server types
-type StartRunOptions struct {
-	Output   string
-	Callback Callback
-	Env      []EnvVariable
-}
-
-// EnvVariable is the name and value of an environment variable
-type EnvVariable struct {
-	Name  string
-	Value string
-}
-
-// Callback represents what we need to know to make a particular callback request
-// This is not just a string so that we could support adding headers or other special things
-// in the callback request
-type Callback struct {
-	URL string
-}
-
 // Start starts a run that has earlier been created
 // TODO: Add setting of environment variables
-func (run *Run) Start(options *StartRunOptions) error {
+func (run *Run) Start(options *protocol.StartRunOptions) error {
 	// TODO: Switch this over to using a json encoder
 	b, err := json.Marshal(options)
 	if err != nil {
@@ -503,29 +354,8 @@ func (run *Run) CreateEvent(event event.Event) error {
 	return checkOK(resp)
 }
 
-// ExitData holds information about how things ran and how much resources were used
-type ExitData struct {
-	Build *ExitDataStage `json:"build,omitempty"`
-	Run   *ExitDataStage `json:"run,omitempty"`
-}
-
-// ExitDataStage gives the exit data for a single stage
-type ExitDataStage struct {
-	ExitCode int   `json:"exit_code"`
-	Usage    Usage `json:"usage"`
-}
-
-// Usage gives the resource usage for a single stage
-type Usage struct {
-	WallTime   float64 `json:"wall_time"`   // In seconds
-	CPUTime    float64 `json:"cpu_time"`    // In seconds
-	MaxRSS     uint64  `json:"max_rss"`     // In bytes
-	NetworkIn  uint64  `json:"network_in"`  // In bytes
-	NetworkOut uint64  `json:"network_out"` // In bytes
-}
-
 // GetExitData gets data about resource usage after everything has finished
-func (run *Run) GetExitData() (exitData ExitData, err error) {
+func (run *Run) GetExitData() (exitData protocol.ExitData, err error) {
 	resp, err := run.request("GET", "/exit-data", nil)
 	if err != nil {
 		return
@@ -539,7 +369,7 @@ func (run *Run) GetExitData() (exitData ExitData, err error) {
 }
 
 // PutExitData uploads information about how things ran and how much resources were used
-func (run *Run) PutExitData(exitData ExitData) error {
+func (run *Run) PutExitData(exitData protocol.ExitData) error {
 	b, err := json.Marshal(exitData)
 	if err != nil {
 		return err

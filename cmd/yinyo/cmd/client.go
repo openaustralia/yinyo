@@ -8,7 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/openaustralia/yinyo/pkg/event"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
+	"github.com/openaustralia/yinyo/pkg/protocol"
+	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ var clientCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
 
-		client := yinyoclient.New(clientServerURL)
+		client := apiclient.New(clientServerURL)
 		// Create the run
 		run, err := client.CreateRun(scraperDirectory)
 		if err != nil {
@@ -65,16 +66,16 @@ var clientCmd = &cobra.Command{
 			file.Close()
 		}
 
-		var envVariables []yinyoclient.EnvVariable
+		var envVariables []protocol.EnvVariable
 		for k, v := range environment {
 			// TODO: Fix this inefficient way
-			envVariables = append(envVariables, yinyoclient.EnvVariable{Name: k, Value: v})
+			envVariables = append(envVariables, protocol.EnvVariable{Name: k, Value: v})
 		}
 
 		// Start the run
-		err = run.Start(&yinyoclient.StartRunOptions{
+		err = run.Start(&protocol.StartRunOptions{
 			Output:   outputFile,
-			Callback: yinyoclient.Callback{URL: callbackURL},
+			Callback: protocol.Callback{URL: callbackURL},
 			Env:      envVariables,
 		})
 		if err != nil {
@@ -117,7 +118,7 @@ var clientCmd = &cobra.Command{
 			path := filepath.Join(scraperDirectory, outputFile)
 			err = run.GetOutputToFile(path)
 			if err != nil {
-				if yinyoclient.IsNotFound(err) {
+				if apiclient.IsNotFound(err) {
 					log.Printf("Warning: output file %v does not exist", outputFile)
 				} else {
 					log.Fatal(err)

@@ -19,8 +19,8 @@ import (
 )
 
 func TestStoragePath(t *testing.T) {
-	assert.Equal(t, storagePath("abc", "app.tgz"), "abc/app.tgz")
-	assert.Equal(t, storagePath("def", "output"), "def/output")
+	assert.Equal(t, blobStoreStoragePath("abc", "app.tgz"), "abc/app.tgz")
+	assert.Equal(t, blobStoreStoragePath("def", "output"), "def/output")
 }
 
 func TestStartRun(t *testing.T) {
@@ -38,7 +38,7 @@ func TestStartRun(t *testing.T) {
 	// Expect that we'll need the secret token
 	job.On("GetToken", "run-name").Return("supersecret", nil)
 	// Expect that we save the callback url in the key value store
-	keyValueStore.On("Set", "url:run-name", "http://foo.com").Return(nil)
+	keyValueStore.On("Set", "run-name/url", "http://foo.com").Return(nil)
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
@@ -72,7 +72,7 @@ func TestCreateEvent(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
+	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := defaultHTTP()
@@ -103,7 +103,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "url:run-name").Return("", nil)
+	keyValueStore.On("Get", "run-name/url").Return("", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := defaultHTTP()
@@ -125,7 +125,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "url:run-name").Return("http://foo.com/bar", nil)
+	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := defaultHTTP()
@@ -188,11 +188,11 @@ func TestDeleteRun(t *testing.T) {
 	jobDispatcher.On("DeleteJobAndToken", "run-name").Return(nil)
 	blobStore.On("Delete", "run-name/app.tgz").Return(nil)
 	blobStore.On("Delete", "run-name/output").Return(nil)
-	blobStore.On("Delete", "run-name/exit-data.json").Return(nil)
 	blobStore.On("Delete", "run-name/cache.tgz").Return(nil)
 	stream.On("Delete", "run-name").Return(nil)
-	keyValueStore.On("Delete", "url:run-name").Return(nil)
-	keyValueStore.On("Delete", "token:run-name").Return(nil)
+	keyValueStore.On("Delete", "run-name/url").Return(nil)
+	keyValueStore.On("Delete", "run-name/token").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data").Return(nil)
 
 	app := AppImplementation{
 		JobDispatcher: jobDispatcher,
@@ -211,7 +211,7 @@ func TestDeleteRun(t *testing.T) {
 
 func TestTokenCacheNotFound(t *testing.T) {
 	keyValueStore := new(keyvaluestore.MockClient)
-	keyValueStore.On("Get", "token:does-not-exit").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "does-not-exit/token").Return("", keyvaluestore.ErrKeyNotExist)
 
 	app := AppImplementation{KeyValueStore: keyValueStore}
 	// This run name should not exist

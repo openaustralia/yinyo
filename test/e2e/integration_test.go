@@ -8,13 +8,14 @@ import (
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/event"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 )
 
-func defaultClient() *yinyoclient.Client {
-	return yinyoclient.New("http://localhost:8080")
+func defaultClient() *apiclient.Client {
+	return apiclient.New("http://localhost:8080")
 }
 
 func TestHello(t *testing.T) {
@@ -110,11 +111,13 @@ func TestUploadDownloadApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer run.Delete() //nolint
-	// Now upload a random test pattern for the app
-	app := "Random test pattern"
-	body := strings.NewReader(app)
-	err = run.PutApp(body)
+	defer run.Delete()
+	// Now upload an empty tar file (doing this so it validates)
+	empty, err := os.Open("fixtures/empty.tgz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = run.PutApp(empty)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +131,16 @@ func TestUploadDownloadApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, app, string(b))
+	empty2, err := os.Open("fixtures/empty.tgz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b2, err := ioutil.ReadAll(empty2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, b2, b)
 	// TODO: Clean up run
 }
 
@@ -172,8 +184,8 @@ func TestHelloWorld(t *testing.T) {
 	}
 
 	// Now start the scraper
-	err = run.Start(&yinyoclient.StartRunOptions{Output: "output.txt", Env: []yinyoclient.EnvVariable{
-		yinyoclient.EnvVariable{Name: "HELLO", Value: "Hello World!"},
+	err = run.Start(&protocol.StartRunOptions{Output: "output.txt", Env: []protocol.EnvVariable{
+		protocol.EnvVariable{Name: "HELLO", Value: "Hello World!"},
 	}})
 	if err != nil {
 		t.Fatal(err)

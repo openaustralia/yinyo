@@ -1,4 +1,4 @@
-package server
+package apiserver
 
 import (
 	"encoding/json"
@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/internal/commands"
 	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
 func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
@@ -49,7 +50,11 @@ func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
 
 func (server *Server) putApp(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return server.app.PutApp(r.Body, r.ContentLength, runName)
+	err := server.app.PutApp(r.Body, r.ContentLength, runName)
+	if errors.Is(err, commands.ErrArchiveFormat) {
+		return newHTTPError(err, http.StatusBadRequest, err.Error())
+	}
+	return err
 }
 
 func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
@@ -93,7 +98,8 @@ func (server *Server) putOutput(w http.ResponseWriter, r *http.Request) error {
 
 func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	reader, err := server.app.GetExitData(runName)
+
+	exitData, err := server.app.GetExitData(runName)
 	if err != nil {
 		// Returns 404 if there is no exit data
 		if errors.Is(err, commands.ErrNotFound) {
@@ -101,36 +107,28 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 		}
 		return err
 	}
-	_, err = io.Copy(w, reader)
-	return err
+
+	enc := json.NewEncoder(w)
+	return enc.Encode(exitData)
 }
 
 func (server *Server) putExitData(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
-	return server.app.PutExitData(r.Body, r.ContentLength, runName)
-}
+	dec := json.NewDecoder(r.Body)
+	var exitData protocol.ExitData
+	err := dec.Decode(&exitData)
+	if err != nil {
+		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
+	}
 
-type envVariable struct {
-	Name  string
-	Value string
-}
-
-// TODO: Remove duplication with client code
-type startBody struct {
-	Output   string
-	Env      []envVariable
-	Callback callback
-}
-
-type callback struct {
-	URL string
+	return server.app.PutExitData(runName, exitData)
 }
 
 func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
 	decoder := json.NewDecoder(r.Body)
-	var l startBody
+	var l protocol.StartRunOptions
 	err := decoder.Decode(&l)
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
