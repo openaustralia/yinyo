@@ -146,7 +146,6 @@ func TestUploadDownloadApp(t *testing.T) {
 
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
-//nolint
 func TestHelloWorld(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration tests in short mode.")
@@ -171,22 +170,20 @@ func TestHelloWorld(t *testing.T) {
 	// TODO: If the cache doesn't exist the test will fail on its first run
 	// because the log output is slightly different. Handle this better.
 	file, err := os.Open("fixtures/caches/hello-world.tar.gz")
-	//nolint
 	if err == nil {
 		err = run.PutCache(file)
 		if err != nil {
 			t.Fatal(err)
 		}
-	} else {
-		if !os.IsNotExist(err) {
-			t.Fatal(err)
-		}
+	} else if !os.IsNotExist(err) {
+		t.Fatal(err)
 	}
 
 	// Now start the scraper
-	err = run.Start(&protocol.StartRunOptions{Output: "output.txt", Env: []protocol.EnvVariable{
-		protocol.EnvVariable{Name: "HELLO", Value: "Hello World!"},
-	}})
+	err = run.Start(&protocol.StartRunOptions{
+		Output: "output.txt",
+		Env:    []protocol.EnvVariable{{Name: "HELLO", Value: "Hello World!"}},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

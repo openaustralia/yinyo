@@ -62,15 +62,14 @@ func createTemporaryDirectories() (appPath string, importPath string, cachePath 
 	return
 }
 
-//nolint
 func TestSimpleRun(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		//nolint
-		if count == 0 {
+		switch count {
+		case 0:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
-		} else if count == 1 {
+		case 1:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
@@ -82,7 +81,7 @@ func TestSimpleRun(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else if count == 2 {
+		case 2:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/cache")
 			checkRequestBody(t, r, "")
 			// We'll just return the contents of an "arbitrary" directory here. It doesn't
@@ -96,46 +95,46 @@ func TestSimpleRun(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else if count == 3 {
+		case 3:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "_app_"})
-		} else if count == 4 {
+		case 4:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "Procfile"})
-		} else if count == 5 {
+		case 5:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
-		} else if count == 6 {
+		case 6:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
-		} else if count == 7 {
+		case 7:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
-		} else if count == 8 {
+		case 8:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "_cache_"})
-		} else if count == 9 {
+		case 9:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
-		} else if count == 10 {
+		case 10:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
-		} else if count == 11 {
+		case 11:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
-		} else if count == 12 {
+		case 12:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
-		} else if count == 13 {
+		case 13:
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
-		} else if count == 14 {
+		case 14:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "run"})
-		} else if count == 15 {
+		case 15:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "run", Stream: "stdout", Text: "Ran"})
-		} else if count == 16 {
+		case 16:
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
 			var exitData protocol.ExitData
@@ -158,13 +157,13 @@ func TestSimpleRun(t *testing.T) {
 			assert.True(t, exitData.Run.Usage.MaxRSS > 0)
 			assert.True(t, exitData.Run.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
-		} else if count == 17 {
+		case 17:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "run"})
-		} else if count == 18 {
+		case 18:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "last", event.LastData{})
-		} else {
+		default:
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
 		}
@@ -207,15 +206,14 @@ func TestSimpleRun(t *testing.T) {
 	// TODO: Test that output is correctly uploaded
 }
 
-//nolint
 func TestFailingBuild(t *testing.T) {
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		//nolint
-		if count == 0 {
+		switch count {
+		case 0:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
-		} else if count == 1 {
+		case 1:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
@@ -227,21 +225,21 @@ func TestFailingBuild(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else if count == 2 {
+		case 2:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/cache")
 			checkRequestBody(t, r, "")
 			// Let the client know that there is no cache in this case
 			http.NotFound(w, r)
-		} else if count == 3 {
+		case 3:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stderr", Text: "bash: failing_command: command not found"})
-		} else if count == 4 {
+		case 4:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
-		} else if count == 5 {
+		case 5:
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
-		} else if count == 6 {
+		case 6:
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
 			var exitData protocol.ExitData
@@ -259,10 +257,10 @@ func TestFailingBuild(t *testing.T) {
 			assert.True(t, exitData.Build.Usage.MaxRSS > 0)
 			assert.True(t, exitData.Build.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Build.Usage.NetworkOut > 0)
-		} else if count == 7 {
+		case 7:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "last", event.LastData{})
-		} else {
+		default:
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
 		}
@@ -302,14 +300,14 @@ func TestFailingBuild(t *testing.T) {
 	}
 }
 
-//nolint
 func TestFailingRun(t *testing.T) {
 	count := 0i
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		if count == 0 {
+		switch count {
+		case 0:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
-		} else if count == 1 {
+		case 1:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
 			w.Header().Set("Content-Type", "application/gzip")
@@ -321,27 +319,27 @@ func TestFailingRun(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else if count == 2 {
+		case 2:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/cache")
 			checkRequestBody(t, r, "")
 			// Let the client know that there is no cache in this case
 			http.NotFound(w, r)
-		} else if count == 3 {
+		case 3:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "build"})
-		} else if count == 4 {
+		case 4:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
-		} else if count == 5 {
+		case 5:
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
-		} else if count == 6 {
+		case 6:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "run"})
-		} else if count == 7 {
+		case 7:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "run", Stream: "stderr", Text: "bash: failing_command: command not found"})
-		} else if count == 8 {
+		case 8:
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
 			var exitData protocol.ExitData
@@ -364,16 +362,16 @@ func TestFailingRun(t *testing.T) {
 			assert.True(t, exitData.Run.Usage.MaxRSS > 0)
 			assert.True(t, exitData.Run.Usage.NetworkIn > 0)
 			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
-		} else if count == 9 {
+		case 9:
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/output")
 			checkRequestBody(t, r, "hello\n")
-		} else if count == 10 {
+		case 10:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "run"})
-		} else if count == 11 {
+		case 11:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "last", event.LastData{})
-		} else {
+		default:
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
 		}
@@ -419,17 +417,17 @@ func TestInternalError(t *testing.T) {
 	// the yinyo server, it should also add something to the log to let the user know
 	count := 0
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		//nolint
-		if count == 0 {
+		switch count {
+		case 0:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
-		} else if count == 1 {
+		case 1:
 			// Let's simulate an error with the blob storage. So, the wrapper is trying to
 			// get the application and there's a problem.
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
 			w.WriteHeader(http.StatusInternalServerError)
-		} else if count == 2 {
+		case 2:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
 			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "interr", Text: "Could not get the code"})
 		}

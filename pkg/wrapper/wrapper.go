@@ -130,7 +130,8 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 
 func checkError(err error, run apiclient.Run, stage string, text string) {
 	if err != nil {
-		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", text)) //nolint
+		//nolint:errcheck // ignore errors while logging error
+		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", text))
 		log.Fatal(err)
 	}
 }
