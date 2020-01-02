@@ -1,6 +1,5 @@
 package cmd
 
-//nolint
 import (
 	"encoding/json"
 	"fmt"
@@ -8,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
-	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/spf13/cobra"
 )
 

@@ -54,12 +54,6 @@ type AppImplementation struct {
 	HTTP          *http.Client
 }
 
-//nolint
-type logMessage struct {
-	// TODO: Make the stream, stage and type an enum
-	Log, Stream, Stage, Type string
-}
-
 func defaultStore() (blobstore.Client, error) {
 	return blobstore.NewMinioClient(
 		os.Getenv("STORE_HOST"),
@@ -368,7 +362,10 @@ func (app *AppImplementation) GetTokenCache(runName string) (string, error) {
 func (app *AppImplementation) postCallbackEvent(runName string, event event.Event) error {
 	var b bytes.Buffer
 	enc := json.NewEncoder(&b)
-	enc.Encode(event) //nolint
+	err := enc.Encode(event)
+	if err != nil {
+		return err
+	}
 
 	callbackURL, err := app.getKeyValueData(runName, callbackKey)
 	if err != nil {
