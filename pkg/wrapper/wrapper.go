@@ -96,19 +96,27 @@ func runExternalCommand(run apiclient.Run, stage string, commandString string, e
 	return command.ProcessState, nil
 }
 
+func aggregateCounters() (net.IOCountersStat, error) {
+	stats, err := net.IOCounters(false)
+	if err != nil {
+		return net.IOCountersStat{}, err
+	}
+	// Since we're asking for the aggregates we should only ever receive one answer
+	if len(stats) != 1 {
+		return net.IOCountersStat{}, errors.New("Only expected one stat")
+	}
+	return stats[0], nil
+}
+
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
 func runExternalCommandWithStats(run apiclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
 	var exitData protocol.ExitDataStage
 
 	// Capture the time and the network counters
 	start := time.Now()
-	statsStart, err := net.IOCounters(false)
+	statsStart, err := aggregateCounters()
 	if err != nil {
 		return exitData, err
-	}
-	// Since we're asking for the aggregates we should only ever receive one answer
-	if len(statsStart) != 1 {
-		return exitData, errors.New("Only expected one stat")
 	}
 
 	state, err := runExternalCommand(run, stage, commandString, env)
@@ -116,17 +124,13 @@ func runExternalCommandWithStats(run apiclient.Run, stage string, commandString 
 		return exitData, err
 	}
 
-	statsEnd, err := net.IOCounters(false)
+	statsEnd, err := aggregateCounters()
 	if err != nil {
 		return exitData, err
 	}
-	// Since we're asking for the aggregates we should only ever receive one answer
-	if len(statsEnd) != 1 {
-		return exitData, errors.New("Only expected one stat")
-	}
 
-	exitData.Usage.NetworkIn = statsEnd[0].BytesRecv - statsStart[0].BytesRecv
-	exitData.Usage.NetworkOut = statsEnd[0].BytesSent - statsStart[0].BytesSent
+	exitData.Usage.NetworkIn = statsEnd.BytesRecv - statsStart.BytesRecv
+	exitData.Usage.NetworkOut = statsEnd.BytesSent - statsStart.BytesSent
 	exitData.Usage.WallTime = time.Since(start).Seconds()
 	exitData.Usage.CPUTime = state.UserTime().Seconds() + state.SystemTime().Seconds()
 	// This bit will only return something when run on Linux I think
