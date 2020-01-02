@@ -151,16 +151,9 @@ type Options struct {
 	RunOutput    string
 }
 
-// Run runs a scraper from inside a container
-//nolint
-func Run(options Options) {
-	client := apiclient.New(options.ServerURL)
-	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
-	err := run.CreateEvent(event.NewStartEvent("", time.Now(), "build"))
-	checkError(err, run, "build", "Could not create event")
-
+func setup(run apiclient.Run, options Options) {
 	// Create and populate herokuish import path and cache path
-	err = os.MkdirAll(options.ImportPath, 0755)
+	err := os.MkdirAll(options.ImportPath, 0755)
 	checkError(err, run, "build", "Could not create directory")
 	err = os.MkdirAll(options.CachePath, 0755)
 	checkError(err, run, "build", "Could not create directory")
@@ -184,6 +177,16 @@ func Run(options Options) {
 	// If the cache doesn't exit this will not error
 	err = run.GetCacheToDirectory(options.CachePath)
 	checkError(err, run, "build", "Could not get the cache")
+}
+
+// Run runs a scraper from inside a container
+func Run(options Options) {
+	client := apiclient.New(options.ServerURL)
+	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
+	err := run.CreateEvent(event.NewStartEvent("", time.Now(), "build"))
+	checkError(err, run, "build", "Could not create event")
+
+	setup(run, options)
 
 	env := []string{
 		"APP_PATH=" + options.AppPath,
@@ -207,7 +210,7 @@ func Run(options Options) {
 	// TODO: We're not actually in the "build" stage here
 	checkError(err, run, "build", "Could not upload cache")
 
-	// Only do the main run if the build was succesful
+	// Only do the main run if the build was successful
 	if exitData.Build.ExitCode == 0 {
 		err = run.CreateEvent(event.NewStartEvent("", time.Now(), "run"))
 		checkError(err, run, "run", "Could not create event")
