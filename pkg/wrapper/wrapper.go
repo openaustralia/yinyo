@@ -27,7 +27,12 @@ func eventsSender(run apiclient.Run, eventsChan <-chan event.Event) {
 
 	// TODO: Send all events in a single http request
 	for event := range eventsChan {
-		run.CreateEvent(event) //nolint
+		err := run.CreateEvent(event)
+		if err != nil {
+			// If we can't send an event there's not much point in trying to do anything
+			// else but log an error locally
+			log.Println("Couldn't send event")
+		}
 	}
 }
 
