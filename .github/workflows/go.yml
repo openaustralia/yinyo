@@ -71,7 +71,6 @@ jobs:
       - name: setup env
         run: |
           echo "::set-env name=GOPATH::$(go env GOPATH)"
-          echo "::set-env name=CVPKG::$(go list ./... | grep -v mocks | grep -v e2e | tr '\n' ',')"
           echo "::add-path::$(go env GOPATH)/bin"
         shell: bash
 
@@ -83,6 +82,7 @@ jobs:
 
       - name: Calc coverage
         run: |
+          export CVPKG=$(go list ./... | grep -v mocks | grep -v e2e | paste -sd "," -)
           go test -v -short -covermode=count -coverpkg $CVPKG -coverprofile=coverage.out ./...
 
       - name: Convert coverage to lcov

@@ -5,7 +5,7 @@ all: run
 run: install
 	yinyo client test/scrapers/test-python --output data.sqlite
 
-CVPKG = $(shell go list ./... | grep -v mocks | grep -v e2e | tr '\n' ',')
+CVPKG = $(shell go list ./... | grep -v mocks | grep -v e2e | paste -sd "," -)
 
 test: install
 	go test -coverpkg $(CVPKG) ./...
