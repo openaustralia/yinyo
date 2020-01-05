@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/openaustralia/yinyo/internal/commands"
+	"github.com/openaustralia/yinyo/pkg/commands"
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 )

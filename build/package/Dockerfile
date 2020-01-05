@@ -24,7 +24,6 @@ RUN rm empty.go
 # Only copying across the bits we actually need so that skaffold isn't overeager on
 # rebuilding everything when another (not relevant) file changes
 COPY cmd cmd
-COPY internal internal
 COPY pkg pkg
 RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/yinyo
 

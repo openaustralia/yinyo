@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/openaustralia/yinyo/internal/commands"
 	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/commands"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
