@@ -7,9 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/openaustralia/yinyo/pkg/blobstore"
+	blobstoremocks "github.com/openaustralia/yinyo/mocks/pkg/blobstore"
+	commandsmocks "github.com/openaustralia/yinyo/mocks/pkg/commands"
+	keyvaluestoremocks "github.com/openaustralia/yinyo/mocks/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/commands"
-	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +20,7 @@ func TestCreateRunInternalServerError(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	app := new(commands.MockApp)
+	app := new(commandsmocks.App)
 	// There was some kind of internal error when creating a run
 	app.On("CreateRun", "").Return(protocol.Run{}, errors.New("Something internal"))
 	server := Server{app: app}
@@ -55,8 +56,8 @@ func TestStartBadBody(t *testing.T) {
 
 // If we haven't uploaded an app error when starting a run
 func TestStartNoApp(t *testing.T) {
-	blobstoreClient := new(blobstore.MockClient)
-	keyvalueStore := new(keyvaluestore.MockClient)
+	blobstoreClient := new(blobstoremocks.Client)
+	keyvalueStore := new(keyvaluestoremocks.Client)
 	app := &commands.AppImplementation{BlobStore: blobstoreClient, KeyValueStore: keyvalueStore}
 	server := Server{app: app}
 	server.InitialiseRoutes()
@@ -100,7 +101,7 @@ func TestCreateEventBadBody(t *testing.T) {
 }
 
 func TestPutAppWrongRunName(t *testing.T) {
-	app := new(commands.MockApp)
+	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "does-not-exist").Return("", commands.ErrNotFound)
 
 	server := Server{app: app}
@@ -125,7 +126,7 @@ func TestPutAppWrongRunName(t *testing.T) {
 
 // This tests if the app isn't found (rather than the run)
 func TestGetAppErrNotFound(t *testing.T) {
-	app := new(commands.MockApp)
+	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "my-run").Return("abc123", nil)
 	app.On("GetApp", "my-run").Return(nil, commands.ErrNotFound)
 	server := Server{app: app}
@@ -164,7 +165,7 @@ func TestGetAppNoBearerToken(t *testing.T) {
 }
 
 func TestGetAppBadToken(t *testing.T) {
-	app := new(commands.MockApp)
+	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "my-run").Return("def456", nil)
 	server := Server{app: app}
 	server.InitialiseRoutes()

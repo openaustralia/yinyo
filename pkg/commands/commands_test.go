@@ -11,11 +11,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/openaustralia/yinyo/pkg/blobstore"
+	blobstoremocks "github.com/openaustralia/yinyo/mocks/pkg/blobstore"
+	jobdispatchermocks "github.com/openaustralia/yinyo/mocks/pkg/jobdispatcher"
+	keyvaluestoremocks "github.com/openaustralia/yinyo/mocks/pkg/keyvaluestore"
+	streammocks "github.com/openaustralia/yinyo/mocks/pkg/stream"
 	"github.com/openaustralia/yinyo/pkg/event"
-	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
-	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
 func TestStoragePath(t *testing.T) {
@@ -24,9 +25,9 @@ func TestStoragePath(t *testing.T) {
 }
 
 func TestStartRun(t *testing.T) {
-	job := new(jobdispatcher.MockClient)
-	keyValueStore := new(keyvaluestore.MockClient)
-	blobStore := new(blobstore.MockClient)
+	job := new(jobdispatchermocks.Client)
+	keyValueStore := new(keyvaluestoremocks.Client)
+	blobStore := new(blobstoremocks.Client)
 
 	// Expect that the job will get dispatched
 	job.On(
@@ -67,8 +68,8 @@ func (m *MockRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 func TestCreateEvent(t *testing.T) {
-	stream := new(stream.MockClient)
-	keyValueStore := new(keyvaluestore.MockClient)
+	stream := new(streammocks.Client)
+	keyValueStore := new(keyvaluestoremocks.Client)
 
 	time := time.Now()
 	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
@@ -98,8 +99,8 @@ func TestCreateEvent(t *testing.T) {
 }
 
 func TestCreateEventNoCallbackURL(t *testing.T) {
-	stream := new(stream.MockClient)
-	keyValueStore := new(keyvaluestore.MockClient)
+	stream := new(streammocks.Client)
+	keyValueStore := new(keyvaluestoremocks.Client)
 
 	time := time.Now()
 	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
@@ -120,8 +121,8 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 }
 
 func TestCreateEventErrorDuringCallback(t *testing.T) {
-	stream := new(stream.MockClient)
-	keyValueStore := new(keyvaluestore.MockClient)
+	stream := new(streammocks.Client)
+	keyValueStore := new(keyvaluestoremocks.Client)
 
 	time := time.Now()
 	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
@@ -151,7 +152,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 }
 
 func TestGetEvents(t *testing.T) {
-	stream := new(stream.MockClient)
+	stream := new(streammocks.Client)
 
 	time := time.Now()
 	stream.On("Get", "run-name", "0").Return(event.NewStartEvent("123", time, "build"), nil)
@@ -180,10 +181,10 @@ func TestGetEvents(t *testing.T) {
 }
 
 func TestDeleteRun(t *testing.T) {
-	jobDispatcher := new(jobdispatcher.MockClient)
-	blobStore := new(blobstore.MockClient)
-	stream := new(stream.MockClient)
-	keyValueStore := new(keyvaluestore.MockClient)
+	jobDispatcher := new(jobdispatchermocks.Client)
+	blobStore := new(blobstoremocks.Client)
+	stream := new(streammocks.Client)
+	keyValueStore := new(keyvaluestoremocks.Client)
 
 	jobDispatcher.On("DeleteJobAndToken", "run-name").Return(nil)
 	blobStore.On("Delete", "run-name/app.tgz").Return(nil)
@@ -210,7 +211,7 @@ func TestDeleteRun(t *testing.T) {
 }
 
 func TestTokenCacheNotFound(t *testing.T) {
-	keyValueStore := new(keyvaluestore.MockClient)
+	keyValueStore := new(keyvaluestoremocks.Client)
 	keyValueStore.On("Get", "does-not-exit/token").Return("", keyvaluestore.ErrKeyNotExist)
 
 	app := AppImplementation{KeyValueStore: keyValueStore}

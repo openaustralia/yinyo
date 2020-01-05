@@ -20,7 +20,7 @@ ppa:
 	sudo apt-get install golang-go
 
 mocks:
-	mockery -all -inpkg
+	mockery -all -keeptree
 
 website: apidocs
 	cd site; npm install
