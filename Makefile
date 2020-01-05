@@ -5,11 +5,10 @@ all: run
 run: install
 	yinyo client test/scrapers/test-python --output data.sqlite
 
-test: install
-	go test ./...
+CVPKG = $(shell go list ./... | grep -v mocks | grep -v e2e | tr '\n' ',')
 
-integration: install
-	go test ./...
+test: install
+	go test -coverpkg $(CVPKG) ./...
 
 install:
 	go install ./...
