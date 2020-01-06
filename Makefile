@@ -1,4 +1,4 @@
-.PHONY: image server test build ppa run website apidocs minikube buckets clean skaffold dashboard
+.PHONY: image server test build ppa run website apidocs minikube buckets clean skaffold dashboard mocks
 
 all: run
 

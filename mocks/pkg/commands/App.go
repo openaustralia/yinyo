@@ -109,14 +109,16 @@ func (_m *App) GetCache(runName string) (io.Reader, error) {
 }
 
 // GetEvents provides a mock function with given fields: runName, lastID
-func (_m *App) GetEvents(runName string, lastID string) commands.Events {
+func (_m *App) GetEvents(runName string, lastID string) commands.EventIterator {
 	ret := _m.Called(runName, lastID)
 
-	var r0 commands.Events
-	if rf, ok := ret.Get(0).(func(string, string) commands.Events); ok {
+	var r0 commands.EventIterator
+	if rf, ok := ret.Get(0).(func(string, string) commands.EventIterator); ok {
 		r0 = rf(runName, lastID)
 	} else {
-		r0 = ret.Get(0).(commands.Events)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(commands.EventIterator)
+		}
 	}
 
 	return r0

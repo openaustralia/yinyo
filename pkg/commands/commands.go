@@ -40,9 +40,14 @@ type App interface {
 	PutOutput(reader io.Reader, objectSize int64, runName string) error
 	GetExitData(runName string) (protocol.ExitData, error)
 	PutExitData(runName string, exitData protocol.ExitData) error
-	GetEvents(runName string, lastID string) Events
+	GetEvents(runName string, lastID string) EventIterator
 	CreateEvent(runName string, event event.Event) error
 	GetTokenCache(runName string) (string, error)
+}
+
+type EventIterator interface {
+	More() bool
+	Next() (e event.Event, err error)
 }
 
 // AppImplementation holds the state for the application
@@ -283,8 +288,8 @@ type Events struct {
 // Use "0" for lastId to start at the beginning of the stream. Otherwise use the id of the last
 // seen event to restart the stream from that point. Don't try to restart the stream from the
 // last event, otherwise More() will just wait around forever.
-func (app *AppImplementation) GetEvents(runName string, lastID string) Events {
-	return Events{app: app, runName: runName, lastID: lastID, more: true}
+func (app *AppImplementation) GetEvents(runName string, lastID string) EventIterator {
+	return &Events{app: app, runName: runName, lastID: lastID, more: true}
 }
 
 // More checks whether there are more events available. If true you can then call Next()
