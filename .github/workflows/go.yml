@@ -82,7 +82,8 @@ jobs:
 
       - name: Calc coverage
         run: |
-          go test -v -short -covermode=count -coverprofile=coverage.out ./...
+          export CVPKG=$(go list ./... | grep -v mocks | grep -v e2e | paste -sd "," -)
+          go test -v -short -covermode=count -coverpkg $CVPKG -coverprofile=coverage.out ./...
 
       - name: Convert coverage to lcov
         uses: jandelgado/gcov2lcov-action@v1.0.0
