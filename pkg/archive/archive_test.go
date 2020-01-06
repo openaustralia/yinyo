@@ -67,3 +67,10 @@ func TestValidArchiveEmpty(t *testing.T) {
 	err := Validate(f)
 	assert.Nil(t, err)
 }
+
+func TestValidArchiveSimple(t *testing.T) {
+	// This archive has one file, one directory (".") and one symbolic link, all relative
+	f, _ := os.Open(filepath.Join("testdata", "simple.tgz"))
+	err := Validate(f)
+	assert.Nil(t, err)
+}
