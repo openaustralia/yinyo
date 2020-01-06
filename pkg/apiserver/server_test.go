@@ -13,6 +13,7 @@ import (
 	"github.com/openaustralia/yinyo/pkg/commands"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCreateRunInternalServerError(t *testing.T) {
@@ -100,6 +101,28 @@ func TestCreateEventBadBody(t *testing.T) {
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 }
 
+func TestPutApp(t *testing.T) {
+	app := new(commandsmocks.App)
+	server := Server{app: app}
+	server.InitialiseRoutes()
+
+	app.On("GetTokenCache", "run-name").Return("abc123", nil)
+	app.On("PutApp", mock.Anything, int64(3), "run-name").Return(nil)
+
+	req, err := http.NewRequest("PUT", "/runs/run-name/app", strings.NewReader("foo"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer abc123")
+
+	rr := httptest.NewRecorder()
+	server.router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	app.AssertExpectations(t)
+}
+
 func TestPutAppWrongRunName(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "does-not-exist").Return("", commands.ErrNotFound)
@@ -182,5 +205,28 @@ func TestGetAppBadToken(t *testing.T) {
 	assert.Equal(t, http.StatusForbidden, rr.Code)
 	assert.Equal(t, `{"error":"Authorization header has incorrect bearer token"}`, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
+	app.AssertExpectations(t)
+}
+
+func TestGetCache(t *testing.T) {
+	app := new(commandsmocks.App)
+	server := Server{app: app}
+	server.InitialiseRoutes()
+
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetCache", "my-run").Return(strings.NewReader("cached stuff"), nil)
+
+	req, err := http.NewRequest("GET", "/runs/my-run/cache", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer abc123")
+
+	rr := httptest.NewRecorder()
+	server.router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "cached stuff", rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/gzip"}}, rr.Header())
 	app.AssertExpectations(t)
 }
