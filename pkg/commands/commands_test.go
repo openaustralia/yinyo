@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -220,4 +221,68 @@ func TestTokenCacheNotFound(t *testing.T) {
 	assert.True(t, errors.Is(err, ErrNotFound))
 
 	keyValueStore.AssertExpectations(t)
+}
+
+func TestPutApp(t *testing.T) {
+	blobStore := new(blobstoremocks.Client)
+	app := AppImplementation{BlobStore: blobStore}
+
+	blobStore.On("Put", "run-name/app.tgz", mock.Anything, mock.Anything).Return(nil)
+
+	// Open a file which has the simplest possible archive which is empty but valid
+	file, err := os.Open("testdata/empty.tgz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	stat, err := file.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = app.PutApp(file, stat.Size(), "run-name")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	blobStore.AssertExpectations(t)
+}
+
+func TestGetCache(t *testing.T) {
+	blobStore := new(blobstoremocks.Client)
+	app := AppImplementation{BlobStore: blobStore}
+
+	file, err := os.Open("testdata/empty.tgz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	blobStore.On("Get", "run-name/cache.tgz").Return(file, nil)
+
+	r, err := app.GetCache("run-name")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, file, r)
+
+	blobStore.AssertExpectations(t)
+}
+
+func TestPutCache(t *testing.T) {
+	blobStore := new(blobstoremocks.Client)
+	app := AppImplementation{BlobStore: blobStore}
+
+	file, _ := os.Open("testdata/empty.tgz")
+	stat, _ := file.Stat()
+
+	blobStore.On("Put", "run-name/cache.tgz", mock.Anything, stat.Size()).Return(nil)
+
+	err := app.PutCache(file, stat.Size(), "run-name")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	blobStore.AssertExpectations(t)
 }
