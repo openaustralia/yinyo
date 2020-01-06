@@ -18,6 +18,7 @@ import (
 	streammocks "github.com/openaustralia/yinyo/mocks/pkg/stream"
 	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
 func TestStoragePath(t *testing.T) {
@@ -275,4 +276,63 @@ func TestPutCache(t *testing.T) {
 	}
 
 	blobStore.AssertExpectations(t)
+}
+
+func TestGetOutput(t *testing.T) {
+	blobStore := new(blobstoremocks.Client)
+	app := AppImplementation{BlobStore: blobStore}
+
+	blobStore.On("Get", "run-name/output").Return(strings.NewReader("output"), nil)
+
+	r, err := app.GetOutput("run-name")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := ioutil.ReadAll(r)
+
+	assert.Equal(t, "output", string(b))
+	blobStore.AssertExpectations(t)
+}
+
+func TestPutOutput(t *testing.T) {
+	blobStore := new(blobstoremocks.Client)
+	app := AppImplementation{BlobStore: blobStore}
+
+	reader := strings.NewReader("output")
+	blobStore.On("Put", "run-name/output", reader, int64(6)).Return(nil)
+
+	err := app.PutOutput(reader, 6, "run-name")
+	if err != nil {
+		t.Fatal(err)
+	}
+	blobStore.AssertExpectations(t)
+}
+
+func TestGetExitData(t *testing.T) {
+	keyValueStore := new(keyvaluestoremocks.Client)
+	app := AppImplementation{KeyValueStore: keyValueStore}
+
+	keyValueStore.On("Get", "run-name/exit_data").Return(`{"build":{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`, nil)
+	e, err := app.GetExitData("run-name")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedExitData := protocol.ExitData{Build: &protocol.ExitDataStage{ExitCode: 15}}
+
+	assert.Equal(t, expectedExitData, e)
+	keyValueStore.AssertExpectations(t)
+}
+
+func TestPutExitData(t *testing.T) {
+	keyValueStore := new(keyvaluestoremocks.Client)
+	app := AppImplementation{KeyValueStore: keyValueStore}
+
+	keyValueStore.On("Set", "run-name/exit_data", `{"build":{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`).Return(nil)
+	exitData := protocol.ExitData{Build: &protocol.ExitDataStage{ExitCode: 15}}
+
+	err := app.PutExitData("run-name", exitData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	keyValueStore.AssertExpectations(t)
 }
