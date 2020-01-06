@@ -61,3 +61,9 @@ func TestValidArchive(t *testing.T) {
 	err := Validate(f)
 	assert.Equal(t, err, io.EOF)
 }
+
+func TestValidArchiveEmpty(t *testing.T) {
+	f, _ := os.Open(filepath.Join("testdata", "empty.tgz"))
+	err := Validate(f)
+	assert.Nil(t, err)
+}
