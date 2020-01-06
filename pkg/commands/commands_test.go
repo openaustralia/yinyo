@@ -230,18 +230,11 @@ func TestPutApp(t *testing.T) {
 	blobStore.On("Put", "run-name/app.tgz", mock.Anything, mock.Anything).Return(nil)
 
 	// Open a file which has the simplest possible archive which is empty but valid
-	file, err := os.Open("testdata/empty.tgz")
-	if err != nil {
-		t.Fatal(err)
-	}
+	file, _ := os.Open("testdata/empty.tgz")
 	defer file.Close()
+	stat, _ := file.Stat()
 
-	stat, err := file.Stat()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = app.PutApp(file, stat.Size(), "run-name")
+	err := app.PutApp(file, stat.Size(), "run-name")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -253,10 +246,7 @@ func TestGetCache(t *testing.T) {
 	blobStore := new(blobstoremocks.Client)
 	app := AppImplementation{BlobStore: blobStore}
 
-	file, err := os.Open("testdata/empty.tgz")
-	if err != nil {
-		t.Fatal(err)
-	}
+	file, _ := os.Open("testdata/empty.tgz")
 	defer file.Close()
 
 	blobStore.On("Get", "run-name/cache.tgz").Return(file, nil)
