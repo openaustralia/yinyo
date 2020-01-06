@@ -336,3 +336,20 @@ func TestPutExitData(t *testing.T) {
 	}
 	keyValueStore.AssertExpectations(t)
 }
+
+func TestCreateRun(t *testing.T) {
+	jobDispatcher := new(jobdispatchermocks.Client)
+	keyValueStore := new(keyvaluestoremocks.Client)
+	app := AppImplementation{JobDispatcher: jobDispatcher, KeyValueStore: keyValueStore}
+
+	jobDispatcher.On("CreateJobAndToken", "run", mock.Anything).Return("run-foo", nil)
+	keyValueStore.On("Set", "run-foo/token", mock.Anything).Return(nil)
+
+	run, err := app.CreateRun("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, "run-foo", run.Name)
+	jobDispatcher.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+}
