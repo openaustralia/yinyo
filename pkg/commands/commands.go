@@ -54,13 +54,30 @@ type AppImplementation struct {
 	HTTP          *http.Client
 }
 
+type StartupOptions struct {
+	Minio MinioOptions
+	Redis RedisOptions
+}
+
+type MinioOptions struct {
+	Host      string
+	Bucket    string
+	AccessKey string
+	SecretKey string
+}
+
+type RedisOptions struct {
+	Address  string
+	Password string
+}
+
 // New initialises the main state of the application
-func New() (App, error) {
+func New(startupOptions StartupOptions) (App, error) {
 	storeAccess, err := blobstore.NewMinioClient(
-		os.Getenv("STORE_HOST"),
-		os.Getenv("STORE_BUCKET"),
-		os.Getenv("STORE_ACCESS_KEY"),
-		os.Getenv("STORE_SECRET_KEY"),
+		startupOptions.Minio.Host,
+		startupOptions.Minio.Bucket,
+		startupOptions.Minio.AccessKey,
+		startupOptions.Minio.SecretKey,
 	)
 	if err != nil {
 		return nil, err
@@ -68,8 +85,8 @@ func New() (App, error) {
 
 	// Connect to redis and initially just check that we can connect
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
-		Password: os.Getenv("REDIS_PASSWORD"),
+		Addr:     startupOptions.Redis.Address,
+		Password: startupOptions.Redis.Password,
 	})
 	_, err = redisClient.Ping().Result()
 	if err != nil {
