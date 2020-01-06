@@ -1,5 +1,10 @@
 package protocol
 
+import (
+	"encoding/json"
+	"time"
+)
+
 // All the types here are used in the yinyo API. So, they all will get serialised and deserialised.
 // Therefore, for all types include an explicit instruction for JSON marshalling/unmarshalling.
 
@@ -48,4 +53,45 @@ type Usage struct {
 type Run struct {
 	Name  string `json:"name"`
 	Token string `json:"token"`
+}
+
+// JSONEvent is used for reading JSON
+type JSONEvent struct {
+	ID   string           `json:"id"`
+	Time time.Time        `json:"time"`
+	Type string           `json:"type"`
+	Data *json.RawMessage `json:"data"`
+}
+
+// Event is the top level struct for representing events
+type Event struct {
+	ID   string    `json:"id,omitempty"`
+	Time time.Time `json:"time"`
+	Type string    `json:"type"`
+	Data Data      `json:"data"`
+}
+
+// Data is the interface for all core event data
+type Data interface {
+}
+
+// StartData represents the start of a build or run
+type StartData struct {
+	Stage string `json:"stage"`
+}
+
+// FinishData represent the completion of a build or run
+type FinishData struct {
+	Stage string `json:"stage"`
+}
+
+// LogData is the output of some text from the build or run of a scraper
+type LogData struct {
+	Stage  string `json:"stage"`
+	Stream string `json:"stream"`
+	Text   string `json:"text"`
+}
+
+// LastData is the last event that's sent in a run
+type LastData struct {
 }

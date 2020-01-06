@@ -11,7 +11,6 @@ import (
 
 	commandsmocks "github.com/openaustralia/yinyo/mocks/pkg/commands"
 	"github.com/openaustralia/yinyo/pkg/commands"
-	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -231,7 +230,7 @@ func TestPutExitData(t *testing.T) {
 
 // Make a fake event iterator that we can use for testing
 type events struct {
-	contents []event.Event
+	contents []protocol.Event
 	index    int
 }
 
@@ -239,7 +238,7 @@ func (e *events) More() bool {
 	return e.index < len(e.contents)
 }
 
-func (e *events) Next() (event.Event, error) {
+func (e *events) Next() (protocol.Event, error) {
 	event := e.contents[e.index]
 	e.index++
 	return event, nil
@@ -248,9 +247,9 @@ func (e *events) Next() (event.Event, error) {
 func TestGetEvents(t *testing.T) {
 	app := new(commandsmocks.App)
 	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
-	events := &events{contents: []event.Event{
-		event.NewStartEvent("", time, "build"),
-		event.NewFinishEvent("", time, "build"),
+	events := &events{contents: []protocol.Event{
+		protocol.NewStartEvent("", time, "build"),
+		protocol.NewFinishEvent("", time, "build"),
 	}}
 	app.On("GetTokenCache", "my-run").Return("abc123", nil)
 	app.On("GetEvents", "my-run", "0").Return(events)

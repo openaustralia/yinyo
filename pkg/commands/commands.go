@@ -17,7 +17,6 @@ import (
 
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/blobstore"
-	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/protocol"
@@ -41,13 +40,13 @@ type App interface {
 	GetExitData(runName string) (protocol.ExitData, error)
 	PutExitData(runName string, exitData protocol.ExitData) error
 	GetEvents(runName string, lastID string) EventIterator
-	CreateEvent(runName string, event event.Event) error
+	CreateEvent(runName string, event protocol.Event) error
 	GetTokenCache(runName string) (string, error)
 }
 
 type EventIterator interface {
 	More() bool
-	Next() (e event.Event, err error)
+	Next() (e protocol.Event, err error)
 }
 
 // AppImplementation holds the state for the application
@@ -298,7 +297,7 @@ func (events *Events) More() bool {
 }
 
 // Next returns the next event
-func (events *Events) Next() (e event.Event, err error) {
+func (events *Events) Next() (e protocol.Event, err error) {
 	e, err = events.app.Stream.Get(events.runName, events.lastID)
 	if err != nil {
 		return
@@ -308,13 +307,13 @@ func (events *Events) Next() (e event.Event, err error) {
 	events.lastID = e.ID
 
 	// Check if this is the last event
-	_, ok := e.Data.(event.LastData)
+	_, ok := e.Data.(protocol.LastData)
 	events.more = !ok
 	return
 }
 
 // CreateEvent add an event to the stream
-func (app *AppImplementation) CreateEvent(runName string, event event.Event) error {
+func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) error {
 	// TODO: Use something like runName-events instead for the stream name
 	event, err := app.Stream.Add(runName, event)
 	if err != nil {
@@ -362,7 +361,7 @@ func (app *AppImplementation) GetTokenCache(runName string) (string, error) {
 	return app.getKeyValueData(runName, tokenCacheKey)
 }
 
-func (app *AppImplementation) postCallbackEvent(runName string, event event.Event) error {
+func (app *AppImplementation) postCallbackEvent(runName string, event protocol.Event) error {
 	var b bytes.Buffer
 	enc := json.NewEncoder(&b)
 	err := enc.Encode(event)

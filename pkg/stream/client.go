@@ -1,6 +1,6 @@
 package stream
 
-import "github.com/openaustralia/yinyo/pkg/event"
+import "github.com/openaustralia/yinyo/pkg/protocol"
 
 // This is a distributed stream: something where we can add events to a key
 // and those events can be streamed from one or more other places
@@ -8,7 +8,7 @@ import "github.com/openaustralia/yinyo/pkg/event"
 
 // Client is the interface for accessing the distributed stream
 type Client interface {
-	Add(key string, event event.Event) (addedEvent event.Event, err error)
-	Get(key string, id string) (event event.Event, err error)
+	Add(key string, event protocol.Event) (addedEvent protocol.Event, err error)
+	Get(key string, id string) (event protocol.Event, err error)
 	Delete(key string) error
 }

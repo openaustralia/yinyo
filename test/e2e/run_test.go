@@ -15,7 +15,6 @@ import (
 	"testing"
 
 	"github.com/openaustralia/yinyo/pkg/archive"
-	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +35,7 @@ func checkRequestNoBody(t *testing.T, r *http.Request, method string, path strin
 
 func checkRequestEvent(t *testing.T, r *http.Request, typeString string, data interface{}) {
 	dec := json.NewDecoder(r.Body)
-	var e event.Event
+	var e protocol.Event
 	err := dec.Decode(&e)
 	if err != nil {
 		log.Fatal(err)
@@ -68,7 +67,7 @@ func TestSimpleRun(t *testing.T) {
 		switch count {
 		case 0:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
+			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "build"})
 		case 1:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
@@ -97,43 +96,43 @@ func TestSimpleRun(t *testing.T) {
 			}
 		case 3:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "_app_"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "_app_"})
 		case 4:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "Procfile"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "Procfile"})
 		case 5:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
 		case 6:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
 		case 7:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
 		case 8:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "_cache_"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "_cache_"})
 		case 9:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
 		case 10:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
 		case 11:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
 		case 12:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
+			checkRequestEvent(t, r, "finish", protocol.FinishData{Stage: "build"})
 		case 13:
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
 		case 14:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", event.StartData{Stage: "run"})
+			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "run"})
 		case 15:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "run", Stream: "stdout", Text: "Ran"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "run", Stream: "stdout", Text: "Ran"})
 		case 16:
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
@@ -159,10 +158,10 @@ func TestSimpleRun(t *testing.T) {
 			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
 		case 17:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "run"})
+			checkRequestEvent(t, r, "finish", protocol.FinishData{Stage: "run"})
 		case 18:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "last", event.LastData{})
+			checkRequestEvent(t, r, "last", protocol.LastData{})
 		default:
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
@@ -212,7 +211,7 @@ func TestFailingBuild(t *testing.T) {
 		switch count {
 		case 0:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
+			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "build"})
 		case 1:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
@@ -232,10 +231,10 @@ func TestFailingBuild(t *testing.T) {
 			http.NotFound(w, r)
 		case 3:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stderr", Text: "bash: failing_command: command not found"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stderr", Text: "bash: failing_command: command not found"})
 		case 4:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
+			checkRequestEvent(t, r, "finish", protocol.FinishData{Stage: "build"})
 		case 5:
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
@@ -259,7 +258,7 @@ func TestFailingBuild(t *testing.T) {
 			assert.True(t, exitData.Build.Usage.NetworkOut > 0)
 		case 7:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "last", event.LastData{})
+			checkRequestEvent(t, r, "last", protocol.LastData{})
 		default:
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
@@ -306,7 +305,7 @@ func TestFailingRun(t *testing.T) {
 		switch count {
 		case 0:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
+			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "build"})
 		case 1:
 			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
 			checkRequestBody(t, r, "")
@@ -326,19 +325,19 @@ func TestFailingRun(t *testing.T) {
 			http.NotFound(w, r)
 		case 3:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "stdout", Text: "build"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "build"})
 		case 4:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "build"})
+			checkRequestEvent(t, r, "finish", protocol.FinishData{Stage: "build"})
 		case 5:
 			// We're not testing that the correct thing is being uploaded here for the time being
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
 		case 6:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", event.StartData{Stage: "run"})
+			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "run"})
 		case 7:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "run", Stream: "stderr", Text: "bash: failing_command: command not found"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "run", Stream: "stderr", Text: "bash: failing_command: command not found"})
 		case 8:
 			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
 			decoder := json.NewDecoder(r.Body)
@@ -367,10 +366,10 @@ func TestFailingRun(t *testing.T) {
 			checkRequestBody(t, r, "hello\n")
 		case 10:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "finish", event.FinishData{Stage: "run"})
+			checkRequestEvent(t, r, "finish", protocol.FinishData{Stage: "run"})
 		case 11:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "last", event.LastData{})
+			checkRequestEvent(t, r, "last", protocol.LastData{})
 		default:
 			fmt.Println("Didn't expect so many requests")
 			t.Fatal("Didn't expect so many requests")
@@ -420,7 +419,7 @@ func TestInternalError(t *testing.T) {
 		switch count {
 		case 0:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", event.StartData{Stage: "build"})
+			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "build"})
 		case 1:
 			// Let's simulate an error with the blob storage. So, the wrapper is trying to
 			// get the application and there's a problem.
@@ -429,7 +428,7 @@ func TestInternalError(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		case 2:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", event.LogData{Stage: "build", Stream: "interr", Text: "Could not get the code"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "interr", Text: "Could not get the code"})
 		}
 		count++
 	}

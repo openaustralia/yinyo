@@ -15,14 +15,13 @@ import (
 
 	"github.com/kballard/go-shellquote"
 	"github.com/openaustralia/yinyo/pkg/apiclient"
-	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/shirou/gopsutil/net"
 )
 
 var wg sync.WaitGroup
 
-func eventsSender(run apiclient.Run, eventsChan <-chan event.Event) {
+func eventsSender(run apiclient.Run, eventsChan <-chan protocol.Event) {
 	defer wg.Done()
 
 	// TODO: Send all events in a single http request
@@ -36,17 +35,17 @@ func eventsSender(run apiclient.Run, eventsChan <-chan event.Event) {
 	}
 }
 
-func streamLogs(run apiclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan event.Event) {
+func streamLogs(run apiclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan protocol.Event) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
-		eventsChan <- event.NewLogEvent("", time.Now(), stage, streamName, scanner.Text())
+		eventsChan <- protocol.NewLogEvent("", time.Now(), stage, streamName, scanner.Text())
 	}
 	c <- scanner.Err()
 }
 
 func runExternalCommand(run apiclient.Run, stage string, commandString string, env []string) (*os.ProcessState, error) {
 	// make a channel with a capacity of 100.
-	eventsChan := make(chan event.Event, 1000)
+	eventsChan := make(chan protocol.Event, 1000)
 
 	wg.Add(1)
 	// start the worker that sends the event messages
@@ -147,7 +146,7 @@ func runExternalCommandWithStats(run apiclient.Run, stage string, commandString 
 func checkError(err error, run apiclient.Run, stage string, text string) {
 	if err != nil {
 		//nolint:errcheck // ignore errors while logging error
-		run.CreateEvent(event.NewLogEvent("", time.Now(), "build", "interr", text))
+		run.CreateEvent(protocol.NewLogEvent("", time.Now(), "build", "interr", text))
 		log.Fatal(err)
 	}
 }
@@ -199,7 +198,7 @@ func setup(run apiclient.Run, options Options) {
 func Run(options Options) {
 	client := apiclient.New(options.ServerURL)
 	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
-	err := run.CreateEvent(event.NewStartEvent("", time.Now(), "build"))
+	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "build"))
 	checkError(err, run, "build", "Could not create event")
 
 	setup(run, options)
@@ -219,7 +218,7 @@ func Run(options Options) {
 
 	// Send the build finished event immediately when the build command has finished
 	// Effectively the cache uploading happens between the build and run stages
-	err = run.CreateEvent(event.NewFinishEvent("", time.Now(), "build"))
+	err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "build"))
 	checkError(err, run, "build", "Could not create event")
 
 	err = run.PutCacheFromDirectory(options.CachePath)
@@ -228,7 +227,7 @@ func Run(options Options) {
 
 	// Only do the main run if the build was successful
 	if exitData.Build.ExitCode == 0 {
-		err = run.CreateEvent(event.NewStartEvent("", time.Now(), "run"))
+		err = run.CreateEvent(protocol.NewStartEvent("", time.Now(), "run"))
 		checkError(err, run, "run", "Could not create event")
 
 		exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
@@ -243,7 +242,7 @@ func Run(options Options) {
 			checkError(err, run, "run", "Could not upload output")
 		}
 
-		err = run.CreateEvent(event.NewFinishEvent("", time.Now(), "run"))
+		err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "run"))
 		checkError(err, run, "run", "Could not create event")
 	} else {
 		// TODO: Only upload the exit data for the build
@@ -251,6 +250,6 @@ func Run(options Options) {
 		checkError(err, run, "run", "Could not upload exit data")
 	}
 
-	err = run.CreateEvent(event.NewLastEvent("", time.Now()))
+	err = run.CreateEvent(protocol.NewLastEvent("", time.Now()))
 	checkError(err, run, "run", "Could not create event")
 }

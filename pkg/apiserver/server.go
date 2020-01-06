@@ -12,7 +12,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/pkg/commands"
-	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
@@ -187,7 +186,7 @@ func (server *Server) createEvent(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	// Check the form of the JSON by interpreting it
-	var event event.Event
+	var event protocol.Event
 	err = json.Unmarshal(buf, &event)
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")

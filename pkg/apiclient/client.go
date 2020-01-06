@@ -12,7 +12,6 @@ import (
 	"os"
 
 	"github.com/openaustralia/yinyo/pkg/archive"
-	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
@@ -316,7 +315,7 @@ func (iterator *EventIterator) More() bool {
 }
 
 // Next returns the next event
-func (iterator *EventIterator) Next() (event event.Event, err error) {
+func (iterator *EventIterator) Next() (event protocol.Event, err error) {
 	err = iterator.decoder.Decode(&event)
 	return
 }
@@ -341,7 +340,7 @@ func (run *Run) GetEvents(lastID string) (*EventIterator, error) {
 }
 
 // CreateEvent sends an event
-func (run *Run) CreateEvent(event event.Event) error {
+func (run *Run) CreateEvent(event protocol.Event) error {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return err

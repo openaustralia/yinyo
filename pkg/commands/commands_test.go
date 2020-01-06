@@ -16,7 +16,6 @@ import (
 	jobdispatchermocks "github.com/openaustralia/yinyo/mocks/pkg/jobdispatcher"
 	keyvaluestoremocks "github.com/openaustralia/yinyo/mocks/pkg/keyvaluestore"
 	streammocks "github.com/openaustralia/yinyo/mocks/pkg/stream"
-	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 )
@@ -74,7 +73,7 @@ func TestCreateEvent(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.Client)
 
 	time := time.Now()
-	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
+	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -92,7 +91,7 @@ func TestCreateEvent(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.NewStartEvent("", time, "build"))
+	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -105,7 +104,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.Client)
 
 	time := time.Now()
-	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
+	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -114,7 +113,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.NewStartEvent("", time, "build"))
+	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -127,7 +126,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.Client)
 
 	time := time.Now()
-	stream.On("Add", "run-name", event.NewStartEvent("", time, "build")).Return(event.NewStartEvent("123", time, "build"), nil)
+	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -145,7 +144,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", event.NewStartEvent("", time, "build"))
+	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
 	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
 
 	stream.AssertExpectations(t)
@@ -157,8 +156,8 @@ func TestGetEvents(t *testing.T) {
 	stream := new(streammocks.Client)
 
 	time := time.Now()
-	stream.On("Get", "run-name", "0").Return(event.NewStartEvent("123", time, "build"), nil)
-	stream.On("Get", "run-name", "123").Return(event.NewLastEvent("456", time), nil)
+	stream.On("Get", "run-name", "0").Return(protocol.NewStartEvent("123", time, "build"), nil)
+	stream.On("Get", "run-name", "123").Return(protocol.NewLastEvent("456", time), nil)
 
 	app := AppImplementation{Stream: stream}
 
@@ -170,13 +169,13 @@ func TestGetEvents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, event.NewStartEvent("123", time, "build"), e)
+	assert.Equal(t, protocol.NewStartEvent("123", time, "build"), e)
 	assert.True(t, events.More())
 	e, err = events.Next()
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, event.NewLastEvent("456", time), e)
+	assert.Equal(t, protocol.NewLastEvent("456", time), e)
 	assert.False(t, events.More())
 
 	stream.AssertExpectations(t)

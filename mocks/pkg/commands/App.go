@@ -3,7 +3,6 @@
 package mocks
 
 import commands "github.com/openaustralia/yinyo/pkg/commands"
-import event "github.com/openaustralia/yinyo/pkg/event"
 import io "io"
 import mock "github.com/stretchr/testify/mock"
 import protocol "github.com/openaustralia/yinyo/pkg/protocol"
@@ -13,13 +12,13 @@ type App struct {
 	mock.Mock
 }
 
-// CreateEvent provides a mock function with given fields: runName, _a1
-func (_m *App) CreateEvent(runName string, _a1 event.Event) error {
-	ret := _m.Called(runName, _a1)
+// CreateEvent provides a mock function with given fields: runName, event
+func (_m *App) CreateEvent(runName string, event protocol.Event) error {
+	ret := _m.Called(runName, event)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, event.Event) error); ok {
-		r0 = rf(runName, _a1)
+	if rf, ok := ret.Get(0).(func(string, protocol.Event) error); ok {
+		r0 = rf(runName, event)
 	} else {
 		r0 = ret.Error(0)
 	}
