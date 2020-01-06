@@ -74,3 +74,11 @@ func TestValidArchiveSimple(t *testing.T) {
 	err := Validate(f)
 	assert.Nil(t, err)
 }
+
+func TestValidArchiveAbsolute(t *testing.T) {
+	// This archive has one file, one directory (".") and one symbolic link
+	// with an absolute (not relative) path in the link
+	f, _ := os.Open(filepath.Join("testdata", "absolute.tgz"))
+	err := Validate(f)
+	assert.Equal(t, "links should all be relative", err.Error())
+}
