@@ -353,3 +353,17 @@ func TestCreateRun(t *testing.T) {
 	jobDispatcher.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
 }
+
+// If we haven't uploaded an app error when starting a run
+func TestStartNoApp(t *testing.T) {
+	blobstoreClient := new(blobstoremocks.Client)
+	app := AppImplementation{BlobStore: blobstoreClient}
+
+	blobstoreClient.On("Get", "foo/app.tgz").Return(nil, errors.New("Doesn't exist"))
+	blobstoreClient.On("IsNotExist", errors.New("Doesn't exist")).Return(true)
+
+	err := app.StartRun("foo", "", map[string]string{}, "")
+	assert.True(t, errors.Is(err, ErrAppNotAvailable))
+
+	blobstoreClient.AssertExpectations(t)
+}

@@ -8,9 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	blobstoremocks "github.com/openaustralia/yinyo/mocks/pkg/blobstore"
 	commandsmocks "github.com/openaustralia/yinyo/mocks/pkg/commands"
-	keyvaluestoremocks "github.com/openaustralia/yinyo/mocks/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/commands"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
@@ -61,31 +59,16 @@ func TestStartBadBody(t *testing.T) {
 
 // If we haven't uploaded an app error when starting a run
 func TestStartNoApp(t *testing.T) {
-	blobstoreClient := new(blobstoremocks.Client)
-	keyvalueStore := new(keyvaluestoremocks.Client)
-	app := &commands.AppImplementation{BlobStore: blobstoreClient, KeyValueStore: keyvalueStore}
-	server := Server{app: app}
-	server.InitialiseRoutes()
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("StartRun", "foo", "", map[string]string{}, "").Return(commands.ErrAppNotAvailable)
 
-	blobstoreClient.On("Get", "foo/app.tgz").Return(nil, errors.New("Doesn't exist"))
-	blobstoreClient.On("IsNotExist", errors.New("Doesn't exist")).Return(true)
-	keyvalueStore.On("Get", "foo/token").Return("abc123", nil)
-
-	req, err := http.NewRequest("POST", "/runs/foo/start", strings.NewReader(`{}`))
-	if err != nil {
-		t.Fatal(err)
-	}
-	req.Header.Set("Authorization", "Bearer abc123")
-
-	rr := httptest.NewRecorder()
-
-	server.router.ServeHTTP(rr, req)
+	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{}`), "abc123")
 
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 	assert.Equal(t, `{"error":"app needs to be uploaded before starting a run"}`, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
-	blobstoreClient.AssertExpectations(t)
-	keyvalueStore.AssertExpectations(t)
+	app.AssertExpectations(t)
 }
 
 func TestCreateEventBadBody(t *testing.T) {
