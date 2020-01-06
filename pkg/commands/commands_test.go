@@ -78,7 +78,7 @@ func TestCreateEvent(t *testing.T) {
 	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
-	httpClient := defaultHTTP()
+	httpClient := http.DefaultClient
 	roundTripper := new(MockRoundTripper)
 	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
 		return r.URL.String() == "http://foo.com/bar"
@@ -109,7 +109,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
-	httpClient := defaultHTTP()
+	httpClient := http.DefaultClient
 	roundTripper := new(MockRoundTripper)
 	httpClient.Transport = roundTripper
 
@@ -131,7 +131,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
-	httpClient := defaultHTTP()
+	httpClient := http.DefaultClient
 	roundTripper := new(MockRoundTripper)
 	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
 		return r.URL.String() == "http://foo.com/bar"

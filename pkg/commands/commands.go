@@ -54,50 +54,31 @@ type AppImplementation struct {
 	HTTP          *http.Client
 }
 
-func defaultStore() (blobstore.Client, error) {
-	return blobstore.NewMinioClient(
+// New initialises the main state of the application
+func New() (App, error) {
+	storeAccess, err := blobstore.NewMinioClient(
 		os.Getenv("STORE_HOST"),
 		os.Getenv("STORE_BUCKET"),
 		os.Getenv("STORE_ACCESS_KEY"),
 		os.Getenv("STORE_SECRET_KEY"),
 	)
-}
+	if err != nil {
+		return nil, err
+	}
 
-func defaultRedis() (*redis.Client, error) {
 	// Connect to redis and initially just check that we can connect
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
 		Password: os.Getenv("REDIS_PASSWORD"),
 	})
-	_, err := redisClient.Ping().Result()
-	if err != nil {
-		return nil, err
-	}
-	return redisClient, nil
-}
-
-func defaultJobDispatcher() (jobdispatcher.Client, error) {
-	return jobdispatcher.NewKubernetes()
-}
-
-func defaultHTTP() *http.Client {
-	return http.DefaultClient
-}
-
-// New initialises the main state of the application
-func New() (App, error) {
-	storeAccess, err := defaultStore()
+	_, err = redisClient.Ping().Result()
 	if err != nil {
 		return nil, err
 	}
 
-	redisClient, err := defaultRedis()
-	if err != nil {
-		return nil, err
-	}
 	streamClient := stream.NewRedis(redisClient)
 
-	jobDispatcher, err := defaultJobDispatcher()
+	jobDispatcher, err := jobdispatcher.NewKubernetes()
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +90,7 @@ func New() (App, error) {
 		JobDispatcher: jobDispatcher,
 		Stream:        streamClient,
 		KeyValueStore: keyValueStore,
-		HTTP:          defaultHTTP(),
+		HTTP:          http.DefaultClient,
 	}, nil
 }
 
