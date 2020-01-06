@@ -7,9 +7,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	commandsmocks "github.com/openaustralia/yinyo/mocks/pkg/commands"
 	"github.com/openaustralia/yinyo/pkg/commands"
+	"github.com/openaustralia/yinyo/pkg/event"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -224,5 +226,41 @@ func TestPutExitData(t *testing.T) {
 	rr := makeRequest(app, "PUT", "/runs/my-run/exit-data", strings.NewReader(`{"build":{"exit_code":12,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`), "abc123")
 
 	assert.Equal(t, http.StatusOK, rr.Code)
+	app.AssertExpectations(t)
+}
+
+// Make a fake event iterator that we can use for testing
+type events struct {
+	contents []event.Event
+	index    int
+}
+
+func (e *events) More() bool {
+	return e.index < len(e.contents)
+}
+
+func (e *events) Next() (event.Event, error) {
+	event := e.contents[e.index]
+	e.index++
+	return event, nil
+}
+
+func TestGetEvents(t *testing.T) {
+	app := new(commandsmocks.App)
+	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
+	events := &events{contents: []event.Event{
+		event.NewStartEvent("", time, "build"),
+		event.NewFinishEvent("", time, "build"),
+	}}
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetEvents", "my-run", "0").Return(events)
+	rr := makeRequest(app, "GET", "/runs/my-run/events", nil, "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, `{"time":"2000-01-02T03:45:00Z","type":"start","data":{"stage":"build"}}
+{"time":"2000-01-02T03:45:00Z","type":"finish","data":{"stage":"build"}}
+`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/ld+json"}}, rr.Header())
+
 	app.AssertExpectations(t)
 }
