@@ -156,3 +156,73 @@ func TestGetCache(t *testing.T) {
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/gzip"}}, rr.Header())
 	app.AssertExpectations(t)
 }
+
+func TestPutCache(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("PutCache", mock.Anything, int64(12), "my-run").Return(nil)
+
+	rr := makeRequest(app, "PUT", "/runs/my-run/cache", strings.NewReader("cached stuff"), "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	app.AssertExpectations(t)
+}
+
+func TestGetOutput(t *testing.T) {
+	app := new(commandsmocks.App)
+
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetOutput", "my-run").Return(strings.NewReader("output stuff"), nil)
+
+	rr := makeRequest(app, "GET", "/runs/my-run/output", nil, "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "output stuff", rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/octet-stream"}}, rr.Header())
+	app.AssertExpectations(t)
+}
+
+func TestPutOutput(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("PutOutput", mock.Anything, int64(12), "my-run").Return(nil)
+
+	rr := makeRequest(app, "PUT", "/runs/my-run/output", strings.NewReader("output stuff"), "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	app.AssertExpectations(t)
+}
+
+func TestGetExitData(t *testing.T) {
+	app := new(commandsmocks.App)
+	exitData := protocol.ExitData{
+		Build: &protocol.ExitDataStage{
+			ExitCode: 12,
+		},
+	}
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetExitData", "my-run").Return(exitData, nil)
+
+	rr := makeRequest(app, "GET", "/runs/my-run/exit-data", nil, "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "{\"build\":{\"exit_code\":12,\"usage\":{\"wall_time\":0,\"cpu_time\":0,\"max_rss\":0,\"network_in\":0,\"network_out\":0}}}\n", rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json"}}, rr.Header())
+	app.AssertExpectations(t)
+}
+
+func TestPutExitData(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	exitData := protocol.ExitData{
+		Build: &protocol.ExitDataStage{
+			ExitCode: 12,
+		},
+	}
+	app.On("PutExitData", "my-run", exitData).Return(nil)
+
+	rr := makeRequest(app, "PUT", "/runs/my-run/exit-data", strings.NewReader(`{"build":{"exit_code":12,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`), "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	app.AssertExpectations(t)
+}

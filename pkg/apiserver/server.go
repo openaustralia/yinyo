@@ -86,6 +86,7 @@ func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
 		}
 		return err
 	}
+	w.Header().Set("Content-Type", "application/octet-stream")
 	_, err = io.Copy(w, reader)
 	return err
 }
@@ -107,6 +108,7 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	return enc.Encode(exitData)
 }
