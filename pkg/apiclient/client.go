@@ -22,6 +22,32 @@ type Run struct {
 	Client *Client
 }
 
+type RunInterface interface {
+	GetName() string
+	GetToken() string
+	GetApp() (io.ReadCloser, error)
+	GetCache() (io.ReadCloser, error)
+	GetOutput() (io.ReadCloser, error)
+	GetExitData() (exitData protocol.ExitData, err error)
+	PutApp(data io.Reader) error
+	PutCache(data io.Reader) error
+	PutOutput(data io.Reader) error
+	PutExitData(exitData protocol.ExitData) error
+	Start(options *protocol.StartRunOptions) error
+	GetEvents(lastID string) (*EventIterator, error)
+	CreateEvent(event protocol.Event) error
+	Delete() error
+	// The following methods operate on to top of the lower level methods above
+	// TODO: Should the following methods be in a separate interface?
+	GetAppToDirectory(dir string) error
+	PutAppFromDirectory(dir string, ignorePaths []string) error
+	GetCacheToFile(path string) error
+	GetCacheToDirectory(dir string) error
+	PutCacheFromDirectory(dir string) error
+	GetOutputToFile(path string) error
+	PutOutputFromFile(path string) error
+}
+
 // Client is used to access the API
 type Client struct {
 	URL        string
@@ -82,8 +108,8 @@ func (client *Client) Hello() (string, error) {
 }
 
 // CreateRun is the first thing called. It creates a run
-func (client *Client) CreateRun(namePrefix string) (Run, error) {
-	run := Run{Client: client}
+func (client *Client) CreateRun(namePrefix string) (RunInterface, error) {
+	run := &Run{Client: client}
 
 	uri := client.URL + "/runs"
 	if namePrefix != "" {
@@ -110,6 +136,14 @@ func (client *Client) CreateRun(namePrefix string) (Run, error) {
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&run)
 	return run, err
+}
+
+func (run *Run) GetName() string {
+	return run.Name
+}
+
+func (run *Run) GetToken() string {
+	return run.Token
 }
 
 // Make an API call for a particular run. These requests are always authenticated

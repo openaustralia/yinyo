@@ -10,7 +10,7 @@ import (
 
 const cacheName = ".yinyo-build-cache.tgz"
 
-func uploadCacheIfExists(run Run, cachePath string) error {
+func uploadCacheIfExists(run RunInterface, cachePath string) error {
 	file, err := os.Open(cachePath)
 	if err != nil {
 		// If the cache doesn't exist then skip the uploading bit
@@ -27,7 +27,7 @@ func uploadCacheIfExists(run Run, cachePath string) error {
 	return nil
 }
 
-func downloadOutput(run Run, scraperDirectory string, outputFile string) error {
+func downloadOutput(run RunInterface, scraperDirectory string, outputFile string) error {
 	// Get the run output
 	if outputFile != "" {
 		err := run.GetOutputToFile(filepath.Join(scraperDirectory, outputFile))

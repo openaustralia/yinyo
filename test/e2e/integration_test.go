@@ -44,8 +44,8 @@ func TestCreateRun(t *testing.T) {
 
 	// The only purpose of name_prefix is to make runs easier for humans to identify
 	// So, expect the run to start with the name_prefix but there's probably more
-	assert.True(t, strings.HasPrefix(run.Name, "foo-"))
-	assert.NotEqual(t, "", run.Token)
+	assert.True(t, strings.HasPrefix(run.GetName(), "foo-"))
+	assert.NotEqual(t, "", run.GetToken())
 }
 
 func TestCreateRunScraperNameEncoding(t *testing.T) {
@@ -61,7 +61,7 @@ func TestCreateRunScraperNameEncoding(t *testing.T) {
 	defer run.Delete()
 
 	// Only certain characters are allowed in kubernetes job names
-	assert.True(t, strings.HasPrefix(run.Name, "foo-b-12r-"))
+	assert.True(t, strings.HasPrefix(run.GetName(), "foo-b-12r-"))
 }
 
 // Check that run names are created to be unique even when the same scraper name
@@ -82,7 +82,7 @@ func TestCreateRunNamesUnique(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer run2.Delete()
-	assert.NotEqual(t, run1.Name, run2.Name)
+	assert.NotEqual(t, run1.GetName(), run2.GetName())
 }
 
 func TestNamePrefixOptional(t *testing.T) {
@@ -96,7 +96,7 @@ func TestNamePrefixOptional(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer run.Delete()
-	assert.True(t, strings.HasPrefix(run.Name, "run-"))
+	assert.True(t, strings.HasPrefix(run.GetName(), "run-"))
 }
 
 func TestUploadDownloadApp(t *testing.T) {
