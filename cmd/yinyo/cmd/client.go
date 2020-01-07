@@ -136,7 +136,12 @@ var clientCmd = &cobra.Command{
 		// if err != nil {
 		// 	log.Fatal(err)
 		// }
-		// fmt.Printf("%+v", exitData)
+		// if exitData.Build != nil {
+		// 	fmt.Printf("Build: %+v\n", *exitData.Build)
+		// }
+		// if exitData.Run != nil {
+		// 	fmt.Printf("Run: %+v\n", *exitData.Run)
+		// }
 
 		// Delete the run
 		err = run.Delete()
