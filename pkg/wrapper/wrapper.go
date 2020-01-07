@@ -145,10 +145,10 @@ func runExternalCommandWithStats(run apiclient.Run, stage string, commandString 
 
 func logError(err error, run apiclient.Run, text string) {
 	// Notice that for an internal error we're not logging the stage. We leave that empty.
-		//nolint:errcheck // ignore errors while logging error
+	//nolint:errcheck // ignore errors while logging error
 	run.CreateEvent(protocol.NewLogEvent("", time.Now(), "", "interr", text))
-		log.Fatal(err)
-	}
+	log.Fatal(err)
+}
 
 // Options are parameters required for calling Run
 type Options struct {
@@ -206,7 +206,39 @@ func setup(run apiclient.Run, options Options) {
 	err = run.GetCacheToDirectory(options.CachePath)
 	if err != nil {
 		logError(err, run, "Could not get the cache")
+	}
 }
+
+func runStage(run apiclient.Run, options Options, env []string, exitDataBuild protocol.ExitDataStage) {
+	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "run"))
+	if err != nil {
+		logError(err, run, "Could not create event")
+	}
+
+	var exitData protocol.ExitData
+	exitData.Build = &exitDataBuild
+	exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
+	if err != nil {
+		logError(err, run, "Unexpected error while running")
+	}
+	exitData.Run = &exitDataStage
+
+	err = run.PutExitData(exitData)
+	if err != nil {
+		logError(err, run, "Could not upload exit data")
+	}
+
+	if options.RunOutput != "" {
+		err = run.PutOutputFromFile(filepath.Join(options.AppPath, options.RunOutput))
+		if err != nil {
+			logError(err, run, "Could not upload output")
+		}
+	}
+
+	err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "run"))
+	if err != nil {
+		logError(err, run, "Could not create event")
+	}
 }
 
 // Run runs a scraper from inside a container
@@ -249,33 +281,7 @@ func Run(options Options) {
 
 	// Only do the main run if the build was successful
 	if exitData.Build.ExitCode == 0 {
-		err = run.CreateEvent(protocol.NewStartEvent("", time.Now(), "run"))
-		if err != nil {
-			logError(err, run, "Could not create event")
-		}
-
-		exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
-		if err != nil {
-			logError(err, run, "Unexpected error while running")
-		}
-		exitData.Run = &exitDataStage
-
-		err = run.PutExitData(exitData)
-		if err != nil {
-			logError(err, run, "Could not upload exit data")
-		}
-
-		if options.RunOutput != "" {
-			err = run.PutOutputFromFile(filepath.Join(options.AppPath, options.RunOutput))
-			if err != nil {
-				logError(err, run, "Could not upload output")
-			}
-		}
-
-		err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "run"))
-		if err != nil {
-			logError(err, run, "Could not create event")
-		}
+		runStage(run, options, env, *exitData.Build)
 	} else {
 		// TODO: Only upload the exit data for the build
 		err := run.PutExitData(exitData)
