@@ -165,80 +165,82 @@ type Options struct {
 	RunOutput    string
 }
 
-func setup(run apiclient.Run, options Options) {
+func setup(run apiclient.Run, options Options) *runError {
 	// Create and populate herokuish import path and cache path
 	err := os.MkdirAll(options.ImportPath, 0755)
 	if err != nil {
-		logError(err, run, "Could not create directory")
+		return newError(err, "Could not create directory")
 	}
 	err = os.MkdirAll(options.CachePath, 0755)
 	if err != nil {
-		logError(err, run, "Could not create directory")
+		return newError(err, "Could not create directory")
 	}
 	err = os.MkdirAll(options.EnvPath, 0755)
 	if err != nil {
-		logError(err, run, "Could not create directory")
+		return newError(err, "Could not create directory")
 	}
 
 	// Write the environment variables to /tmp/env in the format defined by the buildpack API
 	for name, value := range options.Environment {
 		f, err := os.Create(filepath.Join(options.EnvPath, name))
 		if err != nil {
-			logError(err, run, "Could not create environment file")
+			return newError(err, "Could not create environment file")
 		}
 		_, err = f.WriteString(value)
 		if err != nil {
-			logError(err, run, "Could not write to environment file")
+			return newError(err, "Could not write to environment file")
 		}
 		f.Close()
 	}
 
 	err = run.GetAppToDirectory(options.ImportPath)
 	if err != nil {
-		logError(err, run, "Could not get the code")
+		return newError(err, "Could not get the code")
 	}
 	d1 := []byte("scraper: /bin/start.sh")
 	err = ioutil.WriteFile(filepath.Join(options.ImportPath, "Procfile"), d1, 0644)
 	if err != nil {
-		logError(err, run, "Could not write to a file")
+		return newError(err, "Could not write to a file")
 	}
 	// If the cache doesn't exit this will not error
 	err = run.GetCacheToDirectory(options.CachePath)
 	if err != nil {
-		logError(err, run, "Could not get the cache")
+		return newError(err, "Could not get the cache")
 	}
+	return nil
 }
 
-func runStage(run apiclient.Run, options Options, env []string, exitDataBuild protocol.ExitDataStage) {
+func runStage(run apiclient.Run, options Options, env []string, exitDataBuild protocol.ExitDataStage) *runError {
 	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "run"))
 	if err != nil {
-		logError(err, run, "Could not create event")
+		return newError(err, "Could not create event")
 	}
 
 	var exitData protocol.ExitData
 	exitData.Build = &exitDataBuild
 	exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
 	if err != nil {
-		logError(err, run, "Unexpected error while running")
+		return newError(err, "Unexpected error while running")
 	}
 	exitData.Run = &exitDataStage
 
 	err = run.PutExitData(exitData)
 	if err != nil {
-		logError(err, run, "Could not upload exit data")
+		return newError(err, "Could not upload exit data")
 	}
 
 	if options.RunOutput != "" {
 		err = run.PutOutputFromFile(filepath.Join(options.AppPath, options.RunOutput))
 		if err != nil {
-			logError(err, run, "Could not upload output")
+			return newError(err, "Could not upload output")
 		}
 	}
 
 	err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "run"))
 	if err != nil {
-		logError(err, run, "Could not create event")
+		return newError(err, "Could not create event")
 	}
+	return nil
 }
 
 // Run runs a scraper from inside a container
@@ -250,7 +252,10 @@ func Run(options Options) {
 		logError(err, run, "Could not create event")
 	}
 
-	setup(run, options)
+	runError := setup(run, options)
+	if runError != nil {
+		logError(runError.error, run, runError.user)
+	}
 
 	env := []string{
 		"APP_PATH=" + options.AppPath,
@@ -281,7 +286,10 @@ func Run(options Options) {
 
 	// Only do the main run if the build was successful
 	if exitData.Build.ExitCode == 0 {
-		runStage(run, options, env, *exitData.Build)
+		runError := runStage(run, options, env, *exitData.Build)
+		if runError != nil {
+			logError(runError.error, run, runError.user)
+		}
 	} else {
 		// TODO: Only upload the exit data for the build
 		err := run.PutExitData(exitData)
@@ -294,4 +302,14 @@ func Run(options Options) {
 	if err != nil {
 		logError(err, run, "Could not create event")
 	}
+}
+
+// An error we can get during a run. Show different errors to the user and logged internally
+type runError struct {
+	error error  // Error which is logged internally
+	user  string // Text shown to the user
+}
+
+func newError(err error, user string) *runError {
+	return &runError{error: err, user: user}
 }
