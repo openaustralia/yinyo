@@ -197,7 +197,8 @@ func setup(run apiclient.Run, options Options) error {
 	}
 	// If the cache doesn't exit this will not error
 	err = run.GetCacheToDirectory(options.CachePath)
-	if err != nil {
+	// It's not an error if cache doesn't exist
+	if err != nil && !apiclient.IsNotFound(err) {
 		return err
 	}
 	return nil

@@ -181,10 +181,6 @@ func (run *Run) PutAppFromDirectory(dir string, ignorePaths []string) error {
 func (run *Run) GetCacheToDirectory(dir string) error {
 	app, err := run.GetCache()
 	if err != nil {
-		// If cache doesn't exist then do nothing
-		if IsNotFound(err) {
-			return nil
-		}
 		return err
 	}
 	defer app.Close()
