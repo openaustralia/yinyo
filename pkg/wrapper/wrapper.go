@@ -293,8 +293,8 @@ func RunWithError(run apiclient.RunInterface, options Options) error {
 	return nil
 }
 
-// Run2 runs a scraper from inside a container
-func Run2(run apiclient.RunInterface, options Options) error {
+// Run runs a scraper from inside a container
+func Run(run apiclient.RunInterface, options Options) error {
 	err := RunWithError(run, options)
 	if err != nil {
 		// Notice that for an internal error we're not logging the stage. We leave that empty.
@@ -302,14 +302,4 @@ func Run2(run apiclient.RunInterface, options Options) error {
 		run.CreateEvent(protocol.NewLogEvent("", time.Now(), "", "interr", "Internal error"))
 	}
 	return err
-}
-
-// Run runs a scraper from inside a container
-func Run(runName string, runToken string, serverURL string, options Options) error {
-	run := &apiclient.Run{
-		Run:    protocol.Run{Name: runName, Token: runToken},
-		Client: apiclient.New(serverURL),
-	}
-
-	return Run2(run, options)
 }

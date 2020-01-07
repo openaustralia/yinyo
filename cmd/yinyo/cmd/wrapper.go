@@ -3,6 +3,8 @@ package cmd
 import (
 	"log"
 
+	"github.com/openaustralia/yinyo/pkg/apiclient"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/openaustralia/yinyo/pkg/wrapper"
 	"github.com/spf13/cobra"
 )
@@ -29,7 +31,11 @@ var wrapperCmd = &cobra.Command{
 	Long:  "Manages the building and running of a scraper inside a container. Used internally by the system.",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := wrapper.Run(args[0], args[1], serverURL, wrapper.Options{
+		run := &apiclient.Run{
+			Run:    protocol.Run{Name: args[0], Token: args[1]},
+			Client: apiclient.New(serverURL),
+		}
+		err := wrapper.Run(run, wrapper.Options{
 			ImportPath:   importPath,
 			CachePath:    cachePath,
 			AppPath:      appPath,

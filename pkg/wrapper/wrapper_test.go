@@ -13,6 +13,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
@@ -183,8 +184,12 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	// Send requests for the yinyo server to our local test server instead (which we start here)
-	err = Run("run-name", "run-token", ts.URL, Options{
+	run := &apiclient.Run{
+		Run: protocol.Run{Name: "run-name", Token: "run-token"},
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		Client: apiclient.New(ts.URL),
+	}
+	err = Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -272,8 +277,12 @@ func TestFailingBuild(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	// Send requests for the yinyo server to our local test server instead (which we start here)
-	err = Run("run-name", "run-token", ts.URL, Options{
+	run := &apiclient.Run{
+		Run: protocol.Run{Name: "run-name", Token: "run-token"},
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		Client: apiclient.New(ts.URL),
+	}
+	err = Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -376,8 +385,12 @@ func TestFailingRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	// Send requests for the yinyo server to our local test server instead (which we start here)
-	err = Run("run-name", "run-token", ts.URL, Options{
+	run := &apiclient.Run{
+		Run: protocol.Run{Name: "run-name", Token: "run-token"},
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		Client: apiclient.New(ts.URL),
+	}
+	err = Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -425,8 +438,12 @@ func TestInternalError(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	// Send requests for the yinyo server to our local test server instead (which we start here)
-	err = Run("run-name", "run-token", ts.URL, Options{
+	run := &apiclient.Run{
+		Run: protocol.Run{Name: "run-name", Token: "run-token"},
+		// Send requests for the yinyo server to our local test server instead (which we start here)
+		Client: apiclient.New(ts.URL),
+	}
+	err = Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
