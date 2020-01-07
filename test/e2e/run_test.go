@@ -428,7 +428,7 @@ func TestInternalError(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		case 2:
 			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "interr", Text: "Could not get the code"})
+			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "", Stream: "interr", Text: "Could not get the code"})
 		}
 		count++
 	}
