@@ -296,7 +296,7 @@ func runWithError(run apiclient.Run, options Options) error {
 }
 
 // Run runs a scraper from inside a container
-func Run(options Options) {
+func Run(options Options) error {
 	client := apiclient.New(options.ServerURL)
 	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
 
@@ -305,6 +305,6 @@ func Run(options Options) {
 		// Notice that for an internal error we're not logging the stage. We leave that empty.
 		//nolint:errcheck // ignore errors while logging error
 		run.CreateEvent(protocol.NewLogEvent("", time.Now(), "", "interr", "Internal error"))
-		log.Fatal(err)
 	}
+	return err
 }

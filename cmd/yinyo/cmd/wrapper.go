@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/openaustralia/yinyo/pkg/wrapper"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +29,7 @@ var wrapperCmd = &cobra.Command{
 	Long:  "Manages the building and running of a scraper inside a container. Used internally by the system.",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		wrapper.Run(wrapper.Options{
+		err := wrapper.Run(wrapper.Options{
 			RunName:      args[0],
 			RunToken:     args[1],
 			ServerURL:    serverURL,
@@ -40,5 +42,8 @@ var wrapperCmd = &cobra.Command{
 			RunCommand:   runCommand,
 			RunOutput:    runOutput,
 		})
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
