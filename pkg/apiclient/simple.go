@@ -44,6 +44,15 @@ func downloadOutput(run Run, scraperDirectory string, outputFile string) error {
 	return nil
 }
 
+func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvVariable {
+	var envVariables []protocol.EnvVariable
+	for k, v := range environment {
+		// TODO: Fix this inefficient way
+		envVariables = append(envVariables, protocol.EnvVariable{Name: k, Value: v})
+	}
+	return envVariables
+}
+
 // Simple is a super simple high level way of running a scraper that exists on the local file system
 // and displaying the results to stdout/stderr. This is used by the command line client
 // It makes a simple common use case a little simpler to implement
@@ -65,16 +74,11 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	if err != nil {
 		return err
 	}
-	var envVariables []protocol.EnvVariable
-	for k, v := range environment {
-		// TODO: Fix this inefficient way
-		envVariables = append(envVariables, protocol.EnvVariable{Name: k, Value: v})
-	}
 	// Start the run
 	err = run.Start(&protocol.StartRunOptions{
 		Output:   outputFile,
 		Callback: protocol.Callback{URL: callbackURL},
-		Env:      envVariables,
+		Env:      reformatEnvironmentVariables(environment),
 	})
 	if err != nil {
 		return err
