@@ -1,6 +1,6 @@
-package test
+package wrapper
 
-// This tests the "yinyo wrapper" executable without running it in a kubernetes cluster
+// This tests the "yinyo wrapper" without running it in a kubernetes cluster
 
 import (
 	"encoding/json"
@@ -15,7 +15,6 @@ import (
 
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/protocol"
-	"github.com/openaustralia/yinyo/pkg/wrapper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -184,7 +183,7 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	err = wrapper.Run(wrapper.Options{
+	err = Run(Options{
 		RunName:  "run-name",
 		RunToken: "run-token",
 		// Send requests for the yinyo server to our local test server instead (which we start here)
@@ -276,7 +275,7 @@ func TestFailingBuild(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	err = wrapper.Run(wrapper.Options{
+	err = Run(Options{
 		RunName:  "run-name",
 		RunToken: "run-token",
 		// Send requests for the yinyo server to our local test server instead (which we start here)
@@ -383,7 +382,7 @@ func TestFailingRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	err = wrapper.Run(wrapper.Options{
+	err = Run(Options{
 		RunName:  "run-name",
 		RunToken: "run-token",
 		// Send requests for the yinyo server to our local test server instead (which we start here)
@@ -435,7 +434,7 @@ func TestInternalError(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	err = wrapper.Run(wrapper.Options{
+	err = Run(Options{
 		RunName:  "run-name",
 		RunToken: "run-token",
 		// Send requests for the yinyo server to our local test server instead (which we start here)
