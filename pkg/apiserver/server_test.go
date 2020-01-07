@@ -135,6 +135,19 @@ func TestPutAppWrongRunName(t *testing.T) {
 	app.AssertExpectations(t)
 }
 
+func TestGetApp(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetApp", "my-run").Return(strings.NewReader("code stuff"), nil)
+
+	rr := makeRequest(app, "GET", "/runs/my-run/app", nil, "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "code stuff", rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/gzip"}}, rr.Header())
+	app.AssertExpectations(t)
+}
+
 // This tests if the app isn't found (rather than the run)
 func TestGetAppErrNotFound(t *testing.T) {
 	app := new(commandsmocks.App)
