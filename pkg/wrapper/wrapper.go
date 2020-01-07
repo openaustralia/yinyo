@@ -143,13 +143,6 @@ func runExternalCommandWithStats(run apiclient.Run, stage string, commandString 
 	return exitData, nil
 }
 
-func logError(err error, run apiclient.Run) {
-	// Notice that for an internal error we're not logging the stage. We leave that empty.
-	//nolint:errcheck // ignore errors while logging error
-	run.CreateEvent(protocol.NewLogEvent("", time.Now(), "", "interr", "Internal error"))
-	log.Fatal(err)
-}
-
 // Options are parameters required for calling Run
 type Options struct {
 	RunName      string
@@ -243,18 +236,15 @@ func runStage(run apiclient.Run, options Options, env []string, exitDataBuild pr
 	return nil
 }
 
-// Run runs a scraper from inside a container
-func Run(options Options) {
-	client := apiclient.New(options.ServerURL)
-	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
+func runWithError(run apiclient.Run, options Options) error {
 	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "build"))
 	if err != nil {
-		logError(err, run)
+		return err
 	}
 
 	err = setup(run, options)
 	if err != nil {
-		logError(err, run)
+		return err
 	}
 
 	env := []string{
@@ -268,7 +258,7 @@ func Run(options Options) {
 
 	exitDataStage, err := runExternalCommandWithStats(run, "build", options.BuildCommand, env)
 	if err != nil {
-		logError(err, run)
+		return err
 	}
 	exitData.Build = &exitDataStage
 
@@ -276,30 +266,45 @@ func Run(options Options) {
 	// Effectively the cache uploading happens between the build and run stages
 	err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "build"))
 	if err != nil {
-		logError(err, run)
+		return err
 	}
 
 	err = run.PutCacheFromDirectory(options.CachePath)
 	if err != nil {
-		logError(err, run)
+		return err
 	}
 
 	// Only do the main run if the build was successful
 	if exitData.Build.ExitCode == 0 {
 		err := runStage(run, options, env, *exitData.Build)
 		if err != nil {
-			logError(err, run)
+			return err
 		}
 	} else {
 		// TODO: Only upload the exit data for the build
 		err := run.PutExitData(exitData)
 		if err != nil {
-			logError(err, run)
+			return err
 		}
 	}
 
 	err = run.CreateEvent(protocol.NewLastEvent("", time.Now()))
 	if err != nil {
-		logError(err, run)
+		return err
+	}
+	return nil
+}
+
+// Run runs a scraper from inside a container
+func Run(options Options) {
+	client := apiclient.New(options.ServerURL)
+	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
+
+	err := runWithError(run, options)
+	if err != nil {
+		// Notice that for an internal error we're not logging the stage. We leave that empty.
+		//nolint:errcheck // ignore errors while logging error
+		run.CreateEvent(protocol.NewLogEvent("", time.Now(), "", "interr", "Internal error"))
+		log.Fatal(err)
 	}
 }
