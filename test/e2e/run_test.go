@@ -11,11 +11,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"os/exec"
 	"testing"
 
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/protocol"
+	"github.com/openaustralia/yinyo/pkg/wrapper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,7 +44,7 @@ func checkRequestEvent(t *testing.T, r *http.Request, typeString string, data in
 	assert.Equal(t, data, e.Data)
 }
 
-func createTemporaryDirectories() (appPath string, importPath string, cachePath string, err error) {
+func createTemporaryDirectories() (appPath string, importPath string, cachePath string, envPath string, err error) {
 	currentPath, err := os.Getwd()
 	if err != nil {
 		return
@@ -58,6 +58,10 @@ func createTemporaryDirectories() (appPath string, importPath string, cachePath 
 		return
 	}
 	cachePath, err = ioutil.TempDir(currentPath, "cache")
+	if err != nil {
+		return
+	}
+	envPath, err = ioutil.TempDir(currentPath, "env")
 	return
 }
 
@@ -171,33 +175,28 @@ func TestSimpleRun(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handler))
 	defer ts.Close()
 
-	appPath, importPath, cachePath, err := createTemporaryDirectories()
+	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(appPath)
 	defer os.RemoveAll(importPath)
 	defer os.RemoveAll(cachePath)
+	defer os.RemoveAll(envPath)
 
-	// Just run it and see what breaks
-	// TODO: Don't run the executable
-	cmd := exec.Command(
-		"yinyo",
-		"wrapper",
-		"--apppath", appPath,
-		"--importpath", importPath,
-		"--cachepath", cachePath,
-		"run-name",
-		"run-token",
-		"--output", "output.txt",
+	err = wrapper.Run(wrapper.Options{
+		RunName:  "run-name",
+		RunToken: "run-token",
 		// Send requests for the yinyo server to our local test server instead (which we start here)
-		"--server", ts.URL,
-		"--buildcommand", `bash -c "echo _app_; ls `+importPath+`; echo _cache_; ls `+cachePath+`"`,
-		"--runcommand", "echo Ran",
-	)
-
-	stdoutStderr, err := cmd.CombinedOutput()
-	fmt.Printf("%s\n", stdoutStderr)
+		ServerURL:    ts.URL,
+		ImportPath:   importPath,
+		CachePath:    cachePath,
+		AppPath:      appPath,
+		EnvPath:      envPath,
+		BuildCommand: `bash -c "echo _app_; ls ` + importPath + `; echo _cache_; ls ` + cachePath + `"`,
+		RunCommand:   "echo Ran",
+		RunOutput:    "output.txt",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -268,32 +267,28 @@ func TestFailingBuild(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handler))
 	defer ts.Close()
 
-	appPath, importPath, cachePath, err := createTemporaryDirectories()
+	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(appPath)
 	defer os.RemoveAll(importPath)
 	defer os.RemoveAll(cachePath)
+	defer os.RemoveAll(envPath)
 
-	// Just run it and see what breaks
-	cmd := exec.Command(
-		"yinyo",
-		"wrapper",
-		"--apppath", appPath,
-		"--importpath", importPath,
-		"--cachepath", cachePath,
-		"run-name",
-		"run-token",
-		"--output", "output.txt",
+	err = wrapper.Run(wrapper.Options{
+		RunName:  "run-name",
+		RunToken: "run-token",
 		// Send requests for the yinyo server to our local test server instead (which we start here)
-		"--server", ts.URL,
-		"--buildcommand", `bash -c "failing_command"`,
-		"--runcommand", "echo Ran",
-	)
-
-	stdoutStderr, err := cmd.CombinedOutput()
-	fmt.Printf("%s\n", stdoutStderr)
+		ServerURL:    ts.URL,
+		ImportPath:   importPath,
+		CachePath:    cachePath,
+		AppPath:      appPath,
+		EnvPath:      envPath,
+		BuildCommand: `bash -c "failing_command"`,
+		RunCommand:   "echo Ran",
+		RunOutput:    "output.txt",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -379,33 +374,29 @@ func TestFailingRun(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handler))
 	defer ts.Close()
 
-	appPath, importPath, cachePath, err := createTemporaryDirectories()
+	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(appPath)
 	defer os.RemoveAll(importPath)
 	defer os.RemoveAll(cachePath)
+	defer os.RemoveAll(envPath)
 
-	// Just run it and see what breaks
-	cmd := exec.Command(
-		"yinyo",
-		"wrapper",
-		"--apppath", appPath,
-		"--importpath", importPath,
-		"--cachepath", cachePath,
-		"run-name",
-		"run-token",
-		"--output", "output.txt",
+	err = wrapper.Run(wrapper.Options{
+		RunName:  "run-name",
+		RunToken: "run-token",
 		// Send requests for the yinyo server to our local test server instead (which we start here)
-		"--server", ts.URL,
-		"--buildcommand", `bash -c "echo build"`,
+		ServerURL:    ts.URL,
+		ImportPath:   importPath,
+		CachePath:    cachePath,
+		AppPath:      appPath,
+		EnvPath:      envPath,
+		BuildCommand: `bash -c "echo build"`,
 		// Send something to the output file then fail
-		"--runcommand", `bash -c "cd `+appPath+`; echo hello > output.txt; failing_command"`,
-	)
-
-	stdoutStderr, err := cmd.CombinedOutput()
-	fmt.Printf("%s\n", stdoutStderr)
+		RunCommand: `bash -c "cd ` + appPath + `; echo hello > output.txt; failing_command"`,
+		RunOutput:  "output.txt",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -435,37 +426,29 @@ func TestInternalError(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handler))
 	defer ts.Close()
 
-	appPath, importPath, cachePath, err := createTemporaryDirectories()
+	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(appPath)
 	defer os.RemoveAll(importPath)
 	defer os.RemoveAll(cachePath)
+	defer os.RemoveAll(envPath)
 
-	// Just run it and see what breaks
-	// TODO: Don't run the executable
-	cmd := exec.Command(
-		"yinyo",
-		"wrapper",
-		"--apppath", appPath,
-		"--importpath", importPath,
-		"--cachepath", cachePath,
-		"run-name",
-		"run-token",
-		"--output", "output.txt",
+	err = wrapper.Run(wrapper.Options{
+		RunName:  "run-name",
+		RunToken: "run-token",
 		// Send requests for the yinyo server to our local test server instead (which we start here)
-		"--server", ts.URL,
-		"--buildcommand", "echo Build",
-		"--runcommand", "echo Ran",
-	)
-
-	stdoutStderr, err := cmd.CombinedOutput()
-	fmt.Printf("%s\n", stdoutStderr)
-
+		ServerURL:    ts.URL,
+		ImportPath:   importPath,
+		CachePath:    cachePath,
+		AppPath:      appPath,
+		EnvPath:      envPath,
+		BuildCommand: "echo Build",
+		RunCommand:   "echo Ran",
+		RunOutput:    "output.txt",
+	})
 	// Because we expect the command to fail
 	assert.NotNil(t, err)
-	assert.NotEqual(t, 0, cmd.ProcessState.ExitCode())
-
 	assert.Equal(t, 3, count)
 }

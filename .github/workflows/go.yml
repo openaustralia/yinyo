@@ -52,10 +52,6 @@ jobs:
               dep ensure
           fi
 
-      #Some of the tests invoke the yinyo binary, so we need to install it first
-      - name: Install
-        run: go install -v ./...
-
       - name: Test
         run: go test ./... -short
 
@@ -76,9 +72,6 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v1
-
-      - name: Install
-        run: go install -v ./...
 
       - name: Calc coverage
         run: |
