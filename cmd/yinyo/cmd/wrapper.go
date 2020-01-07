@@ -29,10 +29,7 @@ var wrapperCmd = &cobra.Command{
 	Long:  "Manages the building and running of a scraper inside a container. Used internally by the system.",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := wrapper.Run(wrapper.Options{
-			RunName:      args[0],
-			RunToken:     args[1],
-			ServerURL:    serverURL,
+		err := wrapper.Run(args[0], args[1], serverURL, wrapper.Options{
 			ImportPath:   importPath,
 			CachePath:    cachePath,
 			AppPath:      appPath,

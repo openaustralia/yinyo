@@ -183,11 +183,8 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	err = Run(Options{
-		RunName:  "run-name",
-		RunToken: "run-token",
-		// Send requests for the yinyo server to our local test server instead (which we start here)
-		ServerURL:    ts.URL,
+	// Send requests for the yinyo server to our local test server instead (which we start here)
+	err = Run("run-name", "run-token", ts.URL, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -275,11 +272,8 @@ func TestFailingBuild(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	err = Run(Options{
-		RunName:  "run-name",
-		RunToken: "run-token",
-		// Send requests for the yinyo server to our local test server instead (which we start here)
-		ServerURL:    ts.URL,
+	// Send requests for the yinyo server to our local test server instead (which we start here)
+	err = Run("run-name", "run-token", ts.URL, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -382,11 +376,8 @@ func TestFailingRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	err = Run(Options{
-		RunName:  "run-name",
-		RunToken: "run-token",
-		// Send requests for the yinyo server to our local test server instead (which we start here)
-		ServerURL:    ts.URL,
+	// Send requests for the yinyo server to our local test server instead (which we start here)
+	err = Run("run-name", "run-token", ts.URL, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -434,11 +425,8 @@ func TestInternalError(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	err = Run(Options{
-		RunName:  "run-name",
-		RunToken: "run-token",
-		// Send requests for the yinyo server to our local test server instead (which we start here)
-		ServerURL:    ts.URL,
+	// Send requests for the yinyo server to our local test server instead (which we start here)
+	err = Run("run-name", "run-token", ts.URL, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,

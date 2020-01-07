@@ -145,9 +145,6 @@ func runExternalCommandWithStats(run apiclient.Run, stage string, commandString 
 
 // Options are parameters required for calling Run
 type Options struct {
-	RunName      string
-	RunToken     string
-	ServerURL    string
 	ImportPath   string
 	CachePath    string
 	AppPath      string
@@ -237,7 +234,7 @@ func runStage(run apiclient.Run, options Options, env []string, exitDataBuild pr
 	return nil
 }
 
-func runWithError(run apiclient.Run, options Options) error {
+func RunWithError(run apiclient.Run, options Options) error {
 	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "build"))
 	if err != nil {
 		return err
@@ -297,11 +294,11 @@ func runWithError(run apiclient.Run, options Options) error {
 }
 
 // Run runs a scraper from inside a container
-func Run(options Options) error {
-	client := apiclient.New(options.ServerURL)
-	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
+func Run(runName string, runToken string, serverURL string, options Options) error {
+	client := apiclient.New(serverURL)
+	run := apiclient.Run{Run: protocol.Run{Name: runName, Token: runToken}, Client: client}
 
-	err := runWithError(run, options)
+	err := RunWithError(run, options)
 	if err != nil {
 		// Notice that for an internal error we're not logging the stage. We leave that empty.
 		//nolint:errcheck // ignore errors while logging error
