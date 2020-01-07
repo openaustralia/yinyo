@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/openaustralia/yinyo/pkg/apiclient"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/spf13/cobra"
 )
 
@@ -28,9 +32,47 @@ var clientCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
-		err := apiclient.Simple(scraperDirectory, clientServerURL, environment, outputFile, callbackURL, showEventsJSON)
+		err := apiclient.Simple(
+			scraperDirectory, clientServerURL, environment, outputFile, callbackURL,
+			func(event protocol.Event) error {
+				if showEventsJSON {
+					// Convert the event back to JSON for display
+					b, err := json.Marshal(event)
+					if err != nil {
+						return err
+					}
+					fmt.Println(string(b))
+				} else {
+					// Only display the log events to the user
+					l, ok := event.Data.(protocol.LogData)
+					if ok {
+						f, err := osStream(l.Stream)
+						if err != nil {
+							return err
+						}
+						fmt.Fprintln(f, l.Text)
+					}
+				}
+				return nil
+			},
+		)
+
 		if err != nil {
 			log.Fatal(err)
 		}
 	},
+}
+
+// Convert the internal text representation of a stream type ("stdout"/"stderr") to the go stream
+// we can write to
+func osStream(stream string) (*os.File, error) {
+	switch stream {
+	// TODO: Extract string constant
+	case "stdout":
+		return os.Stdout, nil
+	case "stderr", "interr":
+		return os.Stderr, nil
+	default:
+		return nil, fmt.Errorf("Unexpected stream %v", stream)
+	}
 }

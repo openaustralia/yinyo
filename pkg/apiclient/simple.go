@@ -1,8 +1,6 @@
 package apiclient
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -54,9 +52,9 @@ func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvV
 }
 
 // Simple is a super simple high level way of running a scraper that exists on the local file system
-// and displaying the results to stdout/stderr. This is used by the command line client
+// giving you a local callback for every event (including logs). This is used by the command line client
 // It makes a simple common use case a little simpler to implement
-func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, showEventsJSON bool) error {
+func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, eventCallback func(event protocol.Event) error) error {
 	client := New(clientServerURL)
 	// Create the run
 	run, err := client.CreateRun(scraperDirectory)
@@ -93,7 +91,7 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 		if err != nil {
 			return err
 		}
-		err = displayEvent(e, showEventsJSON)
+		err = eventCallback(e)
 		if err != nil {
 			return err
 		}
@@ -113,40 +111,4 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 		return err
 	}
 	return nil
-}
-
-func displayEvent(e protocol.Event, showEventsJSON bool) error {
-	if showEventsJSON {
-		// Convert the event back to JSON for display
-		b, err := json.Marshal(e)
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(b))
-	} else {
-		// Only display the log events to the user
-		l, ok := e.Data.(protocol.LogData)
-		if ok {
-			f, err := osStream(l.Stream)
-			if err != nil {
-				return err
-			}
-			fmt.Fprintln(f, l.Text)
-		}
-	}
-	return nil
-}
-
-// Convert the internal text representation of a stream type ("stdout"/"stderr") to the go stream
-// we can write to
-func osStream(stream string) (*os.File, error) {
-	switch stream {
-	// TODO: Extract string constant
-	case "stdout":
-		return os.Stdout, nil
-	case "stderr", "interr":
-		return os.Stderr, nil
-	default:
-		return nil, fmt.Errorf("Unexpected stream %v", stream)
-	}
 }
