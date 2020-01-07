@@ -153,7 +153,7 @@ func osStream(stream string) (*os.File, error) {
 	// TODO: Extract string constant
 	case "stdout":
 		return os.Stdout, nil
-	case "stderr":
+	case "stderr", "interr":
 		return os.Stderr, nil
 	default:
 		return nil, fmt.Errorf("Unexpected stream %v", stream)
