@@ -26,9 +26,9 @@ func TestStoragePath(t *testing.T) {
 }
 
 func TestStartRun(t *testing.T) {
-	job := new(jobdispatchermocks.Client)
-	keyValueStore := new(keyvaluestoremocks.Client)
-	blobStore := new(blobstoremocks.Client)
+	job := new(jobdispatchermocks.Jobs)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+	blobStore := new(blobstoremocks.BlobStore)
 
 	// Expect that the job will get dispatched
 	job.On(
@@ -69,8 +69,8 @@ func (m *MockRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 func TestCreateEvent(t *testing.T) {
-	stream := new(streammocks.Client)
-	keyValueStore := new(keyvaluestoremocks.Client)
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
@@ -100,8 +100,8 @@ func TestCreateEvent(t *testing.T) {
 }
 
 func TestCreateEventNoCallbackURL(t *testing.T) {
-	stream := new(streammocks.Client)
-	keyValueStore := new(keyvaluestoremocks.Client)
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
@@ -122,8 +122,8 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 }
 
 func TestCreateEventErrorDuringCallback(t *testing.T) {
-	stream := new(streammocks.Client)
-	keyValueStore := new(keyvaluestoremocks.Client)
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
@@ -153,7 +153,7 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 }
 
 func TestGetEvents(t *testing.T) {
-	stream := new(streammocks.Client)
+	stream := new(streammocks.Stream)
 
 	time := time.Now()
 	stream.On("Get", "run-name", "0").Return(protocol.NewStartEvent("123", time, "build"), nil)
@@ -182,10 +182,10 @@ func TestGetEvents(t *testing.T) {
 }
 
 func TestDeleteRun(t *testing.T) {
-	jobDispatcher := new(jobdispatchermocks.Client)
-	blobStore := new(blobstoremocks.Client)
-	stream := new(streammocks.Client)
-	keyValueStore := new(keyvaluestoremocks.Client)
+	jobDispatcher := new(jobdispatchermocks.Jobs)
+	blobStore := new(blobstoremocks.BlobStore)
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
 	jobDispatcher.On("DeleteJobAndToken", "run-name").Return(nil)
 	blobStore.On("Delete", "run-name/app.tgz").Return(nil)
@@ -212,7 +212,7 @@ func TestDeleteRun(t *testing.T) {
 }
 
 func TestTokenCacheNotFound(t *testing.T) {
-	keyValueStore := new(keyvaluestoremocks.Client)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	keyValueStore.On("Get", "does-not-exit/token").Return("", keyvaluestore.ErrKeyNotExist)
 
 	app := AppImplementation{KeyValueStore: keyValueStore}
@@ -224,7 +224,7 @@ func TestTokenCacheNotFound(t *testing.T) {
 }
 
 func TestPutApp(t *testing.T) {
-	blobStore := new(blobstoremocks.Client)
+	blobStore := new(blobstoremocks.BlobStore)
 	app := AppImplementation{BlobStore: blobStore}
 
 	blobStore.On("Put", "run-name/app.tgz", mock.Anything, mock.Anything).Return(nil)
@@ -243,7 +243,7 @@ func TestPutApp(t *testing.T) {
 }
 
 func TestGetCache(t *testing.T) {
-	blobStore := new(blobstoremocks.Client)
+	blobStore := new(blobstoremocks.BlobStore)
 	app := AppImplementation{BlobStore: blobStore}
 
 	file, _ := os.Open("testdata/empty.tgz")
@@ -261,7 +261,7 @@ func TestGetCache(t *testing.T) {
 }
 
 func TestPutCache(t *testing.T) {
-	blobStore := new(blobstoremocks.Client)
+	blobStore := new(blobstoremocks.BlobStore)
 	app := AppImplementation{BlobStore: blobStore}
 
 	file, _ := os.Open("testdata/empty.tgz")
@@ -278,7 +278,7 @@ func TestPutCache(t *testing.T) {
 }
 
 func TestGetOutput(t *testing.T) {
-	blobStore := new(blobstoremocks.Client)
+	blobStore := new(blobstoremocks.BlobStore)
 	app := AppImplementation{BlobStore: blobStore}
 
 	blobStore.On("Get", "run-name/output").Return(strings.NewReader("output"), nil)
@@ -294,7 +294,7 @@ func TestGetOutput(t *testing.T) {
 }
 
 func TestPutOutput(t *testing.T) {
-	blobStore := new(blobstoremocks.Client)
+	blobStore := new(blobstoremocks.BlobStore)
 	app := AppImplementation{BlobStore: blobStore}
 
 	reader := strings.NewReader("output")
@@ -308,7 +308,7 @@ func TestPutOutput(t *testing.T) {
 }
 
 func TestGetExitData(t *testing.T) {
-	keyValueStore := new(keyvaluestoremocks.Client)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
 	keyValueStore.On("Get", "run-name/exit_data").Return(`{"build":{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`, nil)
@@ -323,7 +323,7 @@ func TestGetExitData(t *testing.T) {
 }
 
 func TestPutExitData(t *testing.T) {
-	keyValueStore := new(keyvaluestoremocks.Client)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
 	keyValueStore.On("Set", "run-name/exit_data", `{"build":{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`).Return(nil)
@@ -337,8 +337,8 @@ func TestPutExitData(t *testing.T) {
 }
 
 func TestCreateRun(t *testing.T) {
-	jobDispatcher := new(jobdispatchermocks.Client)
-	keyValueStore := new(keyvaluestoremocks.Client)
+	jobDispatcher := new(jobdispatchermocks.Jobs)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{JobDispatcher: jobDispatcher, KeyValueStore: keyValueStore}
 
 	jobDispatcher.On("CreateJobAndToken", "run", mock.Anything).Return("run-foo", nil)
@@ -355,7 +355,7 @@ func TestCreateRun(t *testing.T) {
 
 // If we haven't uploaded an app error when starting a run
 func TestStartNoApp(t *testing.T) {
-	blobstoreClient := new(blobstoremocks.Client)
+	blobstoreClient := new(blobstoremocks.BlobStore)
 	app := AppImplementation{BlobStore: blobstoreClient}
 
 	blobstoreClient.On("Get", "foo/app.tgz").Return(nil, errors.New("Doesn't exist"))

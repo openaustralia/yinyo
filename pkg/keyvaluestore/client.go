@@ -2,8 +2,8 @@ package keyvaluestore
 
 import "errors"
 
-// Client defines the interface to access the key value store
-type Client interface {
+// KeyValueStore defines the interface to access the key value store
+type KeyValueStore interface {
 	Set(key string, value string) error
 	Get(key string) (string, error)
 	Delete(key string) error

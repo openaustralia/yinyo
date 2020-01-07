@@ -9,7 +9,7 @@ type client struct {
 }
 
 // NewRedis returns the Redis implementation of Client
-func NewRedis(redisClient *redis.Client) Client {
+func NewRedis(redisClient *redis.Client) KeyValueStore {
 	return &client{client: redisClient}
 }
 

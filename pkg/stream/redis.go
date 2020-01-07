@@ -12,7 +12,7 @@ type redisStream struct {
 }
 
 // NewRedis returns the Redis implementation of Stream
-func NewRedis(redisClient *redis.Client) Client {
+func NewRedis(redisClient *redis.Client) Stream {
 	return &redisStream{client: redisClient}
 }
 

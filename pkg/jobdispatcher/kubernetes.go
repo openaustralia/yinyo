@@ -19,7 +19,7 @@ type kubernetesClient struct {
 const namespace = "yinyo-scrapers"
 
 // NewKubernetes returns the Kubernetes implementation of Client
-func NewKubernetes() (Client, error) {
+func NewKubernetes() (Jobs, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err

@@ -51,10 +51,10 @@ type EventIterator interface {
 
 // AppImplementation holds the state for the application
 type AppImplementation struct {
-	BlobStore     blobstore.Client
-	JobDispatcher jobdispatcher.Client
-	Stream        stream.Client
-	KeyValueStore keyvaluestore.Client
+	BlobStore     blobstore.BlobStore
+	JobDispatcher jobdispatcher.Jobs
+	Stream        stream.Stream
+	KeyValueStore keyvaluestore.KeyValueStore
 	HTTP          *http.Client
 }
 
