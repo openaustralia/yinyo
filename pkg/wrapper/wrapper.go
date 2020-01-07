@@ -143,13 +143,11 @@ func runExternalCommandWithStats(run apiclient.Run, stage string, commandString 
 	return exitData, nil
 }
 
-func checkError(err error, run apiclient.Run, stage string, text string) {
-	if err != nil {
+func logError(err error, run apiclient.Run, stage string, text string) {
 		//nolint:errcheck // ignore errors while logging error
 		run.CreateEvent(protocol.NewLogEvent("", time.Now(), stage, "interr", text))
 		log.Fatal(err)
 	}
-}
 
 // Options are parameters required for calling Run
 type Options struct {
@@ -169,29 +167,45 @@ type Options struct {
 func setup(run apiclient.Run, options Options) {
 	// Create and populate herokuish import path and cache path
 	err := os.MkdirAll(options.ImportPath, 0755)
-	checkError(err, run, "build", "Could not create directory")
+	if err != nil {
+		logError(err, run, "build", "Could not create directory")
+	}
 	err = os.MkdirAll(options.CachePath, 0755)
-	checkError(err, run, "build", "Could not create directory")
+	if err != nil {
+		logError(err, run, "build", "Could not create directory")
+	}
 	err = os.MkdirAll(options.EnvPath, 0755)
-	checkError(err, run, "build", "Could not create directory")
+	if err != nil {
+		logError(err, run, "build", "Could not create directory")
+	}
 
 	// Write the environment variables to /tmp/env in the format defined by the buildpack API
 	for name, value := range options.Environment {
 		f, err := os.Create(filepath.Join(options.EnvPath, name))
-		checkError(err, run, "build", "Could not create environment file")
+		if err != nil {
+			logError(err, run, "build", "Could not create environment file")
+		}
 		_, err = f.WriteString(value)
-		checkError(err, run, "build", "Could not write to environment file")
+		if err != nil {
+			logError(err, run, "build", "Could not write to environment file")
+		}
 		f.Close()
 	}
 
 	err = run.GetAppToDirectory(options.ImportPath)
-	checkError(err, run, "build", "Could not get the code")
+	if err != nil {
+		logError(err, run, "build", "Could not get the code")
+	}
 	d1 := []byte("scraper: /bin/start.sh")
 	err = ioutil.WriteFile(filepath.Join(options.ImportPath, "Procfile"), d1, 0644)
-	checkError(err, run, "build", "Could not write to a file")
+	if err != nil {
+		logError(err, run, "build", "Could not write to a file")
+	}
 	// If the cache doesn't exit this will not error
 	err = run.GetCacheToDirectory(options.CachePath)
-	checkError(err, run, "build", "Could not get the cache")
+	if err != nil {
+		logError(err, run, "build", "Could not get the cache")
+}
 }
 
 // Run runs a scraper from inside a container
@@ -199,7 +213,9 @@ func Run(options Options) {
 	client := apiclient.New(options.ServerURL)
 	run := apiclient.Run{Run: protocol.Run{Name: options.RunName, Token: options.RunToken}, Client: client}
 	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "build"))
-	checkError(err, run, "build", "Could not create event")
+	if err != nil {
+		logError(err, run, "build", "Could not create event")
+	}
 
 	setup(run, options)
 
@@ -213,43 +229,63 @@ func Run(options Options) {
 	var exitData protocol.ExitData
 
 	exitDataStage, err := runExternalCommandWithStats(run, "build", options.BuildCommand, env)
-	checkError(err, run, "build", "Unexpected error while building")
+	if err != nil {
+		logError(err, run, "build", "Unexpected error while building")
+	}
 	exitData.Build = &exitDataStage
 
 	// Send the build finished event immediately when the build command has finished
 	// Effectively the cache uploading happens between the build and run stages
 	err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "build"))
-	checkError(err, run, "build", "Could not create event")
+	if err != nil {
+		logError(err, run, "build", "Could not create event")
+	}
 
 	err = run.PutCacheFromDirectory(options.CachePath)
 	// TODO: We're not actually in the "build" stage here
-	checkError(err, run, "build", "Could not upload cache")
+	if err != nil {
+		logError(err, run, "build", "Could not upload cache")
+	}
 
 	// Only do the main run if the build was successful
 	if exitData.Build.ExitCode == 0 {
 		err = run.CreateEvent(protocol.NewStartEvent("", time.Now(), "run"))
-		checkError(err, run, "run", "Could not create event")
+		if err != nil {
+			logError(err, run, "run", "Could not create event")
+		}
 
 		exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
-		checkError(err, run, "run", "Unexpected error while running")
+		if err != nil {
+			logError(err, run, "run", "Unexpected error while running")
+		}
 		exitData.Run = &exitDataStage
 
 		err = run.PutExitData(exitData)
-		checkError(err, run, "run", "Could not upload exit data")
+		if err != nil {
+			logError(err, run, "run", "Could not upload exit data")
+		}
 
 		if options.RunOutput != "" {
 			err = run.PutOutputFromFile(filepath.Join(options.AppPath, options.RunOutput))
-			checkError(err, run, "run", "Could not upload output")
+			if err != nil {
+				logError(err, run, "run", "Could not upload output")
+			}
 		}
 
 		err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "run"))
-		checkError(err, run, "run", "Could not create event")
+		if err != nil {
+			logError(err, run, "run", "Could not create event")
+		}
 	} else {
 		// TODO: Only upload the exit data for the build
 		err := run.PutExitData(exitData)
-		checkError(err, run, "run", "Could not upload exit data")
+		if err != nil {
+			logError(err, run, "run", "Could not upload exit data")
+		}
 	}
 
 	err = run.CreateEvent(protocol.NewLastEvent("", time.Now()))
-	checkError(err, run, "run", "Could not create event")
+	if err != nil {
+		logError(err, run, "run", "Could not create event")
+	}
 }
