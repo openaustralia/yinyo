@@ -29,6 +29,21 @@ func uploadCacheIfExists(run Run, cachePath string) error {
 	return nil
 }
 
+func downloadOutput(run Run, scraperDirectory string, outputFile string) error {
+	// Get the run output
+	if outputFile != "" {
+		err := run.GetOutputToFile(filepath.Join(scraperDirectory, outputFile))
+		if err != nil {
+			if IsNotFound(err) {
+				log.Printf("Warning: output file %v does not exist", outputFile)
+			} else {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // Simple is a super simple high level way of running a scraper that exists on the local file system
 // and displaying the results to stdout/stderr. This is used by the command line client
 // It makes a simple common use case a little simpler to implement
@@ -79,16 +94,9 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 			return err
 		}
 	}
-	// Get the run output
-	if outputFile != "" {
-		err = run.GetOutputToFile(filepath.Join(scraperDirectory, outputFile))
-		if err != nil {
-			if IsNotFound(err) {
-				log.Printf("Warning: output file %v does not exist", outputFile)
-			} else {
-				return err
-			}
-		}
+	err = downloadOutput(run, scraperDirectory, outputFile)
+	if err != nil {
+		return err
 	}
 	// Get the build cache
 	err = run.GetCacheToFile(cachePath)
