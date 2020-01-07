@@ -15,18 +15,18 @@ const cacheName = ".yinyo-build-cache.tgz"
 // Simple is a super simple high level way of running a scraper that exists on the local file system
 // and displaying the results to stdout/stderr. This is used by the command line client
 // It makes a simple common use case a little simpler to implement
-func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, showEventsJSON bool) {
+func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, showEventsJSON bool) error {
 	client := New(clientServerURL)
 	// Create the run
 	run, err := client.CreateRun(scraperDirectory)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Upload the app
 	err = run.PutAppFromDirectory(scraperDirectory, []string{cacheName})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Upload the cache
@@ -35,12 +35,12 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	if err != nil {
 		// If the cache doesn't exist then skip the uploading bit
 		if !os.IsNotExist(err) {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		err = run.PutCache(file)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		file.Close()
 	}
@@ -58,25 +58,25 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 		Env:      envVariables,
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Listen for events
 	events, err := run.GetEvents("")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	for events.More() {
 		e, err := events.Next()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		if showEventsJSON {
 			// Convert the event back to JSON for display
 			b, err := json.Marshal(e)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			fmt.Println(string(b))
 		} else {
@@ -85,7 +85,7 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 			if ok {
 				f, err := osStream(l.Stream)
 				if err != nil {
-					log.Fatal(err)
+					return err
 				}
 				fmt.Fprintln(f, l.Text)
 			}
@@ -100,7 +100,7 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 			if IsNotFound(err) {
 				log.Printf("Warning: output file %v does not exist", outputFile)
 			} else {
-				log.Fatal(err)
+				return err
 			}
 		}
 	}
@@ -108,7 +108,7 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	// Get the build cache
 	err = run.GetCacheToFile(cachePath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Get the exit data
@@ -126,8 +126,9 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	// Delete the run
 	err = run.Delete()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 // Convert the internal text representation of a stream type ("stdout"/"stderr") to the go stream

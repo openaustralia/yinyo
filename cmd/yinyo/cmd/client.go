@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/spf13/cobra"
 )
@@ -26,6 +28,9 @@ var clientCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
-		apiclient.Simple(scraperDirectory, clientServerURL, environment, outputFile, callbackURL, showEventsJSON)
+		err := apiclient.Simple(scraperDirectory, clientServerURL, environment, outputFile, callbackURL, showEventsJSON)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
