@@ -4,6 +4,7 @@ package wrapper
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,10 +14,12 @@ import (
 	"os"
 	"testing"
 
+	mocks "github.com/openaustralia/yinyo/mocks/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func checkRequestBody(t *testing.T, r *http.Request, body string) {
@@ -406,29 +409,6 @@ func TestFailingRun(t *testing.T) {
 }
 
 func TestInternalError(t *testing.T) {
-	// If the wrapper has an error, either from doing something itself or from contacting
-	// the yinyo server, it should also add something to the log to let the user know
-	count := 0
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		switch count {
-		case 0:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "build"})
-		case 1:
-			// Let's simulate an error with the blob storage. So, the wrapper is trying to
-			// get the application and there's a problem.
-			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
-			checkRequestBody(t, r, "")
-			w.WriteHeader(http.StatusInternalServerError)
-		case 2:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "", Stream: "interr", Text: "Internal error"})
-		}
-		count++
-	}
-	ts := httptest.NewServer(http.HandlerFunc(handler))
-	defer ts.Close()
-
 	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
 	if err != nil {
 		log.Fatal(err)
@@ -438,11 +418,17 @@ func TestInternalError(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	run := &apiclient.Run{
-		Run: protocol.Run{Name: "run-name", Token: "run-token"},
-		// Send requests for the yinyo server to our local test server instead (which we start here)
-		Client: apiclient.New(ts.URL),
-	}
+	run := new(mocks.RunInterface)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "start" && e.Data == protocol.StartData{Stage: "build"}
+	})).Return(nil)
+	// Let's simulate an error with the blob storage. So, the wrapper is trying to
+	// get the application and there's a problem.
+	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "", Stream: "interr", Text: "Internal error"}
+	})).Return(nil)
+
 	err = Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
@@ -454,5 +440,5 @@ func TestInternalError(t *testing.T) {
 	})
 	// Because we expect the command to fail
 	assert.NotNil(t, err)
-	assert.Equal(t, 3, count)
+	run.AssertExpectations(t)
 }
