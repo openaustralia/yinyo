@@ -72,23 +72,9 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 			return err
 		}
 
-		if showEventsJSON {
-			// Convert the event back to JSON for display
-			b, err := json.Marshal(e)
-			if err != nil {
-				return err
-			}
-			fmt.Println(string(b))
-		} else {
-			// Only display the log events to the user
-			l, ok := e.Data.(protocol.LogData)
-			if ok {
-				f, err := osStream(l.Stream)
-				if err != nil {
-					return err
-				}
-				fmt.Fprintln(f, l.Text)
-			}
+		err = displayEvent(e, showEventsJSON)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -127,6 +113,28 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	err = run.Delete()
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func displayEvent(e protocol.Event, showEventsJSON bool) error {
+	if showEventsJSON {
+		// Convert the event back to JSON for display
+		b, err := json.Marshal(e)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(b))
+	} else {
+		// Only display the log events to the user
+		l, ok := e.Data.(protocol.LogData)
+		if ok {
+			f, err := osStream(l.Stream)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintln(f, l.Text)
+		}
 	}
 	return nil
 }
