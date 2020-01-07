@@ -21,7 +21,7 @@ import (
 
 var wg sync.WaitGroup
 
-func eventsSender(run apiclient.Run, eventsChan <-chan protocol.Event) {
+func eventsSender(run apiclient.RunInterface, eventsChan <-chan protocol.Event) {
 	defer wg.Done()
 
 	// TODO: Send all events in a single http request
@@ -35,7 +35,7 @@ func eventsSender(run apiclient.Run, eventsChan <-chan protocol.Event) {
 	}
 }
 
-func streamLogs(run apiclient.Run, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan protocol.Event) {
+func streamLogs(run apiclient.RunInterface, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan protocol.Event) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
 		eventsChan <- protocol.NewLogEvent("", time.Now(), stage, streamName, scanner.Text())
@@ -43,7 +43,7 @@ func streamLogs(run apiclient.Run, stage string, streamName string, stream io.Re
 	c <- scanner.Err()
 }
 
-func runExternalCommand(run apiclient.Run, stage string, commandString string, env []string) (*os.ProcessState, error) {
+func runExternalCommand(run apiclient.RunInterface, stage string, commandString string, env []string) (*os.ProcessState, error) {
 	// make a channel with a capacity of 100.
 	eventsChan := make(chan protocol.Event, 1000)
 
@@ -108,7 +108,7 @@ func aggregateCounters() (net.IOCountersStat, error) {
 }
 
 // env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
-func runExternalCommandWithStats(run apiclient.Run, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
+func runExternalCommandWithStats(run apiclient.RunInterface, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
 	var exitData protocol.ExitDataStage
 
 	// Capture the time and the network counters
@@ -155,7 +155,7 @@ type Options struct {
 	RunOutput    string
 }
 
-func setup(run apiclient.Run, options Options) error {
+func setup(run apiclient.RunInterface, options Options) error {
 	// Create and populate herokuish import path and cache path
 	err := os.MkdirAll(options.ImportPath, 0755)
 	if err != nil {
@@ -201,7 +201,7 @@ func setup(run apiclient.Run, options Options) error {
 	return nil
 }
 
-func runStage(run apiclient.Run, options Options, env []string, exitDataBuild protocol.ExitDataStage) error {
+func runStage(run apiclient.RunInterface, options Options, env []string, exitDataBuild protocol.ExitDataStage) error {
 	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "run"))
 	if err != nil {
 		return err
@@ -234,7 +234,7 @@ func runStage(run apiclient.Run, options Options, env []string, exitDataBuild pr
 	return nil
 }
 
-func RunWithError(run apiclient.Run, options Options) error {
+func RunWithError(run apiclient.RunInterface, options Options) error {
 	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "build"))
 	if err != nil {
 		return err
@@ -293,11 +293,8 @@ func RunWithError(run apiclient.Run, options Options) error {
 	return nil
 }
 
-// Run runs a scraper from inside a container
-func Run(runName string, runToken string, serverURL string, options Options) error {
-	client := apiclient.New(serverURL)
-	run := apiclient.Run{Run: protocol.Run{Name: runName, Token: runToken}, Client: client}
-
+// Run2 runs a scraper from inside a container
+func Run2(run apiclient.RunInterface, options Options) error {
 	err := RunWithError(run, options)
 	if err != nil {
 		// Notice that for an internal error we're not logging the stage. We leave that empty.
@@ -305,4 +302,14 @@ func Run(runName string, runToken string, serverURL string, options Options) err
 		run.CreateEvent(protocol.NewLogEvent("", time.Now(), "", "interr", "Internal error"))
 	}
 	return err
+}
+
+// Run runs a scraper from inside a container
+func Run(runName string, runToken string, serverURL string, options Options) error {
+	run := &apiclient.Run{
+		Run:    protocol.Run{Name: runName, Token: runToken},
+		Client: apiclient.New(serverURL),
+	}
+
+	return Run2(run, options)
 }
