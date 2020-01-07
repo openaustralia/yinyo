@@ -146,7 +146,7 @@ func runExternalCommandWithStats(run apiclient.Run, stage string, commandString 
 func checkError(err error, run apiclient.Run, stage string, text string) {
 	if err != nil {
 		//nolint:errcheck // ignore errors while logging error
-		run.CreateEvent(protocol.NewLogEvent("", time.Now(), "build", "interr", text))
+		run.CreateEvent(protocol.NewLogEvent("", time.Now(), stage, "interr", text))
 		log.Fatal(err)
 	}
 }
