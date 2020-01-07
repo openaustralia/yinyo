@@ -304,3 +304,25 @@ func TestGetEvents(t *testing.T) {
 
 	app.AssertExpectations(t)
 }
+
+func TestDelete(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("DeleteRun", "my-run").Return(nil)
+
+	rr := makeRequest(app, "DELETE", "/runs/my-run", nil, "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	app.AssertExpectations(t)
+}
+
+func TestHello(t *testing.T) {
+	app := new(commandsmocks.App)
+
+	rr := makeRequest(app, "GET", "/", nil, "")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "Hello from Yinyo!\n", rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}}, rr.Header())
+	app.AssertExpectations(t)
+}
