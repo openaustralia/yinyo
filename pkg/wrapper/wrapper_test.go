@@ -18,23 +18,19 @@ import (
 )
 
 func createTemporaryDirectories() (appPath string, importPath string, cachePath string, envPath string, err error) {
-	currentPath, err := os.Getwd()
+	appPath, err = ioutil.TempDir("", "app")
 	if err != nil {
 		return
 	}
-	appPath, err = ioutil.TempDir(currentPath, "app")
+	importPath, err = ioutil.TempDir("", "import")
 	if err != nil {
 		return
 	}
-	importPath, err = ioutil.TempDir(currentPath, "import")
+	cachePath, err = ioutil.TempDir("", "cache")
 	if err != nil {
 		return
 	}
-	cachePath, err = ioutil.TempDir(currentPath, "cache")
-	if err != nil {
-		return
-	}
-	envPath, err = ioutil.TempDir(currentPath, "env")
+	envPath, err = ioutil.TempDir("", "env")
 	return
 }
 
