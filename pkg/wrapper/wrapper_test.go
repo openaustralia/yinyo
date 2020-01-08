@@ -87,6 +87,48 @@ func TestSimpleRun(t *testing.T) {
 	// TODO: Test that output is correctly uploaded
 }
 
+func TestEnvironmentVariables(t *testing.T) {
+	appPath, importPath, cachePath, envPath := createTemporaryDirectories()
+	defer os.RemoveAll(appPath)
+	defer os.RemoveAll(importPath)
+	defer os.RemoveAll(cachePath)
+	defer os.RemoveAll(envPath)
+
+	run := new(mocks.RunInterface)
+	run.On("CreateStartEvent", "build").Return(nil)
+	run.On("GetAppToDirectory", importPath).Return(nil)
+	run.On("GetCacheToDirectory", cachePath).Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "Build").Return(nil)
+	run.On("CreateFinishEvent", "build").Return(nil)
+	run.On("PutCacheFromDirectory", cachePath).Return(nil)
+	run.On("CreateStartEvent", "run").Return(nil)
+	run.On("CreateLogEvent", "run", "stdout", "Run").Return(nil)
+	run.On("PutExitData", mock.Anything).Return(nil)
+	run.On("CreateFinishEvent", "run").Return(nil)
+	run.On("CreateLastEvent").Return(nil)
+
+	err := Run(run, Options{
+		ImportPath:   importPath,
+		CachePath:    cachePath,
+		AppPath:      appPath,
+		EnvPath:      envPath,
+		Environment:  map[string]string{"FOO": "bar"},
+		BuildCommand: `echo Build`,
+		RunCommand:   `echo Run`,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Check that environment files have been set up correctly
+	b, err := ioutil.ReadFile(filepath.Join(envPath, "FOO"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.Equal(t, "bar", string(b))
+	run.AssertExpectations(t)
+
+}
+
 func TestFailingBuild(t *testing.T) {
 	appPath, importPath, cachePath, envPath := createTemporaryDirectories()
 	defer os.RemoveAll(appPath)
