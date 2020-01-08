@@ -12,12 +12,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
 	mocks "github.com/openaustralia/yinyo/mocks/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/protocol"
+	"github.com/otiai10/copy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -69,115 +71,6 @@ func createTemporaryDirectories() (appPath string, importPath string, cachePath 
 }
 
 func TestSimpleRun(t *testing.T) {
-	count := 0
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		switch count {
-		case 0:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "build"})
-		case 1:
-			checkRequestNoBody(t, r, "GET", "/runs/run-name/app")
-			checkRequestBody(t, r, "")
-			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := archive.CreateFromDirectory("fixtures/scrapers/hello-world", []string{})
-			if err != nil {
-				t.Fatal(err)
-			}
-			_, err = io.Copy(w, reader)
-			if err != nil {
-				t.Fatal(err)
-			}
-		case 2:
-			checkRequestNoBody(t, r, "GET", "/runs/run-name/cache")
-			checkRequestBody(t, r, "")
-			// We'll just return the contents of an "arbitrary" directory here. It doesn't
-			// really matters what it has in it as long as we can test that it's correct.
-			w.Header().Set("Content-Type", "application/gzip")
-			reader, err := archive.CreateFromDirectory("fixtures/scrapers/hello-world", []string{})
-			if err != nil {
-				t.Fatal(err)
-			}
-			_, err = io.Copy(w, reader)
-			if err != nil {
-				t.Fatal(err)
-			}
-		case 3:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "_app_"})
-		case 4:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "Procfile"})
-		case 5:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
-		case 6:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
-		case 7:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
-		case 8:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "_cache_"})
-		case 9:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"})
-		case 10:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"})
-		case 11:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"})
-		case 12:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "finish", protocol.FinishData{Stage: "build"})
-		case 13:
-			// We're not testing that the correct thing is being uploaded here for the time being
-			checkRequestNoBody(t, r, "PUT", "/runs/run-name/cache")
-		case 14:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "start", protocol.StartData{Stage: "run"})
-		case 15:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "log", protocol.LogData{Stage: "run", Stream: "stdout", Text: "Ran"})
-		case 16:
-			checkRequestNoBody(t, r, "PUT", "/runs/run-name/exit-data")
-			decoder := json.NewDecoder(r.Body)
-			var exitData protocol.ExitData
-			err := decoder.Decode(&exitData)
-			if err != nil {
-				t.Fatal(err)
-			}
-			// Check that the exit codes are something sensible
-			assert.Equal(t, 0, exitData.Build.ExitCode)
-			assert.Equal(t, 0, exitData.Run.ExitCode)
-			// The usage values are going to be a little different each time. So, the best we
-			// can do for the moment is just check that they are not zero
-			assert.True(t, exitData.Build.Usage.WallTime > 0)
-			assert.True(t, exitData.Build.Usage.CPUTime > 0)
-			assert.True(t, exitData.Build.Usage.MaxRSS > 0)
-			assert.True(t, exitData.Build.Usage.NetworkIn > 0)
-			assert.True(t, exitData.Build.Usage.NetworkOut > 0)
-			assert.True(t, exitData.Run.Usage.WallTime > 0)
-			assert.True(t, exitData.Run.Usage.CPUTime > 0)
-			assert.True(t, exitData.Run.Usage.MaxRSS > 0)
-			assert.True(t, exitData.Run.Usage.NetworkIn > 0)
-			assert.True(t, exitData.Run.Usage.NetworkOut > 0)
-		case 17:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "finish", protocol.FinishData{Stage: "run"})
-		case 18:
-			checkRequestNoBody(t, r, "POST", "/runs/run-name/events")
-			checkRequestEvent(t, r, "last", protocol.LastData{})
-		default:
-			fmt.Println("Didn't expect so many requests")
-			t.Fatal("Didn't expect so many requests")
-		}
-		count++
-	}
-	ts := httptest.NewServer(http.HandlerFunc(handler))
-	defer ts.Close()
-
 	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
 	if err != nil {
 		log.Fatal(err)
@@ -187,11 +80,77 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(cachePath)
 	defer os.RemoveAll(envPath)
 
-	run := &apiclient.Run{
-		Run: protocol.Run{Name: "run-name", Token: "run-token"},
-		// Send requests for the yinyo server to our local test server instead (which we start here)
-		Client: apiclient.New(ts.URL),
-	}
+	run := new(mocks.RunInterface)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "start" && e.Data == protocol.StartData{Stage: "build"}
+	})).Return(nil)
+	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
+		copy.Copy("fixtures/scrapers/hello-world", importPath)
+	})
+	run.On("GetCacheToDirectory", cachePath).Return(nil).Run(func(args mock.Arguments) {
+		copy.Copy("fixtures/scrapers/hello-world", importPath)
+	})
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "_app_"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "Procfile"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "_cache_"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "finish" && e.Data == protocol.FinishData{Stage: "build"}
+	})).Return(nil)
+	run.On("PutCacheFromDirectory", cachePath).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "start" && e.Data == protocol.StartData{Stage: "run"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "log" && e.Data == protocol.LogData{Stage: "run", Stream: "stdout", Text: "Ran"}
+	})).Return(nil)
+	run.On("PutExitData", mock.MatchedBy(func(e protocol.ExitData) bool {
+		fmt.Println(e.Build)
+		fmt.Println(e.Run)
+		// Check that the exit codes are something sensible
+		return e.Build.ExitCode == 0 &&
+			e.Run.ExitCode == 0 &&
+			// The usage values are going to be a little different each time. So, the best we
+			// can do for the moment is just check that they are not zero
+			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
+			e.Build.Usage.WallTime > 0 &&
+			e.Build.Usage.CPUTime > 0 &&
+			e.Build.Usage.MaxRSS > 0 &&
+			e.Run.Usage.WallTime > 0 &&
+			e.Run.Usage.CPUTime > 0 &&
+			e.Run.Usage.MaxRSS > 0
+	})).Return(nil)
+	run.On("PutOutputFromFile", filepath.Join(appPath, "output.txt")).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "finish" && e.Data == protocol.FinishData{Stage: "run"}
+	})).Return(nil)
+	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
+		return e.Type == "last" && e.Data == protocol.LastData{}
+	})).Return(nil)
+
 	err = Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
@@ -204,7 +163,7 @@ func TestSimpleRun(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	run.AssertExpectations(t)
 	// TODO: Test that output is correctly uploaded
 }
 
