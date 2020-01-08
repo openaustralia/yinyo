@@ -100,6 +100,44 @@ func TestStartNoApp(t *testing.T) {
 	app.AssertExpectations(t)
 }
 
+func TestStart(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("StartRun", "foo", "", map[string]string{}, "", int64(0)).Return(nil)
+
+	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader("{}"), "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	app.AssertExpectations(t)
+}
+
+func TestStartLowerMaxRunTime(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("StartRun", "foo", "", map[string]string{}, "", int64(120)).Return(nil)
+
+	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"max_run_time": 120}`), "abc123")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	app.AssertExpectations(t)
+}
+
+func TestStartHigherMaxRunTime(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("StartRun", "foo", "", map[string]string{}, "", int64(100000)).Return(commands.ErrMaxRunTimeTooLarge)
+
+	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"max_run_time": 100000}`), "abc123")
+
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+	assert.Equal(t, `{"error":"max_run_time is too large"}`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
+
+	app.AssertExpectations(t)
+}
+
 func TestCreateEventBadBody(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "foo").Return("abc123", nil)

@@ -10,9 +10,10 @@ import (
 
 // StartRunOptions are options that can be used when starting a run
 type StartRunOptions struct {
-	Output   string        `json:"output"`
-	Callback Callback      `json:"callback"`
-	Env      []EnvVariable `json:"env"`
+	Output     string        `json:"output"`
+	Callback   Callback      `json:"callback"`
+	Env        []EnvVariable `json:"env"`
+	MaxRunTime int64         `json:"max_run_time"`
 }
 
 // Callback represents what we need to know to make a particular callback request
