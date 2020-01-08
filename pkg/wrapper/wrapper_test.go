@@ -17,28 +17,16 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func createTemporaryDirectories() (appPath string, importPath string, cachePath string, envPath string, err error) {
-	appPath, err = ioutil.TempDir("", "app")
-	if err != nil {
-		return
-	}
-	importPath, err = ioutil.TempDir("", "import")
-	if err != nil {
-		return
-	}
-	cachePath, err = ioutil.TempDir("", "cache")
-	if err != nil {
-		return
-	}
-	envPath, err = ioutil.TempDir("", "env")
+func createTemporaryDirectories() (appPath string, importPath string, cachePath string, envPath string) {
+	appPath, _ = ioutil.TempDir("", "app")
+	importPath, _ = ioutil.TempDir("", "import")
+	cachePath, _ = ioutil.TempDir("", "cache")
+	envPath, _ = ioutil.TempDir("", "env")
 	return
 }
 
 func TestSimpleRun(t *testing.T) {
-	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
-	if err != nil {
-		log.Fatal(err)
-	}
+	appPath, importPath, cachePath, envPath := createTemporaryDirectories()
 	defer os.RemoveAll(appPath)
 	defer os.RemoveAll(importPath)
 	defer os.RemoveAll(cachePath)
@@ -83,7 +71,7 @@ func TestSimpleRun(t *testing.T) {
 	run.On("CreateFinishEvent", "run").Return(nil)
 	run.On("CreateLastEvent").Return(nil)
 
-	err = Run(run, Options{
+	err := Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -100,10 +88,7 @@ func TestSimpleRun(t *testing.T) {
 }
 
 func TestFailingBuild(t *testing.T) {
-	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
-	if err != nil {
-		log.Fatal(err)
-	}
+	appPath, importPath, cachePath, envPath := createTemporaryDirectories()
 	defer os.RemoveAll(appPath)
 	defer os.RemoveAll(importPath)
 	defer os.RemoveAll(cachePath)
@@ -132,7 +117,7 @@ func TestFailingBuild(t *testing.T) {
 	})).Return(nil)
 	run.On("CreateLastEvent").Return(nil)
 
-	err = Run(run, Options{
+	err := Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -148,10 +133,7 @@ func TestFailingBuild(t *testing.T) {
 }
 
 func TestFailingRun(t *testing.T) {
-	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
-	if err != nil {
-		log.Fatal(err)
-	}
+	appPath, importPath, cachePath, envPath := createTemporaryDirectories()
 	defer os.RemoveAll(appPath)
 	defer os.RemoveAll(importPath)
 	defer os.RemoveAll(cachePath)
@@ -187,7 +169,7 @@ func TestFailingRun(t *testing.T) {
 	run.On("CreateFinishEvent", "run").Return(nil)
 	run.On("CreateLastEvent").Return(nil)
 
-	err = Run(run, Options{
+	err := Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -204,10 +186,7 @@ func TestFailingRun(t *testing.T) {
 }
 
 func TestInternalError(t *testing.T) {
-	appPath, importPath, cachePath, envPath, err := createTemporaryDirectories()
-	if err != nil {
-		log.Fatal(err)
-	}
+	appPath, importPath, cachePath, envPath := createTemporaryDirectories()
 	defer os.RemoveAll(appPath)
 	defer os.RemoveAll(importPath)
 	defer os.RemoveAll(cachePath)
@@ -220,7 +199,7 @@ func TestInternalError(t *testing.T) {
 	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))
 	run.On("CreateLogEvent", "", "interr", "Internal error. The run will be automatically restarted.").Return(nil)
 
-	err = Run(run, Options{
+	err := Run(run, Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
