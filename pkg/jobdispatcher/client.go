@@ -5,7 +5,7 @@ package jobdispatcher
 type Jobs interface {
 	// TODO: Rename to SetupJob?
 	CreateJobAndToken(namePrefix string, runToken string) (string, error)
-	StartJob(runName string, dockerImage string, command []string) error
+	StartJob(runName string, dockerImage string, command []string, maxRunTime int64) error
 	DeleteJobAndToken(runName string) error
 	GetToken(runName string) (string, error)
 }

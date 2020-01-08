@@ -55,14 +55,13 @@ func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken st
 	return created.ObjectMeta.Name, err
 }
 
-func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string) error {
+// maxRunTime is the maximum number of seconds that the job is allowed to take. If it exceeds this limit it will get stopped automatically
+func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string, maxRunTime int64) error {
 	jobsClient := client.clientset.BatchV1().Jobs(namespace)
 
 	autoMountServiceAccountToken := false
 	// Allow the job to get restarted up to 5 times before it's considered failed
 	backOffLimit := int32(5)
-	// Let this run for a maximum of 24 hours
-	activeDeadlineSeconds := int64(86400)
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -70,7 +69,7 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 		},
 		Spec: batchv1.JobSpec{
 			BackoffLimit:          &backOffLimit,
-			ActiveDeadlineSeconds: &activeDeadlineSeconds,
+			ActiveDeadlineSeconds: &maxRunTime,
 			Template: apiv1.PodTemplateSpec{
 				Spec: apiv1.PodSpec{
 					AutomountServiceAccountToken: &autoMountServiceAccountToken,

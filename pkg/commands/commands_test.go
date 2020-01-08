@@ -36,6 +36,7 @@ func TestStartRun(t *testing.T) {
 		"run-name",
 		"openaustralia/yinyo-scraper:v1",
 		[]string{"/bin/yinyo", "wrapper", "run-name", "supersecret", "--output", "output.txt", "--env", "FOO=bar"},
+		int64(86400),
 	).Return(nil)
 	// Expect that we'll need the secret token
 	job.On("GetToken", "run-name").Return("supersecret", nil)

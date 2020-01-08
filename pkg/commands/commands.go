@@ -272,7 +272,8 @@ func (app *AppImplementation) StartRun(
 	if envString != "" {
 		command = append(command, "--env", envString)
 	}
-	return app.JobDispatcher.StartJob(runName, dockerImage, command)
+	// Let this run for a maximum of 24 hours
+	return app.JobDispatcher.StartJob(runName, dockerImage, command, int64(86400))
 }
 
 // Events is an iterator to retrieve events from a stream
