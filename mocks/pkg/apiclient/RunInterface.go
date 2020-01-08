@@ -26,6 +26,62 @@ func (_m *RunInterface) CreateEvent(event protocol.Event) error {
 	return r0
 }
 
+// CreateFinishEvent provides a mock function with given fields: stage
+func (_m *RunInterface) CreateFinishEvent(stage string) error {
+	ret := _m.Called(stage)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(stage)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// CreateLastEvent provides a mock function with given fields:
+func (_m *RunInterface) CreateLastEvent() error {
+	ret := _m.Called()
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func() error); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// CreateLogEvent provides a mock function with given fields: stage, stream, text
+func (_m *RunInterface) CreateLogEvent(stage string, stream string, text string) error {
+	ret := _m.Called(stage, stream, text)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, string, string) error); ok {
+		r0 = rf(stage, stream, text)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// CreateStartEvent provides a mock function with given fields: stage
+func (_m *RunInterface) CreateStartEvent(stage string) error {
+	ret := _m.Called(stage)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(stage)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Delete provides a mock function with given fields:
 func (_m *RunInterface) Delete() error {
 	ret := _m.Called()

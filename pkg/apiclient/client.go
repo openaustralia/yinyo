@@ -44,6 +44,10 @@ type RunInterface interface {
 	PutCacheFromDirectory(dir string) error
 	GetOutputToFile(path string) error
 	PutOutputFromFile(path string) error
+	CreateStartEvent(stage string) error
+	CreateFinishEvent(stage string) error
+	CreateLogEvent(stage string, stream string, text string) error
+	CreateLastEvent() error
 }
 
 // Client is used to access the API

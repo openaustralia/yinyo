@@ -21,12 +21,12 @@ import (
 
 var wg sync.WaitGroup
 
-func eventsSender(run apiclient.RunInterface, eventsChan <-chan protocol.Event) {
+func eventsSender(run apiclient.RunInterface, eventsChan <-chan protocol.LogData) {
 	defer wg.Done()
 
 	// TODO: Send all events in a single http request
-	for event := range eventsChan {
-		err := run.CreateEvent(event)
+	for e := range eventsChan {
+		err := run.CreateLogEvent(e.Stage, e.Stream, e.Text)
 		if err != nil {
 			// If we can't send an event there's not much point in trying to do anything
 			// else but log an error locally
@@ -35,17 +35,17 @@ func eventsSender(run apiclient.RunInterface, eventsChan <-chan protocol.Event) 
 	}
 }
 
-func streamLogs(run apiclient.RunInterface, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan protocol.Event) {
+func streamLogs(run apiclient.RunInterface, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan protocol.LogData) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
-		eventsChan <- protocol.NewLogEvent("", time.Now(), stage, streamName, scanner.Text())
+		eventsChan <- protocol.LogData{Stage: stage, Stream: streamName, Text: scanner.Text()}
 	}
 	c <- scanner.Err()
 }
 
 func runExternalCommand(run apiclient.RunInterface, stage string, commandString string, env []string) (*os.ProcessState, error) {
 	// make a channel with a capacity of 100.
-	eventsChan := make(chan protocol.Event, 1000)
+	eventsChan := make(chan protocol.LogData, 1000)
 
 	wg.Add(1)
 	// start the worker that sends the event messages
@@ -202,7 +202,7 @@ func setup(run apiclient.RunInterface, options Options) error {
 }
 
 func runStage(run apiclient.RunInterface, options Options, env []string, exitDataBuild protocol.ExitDataStage) error {
-	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "run"))
+	err := run.CreateStartEvent("run")
 	if err != nil {
 		return err
 	}
@@ -227,7 +227,7 @@ func runStage(run apiclient.RunInterface, options Options, env []string, exitDat
 		}
 	}
 
-	err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "run"))
+	err = run.CreateFinishEvent("run")
 	if err != nil {
 		return err
 	}
@@ -235,7 +235,7 @@ func runStage(run apiclient.RunInterface, options Options, env []string, exitDat
 }
 
 func RunWithError(run apiclient.RunInterface, options Options) error {
-	err := run.CreateEvent(protocol.NewStartEvent("", time.Now(), "build"))
+	err := run.CreateStartEvent("build")
 	if err != nil {
 		return err
 	}
@@ -262,7 +262,7 @@ func RunWithError(run apiclient.RunInterface, options Options) error {
 
 	// Send the build finished event immediately when the build command has finished
 	// Effectively the cache uploading happens between the build and run stages
-	err = run.CreateEvent(protocol.NewFinishEvent("", time.Now(), "build"))
+	err = run.CreateFinishEvent("build")
 	if err != nil {
 		return err
 	}
@@ -286,7 +286,7 @@ func RunWithError(run apiclient.RunInterface, options Options) error {
 		}
 	}
 
-	err = run.CreateEvent(protocol.NewLastEvent("", time.Now()))
+	err = run.CreateLastEvent()
 	if err != nil {
 		return err
 	}
@@ -299,7 +299,7 @@ func Run(run apiclient.RunInterface, options Options) error {
 	if err != nil {
 		// Notice that for an internal error we're not logging the stage. We leave that empty.
 		//nolint:errcheck // ignore errors while logging error
-		run.CreateEvent(protocol.NewLogEvent("", time.Now(), "", "interr", "Internal error"))
+		run.CreateLogEvent("", "interr", "Internal error")
 	}
 	return err
 }

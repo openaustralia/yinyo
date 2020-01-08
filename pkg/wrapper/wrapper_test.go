@@ -81,52 +81,26 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "start" && e.Data == protocol.StartData{Stage: "build"}
-	})).Return(nil)
+	run.On("CreateStartEvent", "build").Return(nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
 	})
 	run.On("GetCacheToDirectory", cachePath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
 	})
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "_app_"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "Procfile"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "_cache_"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "requirements.txt"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "runtime.txt"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "build", Stream: "stdout", Text: "scraper.py"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "finish" && e.Data == protocol.FinishData{Stage: "build"}
-	})).Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "_app_").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "Procfile").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "requirements.txt").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "runtime.txt").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "scraper.py").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "_cache_").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "requirements.txt").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "runtime.txt").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "scraper.py").Return(nil)
+	run.On("CreateFinishEvent", "build").Return(nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "start" && e.Data == protocol.StartData{Stage: "run"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "run", Stream: "stdout", Text: "Ran"}
-	})).Return(nil)
+	run.On("CreateStartEvent", "run").Return(nil)
+	run.On("CreateLogEvent", "run", "stdout", "Ran").Return(nil)
 	run.On("PutExitData", mock.MatchedBy(func(e protocol.ExitData) bool {
 		fmt.Println(e.Build)
 		fmt.Println(e.Run)
@@ -144,12 +118,8 @@ func TestSimpleRun(t *testing.T) {
 			e.Run.Usage.MaxRSS > 0
 	})).Return(nil)
 	run.On("PutOutputFromFile", filepath.Join(appPath, "output.txt")).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "finish" && e.Data == protocol.FinishData{Stage: "run"}
-	})).Return(nil)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "last" && e.Data == protocol.LastData{}
-	})).Return(nil)
+	run.On("CreateFinishEvent", "run").Return(nil)
+	run.On("CreateLastEvent").Return(nil)
 
 	err = Run(run, Options{
 		ImportPath:   importPath,
@@ -378,15 +348,11 @@ func TestInternalError(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "start" && e.Data == protocol.StartData{Stage: "build"}
-	})).Return(nil)
+	run.On("CreateStartEvent", "build").Return(nil)
 	// Let's simulate an error with the blob storage. So, the wrapper is trying to
 	// get the application and there's a problem.
 	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))
-	run.On("CreateEvent", mock.MatchedBy(func(e protocol.Event) bool {
-		return e.Type == "log" && e.Data == protocol.LogData{Stage: "", Stream: "interr", Text: "Internal error"}
-	})).Return(nil)
+	run.On("CreateLogEvent", "", "interr", "Internal error").Return(nil)
 
 	err = Run(run, Options{
 		ImportPath:   importPath,
