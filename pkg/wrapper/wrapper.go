@@ -299,7 +299,7 @@ func Run(run apiclient.RunInterface, options Options) error {
 	if err != nil {
 		// Notice that for an internal error we're not logging the stage. We leave that empty.
 		//nolint:errcheck // ignore errors while logging error
-		run.CreateLogEvent("", "interr", "Internal error")
+		run.CreateLogEvent("", "interr", "Internal error. The run will be automatically restarted.")
 	}
 	return err
 }

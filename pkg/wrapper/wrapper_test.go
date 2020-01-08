@@ -222,7 +222,7 @@ func TestInternalError(t *testing.T) {
 	// Let's simulate an error with the blob storage. So, the wrapper is trying to
 	// get the application and there's a problem.
 	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))
-	run.On("CreateLogEvent", "", "interr", "Internal error").Return(nil)
+	run.On("CreateLogEvent", "", "interr", "Internal error. The run will be automatically restarted.").Return(nil)
 
 	err = Run(run, Options{
 		ImportPath:   importPath,
