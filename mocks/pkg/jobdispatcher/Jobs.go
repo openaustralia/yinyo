@@ -65,13 +65,13 @@ func (_m *Jobs) GetToken(runName string) (string, error) {
 	return r0, r1
 }
 
-// StartJob provides a mock function with given fields: runName, dockerImage, command
-func (_m *Jobs) StartJob(runName string, dockerImage string, command []string) error {
-	ret := _m.Called(runName, dockerImage, command)
+// StartJob provides a mock function with given fields: runName, dockerImage, command, maxRunTime
+func (_m *Jobs) StartJob(runName string, dockerImage string, command []string, maxRunTime int64) error {
+	ret := _m.Called(runName, dockerImage, command, maxRunTime)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, []string) error); ok {
-		r0 = rf(runName, dockerImage, command)
+	if rf, ok := ret.Get(0).(func(string, string, []string, int64) error); ok {
+		r0 = rf(runName, dockerImage, command, maxRunTime)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -145,12 +145,18 @@ paths:
                   format: uri
                   description: |
                     Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick
+                max_run_time:
+                  type: integer
+                  description: |
+                    Optionally set the maximum number of seconds the run is allowed to go for. If it exceeds this it will be automatically stopped.
+
             example:
               output: my_output.txt
               env:
                 - name: MY_ENVIRONMENT_VARIABLE
                   value: foo
               callback: http://my-url-endpoint.com?key=special-secret-stuff
+              max_run_time: 3600
 
       security:
         - token: []

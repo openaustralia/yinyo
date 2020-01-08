@@ -139,9 +139,11 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	err = server.app.StartRun(runName, l.Output, env, l.Callback.URL)
+	err = server.app.StartRun(runName, l.Output, env, l.Callback.URL, l.MaxRunTime)
 	if errors.Is(err, commands.ErrAppNotAvailable) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
+	} else if errors.Is(err, commands.ErrMaxRunTimeTooLarge) {
+		err = newHTTPError(err, http.StatusBadRequest, "max_run_time is too large")
 	}
 	return err
 }

@@ -9,7 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var maxRunTime int64
+
 func init() {
+	serverCmd.Flags().Int64Var(&maxRunTime, "maxruntime", 86400, "Set the global maximum run time in seconds that all runs can not exceed")
 	rootCmd.AddCommand(serverCmd)
 }
 
@@ -28,7 +31,7 @@ var serverCmd = &cobra.Command{
 			Address:  "redis:6379",
 			Password: os.Getenv("REDIS_PASSWORD"),
 		}
-		err := server.Initialise(commands.StartupOptions{Minio: minioOptions, Redis: redisOptions})
+		err := server.Initialise(commands.StartupOptions{Minio: minioOptions, Redis: redisOptions, MaxRunTime: maxRunTime})
 		if err != nil {
 			log.Fatal(err)
 		}
