@@ -244,13 +244,13 @@ func (_m *App) PutOutput(reader io.Reader, objectSize int64, runName string) err
 	return r0
 }
 
-// StartRun provides a mock function with given fields: runName, output, env, callbackURL
-func (_m *App) StartRun(runName string, output string, env map[string]string, callbackURL string) error {
-	ret := _m.Called(runName, output, env, callbackURL)
+// StartRun provides a mock function with given fields: runName, output, env, callbackURL, maxRunTime
+func (_m *App) StartRun(runName string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
+	ret := _m.Called(runName, output, env, callbackURL, maxRunTime)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, map[string]string, string) error); ok {
-		r0 = rf(runName, output, env, callbackURL)
+	if rf, ok := ret.Get(0).(func(string, string, map[string]string, string, int64) error); ok {
+		r0 = rf(runName, output, env, callbackURL, maxRunTime)
 	} else {
 		r0 = ret.Error(0)
 	}

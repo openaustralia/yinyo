@@ -90,7 +90,7 @@ func TestStartBadBody(t *testing.T) {
 func TestStartNoApp(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "foo").Return("abc123", nil)
-	app.On("StartRun", "foo", "", map[string]string{}, "").Return(commands.ErrAppNotAvailable)
+	app.On("StartRun", "foo", "", map[string]string{}, "", int64(0)).Return(commands.ErrAppNotAvailable)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{}`), "abc123")
 

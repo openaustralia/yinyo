@@ -30,7 +30,7 @@ const runBinary = "/bin/yinyo"
 type App interface {
 	CreateRun(namePrefix string) (protocol.Run, error)
 	DeleteRun(runName string) error
-	StartRun(runName string, output string, env map[string]string, callbackURL string) error
+	StartRun(runName string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
 	GetApp(runName string) (io.Reader, error)
 	PutApp(reader io.Reader, objectSize int64, runName string) error
 	GetCache(runName string) (io.Reader, error)
@@ -226,10 +226,21 @@ func (app *AppImplementation) PutExitData(runName string, exitData protocol.Exit
 	return app.setKeyValueData(runName, exitDataKey, string(b))
 }
 
+func (app *AppImplementation) MaxRunTime() int64 {
+	// TODO: Make this configurable at the server level
+	// 24 hours in seconds
+	return 86400
+}
+
 // StartRun starts the run
 func (app *AppImplementation) StartRun(
-	runName string, output string, env map[string]string, callbackURL string,
-) error {
+	runName string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
+	if maxRunTime == 0 {
+		maxRunTime = app.MaxRunTime()
+	} else if maxRunTime > app.MaxRunTime() {
+		return ErrMaxRunTimeTooLarge
+	}
+
 	// First check that the app exists
 	_, err := app.GetApp(runName)
 	if err != nil {
@@ -272,8 +283,7 @@ func (app *AppImplementation) StartRun(
 	if envString != "" {
 		command = append(command, "--env", envString)
 	}
-	// Let this run for a maximum of 24 hours
-	return app.JobDispatcher.StartJob(runName, dockerImage, command, int64(86400))
+	return app.JobDispatcher.StartJob(runName, dockerImage, command, maxRunTime)
 }
 
 // Events is an iterator to retrieve events from a stream
