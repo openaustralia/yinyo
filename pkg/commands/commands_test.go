@@ -45,7 +45,7 @@ func TestStartRun(t *testing.T) {
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
-	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
+	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore, MaxRunTime: 86400}
 	// TODO: Pass an options struct instead (we get named parameters effectively then)
 	err := app.StartRun(
 		"run-name",                      // Run name
@@ -62,7 +62,7 @@ func TestStartRun(t *testing.T) {
 }
 
 func TestStartRunMaxRunTimeTooLarge(t *testing.T) {
-	app := AppImplementation{}
+	app := AppImplementation{MaxRunTime: 86400}
 	err := app.StartRun("run-name", "", map[string]string{}, "", 86401)
 	assert.True(t, errors.Is(err, ErrMaxRunTimeTooLarge))
 }
@@ -71,7 +71,7 @@ func TestStartRunMaxRunTimeSmaller(t *testing.T) {
 	blobStore := new(blobstoremocks.BlobStore)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	job := new(jobdispatchermocks.Jobs)
-	app := AppImplementation{BlobStore: blobStore, KeyValueStore: keyValueStore, JobDispatcher: job}
+	app := AppImplementation{BlobStore: blobStore, KeyValueStore: keyValueStore, JobDispatcher: job, MaxRunTime: 86400}
 
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 	keyValueStore.On("Set", "run-name/url", "").Return(nil)
