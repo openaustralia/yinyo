@@ -56,13 +56,11 @@ type AppImplementation struct {
 	Stream        stream.Stream
 	KeyValueStore keyvaluestore.KeyValueStore
 	HTTP          *http.Client
-	MaxRunTime    int64
 }
 
 type StartupOptions struct {
-	Minio      MinioOptions
-	Redis      RedisOptions
-	MaxRunTime int64 // The global maximum run time in seconds that every run can not exceed
+	Minio MinioOptions
+	Redis RedisOptions
 }
 
 type MinioOptions struct {
@@ -114,7 +112,6 @@ func New(startupOptions StartupOptions) (App, error) {
 		Stream:        streamClient,
 		KeyValueStore: keyValueStore,
 		HTTP:          http.DefaultClient,
-		MaxRunTime:    startupOptions.MaxRunTime,
 	}, nil
 }
 
@@ -229,19 +226,9 @@ func (app *AppImplementation) PutExitData(runName string, exitData protocol.Exit
 	return app.setKeyValueData(runName, exitDataKey, string(b))
 }
 
-func (app *AppImplementation) GetMaxRunTime() int64 {
-	return app.MaxRunTime
-}
-
 // StartRun starts the run
 func (app *AppImplementation) StartRun(
 	runName string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
-	if maxRunTime == 0 {
-		maxRunTime = app.GetMaxRunTime()
-	} else if maxRunTime > app.GetMaxRunTime() {
-		return ErrMaxRunTimeTooLarge
-	}
-
 	// First check that the app exists
 	_, err := app.GetApp(runName)
 	if err != nil {

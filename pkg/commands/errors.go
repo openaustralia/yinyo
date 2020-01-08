@@ -11,7 +11,3 @@ var ErrAppNotAvailable = errors.New("app not available")
 
 // ErrArchiveFormat is the error you get trying to upload an archive with a bad format
 var ErrArchiveFormat = errors.New("archive format")
-
-// ErrMaxRunTimeTooLarge is the error you get if you choose the max run time to be larger
-// than the global one
-var ErrMaxRunTimeTooLarge = errors.New("maxRunTime is too large")

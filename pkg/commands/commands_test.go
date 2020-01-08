@@ -45,46 +45,20 @@ func TestStartRun(t *testing.T) {
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
-	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore, MaxRunTime: 86400}
+	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
 	// TODO: Pass an options struct instead (we get named parameters effectively then)
 	err := app.StartRun(
 		"run-name",                      // Run name
 		"output.txt",                    // Output filename
 		map[string]string{"FOO": "bar"}, // Environment variables
 		"http://foo.com",                // Callback URL
-		0,                               // Max run time (0 defaults to the global max run time)
+		86400,                           // Max run time
 	)
 	assert.Nil(t, err)
 
 	job.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
 	blobStore.AssertExpectations(t)
-}
-
-func TestStartRunMaxRunTimeTooLarge(t *testing.T) {
-	app := AppImplementation{MaxRunTime: 86400}
-	err := app.StartRun("run-name", "", map[string]string{}, "", 86401)
-	assert.True(t, errors.Is(err, ErrMaxRunTimeTooLarge))
-}
-
-func TestStartRunMaxRunTimeSmaller(t *testing.T) {
-	blobStore := new(blobstoremocks.BlobStore)
-	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	job := new(jobdispatchermocks.Jobs)
-	app := AppImplementation{BlobStore: blobStore, KeyValueStore: keyValueStore, JobDispatcher: job, MaxRunTime: 86400}
-
-	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
-	keyValueStore.On("Set", "run-name/url", "").Return(nil)
-	job.On("GetToken", "run-name").Return("abc123", nil)
-	job.On("StartJob", "run-name", "openaustralia/yinyo-scraper:v1", []string{"/bin/yinyo", "wrapper", "run-name", "abc123", "--output", ""}, int64(86399)).Return(nil)
-
-	err := app.StartRun("run-name", "", map[string]string{}, "", 86399)
-	if err != nil {
-		t.Fatal(err)
-	}
-	blobStore.AssertExpectations(t)
-	keyValueStore.AssertExpectations(t)
-	job.AssertExpectations(t)
 }
 
 type MockRoundTripper struct {

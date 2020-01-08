@@ -134,6 +134,12 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
+	if l.MaxRunTime == 0 {
+		l.MaxRunTime = server.maxRunTime
+	} else if l.MaxRunTime > server.maxRunTime {
+		return newHTTPError(err, http.StatusBadRequest, fmt.Sprintf("max_run_time should not be larger than %v", server.maxRunTime))
+	}
+
 	env := make(map[string]string)
 	for _, keyvalue := range l.Env {
 		env[keyvalue.Name] = keyvalue.Value
@@ -142,8 +148,6 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 	err = server.app.StartRun(runName, l.Output, env, l.Callback.URL, l.MaxRunTime)
 	if errors.Is(err, commands.ErrAppNotAvailable) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
-	} else if errors.Is(err, commands.ErrMaxRunTimeTooLarge) {
-		err = newHTTPError(err, http.StatusBadRequest, "max_run_time is too large")
 	}
 	return err
 }
@@ -299,17 +303,19 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Server holds the internal state for the server
 type Server struct {
-	router *mux.Router
-	app    commands.App
+	router     *mux.Router
+	app        commands.App
+	maxRunTime int64 // the global maximum run time in seconds that every run can not exceed
 }
 
 // Initialise the server's state
-func (server *Server) Initialise(startupOptions commands.StartupOptions) error {
+func (server *Server) Initialise(startupOptions commands.StartupOptions, maxRunTime int64) error {
 	app, err := commands.New(startupOptions)
 	if err != nil {
 		return err
 	}
 	server.app = app
+	server.maxRunTime = maxRunTime
 	server.InitialiseRoutes()
 	return nil
 }

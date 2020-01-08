@@ -19,7 +19,7 @@ import (
 // Makes a request to the server and records the response for testing purposes
 // Use "" for the token if you don't want the request to be authenticated
 func makeRequest(app commands.App, method string, url string, body io.Reader, token string) *httptest.ResponseRecorder {
-	server := Server{app: app}
+	server := Server{app: app, maxRunTime: 86400}
 	server.InitialiseRoutes()
 
 	req, _ := http.NewRequest(method, url, body)
@@ -90,7 +90,7 @@ func TestStartBadBody(t *testing.T) {
 func TestStartNoApp(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "foo").Return("abc123", nil)
-	app.On("StartRun", "foo", "", map[string]string{}, "", int64(0)).Return(commands.ErrAppNotAvailable)
+	app.On("StartRun", "foo", "", map[string]string{}, "", int64(86400)).Return(commands.ErrAppNotAvailable)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{}`), "abc123")
 
@@ -103,7 +103,7 @@ func TestStartNoApp(t *testing.T) {
 func TestStart(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "foo").Return("abc123", nil)
-	app.On("StartRun", "foo", "", map[string]string{}, "", int64(0)).Return(nil)
+	app.On("StartRun", "foo", "", map[string]string{}, "", int64(86400)).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader("{}"), "abc123")
 
@@ -127,12 +127,11 @@ func TestStartLowerMaxRunTime(t *testing.T) {
 func TestStartHigherMaxRunTime(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("GetTokenCache", "foo").Return("abc123", nil)
-	app.On("StartRun", "foo", "", map[string]string{}, "", int64(100000)).Return(commands.ErrMaxRunTimeTooLarge)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"max_run_time": 100000}`), "abc123")
 
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
-	assert.Equal(t, `{"error":"max_run_time is too large"}`, rr.Body.String())
+	assert.Equal(t, `{"error":"max_run_time should not be larger than 86400"}`, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 
 	app.AssertExpectations(t)
