@@ -16,6 +16,7 @@
 
     {{ $css := $sass | toCSS $cssOpts | resources.PostCSS | fingerprint }}
     <link rel="stylesheet" href="{{ $css.Permalink | absURL }}" integrity="{{ $css.Data.Integrity }}">
+    {{ template "_internal/google_analytics_async.html" . }}
   </head>
   <body>
     <header>

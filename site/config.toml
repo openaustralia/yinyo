@@ -1,6 +1,7 @@
 baseURL = "https://yinyo.io/"
 languageCode = "en-us"
 title = "Yinyo"
+googleAnalytics = "UA-3107958-18"
 [markup]
   [markup.highlight]
     style = "github"
