@@ -44,27 +44,6 @@ func (_m *Jobs) DeleteJobAndToken(runName string) error {
 	return r0
 }
 
-// GetToken provides a mock function with given fields: runName
-func (_m *Jobs) GetToken(runName string) (string, error) {
-	ret := _m.Called(runName)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
-		r0 = rf(runName)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(runName)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // StartJob provides a mock function with given fields: runName, dockerImage, command, maxRunTime
 func (_m *Jobs) StartJob(runName string, dockerImage string, command []string, maxRunTime int64) error {
 	ret := _m.Called(runName, dockerImage, command, maxRunTime)

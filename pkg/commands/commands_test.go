@@ -39,7 +39,7 @@ func TestStartRun(t *testing.T) {
 		int64(86400),
 	).Return(nil)
 	// Expect that we'll need the secret token
-	job.On("GetToken", "run-name").Return("supersecret", nil)
+	keyValueStore.On("Get", "run-name/token").Return("supersecret", nil)
 	// Expect that we save the callback url in the key value store
 	keyValueStore.On("Set", "run-name/url", "http://foo.com").Return(nil)
 	// Expect that we try to get the code just to see if it exists

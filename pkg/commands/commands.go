@@ -242,7 +242,7 @@ func (app *AppImplementation) StartRun(
 	if err != nil {
 		return err
 	}
-	runToken, err := app.JobDispatcher.GetToken(runName)
+	runToken, err := app.GetTokenCache(runName)
 	if err != nil {
 		return err
 	}
