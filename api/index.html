@@ -1186,6 +1186,15 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
 
 
 
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-3107958-18"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-3107958-18');
+    </script>
   </head>
 
   <body data-languages="[&quot;shell&quot;,&quot;http&quot;,&quot;javascript&quot;,&quot;ruby&quot;,&quot;python&quot;,&quot;php&quot;,&quot;java&quot;,&quot;go&quot;]">
@@ -1854,7 +1863,8 @@ curl -X POST http://localhost:8080/runs/{name}/start \
       "value": "string"
     }
   ],
-  "callback": "http://example.com"
+  "callback": "http://example.com",
+  "max_run_time": 0
 }'</span>;
 <span class="hljs-keyword">const</span> headers = {
   <span class="hljs-string">'Content-Type'</span>:<span class="hljs-string">'application/json'</span>,
@@ -1984,7 +1994,8 @@ System.out.println(response.toString());
       <span class="hljs-attr">"value"</span>: <span class="hljs-string">"string"</span>
     }
   ],
-  <span class="hljs-attr">"callback"</span>: <span class="hljs-string">"http://example.com"</span>
+  <span class="hljs-attr">"callback"</span>: <span class="hljs-string">"http://example.com"</span>,
+  <span class="hljs-attr">"max_run_time"</span>: <span class="hljs-number">0</span>
 }
 </code></pre>
 <h3 id="start-the-run-parameters">Parameters</h3>
@@ -2047,6 +2058,13 @@ System.out.println(response.toString());
 <td>string(uri)</td>
 <td>false</td>
 <td>Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like <a href="http://my-url-endpoint.com?key=special-secret-stuff">http://my-url-endpoint.com?key=special-secret-stuff</a> would do the trick</td>
+</tr>
+<tr>
+<td>» max_run_time</td>
+<td>body</td>
+<td>integer</td>
+<td>false</td>
+<td>Optionally set the maximum number of seconds the run is allowed to go for. If it exceeds this it will be automatically stopped.</td>
 </tr>
 </tbody>
 </table>
@@ -2117,7 +2135,7 @@ curl -X POST http://localhost:8080/runs/{name}/start \
 <pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'{
   "id": "string",
   "type": "string",
-  "time": "2019-12-24T00:05:23Z",
+  "time": "2020-01-09T04:03:33Z",
   "data": {
     "stage": "build",
     "stream": "stdout",
@@ -2237,7 +2255,7 @@ System.out.println(response.toString());
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-24T00:05:23Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-09T04:03:33Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
@@ -3873,7 +3891,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-24T00:05:23Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-09T04:03:33Z"</span>
 }
 
 </code></pre>
@@ -3920,7 +3938,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-24T00:05:23Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-09T04:03:33Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
   }
@@ -3993,7 +4011,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-24T00:05:23Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-09T04:03:33Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
   }
@@ -4066,7 +4084,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-24T00:05:23Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-09T04:03:33Z"</span>
 }
 
 </code></pre>
@@ -4081,7 +4099,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2019-12-24T00:05:23Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-09T04:03:33Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
