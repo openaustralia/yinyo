@@ -6,6 +6,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -79,6 +80,19 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 							Name:    runName,
 							Image:   dockerImage,
 							Command: command,
+							Resources: apiv1.ResourceRequirements{
+								// TODO: Make the requests and limits configurable.
+								// Not doing it though until we figure out a sensible and easy way to expose it to users.
+								// There's also the question of how it connects up with the resource measurement
+								Requests: apiv1.ResourceList{
+									apiv1.ResourceMemory: resource.MustParse("128Mi"), // 128 MB
+									apiv1.ResourceCPU:    resource.MustParse("250m"),  // 1/4 of a vCPU
+								},
+								Limits: apiv1.ResourceList{
+									apiv1.ResourceMemory: resource.MustParse("512Mi"), // 512 MB
+									apiv1.ResourceCPU:    resource.MustParse("1000m"), // One vCPU
+								},
+							},
 						},
 					},
 				},
