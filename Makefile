@@ -29,7 +29,7 @@ website: apidocs
 
 apidocs:
 	widdershins --summary openapi/definition.yaml -o openapi/definition.md
-	shins openapi/definition.md -o site/content/api.html --inline
+	shins openapi/definition.md --layout $(shell pwd)/site/layout.ejs -o site/content/api.html --inline
 
 minikube:
 	minikube start --memory=3072 --disk-size='30gb' --kubernetes-version='v1.15.2'
