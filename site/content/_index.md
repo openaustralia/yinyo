@@ -16,11 +16,11 @@ quotes:
     company: OpenAustralia Foundation
     photo: kat.jpg
     text: Yup, Yinyo is fantastic.
-  - name: Matthew Landauer
-    title: cofounder
+  - name: James Polley
+    title: Director
     company: OpenAustralia Foundation
-    photo: matthew.jpg
-    text: This is going to make morph.io so much better! I wish we had done this *ages* ago.
+    photo: james.jpg
+    text: Morph made it easy to run our scrapers and consume all the memory and CPU of a single VM. Now with Yinyo we can consume all the resources across a whole cluster!
 features:
   - heading: Easy and scaleable
     text: |
