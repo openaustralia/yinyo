@@ -10,7 +10,7 @@ header {
 }
 
 main {
-  padding: 6rem 0;
+  padding: 0 0 6rem 0;
   background-color: #fae3d9;
 }
 
@@ -24,6 +24,14 @@ section {
     margin-right: auto;
     max-width: 40rem;
   }
+}
+
+section.headline {
+  padding-top: 6rem;
+  background-image: url("/sunflower-cropped.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: top;
 }
 
 section.features {
