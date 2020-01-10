@@ -1,3 +1,7 @@
+$link-color: #212529;
+$link-decoration: underline;
+$link-hover-decoration: none;
+
 @import "bootstrap/scss/bootstrap";
 
 .starter-template {
@@ -7,6 +11,13 @@
 
 header {
   background-color: #ffb6b9;
+  a {
+    text-decoration: none;
+  }
+}
+
+a.btn {
+  text-decoration: none;
 }
 
 main {
