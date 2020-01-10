@@ -23,6 +23,11 @@
   </url>
   
   <url>
+    <loc>https://yinyo.io/thank-you/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://yinyo.io/categories/</loc>
   </url>
   
