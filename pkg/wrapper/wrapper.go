@@ -234,7 +234,7 @@ func runStage(run apiclient.RunInterface, options Options, env []string, exitDat
 	return nil
 }
 
-func RunWithError(run apiclient.RunInterface, options Options) error {
+func runWithError(run apiclient.RunInterface, options Options) error {
 	err := run.CreateStartEvent("build")
 	if err != nil {
 		return err
@@ -295,7 +295,7 @@ func RunWithError(run apiclient.RunInterface, options Options) error {
 
 // Run runs a scraper from inside a container
 func Run(run apiclient.RunInterface, options Options) error {
-	err := RunWithError(run, options)
+	err := runWithError(run, options)
 	if err != nil {
 		// Notice that for an internal error we're not logging the stage. We leave that empty.
 		//nolint:errcheck // ignore errors while logging error
