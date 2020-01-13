@@ -1,3 +1,5 @@
+<img width="100" heigth="100" src="https://yinyo.io/logo.svg">
+
 # Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
 
 - Easily run as many scrapers as you like across a cluster of machines without having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
