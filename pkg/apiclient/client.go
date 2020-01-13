@@ -20,6 +20,7 @@ type Run struct {
 	Client *Client
 }
 
+// RunInterface is the interface to interact with existing runs
 type RunInterface interface {
 	GetName() string
 	GetToken() string
@@ -140,10 +141,12 @@ func (client *Client) CreateRun(namePrefix string) (RunInterface, error) {
 	return run, err
 }
 
+// GetName returns the name of the run
 func (run *Run) GetName() string {
 	return run.Name
 }
 
+// GetToken returns the token used for authenticating the run
 func (run *Run) GetToken() string {
 	return run.Token
 }

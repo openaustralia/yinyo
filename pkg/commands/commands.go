@@ -44,6 +44,7 @@ type App interface {
 	GetTokenCache(runName string) (string, error)
 }
 
+// EventIterator is the interface for getting individual events in a list of events
 type EventIterator interface {
 	More() bool
 	Next() (e protocol.Event, err error)
@@ -58,11 +59,13 @@ type AppImplementation struct {
 	HTTP          *http.Client
 }
 
+// StartupOptions are the options available when initialising the application
 type StartupOptions struct {
 	Minio MinioOptions
 	Redis RedisOptions
 }
 
+// MinioOptions are the options for the specific blob storage
 type MinioOptions struct {
 	Host      string
 	Bucket    string
@@ -70,6 +73,7 @@ type MinioOptions struct {
 	SecretKey string
 }
 
+// RedisOptions are the options for the specific key value store
 type RedisOptions struct {
 	Address  string
 	Password string
