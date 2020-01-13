@@ -12,9 +12,9 @@
     {{ $sass         := resources.Get "scss/main.scss" }}
     {{ $sassIncludes := (slice "node_modules/") }}
     {{ $cssTarget    := "main.css" }}
-    {{ $cssOpts      := (dict "targetPath" $cssTarget "enableSourceMap" true "includePaths" $sassIncludes "outputStyle" "compressed") }}
+    {{ $cssOpts      := (dict "targetPath" $cssTarget "enableSourceMap" false "includePaths" $sassIncludes "outputStyle" "compressed") }}
 
-    {{ $css := $sass | toCSS $cssOpts | resources.PostCSS | fingerprint }}
+    {{ $css := $sass | toCSS $cssOpts | fingerprint }}
     <link rel="stylesheet" href="{{ $css.Permalink | absURL }}" integrity="{{ $css.Data.Integrity }}">
     {{ template "_internal/google_analytics_async.html" . }}
   </head>
