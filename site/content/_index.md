@@ -23,18 +23,22 @@ quotes:
     text: Morph made it easy to run our scrapers and consume all the memory and CPU of a single VM. Now with Yinyo we can consume all the resources across a whole cluster!
 features:
   - heading: Easy and scaleable
+    image: rush-1.png
     text: |
       Easily run as many scrapers as you like across a cluster of machines **without
       having to sweat the details**. Powered by [Kubernetes](https://kubernetes.io/).
   - heading: Languages you love
+    image: rush-5.png
     text: |
       Use the language and libraries you love for writing scrapers.
       Supports **Python, JavaScript, Ruby, PHP and Perl** via Heroku Buildpacks.
   - heading: Flexible
+    image: rush-20.png
     text: |
       Supports **many different use cases** through a simple, yet flexible API that can operate synchronously
       or asynchronously.
   - heading: Open source
+    image: rush-13.png
     text: |
       Made specifically for developers of *open source and proprietary* scraper systems. No chance of vendor lock-in because Yinyo is open source and **liberally licensed**
       under the [Apache 2.0 license](https://github.com/openaustralia/yinyo/blob/master/LICENSE).
