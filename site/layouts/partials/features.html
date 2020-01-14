@@ -4,8 +4,8 @@
     <!-- TODO: Add icon for each feature -->
     <div class="text-center">
       {{ $image := $.Page.Resources.GetMatch .image }}
-      {{ $resized := $image.Resize "x300" }}
-      <img src="{{ $resized.RelPermalink }}" alt="photo for {{.heading }}" height="300">
+      {{ $resized := $image.Resize "x200" }}
+      <img src="{{ $resized.RelPermalink }}" alt="photo for {{.heading }}" height="200">
       <h3>{{ .heading | markdownify }}</h3>
       {{ .text | markdownify }}
     </div>
