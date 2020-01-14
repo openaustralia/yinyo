@@ -27,6 +27,9 @@ website: apidocs
 	# Starts a development web server at http://localhost:1313
 	hugo server -s site -D
 
+publish-website:
+	cd site; /bin/sh ./publish_to_ghpages.sh
+
 apidocs:
 	widdershins --summary openapi/definition.yaml -o openapi/definition.md
 	shins openapi/definition.md --layout $(shell pwd)/site/layout.ejs -o site/content/api.html --inline --logo site/static/logo.svg --logo-url / --css site/api-overrides.css
