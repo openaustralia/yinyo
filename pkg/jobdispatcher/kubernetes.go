@@ -6,6 +6,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -19,7 +20,7 @@ type kubernetesClient struct {
 const namespace = "yinyo-scrapers"
 
 // NewKubernetes returns the Kubernetes implementation of Client
-func NewKubernetes() (Client, error) {
+func NewKubernetes() (Jobs, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -55,14 +56,13 @@ func (client *kubernetesClient) CreateJobAndToken(namePrefix string, runToken st
 	return created.ObjectMeta.Name, err
 }
 
-func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string) error {
+// maxRunTime is the maximum number of seconds that the job is allowed to take. If it exceeds this limit it will get stopped automatically
+func (client *kubernetesClient) StartJob(runName string, dockerImage string, command []string, maxRunTime int64) error {
 	jobsClient := client.clientset.BatchV1().Jobs(namespace)
 
 	autoMountServiceAccountToken := false
 	// Allow the job to get restarted up to 5 times before it's considered failed
 	backOffLimit := int32(5)
-	// Let this run for a maximum of 24 hours
-	activeDeadlineSeconds := int64(86400)
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -70,7 +70,7 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 		},
 		Spec: batchv1.JobSpec{
 			BackoffLimit:          &backOffLimit,
-			ActiveDeadlineSeconds: &activeDeadlineSeconds,
+			ActiveDeadlineSeconds: &maxRunTime,
 			Template: apiv1.PodTemplateSpec{
 				Spec: apiv1.PodSpec{
 					AutomountServiceAccountToken: &autoMountServiceAccountToken,
@@ -80,6 +80,19 @@ func (client *kubernetesClient) StartJob(runName string, dockerImage string, com
 							Name:    runName,
 							Image:   dockerImage,
 							Command: command,
+							Resources: apiv1.ResourceRequirements{
+								// TODO: Make the requests and limits configurable.
+								// Not doing it though until we figure out a sensible and easy way to expose it to users.
+								// There's also the question of how it connects up with the resource measurement
+								Requests: apiv1.ResourceList{
+									apiv1.ResourceMemory: resource.MustParse("128Mi"), // 128 MB
+									apiv1.ResourceCPU:    resource.MustParse("250m"),  // 1/4 of a vCPU
+								},
+								Limits: apiv1.ResourceList{
+									apiv1.ResourceMemory: resource.MustParse("512Mi"), // 512 MB
+									apiv1.ResourceCPU:    resource.MustParse("1000m"), // One vCPU
+								},
+							},
 						},
 					},
 				},
@@ -122,15 +135,4 @@ func deleteSecret(clientset *kubernetes.Clientset, runName string) error {
 		PropagationPolicy: &deletePolicy,
 	})
 	return err
-}
-
-func (client *kubernetesClient) GetToken(runName string) (string, error) {
-	// First get the actual run token from the secret
-	secretsClient := client.clientset.CoreV1().Secrets(namespace)
-	secret, err := secretsClient.Get(runName, metav1.GetOptions{})
-	if err != nil {
-		return "", err
-	}
-	actualRunToken := string(secret.Data["run_token"])
-	return actualRunToken, nil
 }

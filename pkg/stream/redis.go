@@ -2,8 +2,9 @@ package stream
 
 import (
 	"encoding/json"
+
 	"github.com/go-redis/redis"
-	"github.com/openaustralia/yinyo/pkg/event"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
 type redisStream struct {
@@ -11,11 +12,11 @@ type redisStream struct {
 }
 
 // NewRedis returns the Redis implementation of Stream
-func NewRedis(redisClient *redis.Client) Client {
+func NewRedis(redisClient *redis.Client) Stream {
 	return &redisStream{client: redisClient}
 }
 
-func (stream *redisStream) Add(key string, event event.Event) (addedEvent event.Event, err error) {
+func (stream *redisStream) Add(key string, event protocol.Event) (addedEvent protocol.Event, err error) {
 	b, err := json.Marshal(event)
 	if err != nil {
 		return
@@ -35,7 +36,7 @@ func (stream *redisStream) Add(key string, event event.Event) (addedEvent event.
 
 // Get the next event in the stream based on the id. It will wait until it's
 // available
-func (stream *redisStream) Get(key string, id string) (event event.Event, err error) {
+func (stream *redisStream) Get(key string, id string) (event protocol.Event, err error) {
 	// For the moment get one event at a time
 	// TODO: Grab more than one at a time for a little more efficiency
 	result, err := stream.client.XRead(&redis.XReadArgs{

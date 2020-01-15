@@ -1,26 +1,37 @@
 {{ define "main" }}
-  <main role="main" class="container">
-
-    <div class="starter-template">
-      <h1>{{ .Title }}</h1>
-      <p class="lead">
-        {{ .Params.headline | markdownify }}
-      </p>
-      <a class="btn btn-primary" href="#get-started-in-the-documentation" role="button">Get Started</a>
+<main role="main">
+  <section class="headline">
+    <div class="container">
+      <div class="starter-template">
+        <h1>{{ .Title }}</h1>
+        <p class="lead text">
+          {{ .Params.headline | markdownify }}
+        </p>
+        <a class="btn btn-primary" href="/get-started" role="button">Get Started</a>
+      </div>
     </div>
+  </section>
 
-    {{ partial "features.html" .Params.features }}
-
-    <div class="py-5">
-      {{.Content}}
-      <a class="btn btn-primary" href="#get-started-in-the-documentation" role="button">Get Started</a>
+  <section class="features">
+    <div class="container">
+      {{ partial "features.html" . }}
     </div>
+  </section>
 
-    {{ partial "quotes.html" .Params.quotes }}
+  <section class="why">
+    <div class="container">
+      <div class="text">
+        <div class="py-5">
+          {{.Content}}
+          <a class="btn btn-primary" href="/get-started" role="button">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <h3>More social validation</h3>
-    <p>
-      Used in production to run scrapers more than xxxxx times
-    </p>
-  </main><!-- /.container -->
+  <div class="container">
+    {{ partial "quotes.html" . }}
+  </div>
+</main>
+<!-- /.container -->
 {{ end }}

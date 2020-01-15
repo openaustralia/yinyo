@@ -14,7 +14,7 @@ type minioClient struct {
 }
 
 // NewMinioClient creates a MinioClient
-func NewMinioClient(url string, bucketName string, accessKey string, secretKey string) (Client, error) {
+func NewMinioClient(url string, bucketName string, accessKey string, secretKey string) (BlobStore, error) {
 	client, err := minio.New(url, accessKey, secretKey, false)
 	m := &minioClient{
 		Client:     client,

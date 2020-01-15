@@ -1,35 +1,44 @@
+<img width="100" heigth="100" src="https://yinyo.io/logo.svg">
+
 # Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way
-
-<!-- TOC -->
-
-- [Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way](#yinyo-a-wonderfully-simple-api-driven-service-to-reliably-execute-many-long-running-scrapers-in-a-super-scaleable-way)
-    - [Who is this README for?](#who-is-this-readme-for)
-    - [Development: Guide to getting up and running quickly](#development-guide-to-getting-up-and-running-quickly)
-        - [Main dependencies](#main-dependencies)
-        - [The main bit](#the-main-bit)
-    - [Getting the website running locally](#getting-the-website-running-locally)
-        - [Dependencies](#dependencies)
-        - [Running a local development server for the website](#running-a-local-development-server-for-the-website)
-    - [The custom herokuish docker image](#the-custom-herokuish-docker-image)
-    - [Notes for debugging and testing](#notes-for-debugging-and-testing)
-        - [To run the tests](#to-run-the-tests)
-        - [To see what's on the blob storage (Minio)](#to-see-whats-on-the-blob-storage-minio)
-        - [To see what Kubernetes is doing](#to-see-what-kubernetes-is-doing)
-        - [Accessing Redis](#accessing-redis)
-        - [Testing callback URLs](#testing-callback-urls)
-        - [Reclaiming diskspace in minikube](#reclaiming-diskspace-in-minikube)
-
-<!-- /TOC -->
 
 - Easily run as many scrapers as you like across a cluster of machines without having to sweat the details. Powered by [Kubernetes](https://kubernetes.io/).
 - Use the language and libraries you love for writing scrapers. Supports Python, JavaScript, Ruby, PHP and Perl via Heroku Buildpacks.
 - Supports many different use cases through a simple, yet flexible API that can operate synchronously or asynchronously.
 - Made specifically for developers of scraper systems be it open source or commercial. No chance of vendor lock-in because it's open source, Apache licensed.
 
+[![Build Status](https://github.com/openaustralia/yinyo/workflows/test%20and%20build/badge.svg)](https://github.com/openaustralia/yinyo/actions?workflow=test%20and%20build)
+[![Coverage Status](https://coveralls.io/repos/github/openaustralia/yinyo/badge.svg?t=8kV8YE)](https://coveralls.io/github/openaustralia/yinyo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/openaustralia/yinyo)](https://goreportcard.com/report/github.com/openaustralia/yinyo)
+
 ## Who is this README for?
 
 This README is focused on getting developers of the core system up and running. It does not yet include
 a guide for people who are just interested in being users of the API.
+
+## Table of Contents
+
+<!-- TOC -->
+
+- [Yinyo: A wonderfully simple API driven service to reliably execute many long running scrapers in a super scaleable way](#yinyo-a-wonderfully-simple-api-driven-service-to-reliably-execute-many-long-running-scrapers-in-a-super-scaleable-way)
+  - [Who is this README for?](#who-is-this-readme-for)
+  - [Table of Contents](#table-of-contents)
+  - [Development: Guide to getting up and running quickly](#development-guide-to-getting-up-and-running-quickly)
+    - [Main dependencies](#main-dependencies)
+    - [The main bit](#the-main-bit)
+  - [Getting the website running locally](#getting-the-website-running-locally)
+    - [Dependencies](#dependencies)
+    - [Running a local development server for the website](#running-a-local-development-server-for-the-website)
+  - [The custom herokuish docker image](#the-custom-herokuish-docker-image)
+  - [Notes for debugging and testing](#notes-for-debugging-and-testing)
+    - [To run the tests](#to-run-the-tests)
+    - [To see what's on the blob storage (Minio)](#to-see-whats-on-the-blob-storage-minio)
+    - [To see what Kubernetes is doing](#to-see-what-kubernetes-is-doing)
+    - [Accessing Redis](#accessing-redis)
+    - [Testing callback URLs](#testing-callback-urls)
+    - [Reclaiming diskspace in minikube](#reclaiming-diskspace-in-minikube)
+
+<!-- /TOC -->
 
 ## Development: Guide to getting up and running quickly
 
@@ -62,6 +71,7 @@ Run skaffold. This will build all the bits and pieces and deploy things to your 
 ```bash
 make skaffold
 ```
+
 Leave `skaffold` running and open a new terminal window.
 
 Now setup the storage buckets on Minio
@@ -94,9 +104,9 @@ yinyo client test/scrapers/test-python --output data.sqlite
 
 There are some extra dependencies required for building the website and associated API documentation.
 
-- [Hugo](https://gohugo.io/) - a static website generator
+- [Hugo](https://gohugo.io/) v0.60.0 or later - a static website generator
 - [Shins](https://github.com/Mermade/shins) - a Node.js Slate markdown renderer
-- [Widdershins](https://github.com/mermade/widdershins) - Converts OpenAPI definitions to Slate
+- [Widdershins](https://github.com/mermade/widdershins) - Converts OpenAPI definitions to Slate. Make sure you're using a version which includes a fix for rendering callbacks https://github.com/Mermade/widdershins/commit/5d7223f070e8d295e29a3390c3d42b4798748c55. As of December 2019 this is likely to be on master and not in one of the released versions.
 
 ### Running a local development server for the website
 

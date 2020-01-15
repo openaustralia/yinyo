@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 
-	"github.com/openaustralia/yinyo/pkg/event"
-	"github.com/openaustralia/yinyo/pkg/yinyoclient"
+	"github.com/openaustralia/yinyo/pkg/apiclient"
+	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/spf13/cobra"
 )
-
-const cacheName = ".yinyo-build-cache.tgz"
 
 var callbackURL, outputFile, clientServerURL string
 var showEventsJSON bool
@@ -35,111 +32,31 @@ var clientCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		scraperDirectory := args[0]
-
-		client := yinyoclient.New(clientServerURL)
-		// Create the run
-		run, err := client.CreateRun(scraperDirectory)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Upload the app
-		err = run.PutAppFromDirectory(scraperDirectory, []string{cacheName})
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Upload the cache
-		cachePath := filepath.Join(scraperDirectory, cacheName)
-		file, err := os.Open(cachePath)
-		if err != nil {
-			// If the cache doesn't exist then skip the uploading bit
-			if !os.IsNotExist(err) {
-				log.Fatal(err)
-			}
-		} else {
-			err = run.PutCache(file)
-			if err != nil {
-				log.Fatal(err)
-			}
-			file.Close()
-		}
-
-		var envVariables []yinyoclient.EnvVariable
-		for k, v := range environment {
-			// TODO: Fix this inefficient way
-			envVariables = append(envVariables, yinyoclient.EnvVariable{Name: k, Value: v})
-		}
-
-		// Start the run
-		err = run.Start(&yinyoclient.StartRunOptions{
-			Output:   outputFile,
-			Callback: yinyoclient.Callback{URL: callbackURL},
-			Env:      envVariables,
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Listen for events
-		events, err := run.GetEvents("")
-		if err != nil {
-			log.Fatal(err)
-		}
-		for events.More() {
-			e, err := events.Next()
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if showEventsJSON {
-				// Convert the event back to JSON for display
-				b, err := json.Marshal(e)
-				if err != nil {
-					log.Fatal(err)
-				}
-				fmt.Println(string(b))
-			} else {
-				// Only display the log events to the user
-				l, ok := e.Data.(event.LogData)
-				if ok {
-					f, err := osStream(l.Stream)
+		err := apiclient.Simple(
+			scraperDirectory, clientServerURL, environment, outputFile, callbackURL,
+			func(event protocol.Event) error {
+				if showEventsJSON {
+					// Convert the event back to JSON for display
+					b, err := json.Marshal(event)
 					if err != nil {
-						log.Fatal(err)
+						return err
 					}
-					fmt.Fprintln(f, l.Text)
-				}
-			}
-		}
-
-		// Get the run output
-		if outputFile != "" {
-			path := filepath.Join(scraperDirectory, outputFile)
-			err = run.GetOutputToFile(path)
-			if err != nil {
-				if yinyoclient.IsNotFound(err) {
-					log.Printf("Warning: output file %v does not exist", outputFile)
+					fmt.Println(string(b))
 				} else {
-					log.Fatal(err)
+					// Only display the log events to the user
+					l, ok := event.Data.(protocol.LogData)
+					if ok {
+						f, err := osStream(l.Stream)
+						if err != nil {
+							return err
+						}
+						fmt.Fprintln(f, l.Text)
+					}
 				}
-			}
-		}
+				return nil
+			},
+		)
 
-		// Get the build cache
-		err = run.GetCacheToFile(cachePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Get the exit data
-		// exitData, err := run.GetExitData()
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		// fmt.Printf("%+v", exitData)
-
-		// Delete the run
-		err = run.Delete()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -153,7 +70,7 @@ func osStream(stream string) (*os.File, error) {
 	// TODO: Extract string constant
 	case "stdout":
 		return os.Stdout, nil
-	case "stderr":
+	case "stderr", "interr":
 		return os.Stderr, nil
 	default:
 		return nil, fmt.Errorf("Unexpected stream %v", stream)
