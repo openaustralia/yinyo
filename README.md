@@ -10,7 +10,6 @@
 [![Build Status](https://github.com/openaustralia/yinyo/workflows/test%20and%20build/badge.svg)](https://github.com/openaustralia/yinyo/actions?workflow=test%20and%20build)
 [![Coverage Status](https://coveralls.io/repos/github/openaustralia/yinyo/badge.svg?t=8kV8YE)](https://coveralls.io/github/openaustralia/yinyo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/openaustralia/yinyo)](https://goreportcard.com/report/github.com/openaustralia/yinyo)
-[![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/openaustralia/yinyo/?ref=repository-badge)
 
 ## Who is this README for?
 
