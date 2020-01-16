@@ -208,31 +208,6 @@ func setup(run apiclient.RunInterface, options *Options) error {
 	return nil
 }
 
-func runStage(run apiclient.RunInterface, options *Options, env []string, exitDataBuild protocol.ExitDataStage) error {
-	exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
-	if err != nil {
-		return err
-	}
-
-	var exitData protocol.ExitData
-	exitData.Build = &exitDataBuild
-	exitData.Run = &exitDataStage
-
-	err = run.PutExitData(exitData)
-	if err != nil {
-		return err
-	}
-
-	if options.RunOutput != "" {
-		err = run.PutOutputFromFile(filepath.Join(options.AppPath, options.RunOutput))
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func runWithError(run apiclient.RunInterface, options *Options) error {
 	err := setup(run, options)
 	if err != nil {
@@ -260,15 +235,23 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 
 	// Only do the main run if the build was successful
 	if exitData.Build.ExitCode == 0 {
-		err := runStage(run, options, env, *exitData.Build)
+		exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
 		if err != nil {
 			return err
 		}
-	} else {
-		err := run.PutExitData(exitData)
-		if err != nil {
-			return err
+		exitData.Run = &exitDataStage
+
+		if options.RunOutput != "" {
+			err = run.PutOutputFromFile(filepath.Join(options.AppPath, options.RunOutput))
+			if err != nil {
+				return err
+			}
 		}
+	}
+
+	err = run.PutExitData(exitData)
+	if err != nil {
+		return err
 	}
 
 	err = run.CreateLastEvent()
