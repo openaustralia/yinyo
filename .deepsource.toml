@@ -12,3 +12,10 @@ enabled = true
   [analyzers.meta]
   import_path = "github.com/openaustralia/yinyo"
 
+name = "docker"
+enabled = true
+
+  [analyzers.meta]
+  dockerfile_paths = ["build/Dockerfile"]
+
+
