@@ -180,7 +180,10 @@ func setup(run apiclient.RunInterface, options Options) error {
 		if err != nil {
 			return err
 		}
-		f.Close()
+		err = f.Close()
+		if err != nil {
+			return err
+		}
 	}
 
 	err = run.GetAppToDirectory(options.ImportPath)
