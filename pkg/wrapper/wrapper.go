@@ -102,7 +102,7 @@ func aggregateCounters() (net.IOCountersStat, error) {
 	}
 	// Since we're asking for the aggregates we should only ever receive one answer
 	if len(stats) != 1 {
-		return net.IOCountersStat{}, errors.New("Only expected one stat")
+		return net.IOCountersStat{}, errors.New("only expected one stat")
 	}
 	return stats[0], nil
 }

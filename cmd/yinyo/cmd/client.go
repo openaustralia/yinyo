@@ -73,6 +73,6 @@ func osStream(stream string) (*os.File, error) {
 	case "stderr", "interr":
 		return os.Stderr, nil
 	default:
-		return nil, fmt.Errorf("Unexpected stream %v", stream)
+		return nil, fmt.Errorf("unexpected stream %v", stream)
 	}
 }

@@ -71,7 +71,7 @@ func walk(content io.Reader,
 				return err
 			}
 		default:
-			return errors.New("Unexpected type in tar")
+			return errors.New("unexpected type in tar")
 		}
 	}
 	return nil

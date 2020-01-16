@@ -28,7 +28,7 @@ func NewMinioClient(url string, bucketName string, accessKey string, secretKey s
 		return m, errors.Wrap(err, "Couldn't access blob store")
 	}
 	if !exists {
-		return m, fmt.Errorf("Bucket %s at url %s doesn't exist", bucketName, url)
+		return m, fmt.Errorf("bucket %s at url %s doesn't exist", bucketName, url)
 	}
 	return m, nil
 }
