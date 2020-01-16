@@ -155,7 +155,7 @@ type Options struct {
 	RunOutput    string
 }
 
-func setup(run apiclient.RunInterface, options Options) error {
+func setup(run apiclient.RunInterface, options *Options) error {
 	// Create and populate herokuish import path and cache path
 	err := os.MkdirAll(options.ImportPath, 0700)
 	if err != nil {
@@ -204,7 +204,7 @@ func setup(run apiclient.RunInterface, options Options) error {
 	return nil
 }
 
-func runStage(run apiclient.RunInterface, options Options, env []string, exitDataBuild protocol.ExitDataStage) error {
+func runStage(run apiclient.RunInterface, options *Options, env []string, exitDataBuild protocol.ExitDataStage) error {
 	err := run.CreateStartEvent("run")
 	if err != nil {
 		return err
@@ -237,7 +237,7 @@ func runStage(run apiclient.RunInterface, options Options, env []string, exitDat
 	return nil
 }
 
-func runWithError(run apiclient.RunInterface, options Options) error {
+func runWithError(run apiclient.RunInterface, options *Options) error {
 	err := run.CreateStartEvent("build")
 	if err != nil {
 		return err
@@ -297,7 +297,7 @@ func runWithError(run apiclient.RunInterface, options Options) error {
 }
 
 // Run runs a scraper from inside a container
-func Run(run apiclient.RunInterface, options Options) error {
+func Run(run apiclient.RunInterface, options *Options) error {
 	err := runWithError(run, options)
 	if err != nil {
 		// Notice that for an internal error we're not logging the stage. We leave that empty.

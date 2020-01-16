@@ -31,7 +31,7 @@ var serverCmd = &cobra.Command{
 			Address:  "redis:6379",
 			Password: os.Getenv("REDIS_PASSWORD"),
 		}
-		err := server.Initialise(commands.StartupOptions{Minio: minioOptions, Redis: redisOptions}, maxRunTime)
+		err := server.Initialise(&commands.StartupOptions{Minio: minioOptions, Redis: redisOptions}, maxRunTime)
 		if err != nil {
 			log.Fatal(err)
 		}

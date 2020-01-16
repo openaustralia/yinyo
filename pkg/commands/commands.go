@@ -80,7 +80,7 @@ type RedisOptions struct {
 }
 
 // New initialises the main state of the application
-func New(startupOptions StartupOptions) (App, error) {
+func New(startupOptions *StartupOptions) (App, error) {
 	storeAccess, err := blobstore.NewMinioClient(
 		startupOptions.Minio.Host,
 		startupOptions.Minio.Bucket,
