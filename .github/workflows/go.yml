@@ -124,11 +124,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: build
+        env:
+          GO111MODULE: on
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
-          export GO111MODULE=on
           mkdir bin/
-          #GOOS=windows GOARCH=amd64 go build -o bin ./...
-          GOOS=${{ matrix.goos }}   GOARCH=${{ matrix.goarch }} go build -o bin ./...
+          go build -o bin ./...
       - name: upload artifacts
         uses: actions/upload-artifact@master
         with:
