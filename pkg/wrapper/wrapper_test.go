@@ -71,7 +71,7 @@ func TestSimpleRun(t *testing.T) {
 	run.On("CreateFinishEvent", "run").Return(nil)
 	run.On("CreateLastEvent").Return(nil)
 
-	err := Run(run, Options{
+	err := Run(run, &Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -107,7 +107,7 @@ func TestEnvironmentVariables(t *testing.T) {
 	run.On("CreateFinishEvent", "run").Return(nil)
 	run.On("CreateLastEvent").Return(nil)
 
-	err := Run(run, Options{
+	err := Run(run, &Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -159,7 +159,7 @@ func TestFailingBuild(t *testing.T) {
 	})).Return(nil)
 	run.On("CreateLastEvent").Return(nil)
 
-	err := Run(run, Options{
+	err := Run(run, &Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -211,7 +211,7 @@ func TestFailingRun(t *testing.T) {
 	run.On("CreateFinishEvent", "run").Return(nil)
 	run.On("CreateLastEvent").Return(nil)
 
-	err := Run(run, Options{
+	err := Run(run, &Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,
@@ -241,7 +241,7 @@ func TestInternalError(t *testing.T) {
 	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))
 	run.On("CreateLogEvent", "", "interr", "Internal error. The run will be automatically restarted.").Return(nil)
 
-	err := Run(run, Options{
+	err := Run(run, &Options{
 		ImportPath:   importPath,
 		CachePath:    cachePath,
 		AppPath:      appPath,

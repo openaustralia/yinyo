@@ -311,7 +311,7 @@ type Server struct {
 }
 
 // Initialise the server's state
-func (server *Server) Initialise(startupOptions commands.StartupOptions, maxRunTime int64) error {
+func (server *Server) Initialise(startupOptions *commands.StartupOptions, maxRunTime int64) error {
 	app, err := commands.New(startupOptions)
 	if err != nil {
 		return err

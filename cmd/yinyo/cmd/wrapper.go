@@ -35,7 +35,7 @@ var wrapperCmd = &cobra.Command{
 			Run:    protocol.Run{Name: args[0], Token: args[1]},
 			Client: apiclient.New(serverURL),
 		}
-		err := wrapper.Run(run, wrapper.Options{
+		err := wrapper.Run(run, &wrapper.Options{
 			ImportPath:   importPath,
 			CachePath:    cachePath,
 			AppPath:      appPath,
