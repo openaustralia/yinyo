@@ -1,5 +1,9 @@
-name: test and build
-on: [push, pull_request]
+name: Test, Build and Release
+on: 
+  push:
+  pull_request:
+  release:
+    types: published
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -15,9 +19,14 @@ jobs:
           echo "::add-path::$(go env GOPATH)/bin"
         shell: bash
 
-      - name: Checkout code
+      - name: Checkout code ""
         uses: actions/checkout@v1
-
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Install golangci-lint
         run: |
           go get github.com/golangci/golangci-lint/cmd/golangci-lint
@@ -34,7 +43,6 @@ jobs:
         uses: actions/setup-go@v1
         with:
           go-version: 1.13
-
       - name: setup env
         run: |
           echo "::set-env name=GOPATH::$(go env GOPATH)"
@@ -43,6 +51,12 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v1
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Get dependencies
         run: |
@@ -63,7 +77,6 @@ jobs:
         uses: actions/setup-go@v1
         with:
           go-version: 1.13.x
-
       - name: setup env
         run: |
           echo "::set-env name=GOPATH::$(go env GOPATH)"
@@ -72,6 +85,13 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v1
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      
 
       - name: Calc coverage
         run: |
@@ -86,6 +106,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: [lint, test]
+    strategy:
+      matrix: #Duplicated below because anchors aren't supported :/
+        goarch: ["amd64", "arm", "arm64", "386"]
+        goos: ["linux"]
     steps:
       - name: Install Go
         uses: actions/setup-go@v1
@@ -93,14 +117,52 @@ jobs:
           go-version: 1.13.x
       - name: Checkout code
         uses: actions/checkout@v1
+      - run: |
+          echo "::set-env name=GOCACHE::$(go env GOCACHE)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ env.GOCACHE }}
+          key: ${{ runner.os }}-gobuild-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gobuild-
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: build
+        env:
+          GO111MODULE: on
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
-          export GO111MODULE=on
           mkdir bin/
-          #GOOS=windows GOARCH=amd64 go build -o bin ./...
-          GOOS=linux   GOARCH=amd64 go build -o bin ./...
+          go build -o bin ./...
       - name: upload artifacts
         uses: actions/upload-artifact@master
         with:
-          name: binaries
+          name: binaries_${{ matrix.goos }}_${{ matrix.goarch }}
           path: bin/
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        goarch: ["amd64", "arm", "arm64", "386"]
+        goos: ["linux"]
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: binaries_${{ matrix.goos }}_${{ matrix.goarch }}
+      - name: set variables
+        run: |
+          echo "::set-env name=VERSION::$(echo ${{ github.ref }} | sed 's@refs/[^/]*/v\?@@')"
+        shell: bash
+      - name: Go Release Binary
+        uses: Shopify/upload-to-release@1.0.0
+        with:
+          name: yinyo_${{ env.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: binaries_${{ matrix.goos }}_${{ matrix.goarch }}/yinyo
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
