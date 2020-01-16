@@ -273,6 +273,7 @@ func logAndReturnError(err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusInternalServerError)
 		//nolint:errcheck // ignore error while logging an error
+		//skipcq: GSC-G104
 		w.Write([]byte(`{"error":"Internal server error"}`))
 		return
 	}
@@ -288,6 +289,7 @@ func logAndReturnError(err error, w http.ResponseWriter) {
 	}
 	w.WriteHeader(status)
 	//nolint:errcheck // ignore error while logging an error
+	//skipcq: GSC-G104
 	w.Write(body)
 }
 
