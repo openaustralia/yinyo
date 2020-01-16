@@ -3,7 +3,7 @@ on:
   push:
   pull_request:
   release:
-    types: [published, prereleased]
+    types: published
 jobs:
   lint:
     runs-on: ubuntu-latest
