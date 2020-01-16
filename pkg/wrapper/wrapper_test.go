@@ -5,7 +5,6 @@ package wrapper
 import (
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -80,9 +79,7 @@ func TestSimpleRun(t *testing.T) {
 		RunCommand:   "echo Ran",
 		RunOutput:    "output.txt",
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	assert.Nil(t, err)
 	run.AssertExpectations(t)
 	// TODO: Test that output is correctly uploaded
 }
@@ -116,14 +113,9 @@ func TestEnvironmentVariables(t *testing.T) {
 		BuildCommand: `echo Build`,
 		RunCommand:   `echo Run`,
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	assert.Nil(t, err)
 	// Check that environment files have been set up correctly
-	b, err := ioutil.ReadFile(filepath.Join(envPath, "FOO"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	b, _ := ioutil.ReadFile(filepath.Join(envPath, "FOO"))
 	assert.Equal(t, "bar", string(b))
 	run.AssertExpectations(t)
 
@@ -168,9 +160,7 @@ func TestFailingBuild(t *testing.T) {
 		RunCommand:   "echo Ran",
 		RunOutput:    "output.txt",
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	assert.Nil(t, err)
 	run.AssertExpectations(t)
 }
 
@@ -221,9 +211,7 @@ func TestFailingRun(t *testing.T) {
 		RunCommand: `bash -c "cd ` + appPath + `; echo hello > output.txt; failing_command"`,
 		RunOutput:  "output.txt",
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	assert.Nil(t, err)
 	run.AssertExpectations(t)
 }
 
