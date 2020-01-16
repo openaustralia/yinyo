@@ -165,7 +165,9 @@ func node(path string, info os.FileInfo, dir string, tarWriter *tar.Writer) erro
 func CreateFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 	var buffer bytes.Buffer
 	gzipWriter := gzip.NewWriter(&buffer)
+	defer gzipWriter.Close()
 	tarWriter := tar.NewWriter(gzipWriter)
+	defer tarWriter.Close()
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -183,8 +185,5 @@ func CreateFromDirectory(dir string, ignorePaths []string) (io.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO: This should always get called
-	tarWriter.Close()
-	gzipWriter.Close()
 	return &buffer, nil
 }
