@@ -119,14 +119,14 @@ jobs:
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: binaries_${{ matrix.goos}}_${{ matrix.goarch }}
+          name: binaries_${{ matrix.goos }}_${{ matrix.goarch }}
       - name: set variables
         run: |
-          echo "::set-env name=VERSION::$(echo ${{ matrix.version }} | sed 's/^v//')"
+          echo "::set-env name=VERSION::$(echo ${{ github.ref }} | sed 's/^v//')"
         shell: bash
       - name: Go Release Binary
         uses: Shopify/upload-to-release@1.0.0
         with:
           name: yinyo_${{ env.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: binaries/yinyo
+          path: binaries_${{ matrix.goos }}_${{ matrix.goarch }}/yinyo
           repo-token: ${{ secrets.GITHUB_TOKEN }}
