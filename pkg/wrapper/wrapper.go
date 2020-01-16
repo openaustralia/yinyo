@@ -157,15 +157,15 @@ type Options struct {
 
 func setup(run apiclient.RunInterface, options Options) error {
 	// Create and populate herokuish import path and cache path
-	err := os.MkdirAll(options.ImportPath, 0755)
+	err := os.MkdirAll(options.ImportPath, 0700)
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(options.CachePath, 0755)
+	err = os.MkdirAll(options.CachePath, 0700)
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(options.EnvPath, 0755)
+	err = os.MkdirAll(options.EnvPath, 0700)
 	if err != nil {
 		return err
 	}
