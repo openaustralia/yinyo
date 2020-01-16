@@ -159,6 +159,8 @@ func (app *AppImplementation) validateArchiveToTempFile(reader io.Reader) (*os.F
 	r := io.TeeReader(reader, tmpfile)
 	err = archive.Validate(r)
 	if err != nil {
+		//nolint:errcheck // ignore error while handling an error
+		//skipcq: GSC-G104
 		os.Remove(tmpfile.Name())
 		return tmpfile, fmt.Errorf("%w: %v", ErrArchiveFormat, err)
 	}
@@ -166,6 +168,8 @@ func (app *AppImplementation) validateArchiveToTempFile(reader io.Reader) (*os.F
 	// Go back to the beginning of the temporary file
 	_, err = tmpfile.Seek(0, io.SeekStart)
 	if err != nil {
+		//nolint:errcheck // ignore error while handling an error
+		//skipcq: GSC-G104
 		os.Remove(tmpfile.Name())
 		return tmpfile, err
 	}
