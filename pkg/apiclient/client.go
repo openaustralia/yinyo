@@ -83,7 +83,7 @@ func checkContentType(resp *http.Response, expected string) error {
 	if len(ct) == 1 && ct[0] == expected {
 		return nil
 	}
-	return errors.New("Unexpected content type")
+	return errors.New("unexpected content type")
 }
 
 // Hello does a simple ping type request to the API

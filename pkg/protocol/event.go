@@ -35,7 +35,7 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 		err = json.Unmarshal(*jsonEvent.Data, &d)
 		e.Data = d
 	default:
-		return errors.New("Unexpected type")
+		return errors.New("unexpected type")
 	}
 	return err
 }

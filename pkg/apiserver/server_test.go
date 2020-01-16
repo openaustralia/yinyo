@@ -205,7 +205,7 @@ func TestGetAppNoBearerToken(t *testing.T) {
 	rr := makeRequest(app, "GET", "/runs/my-run/app", nil, "")
 
 	assert.Equal(t, http.StatusForbidden, rr.Code)
-	assert.Equal(t, `{"error":"Expected Authorization header with bearer token"}`, rr.Body.String())
+	assert.Equal(t, `{"error":"expected Authorization header with bearer token"}`, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 	app.AssertExpectations(t)
 }
@@ -217,7 +217,7 @@ func TestGetAppBadToken(t *testing.T) {
 	rr := makeRequest(app, "GET", "/runs/my-run/app", nil, "abc123")
 
 	assert.Equal(t, http.StatusForbidden, rr.Code)
-	assert.Equal(t, `{"error":"Authorization header has incorrect bearer token"}`, rr.Body.String())
+	assert.Equal(t, `{"error":"authorization header has incorrect bearer token"}`, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 	app.AssertExpectations(t)
 }

@@ -162,7 +162,7 @@ func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
-		return errors.New("Couldn't access the flusher")
+		return errors.New("couldn't access the flusher")
 	}
 
 	events := server.app.GetEvents(runName, lastID)
@@ -226,7 +226,7 @@ func extractBearerToken(header http.Header) (string, error) {
 	authHeader := header.Get("Authorization")
 
 	if !strings.HasPrefix(authHeader, bearerPrefix) {
-		return "", errors.New("Expected Authorization header with bearer token")
+		return "", errors.New("expected Authorization header with bearer token")
 	}
 	return authHeader[len(bearerPrefix):], nil
 }
@@ -255,7 +255,7 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 		}
 
 		if runToken != actualRunToken {
-			err = errors.New("Authorization header has incorrect bearer token")
+			err = errors.New("authorization header has incorrect bearer token")
 			err = newHTTPError(err, http.StatusForbidden, err.Error())
 			logAndReturnError(err, w)
 			return
