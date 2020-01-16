@@ -158,7 +158,7 @@ jobs:
           name: binaries_${{ matrix.goos }}_${{ matrix.goarch }}
       - name: set variables
         run: |
-          echo "::set-env name=VERSION::$(echo ${{ github.ref }} | sed 's/^v//')"
+          echo "::set-env name=VERSION::$(echo ${{ github.ref }} | sed 's@refs/[^/]*/v\?@@')"
         shell: bash
       - name: Go Release Binary
         uses: Shopify/upload-to-release@1.0.0
