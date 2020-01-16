@@ -22,7 +22,10 @@ func uploadCacheIfExists(run RunInterface, cachePath string) error {
 		if err != nil {
 			return err
 		}
-		file.Close()
+		err = file.Close()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
