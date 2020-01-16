@@ -107,9 +107,12 @@ func aggregateCounters() (net.IOCountersStat, error) {
 	return stats[0], nil
 }
 
-// env is an array of strings to set environment variables to in the form "VARIABLE=value", ...
 func runExternalCommandWithStats(run apiclient.RunInterface, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
 	var exitData protocol.ExitDataStage
+	err := run.CreateStartEvent(stage)
+	if err != nil {
+		return exitData, err
+	}
 
 	// Capture the time and the network counters
 	start := time.Now()
@@ -140,7 +143,8 @@ func runExternalCommandWithStats(run apiclient.RunInterface, stage string, comma
 	}
 	exitData.ExitCode = state.ExitCode()
 
-	return exitData, nil
+	err = run.CreateFinishEvent(stage)
+	return exitData, err
 }
 
 // Options are parameters required for calling Run
@@ -205,23 +209,14 @@ func setup(run apiclient.RunInterface, options *Options) error {
 }
 
 func runStage(run apiclient.RunInterface, options *Options, env []string, exitDataBuild protocol.ExitDataStage) error {
-	err := run.CreateStartEvent("run")
+	exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
 	if err != nil {
 		return err
 	}
 
 	var exitData protocol.ExitData
 	exitData.Build = &exitDataBuild
-	exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
-	if err != nil {
-		return err
-	}
 	exitData.Run = &exitDataStage
-
-	err = run.CreateFinishEvent("run")
-	if err != nil {
-		return err
-	}
 
 	err = run.PutExitData(exitData)
 	if err != nil {
@@ -250,26 +245,13 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 		"IMPORT_PATH=" + options.ImportPath,
 	}
 
-	err = run.CreateStartEvent("build")
-	if err != nil {
-		return err
-	}
-
-	// Initially do a very naive way of calling the command just to get things going
-	var exitData protocol.ExitData
-
 	exitDataStage, err := runExternalCommandWithStats(run, "build", options.BuildCommand, env)
 	if err != nil {
 		return err
 	}
-	exitData.Build = &exitDataStage
 
-	// Send the build finished event immediately when the build command has finished
-	// Effectively the cache uploading happens between the build and run stages
-	err = run.CreateFinishEvent("build")
-	if err != nil {
-		return err
-	}
+	var exitData protocol.ExitData
+	exitData.Build = &exitDataStage
 
 	err = run.PutCacheFromDirectory(options.CachePath)
 	if err != nil {
