@@ -1,5 +1,9 @@
 name: Test, Build and Release
-on: [push, pull_request, release]
+on: 
+  push:
+  pull_request:
+  release:
+    types: [published, prereleased]
 jobs:
   lint:
     runs-on: ubuntu-latest
