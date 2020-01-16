@@ -282,7 +282,6 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 			return err
 		}
 	} else {
-		// TODO: Only upload the exit data for the build
 		err := run.PutExitData(exitData)
 		if err != nil {
 			return err
