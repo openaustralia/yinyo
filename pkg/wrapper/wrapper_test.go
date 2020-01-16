@@ -223,7 +223,6 @@ func TestInternalError(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
-	run.On("CreateStartEvent", "build").Return(nil)
 	// Let's simulate an error with the blob storage. So, the wrapper is trying to
 	// get the application and there's a problem.
 	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))

@@ -218,6 +218,11 @@ func runStage(run apiclient.RunInterface, options *Options, env []string, exitDa
 	}
 	exitData.Run = &exitDataStage
 
+	err = run.CreateFinishEvent("run")
+	if err != nil {
+		return err
+	}
+
 	err = run.PutExitData(exitData)
 	if err != nil {
 		return err
@@ -230,20 +235,11 @@ func runStage(run apiclient.RunInterface, options *Options, env []string, exitDa
 		}
 	}
 
-	err = run.CreateFinishEvent("run")
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
 func runWithError(run apiclient.RunInterface, options *Options) error {
-	err := run.CreateStartEvent("build")
-	if err != nil {
-		return err
-	}
-
-	err = setup(run, options)
+	err := setup(run, options)
 	if err != nil {
 		return err
 	}
@@ -252,6 +248,11 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 		"APP_PATH=" + options.AppPath,
 		"CACHE_PATH=" + options.CachePath,
 		"IMPORT_PATH=" + options.ImportPath,
+	}
+
+	err = run.CreateStartEvent("build")
+	if err != nil {
+		return err
 	}
 
 	// Initially do a very naive way of calling the command just to get things going
