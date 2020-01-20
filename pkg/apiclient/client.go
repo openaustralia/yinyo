@@ -31,7 +31,6 @@ type RunInterface interface {
 	PutApp(data io.Reader) error
 	PutCache(data io.Reader) error
 	PutOutput(data io.Reader) error
-	PutExitData(exitData protocol.ExitData) error
 	Start(options *protocol.StartRunOptions) error
 	GetEvents(lastID string) (*EventIterator, error)
 	CreateEvent(event protocol.Event) error
@@ -306,19 +305,6 @@ func (run *Run) GetExitData() (exitData protocol.ExitData, err error) {
 	dec := json.NewDecoder(resp.Body)
 	err = dec.Decode(&exitData)
 	return
-}
-
-// PutExitData uploads information about how things ran and how much resources were used
-func (run *Run) PutExitData(exitData protocol.ExitData) error {
-	b, err := json.Marshal(exitData)
-	if err != nil {
-		return err
-	}
-	resp, err := run.request("PUT", "/exit-data", bytes.NewReader(b))
-	if err != nil {
-		return err
-	}
-	return checkOK(resp)
 }
 
 // Delete cleans up after a run is complete

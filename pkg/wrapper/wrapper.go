@@ -249,11 +249,6 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 		}
 	}
 
-	err = run.PutExitData(exitData)
-	if err != nil {
-		return err
-	}
-
 	err = run.CreateLastEvent()
 	if err != nil {
 		return err

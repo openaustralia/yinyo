@@ -101,6 +101,26 @@ func TestCreateEvent(t *testing.T) {
 	roundTripper.AssertExpectations(t)
 }
 
+func TestCreateFinishEvent(t *testing.T) {
+	time := time.Now()
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
+
+	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.Usage{WallTime: 1, CPUTime: 0.1, MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
+	event := protocol.NewFinishEvent("", time, "build", exitData)
+	eventWithID := protocol.NewFinishEvent("123", time, "build", exitData)
+
+	stream.On("Add", "run-name", event).Return(eventWithID, nil)
+	keyValueStore.On("Get", "run-name/url").Return("", nil)
+	keyValueStore.On("Set", "run-name/exit_data/build", `{"exit_code":12,"usage":{"wall_time":1,"cpu_time":0.1,"max_rss":100,"network_in":200,"network_out":300}}`).Return(nil)
+
+	app.CreateEvent("run-name", event)
+
+	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+}
+
 func TestCreateEventNoCallbackURL(t *testing.T) {
 	stream := new(streammocks.Stream)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
@@ -323,24 +343,6 @@ func TestGetExitData(t *testing.T) {
 	expectedExitData := protocol.ExitData{Build: &protocol.ExitDataStage{ExitCode: 15}}
 
 	assert.Equal(t, expectedExitData, e)
-	keyValueStore.AssertExpectations(t)
-}
-
-func TestPutExitData(t *testing.T) {
-	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	app := AppImplementation{KeyValueStore: keyValueStore}
-
-	keyValueStore.On("Set", "run-name/exit_data/build", `{"exit_code":0,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`).Return(nil)
-	keyValueStore.On("Set", "run-name/exit_data/run", `{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`).Return(nil)
-	exitData := protocol.ExitData{
-		Build: &protocol.ExitDataStage{},
-		Run:   &protocol.ExitDataStage{ExitCode: 15},
-	}
-
-	err := app.PutExitData("run-name", exitData)
-	if err != nil {
-		t.Fatal(err)
-	}
 	keyValueStore.AssertExpectations(t)
 }
 

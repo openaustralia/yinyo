@@ -38,7 +38,6 @@ type App interface {
 	GetOutput(runName string) (io.Reader, error)
 	PutOutput(reader io.Reader, objectSize int64, runName string) error
 	GetExitData(runName string) (protocol.ExitData, error)
-	PutExitData(runName string, exitData protocol.ExitData) error
 	GetEvents(runName string, lastID string) EventIterator
 	CreateEvent(runName string, event protocol.Event) error
 	GetTokenCache(runName string) (string, error)
@@ -246,23 +245,6 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 	return exitData, nil
 }
 
-// PutExitData uploads the exit data
-func (app *AppImplementation) PutExitData(runName string, exitData protocol.ExitData) error {
-	build, err := json.Marshal(exitData.Build)
-	if err != nil {
-		return err
-	}
-	run, err := json.Marshal(exitData.Run)
-	if err != nil {
-		return err
-	}
-	err = app.setKeyValueData(runName, exitDataBuildKey, string(build))
-	if err != nil {
-		return err
-	}
-	return app.setKeyValueData(runName, exitDataRunKey, string(run))
-}
-
 // StartRun starts the run
 func (app *AppImplementation) StartRun(
 	runName string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
@@ -354,6 +336,19 @@ func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) 
 	event, err := app.Stream.Add(runName, event)
 	if err != nil {
 		return err
+	}
+	// If this is a finish event do some extra special handling
+	f, ok := event.Data.(protocol.FinishData)
+	if ok {
+		exitDataBytes, err := json.Marshal(f.ExitData)
+		if err != nil {
+			return err
+		}
+		err = app.setKeyValueData(runName, exitDataKeyBase+f.Stage, string(exitDataBytes))
+		if err != nil {
+			return err
+		}
+
 	}
 	return app.postCallbackEvent(runName, event)
 }

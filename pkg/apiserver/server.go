@@ -112,18 +112,6 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 	return enc.Encode(exitData)
 }
 
-func (server *Server) putExitData(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	dec := json.NewDecoder(r.Body)
-	var exitData protocol.ExitData
-	err := dec.Decode(&exitData)
-	if err != nil {
-		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
-	}
-
-	return server.app.PutExitData(runName, exitData)
-}
-
 func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 	runName := mux.Vars(r)["id"]
 
@@ -336,7 +324,6 @@ func (server *Server) InitialiseRoutes() {
 	authenticatedRouter.Handle("/output", appHandler(server.getOutput)).Methods("GET")
 	authenticatedRouter.Handle("/output", appHandler(server.putOutput)).Methods("PUT")
 	authenticatedRouter.Handle("/exit-data", appHandler(server.getExitData)).Methods("GET")
-	authenticatedRouter.Handle("/exit-data", appHandler(server.putExitData)).Methods("PUT")
 	authenticatedRouter.Handle("/start", appHandler(server.start)).Methods("POST")
 	authenticatedRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
 	authenticatedRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")

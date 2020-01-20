@@ -349,20 +349,6 @@ func (_m *RunInterface) PutCacheFromDirectory(dir string) error {
 	return r0
 }
 
-// PutExitData provides a mock function with given fields: exitData
-func (_m *RunInterface) PutExitData(exitData protocol.ExitData) error {
-	ret := _m.Called(exitData)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(protocol.ExitData) error); ok {
-		r0 = rf(exitData)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // PutOutput provides a mock function with given fields: data
 func (_m *RunInterface) PutOutput(data io.Reader) error {
 	ret := _m.Called(data)

@@ -290,22 +290,6 @@ func TestGetExitData(t *testing.T) {
 	app.AssertExpectations(t)
 }
 
-func TestPutExitData(t *testing.T) {
-	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
-	exitData := protocol.ExitData{
-		Build: &protocol.ExitDataStage{
-			ExitCode: 12,
-		},
-	}
-	app.On("PutExitData", "my-run", exitData).Return(nil)
-
-	rr := makeRequest(app, "PUT", "/runs/my-run/exit-data", strings.NewReader(`{"build":{"exit_code":12,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`), "abc123")
-
-	assert.Equal(t, http.StatusOK, rr.Code)
-	app.AssertExpectations(t)
-}
-
 // Make a fake event iterator that we can use for testing
 type events struct {
 	contents []protocol.Event

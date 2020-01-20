@@ -216,20 +216,6 @@ func (_m *App) PutCache(reader io.Reader, objectSize int64, runName string) erro
 	return r0
 }
 
-// PutExitData provides a mock function with given fields: runName, exitData
-func (_m *App) PutExitData(runName string, exitData protocol.ExitData) error {
-	ret := _m.Called(runName, exitData)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, protocol.ExitData) error); ok {
-		r0 = rf(runName, exitData)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // PutOutput provides a mock function with given fields: reader, objectSize, runName
 func (_m *App) PutOutput(reader io.Reader, objectSize int64, runName string) error {
 	ret := _m.Called(reader, objectSize, runName)
