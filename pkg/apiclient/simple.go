@@ -18,11 +18,8 @@ func uploadCacheIfExists(run RunInterface, cachePath string) error {
 			return err
 		}
 	} else {
+		defer file.Close()
 		err = run.PutCache(file)
-		if err != nil {
-			return err
-		}
-		err = file.Close()
 		if err != nil {
 			return err
 		}
