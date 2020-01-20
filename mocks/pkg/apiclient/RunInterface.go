@@ -26,13 +26,13 @@ func (_m *RunInterface) CreateEvent(event protocol.Event) error {
 	return r0
 }
 
-// CreateFinishEvent provides a mock function with given fields: stage
-func (_m *RunInterface) CreateFinishEvent(stage string) error {
-	ret := _m.Called(stage)
+// CreateFinishEvent provides a mock function with given fields: stage, exitData
+func (_m *RunInterface) CreateFinishEvent(stage string, exitData protocol.ExitDataStage) error {
+	ret := _m.Called(stage, exitData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(stage)
+	if rf, ok := ret.Get(0).(func(string, protocol.ExitDataStage) error); ok {
+		r0 = rf(stage, exitData)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -14,8 +14,8 @@ func (run *Run) CreateStartEvent(stage string) error {
 }
 
 // CreateFinishEvent creates and sends a "finish" event
-func (run *Run) CreateFinishEvent(stage string) error {
-	return run.CreateEvent(protocol.NewFinishEvent("", time.Now(), stage))
+func (run *Run) CreateFinishEvent(stage string, exitData protocol.ExitDataStage) error {
+	return run.CreateEvent(protocol.NewFinishEvent("", time.Now(), stage, exitData))
 }
 
 // CreateLogEvent creates and sends a "log" event

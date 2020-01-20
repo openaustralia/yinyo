@@ -51,8 +51,8 @@ func NewStartEvent(id string, time time.Time, stage string) Event {
 }
 
 // NewFinishEvent creates and returns a new finish event
-func NewFinishEvent(id string, time time.Time, stage string) Event {
-	return Event{ID: id, Time: time, Type: "finish", Data: FinishData{Stage: stage}}
+func NewFinishEvent(id string, time time.Time, stage string, exitData ExitDataStage) Event {
+	return Event{ID: id, Time: time, Type: "finish", Data: FinishData{Stage: stage, ExitData: exitData}}
 }
 
 // NewLastEvent creates and returns a new last event

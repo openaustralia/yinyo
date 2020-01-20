@@ -83,7 +83,8 @@ type StartData struct {
 
 // FinishData represent the completion of a build or run
 type FinishData struct {
-	Stage string `json:"stage"`
+	Stage    string        `json:"stage"`
+	ExitData ExitDataStage `json:"exit_data"`
 }
 
 // LogData is the output of some text from the build or run of a scraper

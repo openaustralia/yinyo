@@ -143,7 +143,7 @@ func runExternalCommandWithStats(run apiclient.RunInterface, stage string, comma
 	}
 	exitData.ExitCode = state.ExitCode()
 
-	err = run.CreateFinishEvent(stage)
+	err = run.CreateFinishEvent(stage, exitData)
 	return exitData, err
 }
 

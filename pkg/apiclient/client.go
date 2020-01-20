@@ -46,7 +46,7 @@ type RunInterface interface {
 	GetOutputToFile(path string) error
 	PutOutputFromFile(path string) error
 	CreateStartEvent(stage string) error
-	CreateFinishEvent(stage string) error
+	CreateFinishEvent(stage string, exitData protocol.ExitDataStage) error
 	CreateLogEvent(stage string, stream string, text string) error
 	CreateLastEvent() error
 }

@@ -327,7 +327,7 @@ func TestGetEvents(t *testing.T) {
 	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	events := &events{contents: []protocol.Event{
 		protocol.NewStartEvent("", time, "build"),
-		protocol.NewFinishEvent("", time, "build"),
+		protocol.NewFinishEvent("", time, "build", protocol.ExitDataStage{}),
 	}}
 	app.On("GetTokenCache", "my-run").Return("abc123", nil)
 	app.On("GetEvents", "my-run", "0").Return(events)
@@ -335,7 +335,7 @@ func TestGetEvents(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, rr.Code)
 	assert.Equal(t, `{"time":"2000-01-02T03:45:00Z","type":"start","data":{"stage":"build"}}
-{"time":"2000-01-02T03:45:00Z","type":"finish","data":{"stage":"build"}}
+{"time":"2000-01-02T03:45:00Z","type":"finish","data":{"stage":"build","exit_data":{"exit_code":0,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}}
 `, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/ld+json"}}, rr.Header())
 
