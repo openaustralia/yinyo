@@ -433,6 +433,8 @@ components:
               properties:
                 stage:
                   $ref: "#/components/schemas/Stage"
+                exit_data:
+                  $ref: "#/components/schemas/ExitDataStage"
     LastEvent:
       description: Signals the completion of the whole run
       allOf:
