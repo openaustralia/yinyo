@@ -217,21 +217,50 @@ func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runN
 // GetExitData downloads the exit data
 func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	r, err := app.getKeyValueData(runName, exitDataKey)
+	build, err := app.getKeyValueData(runName, exitDataBuildKey)
 	if err != nil {
-		return exitData, err
+		if !errors.Is(err, ErrNotFound) {
+			return exitData, err
+		}
+	} else {
+		var exitDataBuild protocol.ExitDataStage
+		err = json.Unmarshal([]byte(build), &exitDataBuild)
+		if err != nil {
+			return exitData, err
+		}
+		exitData.Build = &exitDataBuild
 	}
-	err = json.Unmarshal([]byte(r), &exitData)
-	return exitData, err
+	run, err := app.getKeyValueData(runName, exitDataRunKey)
+	if err != nil {
+		if !errors.Is(err, ErrNotFound) {
+			return exitData, err
+		}
+	} else {
+		var exitDataRun protocol.ExitDataStage
+		err = json.Unmarshal([]byte(run), &exitDataRun)
+		if err != nil {
+			return exitData, err
+		}
+		exitData.Run = &exitDataRun
+	}
+	return exitData, nil
 }
 
 // PutExitData uploads the exit data
 func (app *AppImplementation) PutExitData(runName string, exitData protocol.ExitData) error {
-	b, err := json.Marshal(exitData)
+	build, err := json.Marshal(exitData.Build)
 	if err != nil {
 		return err
 	}
-	return app.setKeyValueData(runName, exitDataKey, string(b))
+	run, err := json.Marshal(exitData.Run)
+	if err != nil {
+		return err
+	}
+	err = app.setKeyValueData(runName, exitDataBuildKey, string(build))
+	if err != nil {
+		return err
+	}
+	return app.setKeyValueData(runName, exitDataRunKey, string(run))
 }
 
 // StartRun starts the run
@@ -344,7 +373,11 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runName, exitDataKey)
+	err = app.deleteKeyValueData(runName, exitDataBuildKey)
+	if err != nil {
+		return err
+	}
+	err = app.deleteKeyValueData(runName, exitDataRunKey)
 	if err != nil {
 		return err
 	}

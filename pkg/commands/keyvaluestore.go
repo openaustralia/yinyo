@@ -9,7 +9,8 @@ import (
 
 const tokenCacheKey = "token"
 const callbackKey = "url"
-const exitDataKey = "exit_data"
+const exitDataBuildKey = "exit_data/build"
+const exitDataRunKey = "exit_data/run"
 
 func keyValuePath(runName string, key string) string {
 	return runName + "/" + key

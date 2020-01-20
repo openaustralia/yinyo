@@ -196,7 +196,8 @@ func TestDeleteRun(t *testing.T) {
 	stream.On("Delete", "run-name").Return(nil)
 	keyValueStore.On("Delete", "run-name/url").Return(nil)
 	keyValueStore.On("Delete", "run-name/token").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
 
 	app := AppImplementation{
 		JobDispatcher: jobDispatcher,
@@ -313,7 +314,8 @@ func TestGetExitData(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	keyValueStore.On("Get", "run-name/exit_data").Return(`{"build":{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
 	e, err := app.GetExitData("run-name")
 	if err != nil {
 		t.Fatal(err)
@@ -328,8 +330,12 @@ func TestPutExitData(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	keyValueStore.On("Set", "run-name/exit_data", `{"build":{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}}`).Return(nil)
-	exitData := protocol.ExitData{Build: &protocol.ExitDataStage{ExitCode: 15}}
+	keyValueStore.On("Set", "run-name/exit_data/build", `{"exit_code":0,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`).Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/run", `{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`).Return(nil)
+	exitData := protocol.ExitData{
+		Build: &protocol.ExitDataStage{},
+		Run:   &protocol.ExitDataStage{ExitCode: 15},
+	}
 
 	err := app.PutExitData("run-name", exitData)
 	if err != nil {
