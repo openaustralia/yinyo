@@ -143,7 +143,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	roundTripper.AssertNotCalled(t, "RoundTrip")
 }
 
-func TestCreateEventErrorDuringCallback(t *testing.T) {
+func TestCreateEventErrorOneTimeDuringCallback(t *testing.T) {
 	stream := new(streammocks.Stream)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
@@ -154,6 +154,16 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
 	roundTripper := new(MockRoundTripper)
+	// Simulating the remote host failing 1 time and then succeeding
+	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
+		return r.URL.String() == "http://foo.com/bar"
+	})).Return(
+		&http.Response{
+			StatusCode: http.StatusInternalServerError,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+		},
+		nil,
+	).Once()
 	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
 		return r.URL.String() == "http://foo.com/bar"
 	})).Return(
@@ -161,13 +171,44 @@ func TestCreateEventErrorDuringCallback(t *testing.T) {
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(strings.NewReader("")),
 		},
-		errors.New("An error while doing the postback"),
-	)
+		nil,
+	).Once()
 	httpClient.Transport = roundTripper
 
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
 	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
-	assert.EqualError(t, err, "Post http://foo.com/bar: An error while doing the postback")
+	assert.Nil(t, err)
+
+	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+	roundTripper.AssertExpectations(t)
+}
+func TestCreateEventErrorFiveTimesDuringCallback(t *testing.T) {
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+
+	time := time.Now()
+	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
+	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
+
+	// Mock out the http RoundTripper so that no actual http request is made
+	httpClient := http.DefaultClient
+	roundTripper := new(MockRoundTripper)
+	// Simulating the remote host failing 5 times in a row
+	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
+		return r.URL.String() == "http://foo.com/bar"
+	})).Return(
+		&http.Response{
+			StatusCode: http.StatusInternalServerError,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+		},
+		nil,
+	).Times(5)
+	httpClient.Transport = roundTripper
+
+	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
+	assert.EqualError(t, err, "POST http://foo.com/bar giving up after 5 attempts")
 
 	stream.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)

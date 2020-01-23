@@ -15,6 +15,7 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/blobstore"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
@@ -350,6 +351,8 @@ func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) 
 		}
 
 	}
+	// We're intentionally doing the callback synchronously with the create event API call.
+	// This way we can ensure that events within a run maintain their ordering.
 	return app.postCallbackEvent(runName, event)
 }
 
@@ -411,7 +414,10 @@ func (app *AppImplementation) postCallbackEvent(runName string, event protocol.E
 
 	// Only do the callback if there's a sensible URL
 	if callbackURL != "" {
-		resp, err := app.HTTP.Post(callbackURL, "application/json", &b)
+		client := retryablehttp.NewClient()
+		client.HTTPClient = app.HTTP
+
+		resp, err := client.Post(callbackURL, "application/json", &b)
 		if err != nil {
 			return err
 		}
