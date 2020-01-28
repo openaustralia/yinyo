@@ -69,8 +69,10 @@ curl -X PUT -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME/
 
 ### 4. Start the run
 
+Note that we're also passing the path to the file that we want to get at the end of the run.
+
 ```bash
-curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "http://localhost:8080/runs/$NAME/start" -d "{}"
+curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "http://localhost:8080/runs/$NAME/start" -d '{"output":"data.sqlite"}'
 ```
 
 ### 5. Stream the events
@@ -127,7 +129,15 @@ This will output a stream of events formatted as JSON in real-time
 
 You might notice that this is taking longer than when we ran this with `yinyo client`. It's having to install python and some dependencies which takes some time. That's because we've ignored caching here just to keep things a bit simpler
 
-### 6. Clean up
+### 6. Get the output
+
+Now get the output file which we chose when we started the run and save it to a local file called `data.sqlite`.
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME/output" --output data.sqlite
+```
+
+### 7. Clean up
 
 ```bash
 curl -X DELETE -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME"
