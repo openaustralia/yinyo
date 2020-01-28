@@ -201,15 +201,6 @@ paths:
           $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
-      callbacks:
-        events:
-          "{$request.body#/callback}":
-            post:
-              requestBody:
-                $ref: "#/components/responses/Event"
-              responses:
-                "200":
-                  description: callback successfully processed
   /runs/{name}/events:
     get:
       tags: ["Optional"]
