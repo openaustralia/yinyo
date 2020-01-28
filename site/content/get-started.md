@@ -10,7 +10,7 @@ yinyo client test/scrapers/test-python --output data.sqlite
 
 This will stream the console output of the scraper straight to you
 
-```
+```bash
 -----> Python app detected
        !     Python has released a security update! Please consider upgrading to python-2.7.16
        Learn More: https://devcenter.heroku.com/articles/python-runtimes
