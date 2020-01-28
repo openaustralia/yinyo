@@ -2150,7 +2150,7 @@ curl -X POST http://localhost:8080/runs/{name}/start \
 <pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'{
   "id": "string",
   "type": "string",
-  "time": "2020-01-14T06:46:23Z",
+  "time": "2020-01-28T04:10:16Z",
   "data": {
     "stage": "build",
     "stream": "stdout",
@@ -2270,7 +2270,7 @@ System.out.println(response.toString());
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-14T06:46:23Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T04:10:16Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
@@ -3906,7 +3906,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-14T06:46:23Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T04:10:16Z"</span>
 }
 
 </code></pre>
@@ -3953,7 +3953,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-14T06:46:23Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T04:10:16Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
   }
@@ -4026,9 +4026,19 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-14T06:46:23Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T04:10:16Z"</span>,
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
+    <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
+    <span class="hljs-attr">"exit_data"</span>: {
+      <span class="hljs-attr">"exit_code"</span>: <span class="hljs-number">0</span>,
+      <span class="hljs-attr">"usage"</span>: {
+        <span class="hljs-attr">"wall_time"</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-attr">"cpu_time"</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-attr">"max_rss"</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
+        <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
+      }
+    }
   }
 }
 
@@ -4089,6 +4099,13 @@ token
 <td>none</td>
 <td>The stage of the life-cycle of the run</td>
 </tr>
+<tr>
+<td>»» exit_data</td>
+<td><a href="#schemaexitdatastage">ExitDataStage</a></td>
+<td>false</td>
+<td>none</td>
+<td>none</td>
+</tr>
 </tbody>
 </table>
 <h2 id="tocs_lastevent">LastEvent</h2>
@@ -4099,7 +4116,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-14T06:46:23Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T04:10:16Z"</span>
 }
 
 </code></pre>
@@ -4114,7 +4131,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-14T06:46:23Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T04:10:16Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,

@@ -36,7 +36,7 @@
       
       <guid>https://yinyo.io/get-started/</guid>
       <description>Get Started 1. Go to Github and follow the instructions to setup a local Yinyo instance 2. Run your first scraper yinyo client test/scrapers/test-python --output data.sqlite This will stream the console output of the scraper straight to you
- 3. Do it all again! But this time using the API directly, step-by-step 1. Create a run curl -X POST http://localhost:8080/runs You&#39;ll get a name and a token back which you&#39;ll need in the following steps</description>
+-----&amp;gt; Python app detected ! Python has released a security update! Please consider upgrading to python-2.7.16 Learn More: https://devcenter.heroku.com/articles/python-runtimes -----&amp;gt; Installing requirements with pip Obtaining scraperwiki from git+http://github.com/openaustralia/scraperwiki-python.git@morph_defaults#egg=scraperwiki (from -r /tmp/build/requirements.txt (line 2)) Cloning http://github.</description>
     </item>
     
     <item>
