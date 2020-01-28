@@ -51,6 +51,38 @@ paths:
     put:
       tags: ["Core"]
       summary: Upload the code to be run and any local data
+      description: |
+        Take your directory with code, configuration and data to run. Tar and gzip compress it. Then use this to upload it to Yinyo.
+
+        If you're familiar with [Heroku](https://www.heroku.com/), you'll be familiar with the way different languages are recognised and compiled because Yinyo also uses the same underlying open source technology, [Buildpacks](https://devcenter.heroku.com/articles/buildpacks).
+
+        For different languages you'll need to include different files that tell Yinyo what language you're using as well as which version of the language you want and which libraries you want installed.
+
+        ## Python
+        For Python include `requirements.txt` in the root of your code directory. `pip` automatically uses this file to install your required libraries.
+
+        For more information visit the [Heroku Python documentation](https://devcenter.heroku.com/articles/python-support)
+
+        ## Node.js / Javascript
+        For Node.js include `package.json` in the root of your code directory. `npm` then automatically installs required libraries from this file.
+
+        For more information visit the [Heroku Node.js documentation](https://devcenter.heroku.com/articles/nodejs-support)
+
+        ## Ruby
+        For Ruby include `Gemfile` and `Gemfile.lock` in the root of your code directory. `bundler` installs your dependencies.
+
+        For more information visit the [Heroku Ruby documentation](https://devcenter.heroku.com/articles/ruby-support)
+
+        ## PHP
+        For PHP include `composer.json` and `composer.lock` in the root of your code directory. `Composer` installs your libraries.
+
+        For more information visit the [Heroku PHP documentation](https://devcenter.heroku.com/articles/php-support)
+
+        ## Perl
+        For Perl include `cpanfile`.
+
+        As this is a non-Heroku third-party buildpack no Heroku developer documentation is available. Instead take a look at the [GitHub repo](https://github.com/miyagawa/heroku-buildpack-perl) for the buildpack.
+
       parameters:
         - $ref: "#/components/parameters/name"
       requestBody:
