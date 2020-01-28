@@ -78,26 +78,26 @@ if (!doNotTrack) {
 <h2 id="2-run-your-first-scraper">2. Run your first scraper</h2>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">yinyo client test/scrapers/test-python --output data.sqlite
 </code></pre></div><p>This will stream the console output of the scraper straight to you</p>
-<pre><code>-----&gt; Python app detected
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">-----&gt; Python app detected
        !     Python has released a security update! Please consider upgrading to python-2.7.16
        Learn More: https://devcenter.heroku.com/articles/python-runtimes
 -----&gt; Installing requirements with pip
-       Obtaining scraperwiki from git+http://github.com/openaustralia/scraperwiki-python.git@morph_defaults#egg=scraperwiki (from -r /tmp/build/requirements.txt (line 2))
-       Cloning http://github.com/openaustralia/scraperwiki-python.git (to morph_defaults) to /app/.heroku/src/scraperwiki
+       Obtaining scraperwiki from git+http://github.com/openaustralia/scraperwiki-python.git@morph_defaults#egg<span style="color:#000;font-weight:bold">=</span>scraperwiki <span style="color:#000;font-weight:bold">(</span>from -r /tmp/build/requirements.txt <span style="color:#000;font-weight:bold">(</span>line 2<span style="color:#000;font-weight:bold">)</span><span style="color:#000;font-weight:bold">)</span>
+       Cloning http://github.com/openaustralia/scraperwiki-python.git <span style="color:#000;font-weight:bold">(</span>to morph_defaults<span style="color:#000;font-weight:bold">)</span> to /app/.heroku/src/scraperwiki
        Installing collected packages: scraperwiki
-       Running setup.py develop for scraperwiki
+       Running setup.py develop <span style="color:#000;font-weight:bold">for</span> scraperwiki
        Successfully installed scraperwiki
 
 -----&gt; Discovering process types
        Procfile declares types -&gt; scraper
-First a little test message to stderr
+First a little <span style="color:#0086b3">test</span> message to stderr
 Hello from test-python!
 1...
 2...
 3...
 4...
 5...
-</code></pre><h2 id="3-do-it-all-again-but-this-time-using-the-api-directly-step-by-step">3. Do it all again! But this time using the API directly, step-by-step</h2>
+</code></pre></div><h2 id="3-do-it-all-again-but-this-time-using-the-api-directly-step-by-step">3. Do it all again! But this time using the API directly, step-by-step</h2>
 <h3 id="1-create-a-run">1. Create a run</h3>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -X POST http://localhost:8080/runs
 </code></pre></div><p>You'll get a <code>name</code> and a <code>token</code> back which you'll need in the following steps</p>

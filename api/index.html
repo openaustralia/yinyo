@@ -1293,31 +1293,6 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
                   </li>
                 
                   <li>
-                    <a href="#python" class="toc-h2 toc-link" data-title="">Python</a>
-                    
-                  </li>
-                
-                  <li>
-                    <a href="#node-js---javascript" class="toc-h2 toc-link" data-title="">Node.js / Javascript</a>
-                    
-                  </li>
-                
-                  <li>
-                    <a href="#ruby" class="toc-h2 toc-link" data-title="">Ruby</a>
-                    
-                  </li>
-                
-                  <li>
-                    <a href="#php" class="toc-h2 toc-link" data-title="">PHP</a>
-                    
-                  </li>
-                
-                  <li>
-                    <a href="#perl" class="toc-h2 toc-link" data-title="">Perl</a>
-                    
-                  </li>
-                
-                  <li>
                     <a href="#start-the-run" class="toc-h2 toc-link" data-title="">Start the run</a>
                     
                   </li>
@@ -1805,19 +1780,19 @@ System.out.println(response.toString());
 <p>Take your directory with code, configuration and data to run. Tar and gzip compress it. Then use this to upload it to Yinyo.</p>
 <p>If you're familiar with <a href="https://www.heroku.com/">Heroku</a>, you'll be familiar with the way different languages are recognised and compiled because Yinyo also uses the same underlying open source technology, <a href="https://devcenter.heroku.com/articles/buildpacks">Buildpacks</a>.</p>
 <p>For different languages you'll need to include different files that tell Yinyo what language you're using as well as which version of the language you want and which libraries you want installed.</p>
-<h2 id="python">Python</h2>
+<h3 id="python">Python</h3>
 <p>For Python include <code>requirements.txt</code> in the root of your code directory. <code>pip</code> automatically uses this file to install your required libraries.</p>
 <p>For more information visit the <a href="https://devcenter.heroku.com/articles/python-support">Heroku Python documentation</a></p>
-<h2 id="node-js---javascript">Node.js / Javascript</h2>
+<h3 id="node-js---javascript">Node.js / Javascript</h3>
 <p>For Node.js include <code>package.json</code> in the root of your code directory. <code>npm</code> then automatically installs required libraries from this file.</p>
 <p>For more information visit the <a href="https://devcenter.heroku.com/articles/nodejs-support">Heroku Node.js documentation</a></p>
-<h2 id="ruby">Ruby</h2>
+<h3 id="ruby">Ruby</h3>
 <p>For Ruby include <code>Gemfile</code> and <code>Gemfile.lock</code> in the root of your code directory. <code>bundler</code> installs your dependencies.</p>
 <p>For more information visit the <a href="https://devcenter.heroku.com/articles/ruby-support">Heroku Ruby documentation</a></p>
-<h2 id="php">PHP</h2>
+<h3 id="php">PHP</h3>
 <p>For PHP include <code>composer.json</code> and <code>composer.lock</code> in the root of your code directory. <code>Composer</code> installs your libraries.</p>
 <p>For more information visit the <a href="https://devcenter.heroku.com/articles/php-support">Heroku PHP documentation</a></p>
-<h2 id="perl">Perl</h2>
+<h3 id="perl">Perl</h3>
 <p>For Perl include <code>cpanfile</code>.</p>
 <p>As this is a non-Heroku third-party buildpack no Heroku developer documentation is available. Instead take a look at the <a href="https://github.com/miyagawa/heroku-buildpack-perl">GitHub repo</a> for the buildpack.</p>
 <blockquote>
@@ -2193,7 +2168,7 @@ curl -X POST http://localhost:8080/runs/{name}/start \
 <pre class="highlight tab tab-javascript"><code><span class="hljs-keyword">const</span> inputBody = <span class="hljs-string">'{
   "id": "string",
   "type": "string",
-  "time": "2020-01-28T05:14:08Z",
+  "time": "2020-01-28T05:25:33Z",
   "data": {
     "stage": "build",
     "stream": "stdout",
@@ -2313,7 +2288,7 @@ System.out.println(response.toString());
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:14:08Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:25:33Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
@@ -3949,7 +3924,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:14:08Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:25:33Z"</span>
 }
 
 </code></pre>
@@ -3996,7 +3971,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:14:08Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:25:33Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
   }
@@ -4069,7 +4044,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:14:08Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:25:33Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"exit_data"</span>: {
@@ -4159,7 +4134,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:14:08Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:25:33Z"</span>
 }
 
 </code></pre>
@@ -4174,7 +4149,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:14:08Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T05:25:33Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
