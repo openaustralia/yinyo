@@ -11,7 +11,25 @@ yinyo client test/scrapers/test-python --output data.sqlite
 This will stream the console output of the scraper straight to you
 
 ```
+-----> Python app detected
+       !     Python has released a security update! Please consider upgrading to python-2.7.16
+       Learn More: https://devcenter.heroku.com/articles/python-runtimes
+-----> Installing requirements with pip
+       Obtaining scraperwiki from git+http://github.com/openaustralia/scraperwiki-python.git@morph_defaults#egg=scraperwiki (from -r /tmp/build/requirements.txt (line 2))
+       Cloning http://github.com/openaustralia/scraperwiki-python.git (to morph_defaults) to /app/.heroku/src/scraperwiki
+       Installing collected packages: scraperwiki
+       Running setup.py develop for scraperwiki
+       Successfully installed scraperwiki
 
+-----> Discovering process types
+       Procfile declares types -> scraper
+First a little test message to stderr
+Hello from test-python!
+1...
+2...
+3...
+4...
+5...
 ```
 
 ## 3. Do it all again! But this time using the API directly, step-by-step
