@@ -100,10 +100,6 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 
 	exitData, err := server.app.GetExitData(runName)
 	if err != nil {
-		// Returns 404 if there is no exit data
-		if errors.Is(err, commands.ErrNotFound) {
-			return newHTTPError(err, http.StatusNotFound, err.Error())
-		}
 		return err
 	}
 
