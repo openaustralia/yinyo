@@ -375,6 +375,25 @@ func TestGetExitData(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
+	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":0,"usage":{"wall_time":1,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/run").Return(`{"exit_code":0,"usage":{"wall_time":2,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`, nil)
+	e, err := app.GetExitData("run-name")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedExitData := protocol.ExitData{
+		Build: &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{WallTime: 1}},
+		Run:   &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{WallTime: 2}},
+	}
+
+	assert.Equal(t, expectedExitData, e)
+	keyValueStore.AssertExpectations(t)
+}
+
+func TestGetExitDataBuildErrored(t *testing.T) {
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+	app := AppImplementation{KeyValueStore: keyValueStore}
+
 	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`, nil)
 	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
 	e, err := app.GetExitData("run-name")
@@ -382,6 +401,22 @@ func TestGetExitData(t *testing.T) {
 		t.Fatal(err)
 	}
 	expectedExitData := protocol.ExitData{Build: &protocol.ExitDataStage{ExitCode: 15}}
+
+	assert.Equal(t, expectedExitData, e)
+	keyValueStore.AssertExpectations(t)
+}
+
+func TestGetExitDataRunNotStarted(t *testing.T) {
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+	app := AppImplementation{KeyValueStore: keyValueStore}
+
+	keyValueStore.On("Get", "run-name/exit_data/build").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
+	e, err := app.GetExitData("run-name")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedExitData := protocol.ExitData{}
 
 	assert.Equal(t, expectedExitData, e)
 	keyValueStore.AssertExpectations(t)
