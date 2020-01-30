@@ -121,6 +121,24 @@ func TestCreateFinishEvent(t *testing.T) {
 	keyValueStore.AssertExpectations(t)
 }
 
+func TestCreateLastEvent(t *testing.T) {
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
+
+	time := time.Now()
+	event := protocol.NewLastEvent("", time)
+	eventWithID := protocol.NewLastEvent("123", time)
+
+	stream.On("Add", "run-name", event).Return(eventWithID, nil)
+	keyValueStore.On("Get", "run-name/url").Return("", nil)
+
+	app.CreateEvent("run-name", event)
+
+	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+}
+
 func TestCreateEventNoCallbackURL(t *testing.T) {
 	stream := new(streammocks.Stream)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
