@@ -1327,7 +1327,7 @@ var n=this.pipeline.run(e.tokenizer(t)),r=new e.Vector,i=[],o=this._fields.reduc
                   </li>
                 
                   <li>
-                    <a href="#get-exit-code-and-usage-metrics" class="toc-h2 toc-link" data-title="">Get exit code and usage metrics</a>
+                    <a href="#find-out-whether-the-run-has-finished-and-if-so-also-return-exit-codes-and-usage-metrics" class="toc-h2 toc-link" data-title="">Find out whether the run has finished and if so also return exit codes and usage metrics</a>
                     
                   </li>
                 
@@ -3022,7 +3022,7 @@ System.out.println(response.toString());
 To perform this operation, you must be authenticated by means of one of the following methods:
 token
 </aside>
-<h2 id="get-exit-code-and-usage-metrics">Get exit code and usage metrics</h2>
+<h2 id="find-out-whether-the-run-has-finished-and-if-so-also-return-exit-codes-and-usage-metrics">Find out whether the run has finished and if so also return exit codes and usage metrics</h2>
 <blockquote>
 <p>Code samples</p>
 </blockquote>
@@ -3150,8 +3150,8 @@ System.out.println(response.toString());
 
 </code></pre>
 <p><code>GET /runs/{name}/exit-data</code></p>
-<p>Usually at the end of a run you want to know whether the scraper ran succesfully or not. Also returns information about how much resources the run took.</p>
-<h3 id="get-exit-code-and-usage-metrics-parameters">Parameters</h3>
+<p>Returns a rag-bag of useful information about the progress and completion of a run. Find out whether the run has finished and if so find out  whether the scraper ran succesfully or not. Also returns information about how much resources the run took.</p>
+<h3 id="find-out-whether-the-run-has-finished-and-if-so-also-return-exit-codes-and-usage-metrics-parameters">Parameters</h3>
 <table>
 <thead>
 <tr>
@@ -3198,10 +3198,11 @@ System.out.println(response.toString());
       <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
       <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
     }
-  }
+  },
+  <span class="hljs-attr">"finished"</span>: <span class="hljs-literal">true</span>
 }
 </code></pre>
-<h3 id="get-exit-code-and-usage-metrics-responses">Responses</h3>
+<h3 id="find-out-whether-the-run-has-finished-and-if-so-also-return-exit-codes-and-usage-metrics-responses">Responses</h3>
 <table>
 <thead>
 <tr>
@@ -3579,7 +3580,8 @@ token
       <span class="hljs-attr">"network_in"</span>: <span class="hljs-number">0</span>,
       <span class="hljs-attr">"network_out"</span>: <span class="hljs-number">0</span>
     }
-  }
+  },
+  <span class="hljs-attr">"finished"</span>: <span class="hljs-literal">true</span>
 }
 
 </code></pre>
@@ -3608,6 +3610,13 @@ token
 <td>false</td>
 <td>none</td>
 <td>none</td>
+</tr>
+<tr>
+<td>finished</td>
+<td>boolean</td>
+<td>false</td>
+<td>none</td>
+<td>True if the run has finished either by running succesfully or by failing in the build or run stage. This occurs when the &quot;last&quot; event is sent.</td>
 </tr>
 </tbody>
 </table>
@@ -3728,7 +3737,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T06:01:32Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-30T02:51:51Z"</span>
 }
 
 </code></pre>
@@ -3775,7 +3784,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T06:01:32Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-30T02:51:51Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>
   }
@@ -3848,7 +3857,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T06:01:32Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-30T02:51:51Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"exit_data"</span>: {
@@ -3938,7 +3947,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T06:01:32Z"</span>
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-30T02:51:51Z"</span>
 }
 
 </code></pre>
@@ -3953,7 +3962,7 @@ token
 <pre class="highlight tab tab-json"><code>{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"string"</span>,
   <span class="hljs-attr">"type"</span>: <span class="hljs-string">"string"</span>,
-  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-28T06:01:32Z"</span>,
+  <span class="hljs-attr">"time"</span>: <span class="hljs-string">"2020-01-30T02:51:51Z"</span>,
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"stage"</span>: <span class="hljs-string">"build"</span>,
     <span class="hljs-attr">"stream"</span>: <span class="hljs-string">"stdout"</span>,
