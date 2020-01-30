@@ -132,6 +132,7 @@ func TestCreateLastEvent(t *testing.T) {
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
+	keyValueStore.On("Set", "run-name/exit_data/finished", `true`).Return(nil)
 
 	app.CreateEvent("run-name", event)
 
@@ -277,6 +278,7 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.On("Delete", "run-name/token").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)
 
 	app := AppImplementation{
 		JobDispatcher: jobDispatcher,

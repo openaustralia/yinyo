@@ -338,9 +338,9 @@ func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) 
 	if err != nil {
 		return err
 	}
-	// If this is a finish event do some extra special handling
-	f, ok := event.Data.(protocol.FinishData)
-	if ok {
+	// If this is a finish event or a last event do some extra special handling
+	switch f := event.Data.(type) {
+	case protocol.FinishData:
 		exitDataBytes, err := json.Marshal(f.ExitData)
 		if err != nil {
 			return err
@@ -349,7 +349,11 @@ func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) 
 		if err != nil {
 			return err
 		}
-
+	case protocol.LastData:
+		err = app.setKeyValueData(runName, exitDataFinishedKey, "true")
+		if err != nil {
+			return err
+		}
 	}
 	// We're intentionally doing the callback synchronously with the create event API call.
 	// This way we can ensure that events within a run maintain their ordering.
@@ -376,6 +380,10 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 		return err
 	}
 	err = app.deleteKeyValueData(runName, exitDataRunKey)
+	if err != nil {
+		return err
+	}
+	err = app.deleteKeyValueData(runName, exitDataFinishedKey)
 	if err != nil {
 		return err
 	}

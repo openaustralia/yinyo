@@ -10,6 +10,7 @@ import (
 const tokenCacheKey = "token"
 const callbackKey = "url"
 const exitDataKeyBase = "exit_data/"
+const exitDataFinishedKey = exitDataKeyBase + "finished"
 const exitDataBuildKey = exitDataKeyBase + "build"
 const exitDataRunKey = exitDataKeyBase + "run"
 
