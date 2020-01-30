@@ -243,6 +243,19 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 		}
 		exitData.Run = &exitDataRun
 	}
+	finished, err := app.getKeyValueData(runName, exitDataFinishedKey)
+	if err != nil {
+		if !errors.Is(err, ErrNotFound) {
+			return exitData, err
+		}
+	} else {
+		var exitDataFinished bool
+		err = json.Unmarshal([]byte(finished), &exitDataFinished)
+		if err != nil {
+			return exitData, err
+		}
+		exitData.Finished = exitDataFinished
+	}
 	return exitData, nil
 }
 

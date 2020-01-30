@@ -278,6 +278,7 @@ func TestGetExitData(t *testing.T) {
 		Build: &protocol.ExitDataStage{
 			ExitCode: 12,
 		},
+		Finished: true,
 	}
 	app.On("GetTokenCache", "my-run").Return("abc123", nil)
 	app.On("GetExitData", "my-run").Return(exitData, nil)
@@ -285,7 +286,7 @@ func TestGetExitData(t *testing.T) {
 	rr := makeRequest(app, "GET", "/runs/my-run/exit-data", nil, "abc123")
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, "{\"build\":{\"exit_code\":12,\"usage\":{\"wall_time\":0,\"cpu_time\":0,\"max_rss\":0,\"network_in\":0,\"network_out\":0}}}\n", rr.Body.String())
+	assert.Equal(t, "{\"build\":{\"exit_code\":12,\"usage\":{\"wall_time\":0,\"cpu_time\":0,\"max_rss\":0,\"network_in\":0,\"network_out\":0}},\"finished\":true}\n", rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json"}}, rr.Header())
 	app.AssertExpectations(t)
 }
