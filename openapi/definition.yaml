@@ -245,9 +245,9 @@ paths:
   /runs/{name}/exit-data:
     get:
       tags: ["Optional"]
-      summary: Get exit code and usage metrics
+      summary: Find out whether the run has finished and if so also return exit codes and usage metrics
       description: |
-        Usually at the end of a run you want to know whether the scraper ran succesfully or not. Also returns information about how much resources the run took.
+        Returns a rag-bag of useful information about the progress and completion of a run. Find out whether the run has finished and if so find out  whether the scraper ran succesfully or not. Also returns information about how much resources the run took.
       parameters:
         - $ref: "#/components/parameters/name"
       security:
@@ -384,6 +384,9 @@ components:
           $ref: "#/components/schemas/ExitDataStage"
         run:
           $ref: "#/components/schemas/ExitDataStage"
+        finished:
+          type: boolean
+          description: True if the run has finished either by running succesfully or by failing in the build or run stage. This occurs when the "last" event is sent.
     ExitDataStage:
       type: object
       properties:
