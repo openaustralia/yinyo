@@ -35,7 +35,7 @@ func eventsSender(run apiclient.RunInterface, eventsChan <-chan protocol.LogData
 	}
 }
 
-func streamLogs(run apiclient.RunInterface, stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan protocol.LogData) {
+func streamLogs(stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan protocol.LogData) {
 	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
 		eventsChan <- protocol.LogData{Stage: stage, Stream: streamName, Text: scanner.Text()}
@@ -73,8 +73,8 @@ func runExternalCommand(run apiclient.RunInterface, stage string, commandString 
 	}
 
 	c := make(chan error)
-	go streamLogs(run, stage, "stdout", stdout, c, eventsChan)
-	go streamLogs(run, stage, "stderr", stderr, c, eventsChan)
+	go streamLogs(stage, "stdout", stdout, c, eventsChan)
+	go streamLogs(stage, "stderr", stderr, c, eventsChan)
 	err = <-c
 	if err != nil {
 		return nil, err
