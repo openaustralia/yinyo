@@ -48,6 +48,16 @@ RUN chmod +x /bin/start.sh
 
 COPY --from=builder /go/bin/yinyo /bin/yinyo
 
+# Install geckdriver for firefox
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz && \
+    tar xf geckodriver-v0.26.0-linux64.tar.gz && \
+    rm geckodriver-v0.26.0-linux64.tar.gz && \
+    mv geckodriver /usr/local/bin
+
+# Install firefox
+# TODO: Install a specific version of firefox so that we can actively upgrade firefox
+RUN apt-get -y install firefox
+
 ####
 #### yinyo-server
 ####
