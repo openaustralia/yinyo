@@ -13,73 +13,108 @@ type RunInterface struct {
 }
 
 // CreateEvent provides a mock function with given fields: event
-func (_m *RunInterface) CreateEvent(event protocol.Event) error {
+func (_m *RunInterface) CreateEvent(event protocol.Event) (int, error) {
 	ret := _m.Called(event)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(protocol.Event) error); ok {
+	var r0 int
+	if rf, ok := ret.Get(0).(func(protocol.Event) int); ok {
 		r0 = rf(event)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(protocol.Event) error); ok {
+		r1 = rf(event)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // CreateFinishEvent provides a mock function with given fields: stage, exitData
-func (_m *RunInterface) CreateFinishEvent(stage string, exitData protocol.ExitDataStage) error {
+func (_m *RunInterface) CreateFinishEvent(stage string, exitData protocol.ExitDataStage) (int, error) {
 	ret := _m.Called(stage, exitData)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, protocol.ExitDataStage) error); ok {
+	var r0 int
+	if rf, ok := ret.Get(0).(func(string, protocol.ExitDataStage) int); ok {
 		r0 = rf(stage, exitData)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, protocol.ExitDataStage) error); ok {
+		r1 = rf(stage, exitData)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // CreateLastEvent provides a mock function with given fields:
-func (_m *RunInterface) CreateLastEvent() error {
+func (_m *RunInterface) CreateLastEvent() (int, error) {
 	ret := _m.Called()
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func() error); ok {
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // CreateLogEvent provides a mock function with given fields: stage, stream, text
-func (_m *RunInterface) CreateLogEvent(stage string, stream string, text string) error {
+func (_m *RunInterface) CreateLogEvent(stage string, stream string, text string) (int, error) {
 	ret := _m.Called(stage, stream, text)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, string) error); ok {
+	var r0 int
+	if rf, ok := ret.Get(0).(func(string, string, string) int); ok {
 		r0 = rf(stage, stream, text)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, string, string) error); ok {
+		r1 = rf(stage, stream, text)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // CreateStartEvent provides a mock function with given fields: stage
-func (_m *RunInterface) CreateStartEvent(stage string) error {
+func (_m *RunInterface) CreateStartEvent(stage string) (int, error) {
 	ret := _m.Called(stage)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
+	var r0 int
+	if rf, ok := ret.Get(0).(func(string) int); ok {
 		r0 = rf(stage)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(stage)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Delete provides a mock function with given fields:

@@ -32,22 +32,22 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
-	run.On("CreateStartEvent", "build").Return(nil)
+	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
 	})
 	run.On("GetCacheToDirectory", cachePath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
 	})
-	run.On("CreateLogEvent", "build", "stdout", "_app_").Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "Procfile").Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "requirements.txt").Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "runtime.txt").Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "scraper.py").Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "_cache_").Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "requirements.txt").Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "runtime.txt").Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "scraper.py").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "_app_").Return(10, nil)
+	run.On("CreateLogEvent", "build", "stdout", "Procfile").Return(10, nil)
+	run.On("CreateLogEvent", "build", "stdout", "requirements.txt").Return(10, nil)
+	run.On("CreateLogEvent", "build", "stdout", "runtime.txt").Return(10, nil)
+	run.On("CreateLogEvent", "build", "stdout", "scraper.py").Return(10, nil)
+	run.On("CreateLogEvent", "build", "stdout", "_cache_").Return(10, nil)
+	run.On("CreateLogEvent", "build", "stdout", "requirements.txt").Return(10, nil)
+	run.On("CreateLogEvent", "build", "stdout", "runtime.txt").Return(10, nil)
+	run.On("CreateLogEvent", "build", "stdout", "scraper.py").Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		return e.ExitCode == 0 &&
 			// The usage values are going to be a little different each time. So, the best we
@@ -56,10 +56,10 @@ func TestSimpleRun(t *testing.T) {
 			e.Usage.WallTime > 0 &&
 			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
-	})).Return(nil)
+	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
-	run.On("CreateStartEvent", "run").Return(nil)
-	run.On("CreateLogEvent", "run", "stdout", "Ran").Return(nil)
+	run.On("CreateStartEvent", "run").Return(10, nil)
+	run.On("CreateLogEvent", "run", "stdout", "Ran").Return(10, nil)
 	run.On("PutOutputFromFile", filepath.Join(appPath, "output.txt")).Return(nil)
 	run.On("CreateFinishEvent", "run", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
@@ -71,8 +71,8 @@ func TestSimpleRun(t *testing.T) {
 			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
 
-	})).Return(nil)
-	run.On("CreateLastEvent").Return(nil)
+	})).Return(10, nil)
+	run.On("CreateLastEvent").Return(10, nil)
 
 	err := Run(run, &Options{
 		ImportPath:   importPath,
@@ -96,16 +96,16 @@ func TestEnvironmentVariables(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
-	run.On("CreateStartEvent", "build").Return(nil)
+	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil)
 	run.On("GetCacheToDirectory", cachePath).Return(nil)
-	run.On("CreateLogEvent", "build", "stdout", "Build").Return(nil)
-	run.On("CreateFinishEvent", "build", mock.Anything).Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "Build").Return(10, nil)
+	run.On("CreateFinishEvent", "build", mock.Anything).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
-	run.On("CreateStartEvent", "run").Return(nil)
-	run.On("CreateLogEvent", "run", "stdout", "Run").Return(nil)
-	run.On("CreateFinishEvent", "run", mock.Anything).Return(nil)
-	run.On("CreateLastEvent").Return(nil)
+	run.On("CreateStartEvent", "run").Return(10, nil)
+	run.On("CreateLogEvent", "run", "stdout", "Run").Return(10, nil)
+	run.On("CreateFinishEvent", "run", mock.Anything).Return(10, nil)
+	run.On("CreateLastEvent").Return(10, nil)
 
 	err := Run(run, &Options{
 		ImportPath:   importPath,
@@ -132,13 +132,13 @@ func TestFailingBuild(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
-	run.On("CreateStartEvent", "build").Return(nil)
+	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
 	})
 	// Let the client know that there is no cache in this case
 	run.On("GetCacheToDirectory", cachePath).Return(errors.New("404 Not Found"))
-	run.On("CreateLogEvent", "build", "stderr", "bash: failing_command: command not found").Return(nil)
+	run.On("CreateLogEvent", "build", "stderr", "bash: failing_command: command not found").Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
 		return e.ExitCode == 127 &&
@@ -148,9 +148,9 @@ func TestFailingBuild(t *testing.T) {
 			e.Usage.WallTime > 0 &&
 			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
-	})).Return(nil)
+	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
-	run.On("CreateLastEvent").Return(nil)
+	run.On("CreateLastEvent").Return(10, nil)
 
 	err := Run(run, &Options{
 		ImportPath:   importPath,
@@ -173,13 +173,13 @@ func TestFailingRun(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
-	run.On("CreateStartEvent", "build").Return(nil)
+	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
 	})
 	// Let the client know that there is no cache in this case
 	run.On("GetCacheToDirectory", cachePath).Return(errors.New("404 Not Found"))
-	run.On("CreateLogEvent", "build", "stdout", "build").Return(nil)
+	run.On("CreateLogEvent", "build", "stdout", "build").Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
 		return e.ExitCode == 0 &&
@@ -189,10 +189,10 @@ func TestFailingRun(t *testing.T) {
 			e.Usage.WallTime > 0 &&
 			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
-	})).Return(nil)
+	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
-	run.On("CreateStartEvent", "run").Return(nil)
-	run.On("CreateLogEvent", "run", "stderr", "bash: failing_command: command not found").Return(nil)
+	run.On("CreateStartEvent", "run").Return(10, nil)
+	run.On("CreateLogEvent", "run", "stderr", "bash: failing_command: command not found").Return(10, nil)
 	run.On("PutOutputFromFile", filepath.Join(appPath, "output.txt")).Return(nil)
 	run.On("CreateFinishEvent", "run", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
@@ -203,8 +203,8 @@ func TestFailingRun(t *testing.T) {
 			e.Usage.WallTime > 0 &&
 			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
-	})).Return(nil)
-	run.On("CreateLastEvent").Return(nil)
+	})).Return(10, nil)
+	run.On("CreateLastEvent").Return(10, nil)
 
 	err := Run(run, &Options{
 		ImportPath:   importPath,
@@ -231,7 +231,7 @@ func TestInternalError(t *testing.T) {
 	// Let's simulate an error with the blob storage. So, the wrapper is trying to
 	// get the application and there's a problem.
 	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))
-	run.On("CreateLogEvent", "", "interr", "Internal error. The run will be automatically restarted.").Return(nil)
+	run.On("CreateLogEvent", "", "interr", "Internal error. The run will be automatically restarted.").Return(10, nil)
 
 	err := Run(run, &Options{
 		ImportPath:   importPath,

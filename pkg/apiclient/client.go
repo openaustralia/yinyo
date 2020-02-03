@@ -33,7 +33,7 @@ type RunInterface interface {
 	PutOutput(data io.Reader) error
 	Start(options *protocol.StartRunOptions) error
 	GetEvents(lastID string) (*EventIterator, error)
-	CreateEvent(event protocol.Event) error
+	CreateEvent(event protocol.Event) (int, error)
 	Delete() error
 	// The following methods operate on to top of the lower level methods above
 	// TODO: Should the following methods be in a separate interface?
@@ -44,10 +44,10 @@ type RunInterface interface {
 	PutCacheFromDirectory(dir string) error
 	GetOutputToFile(path string) error
 	PutOutputFromFile(path string) error
-	CreateStartEvent(stage string) error
-	CreateFinishEvent(stage string, exitData protocol.ExitDataStage) error
-	CreateLogEvent(stage string, stream string, text string) error
-	CreateLastEvent() error
+	CreateStartEvent(stage string) (int, error)
+	CreateFinishEvent(stage string, exitData protocol.ExitDataStage) (int, error)
+	CreateLogEvent(stage string, stream string, text string) (int, error)
+	CreateLastEvent() (int, error)
 }
 
 // Client is used to access the API
@@ -280,17 +280,17 @@ func (run *Run) GetEvents(lastID string) (*EventIterator, error) {
 	return &EventIterator{decoder: json.NewDecoder(resp.Body)}, nil
 }
 
-// CreateEvent sends an event
-func (run *Run) CreateEvent(event protocol.Event) error {
+// CreateEvent sends an event and returns an approximation of the number of bytes sent
+func (run *Run) CreateEvent(event protocol.Event) (int, error) {
 	b, err := json.Marshal(event)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	resp, err := run.request("POST", "/events", bytes.NewReader(b))
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return checkOK(resp)
+	return len(b), checkOK(resp)
 }
 
 // GetExitData gets data about resource usage after everything has finished

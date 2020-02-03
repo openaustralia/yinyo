@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sync"
 	"syscall"
 	"time"
 
@@ -19,20 +18,19 @@ import (
 	"github.com/shirou/gopsutil/net"
 )
 
-var wg sync.WaitGroup
-
-func eventsSender(run apiclient.RunInterface, eventsChan <-chan protocol.LogData) {
-	defer wg.Done()
-
+func eventsSender(run apiclient.RunInterface, countChan chan uint64, eventsChan <-chan protocol.LogData) {
+	var count uint64
 	// TODO: Send all events in a single http request
 	for e := range eventsChan {
-		err := run.CreateLogEvent(e.Stage, e.Stream, e.Text)
+		c, err := run.CreateLogEvent(e.Stage, e.Stream, e.Text)
 		if err != nil {
 			// If we can't send an event there's not much point in trying to do anything
 			// else but log an error locally
 			log.Println("Couldn't send event")
 		}
+		count += uint64(c)
 	}
+	countChan <- count
 }
 
 func streamLogs(stage string, streamName string, stream io.ReadCloser, c chan error, eventsChan chan protocol.LogData) {
@@ -43,18 +41,18 @@ func streamLogs(stage string, streamName string, stream io.ReadCloser, c chan er
 	c <- scanner.Err()
 }
 
-func runExternalCommand(run apiclient.RunInterface, stage string, commandString string, env []string) (*os.ProcessState, error) {
+func runExternalCommand(run apiclient.RunInterface, stage string, commandString string, env []string) (uint64, *os.ProcessState, error) {
 	// make a channel with a capacity of 100.
 	eventsChan := make(chan protocol.LogData, 1000)
 
-	wg.Add(1)
+	countChan := make(chan uint64)
 	// start the worker that sends the event messages
-	go eventsSender(run, eventsChan)
+	go eventsSender(run, countChan, eventsChan)
 
 	// Splits string up into pieces using shell rules
 	commandParts, err := shellquote.Split(commandString)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	command := exec.Command(commandParts[0], commandParts[1:]...)
 	// Add the environment variables to the pre-existing environment
@@ -62,14 +60,14 @@ func runExternalCommand(run apiclient.RunInterface, stage string, commandString 
 	command.Env = append(os.Environ(), env...)
 	stdout, err := command.StdoutPipe()
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	stderr, err := command.StderrPipe()
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	if err := command.Start(); err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	c := make(chan error)
@@ -77,22 +75,23 @@ func runExternalCommand(run apiclient.RunInterface, stage string, commandString 
 	go streamLogs(stage, "stderr", stderr, c, eventsChan)
 	err = <-c
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	err = <-c
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	// Now wait for all the events to get sent via http
 	close(eventsChan)
-	wg.Wait()
+	count := <-countChan
+	log.Println("count", count)
 
 	err = command.Wait()
 	if err != nil && command.ProcessState.ExitCode() == 0 {
-		return nil, err
+		return count, nil, err
 	}
-	return command.ProcessState, nil
+	return count, command.ProcessState, nil
 }
 
 func aggregateCounters() (net.IOCountersStat, error) {
@@ -109,7 +108,7 @@ func aggregateCounters() (net.IOCountersStat, error) {
 
 func runExternalCommandWithStats(run apiclient.RunInterface, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
 	var exitData protocol.ExitDataStage
-	err := run.CreateStartEvent(stage)
+	_, err := run.CreateStartEvent(stage)
 	if err != nil {
 		return exitData, err
 	}
@@ -121,7 +120,7 @@ func runExternalCommandWithStats(run apiclient.RunInterface, stage string, comma
 		return exitData, err
 	}
 
-	state, err := runExternalCommand(run, stage, commandString, env)
+	count, state, err := runExternalCommand(run, stage, commandString, env)
 	if err != nil {
 		return exitData, err
 	}
@@ -132,7 +131,8 @@ func runExternalCommandWithStats(run apiclient.RunInterface, stage string, comma
 	}
 
 	exitData.Usage.NetworkIn = statsEnd.BytesRecv - statsStart.BytesRecv
-	exitData.Usage.NetworkOut = statsEnd.BytesSent - statsStart.BytesSent
+	// Don't include the log events in the network out measurement
+	exitData.Usage.NetworkOut = statsEnd.BytesSent - statsStart.BytesSent - count
 	exitData.Usage.WallTime = time.Since(start).Seconds()
 	exitData.Usage.CPUTime = state.UserTime().Seconds() + state.SystemTime().Seconds()
 	// This bit will only return something when run on Linux I think
@@ -143,7 +143,7 @@ func runExternalCommandWithStats(run apiclient.RunInterface, stage string, comma
 	}
 	exitData.ExitCode = state.ExitCode()
 
-	err = run.CreateFinishEvent(stage, exitData)
+	_, err = run.CreateFinishEvent(stage, exitData)
 	return exitData, err
 }
 
@@ -249,7 +249,7 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 		}
 	}
 
-	err = run.CreateLastEvent()
+	_, err = run.CreateLastEvent()
 	if err != nil {
 		return err
 	}
