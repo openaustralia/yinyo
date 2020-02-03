@@ -46,8 +46,6 @@ RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpac
 ADD build/package/start.sh /bin/
 RUN chmod +x /bin/start.sh
 
-COPY --from=builder /go/bin/yinyo /bin/yinyo
-
 # Install geckdriver for firefox
 RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz && \
     tar xf geckodriver-v0.26.0-linux64.tar.gz && \
@@ -70,6 +68,8 @@ RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-ke
     echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && \
     apt-get -y install google-chrome-stable
+
+COPY --from=builder /go/bin/yinyo /bin/yinyo
 
 ####
 #### yinyo-server
