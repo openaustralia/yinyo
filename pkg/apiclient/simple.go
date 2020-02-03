@@ -67,14 +67,12 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 		return err
 	}
 	// Upload the app
-	err = run.PutAppFromDirectory(scraperDirectory, []string{cacheName})
-	if err != nil {
+	if err = run.PutAppFromDirectory(scraperDirectory, []string{cacheName}); err != nil {
 		return err
 	}
 	// Upload the cache
 	cachePath := filepath.Join(scraperDirectory, cacheName)
-	err = uploadCacheIfExists(run, cachePath)
-	if err != nil {
+	if err = uploadCacheIfExists(run, cachePath); err != nil {
 		return err
 	}
 	// Start the run
@@ -96,23 +94,19 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 		if err != nil {
 			return err
 		}
-		err = eventCallback(e)
-		if err != nil {
+		if err = eventCallback(e); err != nil {
 			return err
 		}
 	}
-	err = downloadOutput(run, scraperDirectory, outputFile)
-	if err != nil {
+	if err = downloadOutput(run, scraperDirectory, outputFile); err != nil {
 		return err
 	}
 	// Get the build cache
-	err = run.GetCacheToFile(cachePath)
-	if err != nil {
+	if err = run.GetCacheToFile(cachePath); err != nil {
 		return err
 	}
 	// Delete the run
-	err = run.Delete()
-	if err != nil {
+	if err = run.Delete(); err != nil {
 		return err
 	}
 	return nil
