@@ -58,6 +58,19 @@ RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckod
 # TODO: Install a specific version of firefox so that we can actively upgrade firefox
 RUN apt-get -y install firefox
 
+# Install chromedriver
+RUN wget https://chromedriver.storage.googleapis.com/79.0.3945.36/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip && \
+    rm chromedriver_linux64.zip && \
+    mv chromedriver /usr/local/bin
+
+# Install chrome
+# TODO: Install a specific version of chrome for consistency
+RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && \
+    apt-get -y install google-chrome-stable
+
 ####
 #### yinyo-server
 ####
