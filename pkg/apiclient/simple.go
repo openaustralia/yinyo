@@ -57,7 +57,12 @@ func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvV
 func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, eventCallback func(event protocol.Event) error) error {
 	client := New(clientServerURL)
 	// Create the run
-	run, err := client.CreateRun(scraperDirectory)
+	// Just use the top directory name as a prefix
+	fullScraperDirectory, err := filepath.Abs(scraperDirectory)
+	if err != nil {
+		return err
+	}
+	run, err := client.CreateRun(filepath.Base(fullScraperDirectory))
 	if err != nil {
 		return err
 	}
