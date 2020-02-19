@@ -106,28 +106,29 @@ func aggregateCounters() (net.IOCountersStat, error) {
 	return stats[0], nil
 }
 
-func runExternalCommandWithStats(run apiclient.RunInterface, stage string, commandString string, env []string) (protocol.ExitDataStage, error) {
+// Returns true if the command ran successfully (exit code 0)
+func runExternalCommandWithSuccess(run apiclient.RunInterface, stage string, commandString string, env []string) (bool, error) {
 	var exitData protocol.ExitDataStage
 	_, err := run.CreateStartEvent(stage)
 	if err != nil {
-		return exitData, err
+		return false, err
 	}
 
 	// Capture the time and the network counters
 	start := time.Now()
 	statsStart, err := aggregateCounters()
 	if err != nil {
-		return exitData, err
+		return false, err
 	}
 
 	count, state, err := runExternalCommand(run, stage, commandString, env)
 	if err != nil {
-		return exitData, err
+		return false, err
 	}
 
 	statsEnd, err := aggregateCounters()
 	if err != nil {
-		return exitData, err
+		return false, err
 	}
 
 	exitData.Usage.NetworkIn = statsEnd.BytesRecv - statsStart.BytesRecv
@@ -144,7 +145,7 @@ func runExternalCommandWithStats(run apiclient.RunInterface, stage string, comma
 	exitData.ExitCode = state.ExitCode()
 
 	_, err = run.CreateFinishEvent(stage, exitData)
-	return exitData, err
+	return exitData.ExitCode == 0, err
 }
 
 // Options are parameters required for calling Run
@@ -220,13 +221,10 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 		"IMPORT_PATH=" + options.ImportPath,
 	}
 
-	exitDataStage, err := runExternalCommandWithStats(run, "build", options.BuildCommand, env)
+	success, err := runExternalCommandWithSuccess(run, "build", options.BuildCommand, env)
 	if err != nil {
 		return err
 	}
-
-	var exitData protocol.ExitData
-	exitData.Build = &exitDataStage
 
 	err = run.PutCacheFromDirectory(options.CachePath)
 	if err != nil {
@@ -234,12 +232,11 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 	}
 
 	// Only do the main run if the build was successful
-	if exitData.Build.ExitCode == 0 {
-		exitDataStage, err := runExternalCommandWithStats(run, "run", options.RunCommand, env)
+	if success {
+		_, err := runExternalCommandWithSuccess(run, "run", options.RunCommand, env)
 		if err != nil {
 			return err
 		}
-		exitData.Run = &exitDataStage
 
 		if options.RunOutput != "" {
 			err = run.PutOutputFromFile(filepath.Join(options.AppPath, options.RunOutput))
