@@ -146,7 +146,7 @@ func TestUploadDownloadApp(t *testing.T) {
 
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
-func runScraper(name string, env []protocol.EnvVariable) ([]protocol.Event, error) {
+func runScraper(name string, appDirectory string, cachePath string, env []protocol.EnvVariable) ([]protocol.Event, error) {
 	var eventsList []protocol.Event
 
 	client := defaultClient()
@@ -158,13 +158,13 @@ func runScraper(name string, env []protocol.EnvVariable) ([]protocol.Event, erro
 	defer run.Delete()
 
 	// Now upload the application
-	err = run.PutAppFromDirectory("fixtures/scrapers/"+name, []string{})
+	err = run.PutAppFromDirectory(appDirectory, []string{})
 	if err != nil {
 		return eventsList, err
 	}
 
 	// Upload the cache if it exists
-	file, err := os.Open("fixtures/caches/" + name + ".tar.gz")
+	file, err := os.Open(cachePath)
 	if err == nil {
 		err = run.PutCache(file)
 		if err != nil {
@@ -203,7 +203,7 @@ func runScraper(name string, env []protocol.EnvVariable) ([]protocol.Event, erro
 		return eventsList, err
 	}
 
-	file, err = os.Create("fixtures/caches/" + name + ".tar.gz")
+	file, err = os.Create(cachePath)
 	if err != nil {
 		return eventsList, err
 	}
@@ -220,17 +220,20 @@ func runScraper(name string, env []protocol.EnvVariable) ([]protocol.Event, erro
 }
 
 func runScraperWithPreCache(name string, env []protocol.EnvVariable) ([]protocol.Event, error) {
+	appDirectory := "fixtures/scrapers/" + name
+	cachePath := "fixtures/caches/" + name + ".tar.gz"
+
 	var eventsList []protocol.Event
 	// Check if cache doesn't exist in which case we'll generate it by running
 	// the whole scraper before we run the main tests
-	_, err := os.Stat("fixtures/caches/" + name + ".tar.gz")
+	_, err := os.Stat(cachePath)
 	if os.IsNotExist(err) {
-		_, err = runScraper(name, env)
+		_, err = runScraper(name, appDirectory, cachePath, env)
 		if err != nil {
 			return eventsList, err
 		}
 	}
-	eventsList, err = runScraper(name, env)
+	eventsList, err = runScraper(name, appDirectory, cachePath, env)
 	if err != nil {
 		return eventsList, err
 	}
