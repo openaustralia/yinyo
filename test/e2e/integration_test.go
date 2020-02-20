@@ -227,6 +227,15 @@ func TestHelloWorld(t *testing.T) {
 	name := "hello-world"
 	env := []protocol.EnvVariable{{Name: "HELLO", Value: "Hello World!"}}
 
+	// Check if cache doesn't exist in which case we'll generate it by running
+	// the whole scraper before we run the main tests
+	_, err := os.Stat("fixtures/caches/" + name + ".tar.gz")
+	if os.IsNotExist(err) {
+		_, err = runScraper(name, env)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	eventsList, err := runScraper(name, env)
 	if err != nil {
 		log.Fatal(err)
