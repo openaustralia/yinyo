@@ -219,29 +219,33 @@ func runScraper(name string, env []protocol.EnvVariable) ([]protocol.Event, erro
 	return eventsList, nil
 }
 
-func TestHelloWorld(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode.")
-	}
-
-	name := "hello-world"
-	env := []protocol.EnvVariable{{Name: "HELLO", Value: "Hello World!"}}
-
+func runScraperWithPreCache(name string, env []protocol.EnvVariable) ([]protocol.Event, error) {
+	var eventsList []protocol.Event
 	// Check if cache doesn't exist in which case we'll generate it by running
 	// the whole scraper before we run the main tests
 	_, err := os.Stat("fixtures/caches/" + name + ".tar.gz")
 	if os.IsNotExist(err) {
 		_, err = runScraper(name, env)
 		if err != nil {
-			log.Fatal(err)
+			return eventsList, err
 		}
 	}
-	eventsList, err := runScraper(name, env)
+	eventsList, err = runScraper(name, env)
+	if err != nil {
+		return eventsList, err
+	}
+	return eventsList, nil
+}
+
+func TestHelloWorld(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
+	eventsList, err := runScraperWithPreCache("hello-world", []protocol.EnvVariable{{Name: "HELLO", Value: "Hello World!"}})
 	if err != nil {
 		log.Fatal(err)
 	}
-	// TODO: If the cache doesn't exist the test will fail on its first run
-	// because the log output is slightly different. Handle this better.
 
 	// Test the running of a super-simple program end-to-end
 	// Copy across the IDs and times from the eventsList to the expected because we don't know what they
