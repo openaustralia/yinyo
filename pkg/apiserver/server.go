@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 
@@ -196,10 +197,47 @@ func (server *Server) whoAmI(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// isPrivate reports whether `ip' is a private address, according to
+// RFC 1918 (IPv4 addresses) and RFC 4193 (IPv6 addresses).
+// TODO: Switch over to implementation in https://github.com/golang/go/issues/29146 when available
+func isPrivate(ip net.IP) bool {
+	if ip4 := ip.To4(); ip4 != nil {
+		// Local IPv4 addresses are defined in https://tools.ietf.org/html/rfc1918
+		return ip4[0] == 10 ||
+			(ip4[0] == 172 && ip4[1]&0xf0 == 16) ||
+			(ip4[0] == 192 && ip4[1] == 168)
+	}
+	// Local IPv6 addresses are defined in https://tools.ietf.org/html/rfc4193
+	return len(ip) == net.IPv6len && ip[0]&0xfe == 0xfc
+}
+
+// external returns true if the request has arrived via the public internet. This relies
+// on the source IP address being preserved which does require the Kubernetes load
+// balancer to be set up in a particular way.
+// This is used in measuring network traffic
+func external(request *http.Request) (bool, error) {
+	// First get the ip address from the string of the form "host:port"
+	ipString, _, err := net.SplitHostPort(request.RemoteAddr)
+	if err != nil {
+		return false, err
+	}
+	ip := net.ParseIP(ipString)
+	return !isPrivate(ip), nil
+}
+
 // Middleware that logs the request uri
 func logRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.Method, r.RequestURI, r.RemoteAddr)
+		var extint string
+		e, err := external(r)
+		if err != nil {
+			extint = "?"
+		} else if e {
+			extint = "external"
+		} else {
+			extint = "internal"
+		}
+		log.Println(extint, r.Method, r.RequestURI)
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
