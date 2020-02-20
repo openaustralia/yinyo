@@ -3,6 +3,7 @@ package test
 import (
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -145,66 +146,95 @@ func TestUploadDownloadApp(t *testing.T) {
 
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
-func TestHelloWorld(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode.")
-	}
+func runScraper(name string, env []protocol.EnvVariable) ([]protocol.Event, error) {
+	var eventsList []protocol.Event
 
-	// Test the running of a super-simple program end-to-end
 	client := defaultClient()
 	// Create the run
-	run, err := client.CreateRun("test-hello-world")
+	run, err := client.CreateRun(name)
 	if err != nil {
-		t.Fatal(err)
+		return eventsList, err
 	}
 	defer run.Delete()
 
 	// Now upload the application
-	err = run.PutAppFromDirectory("fixtures/scrapers/hello-world", []string{})
+	err = run.PutAppFromDirectory("fixtures/scrapers/"+name, []string{})
 	if err != nil {
-		t.Fatal(err)
+		return eventsList, err
 	}
 
 	// Upload the cache if it exists
-	// TODO: If the cache doesn't exist the test will fail on its first run
-	// because the log output is slightly different. Handle this better.
-	file, err := os.Open("fixtures/caches/hello-world.tar.gz")
+	file, err := os.Open("fixtures/caches/" + name + ".tar.gz")
 	if err == nil {
 		err = run.PutCache(file)
 		if err != nil {
-			t.Fatal(err)
+			return eventsList, err
 		}
 	} else if !os.IsNotExist(err) {
-		t.Fatal(err)
+		return eventsList, err
 	}
-
 	// Now start the scraper
-	err = run.Start(&protocol.StartRunOptions{
-		Output: "output.txt",
-		Env:    []protocol.EnvVariable{{Name: "HELLO", Value: "Hello World!"}},
-	})
+	err = run.Start(&protocol.StartRunOptions{Output: "output.txt", Env: env})
 	if err != nil {
-		t.Fatal(err)
+		return eventsList, err
 	}
 
 	// Get the logs (events)
 	iterator, err := run.GetEvents("")
 	if err != nil {
-		t.Fatal(err)
+		return eventsList, err
 	}
 
-	var eventsList []protocol.Event
 	// Expect roughly 13 events
 	bar := pb.StartNew(13)
 	for iterator.More() {
 		event, err := iterator.Next()
 		if err != nil {
-			t.Fatal(err)
+			return eventsList, err
 		}
 		eventsList = append(eventsList, event)
 		bar.Increment()
 	}
 	bar.Finish()
+
+	// Get the cache
+	cache, err := run.GetCache()
+	if err != nil {
+		return eventsList, err
+	}
+
+	file, err = os.Create("fixtures/caches/" + name + ".tar.gz")
+	if err != nil {
+		return eventsList, err
+	}
+	_, err = io.Copy(file, cache)
+	if err != nil {
+		return eventsList, err
+	}
+
+	// Get the output
+	// Get the metrics
+	// Get the exit status
+	// Cleanup
+	return eventsList, nil
+}
+
+func TestHelloWorld(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode.")
+	}
+
+	name := "hello-world"
+	env := []protocol.EnvVariable{{Name: "HELLO", Value: "Hello World!"}}
+
+	eventsList, err := runScraper(name, env)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// TODO: If the cache doesn't exist the test will fail on its first run
+	// because the log output is slightly different. Handle this better.
+
+	// Test the running of a super-simple program end-to-end
 	// Copy across the IDs and times from the eventsList to the expected because we don't know what they
 	// will be ahead of time and this make it easy to compare expected and eventsList
 	expected := []protocol.Event{
@@ -224,24 +254,4 @@ func TestHelloWorld(t *testing.T) {
 		protocol.NewLastEvent(eventsList[13].ID, eventsList[13].Time),
 	}
 	assert.Equal(t, expected, eventsList)
-
-	// Get the cache
-	cache, err := run.GetCache()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	file, err = os.Create("fixtures/caches/hello-world.tar.gz")
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = io.Copy(file, cache)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Get the output
-	// Get the metrics
-	// Get the exit status
-	// Cleanup
 }
