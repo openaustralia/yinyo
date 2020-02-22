@@ -211,11 +211,11 @@ func isPrivate(ip net.IP) bool {
 	return len(ip) == net.IPv6len && ip[0]&0xfe == 0xfc
 }
 
-// external returns true if the request has arrived via the public internet. This relies
+// isExternal returns true if the request has arrived via the public internet. This relies
 // on the source IP address being preserved which does require the Kubernetes load
 // balancer to be set up in a particular way.
 // This is used in measuring network traffic
-func external(request *http.Request) (bool, error) {
+func isExternal(request *http.Request) (bool, error) {
 	// First get the ip address from the string of the form "host:port"
 	ipString, _, err := net.SplitHostPort(request.RemoteAddr)
 	if err != nil {
@@ -229,7 +229,7 @@ func external(request *http.Request) (bool, error) {
 func logRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var extint string
-		e, err := external(r)
+		e, err := isExternal(r)
 		if err != nil {
 			extint = "?"
 		} else if e {
