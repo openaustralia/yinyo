@@ -228,16 +228,17 @@ func isExternal(request *http.Request) (bool, error) {
 // Middleware that logs the request uri
 func logRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var extint string
+		var source string
 		e, err := isExternal(r)
-		if err != nil {
-			extint = "?"
-		} else if e {
-			extint = "external"
-		} else {
-			extint = "internal"
+		switch {
+		case err != nil:
+			source = "?"
+		case e:
+			source = "external"
+		default:
+			source = "internal"
 		}
-		log.Println(extint, r.Method, r.RequestURI)
+		log.Println(source, r.Method, r.RequestURI)
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
