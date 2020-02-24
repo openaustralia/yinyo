@@ -272,9 +272,19 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 		r.Body = readMeasurer
 		m := httpsnoop.CaptureMetrics(next, w, r)
 		// TODO: Don't ignore any errors from isExternal
-		external, _ := isExternal(r)
+		external, err := isExternal(r)
+		if err != nil {
+			// TODO: Will this actually work here
+			logAndReturnError(err, w)
+			return
+		}
 		if runName != "" {
-			server.app.RecordTraffic(runName, external, readMeasurer.BytesRead, m.Written)
+			err = server.app.RecordTraffic(runName, external, readMeasurer.BytesRead, m.Written)
+			if err != nil {
+				// TODO: Will this actually work here
+				logAndReturnError(err, w)
+				return
+			}
 		}
 	})
 }
