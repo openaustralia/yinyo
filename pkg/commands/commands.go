@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/dchest/uniuri"
@@ -259,28 +258,20 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 		}
 		exitData.Finished = exitDataFinished
 	}
-	apiNetworkInString, err := app.getKeyValueData(runName, exitDataAPINetworkInKey)
+	apiNetworkIn, err := app.getKeyValueDataAsInt(runName, exitDataAPINetworkInKey)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
 		}
 	} else {
-		apiNetworkIn, err := strconv.ParseInt(apiNetworkInString, 10, 64)
-		if err != nil {
-			return exitData, err
-		}
 		exitData.Api.NetworkIn = uint64(apiNetworkIn)
 	}
-	apiNetworkOutString, err := app.getKeyValueData(runName, exitDataAPINetworkOutKey)
+	apiNetworkOut, err := app.getKeyValueDataAsInt(runName, exitDataAPINetworkOutKey)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
 		}
 	} else {
-		apiNetworkOut, err := strconv.ParseInt(apiNetworkOutString, 10, 64)
-		if err != nil {
-			return exitData, err
-		}
 		exitData.Api.NetworkOut = uint64(apiNetworkOut)
 	}
 	return exitData, nil

@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 )
@@ -31,6 +32,14 @@ func (app *AppImplementation) getKeyValueData(runName string, key string) (strin
 		return value, fmt.Errorf("%w", ErrNotFound)
 	}
 	return value, err
+}
+
+func (app *AppImplementation) getKeyValueDataAsInt(runName string, key string) (int64, error) {
+	v, err := app.getKeyValueData(runName, key)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseInt(v, 10, 64)
 }
 
 func (app *AppImplementation) deleteKeyValueData(runName string, key string) error {
