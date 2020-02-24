@@ -409,7 +409,7 @@ func TestGetExitData(t *testing.T) {
 	expectedExitData := protocol.ExitData{
 		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{WallTime: 1}},
 		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{WallTime: 2}},
-		Api:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
+		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: true,
 	}
 
@@ -433,7 +433,7 @@ func TestGetExitDataBuildErrored(t *testing.T) {
 	}
 	expectedExitData := protocol.ExitData{
 		Build:    &protocol.ExitDataStage{ExitCode: 15},
-		Api:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
+		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: true,
 	}
 
@@ -456,7 +456,7 @@ func TestGetExitDataRunNotStarted(t *testing.T) {
 		t.Fatal(err)
 	}
 	expectedExitData := protocol.ExitData{
-		Api:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
+		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: false,
 	}
 

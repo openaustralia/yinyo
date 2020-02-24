@@ -33,7 +33,7 @@ type EnvVariable struct {
 type ExitData struct {
 	Build    *ExitDataStage `json:"build,omitempty"`
 	Run      *ExitDataStage `json:"run,omitempty"`
-	Api      APIUsage       `json:"api"`
+	API      APIUsage       `json:"api"`
 	Finished bool           `json:"finished"`
 }
 

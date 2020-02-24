@@ -263,7 +263,7 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 			return exitData, err
 		}
 	} else {
-		exitData.Api.NetworkIn = uint64(apiNetworkIn)
+		exitData.API.NetworkIn = uint64(apiNetworkIn)
 	}
 	apiNetworkOut, err := app.getKeyValueDataAsInt(runName, exitDataAPINetworkOutKey)
 	if err != nil {
@@ -271,7 +271,7 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 			return exitData, err
 		}
 	} else {
-		exitData.Api.NetworkOut = uint64(apiNetworkOut)
+		exitData.API.NetworkOut = uint64(apiNetworkOut)
 	}
 	return exitData, nil
 }
