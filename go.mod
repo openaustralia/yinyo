@@ -6,6 +6,7 @@ require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/cheggaaa/pb/v3 v3.0.1
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
+	github.com/felixge/httpsnoop v1.0.1
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/golangci/golangci-lint v1.23.6 // indirect

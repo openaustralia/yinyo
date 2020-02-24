@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/felixge/httpsnoop"
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/pkg/commands"
 	"github.com/openaustralia/yinyo/pkg/protocol"
@@ -244,6 +245,14 @@ func logRequests(next http.Handler) http.Handler {
 	})
 }
 
+func recordTraffic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: Figure out much we've read too
+		m := httpsnoop.CaptureMetrics(next, w, r)
+		log.Println("bytes written", m.Written)
+	})
+}
+
 func extractBearerToken(header http.Header) (string, error) {
 	const bearerPrefix = "Bearer "
 	authHeader := header.Get("Authorization")
@@ -363,6 +372,7 @@ func (server *Server) InitialiseRoutes() {
 	authenticatedRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
 	authenticatedRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
 	authenticatedRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
+	server.router.Use(recordTraffic)
 	authenticatedRouter.Use(server.authenticate)
 	server.router.Use(logRequests)
 }
