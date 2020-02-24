@@ -23,6 +23,8 @@ func makeRequest(app commands.App, method string, url string, body io.Reader, to
 	server.InitialiseRoutes()
 
 	req, _ := http.NewRequest(method, url, body)
+	// Make the request come "internally"
+	req.RemoteAddr = "10.0.0.1:11111"
 	if token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}

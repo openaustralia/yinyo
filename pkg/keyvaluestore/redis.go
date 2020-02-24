@@ -37,3 +37,7 @@ func (client *client) Get(key string) (string, error) {
 func (client *client) Delete(key string) error {
 	return client.client.Del(namespaced(key)).Err()
 }
+
+func (client *client) Increment(key string, value int64) (int64, error) {
+	return client.client.IncrBy(namespaced(key), value).Result()
+}

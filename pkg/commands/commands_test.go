@@ -279,6 +279,8 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data/api/network_in").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data/api/network_out").Return(nil)
 
 	app := AppImplementation{
 		JobDispatcher: jobDispatcher,

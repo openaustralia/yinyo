@@ -13,6 +13,9 @@ const exitDataKeyBase = "exit_data/"
 const exitDataFinishedKey = exitDataKeyBase + "finished"
 const exitDataBuildKey = exitDataKeyBase + "build"
 const exitDataRunKey = exitDataKeyBase + "run"
+const exitDataAPIKeyBase = exitDataKeyBase + "api/"
+const exitDataAPINetworkInKey = exitDataAPIKeyBase + "network_in"
+const exitDataAPINetworkOutKey = exitDataAPIKeyBase + "network_out"
 
 func keyValuePath(runName string, key string) string {
 	return runName + "/" + key
@@ -32,4 +35,8 @@ func (app *AppImplementation) getKeyValueData(runName string, key string) (strin
 
 func (app *AppImplementation) deleteKeyValueData(runName string, key string) error {
 	return app.KeyValueStore.Delete(keyValuePath(runName, key))
+}
+
+func (app *AppImplementation) incrementKeyValueData(runName string, key string, value int64) (int64, error) {
+	return app.KeyValueStore.Increment(keyValuePath(runName, key), value)
 }

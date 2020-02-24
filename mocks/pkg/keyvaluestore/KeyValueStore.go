@@ -44,6 +44,27 @@ func (_m *KeyValueStore) Get(key string) (string, error) {
 	return r0, r1
 }
 
+// Increment provides a mock function with given fields: key, value
+func (_m *KeyValueStore) Increment(key string, value int64) (int64, error) {
+	ret := _m.Called(key, value)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(string, int64) int64); ok {
+		r0 = rf(key, value)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, int64) error); ok {
+		r1 = rf(key, value)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Set provides a mock function with given fields: key, value
 func (_m *KeyValueStore) Set(key string, value string) error {
 	ret := _m.Called(key, value)

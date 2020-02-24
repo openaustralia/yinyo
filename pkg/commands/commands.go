@@ -376,6 +376,7 @@ func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) 
 }
 
 // DeleteRun deletes the run. Should be the last thing called
+// TODO: If one delete operation fails the rest should still be attempted
 func (app *AppImplementation) DeleteRun(runName string) error {
 	err := app.JobDispatcher.DeleteJobAndToken(runName)
 	if err != nil {
@@ -395,6 +396,14 @@ func (app *AppImplementation) DeleteRun(runName string) error {
 		return err
 	}
 	err = app.deleteKeyValueData(runName, exitDataRunKey)
+	if err != nil {
+		return err
+	}
+	err = app.deleteKeyValueData(runName, exitDataAPINetworkInKey)
+	if err != nil {
+		return err
+	}
+	err = app.deleteKeyValueData(runName, exitDataAPINetworkOutKey)
 	if err != nil {
 		return err
 	}
@@ -454,5 +463,16 @@ func (app *AppImplementation) postCallbackEvent(runName string, event protocol.E
 
 func (app *AppImplementation) RecordTraffic(runName string, external bool, in int64, out int64) error {
 	log.Println("bytes read and written", external, runName, in, out)
+	// We only record traffic that is going out or coming in via the public internet
+	if external {
+		_, err := app.incrementKeyValueData(runName, exitDataAPINetworkInKey, in)
+		if err != nil {
+			return err
+		}
+		_, err = app.incrementKeyValueData(runName, exitDataAPINetworkOutKey, out)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
