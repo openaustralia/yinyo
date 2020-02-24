@@ -110,6 +110,13 @@ jobs:
       matrix: #Duplicated below because anchors aren't supported :/
         goarch: ["amd64", "arm", "arm64", "386"]
         goos: ["linux", "darwin"]
+        exclude:
+          - goos: "darwin"
+            goarch: "arm"
+          - goos: "darwin"
+            goarch: "arm64"
+          - goos: "darwin"
+            goarch: "386"
     steps:
       - name: Install Go
         uses: actions/setup-go@v1
