@@ -33,6 +33,7 @@ type EnvVariable struct {
 type ExitData struct {
 	Build    *ExitDataStage `json:"build,omitempty"`
 	Run      *ExitDataStage `json:"run,omitempty"`
+	Api      APIUsage       `json:"api"`
 	Finished bool           `json:"finished"`
 }
 
@@ -40,6 +41,12 @@ type ExitData struct {
 type ExitDataStage struct {
 	ExitCode int   `json:"exit_code"`
 	Usage    Usage `json:"usage"`
+}
+
+type APIUsage struct {
+	// TODO: Extract out common bits between APIUsage and Usage
+	NetworkIn  uint64 `json:"network_in"`  // In bytes
+	NetworkOut uint64 `json:"network_out"` // In bytes
 }
 
 // Usage gives the resource usage for a single stage

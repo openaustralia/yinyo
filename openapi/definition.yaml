@@ -384,6 +384,8 @@ components:
           $ref: "#/components/schemas/ExitDataStage"
         run:
           $ref: "#/components/schemas/ExitDataStage"
+        api:
+          $ref: "#/components/schemas/ApiUsage"
         finished:
           type: boolean
           description: True if the run has finished either by running succesfully or by failing in the build or run stage. This occurs when the "last" event is sent.
@@ -418,6 +420,17 @@ components:
           description: Total transmitted network traffic (in bytes)
       description: |
         Resources used by a process. This information is recorded as part of the metrics for a run.
+    ApiUsage:
+      type: object
+      properties:
+        network_in:
+          type: integer
+          description: Total received network traffic (in bytes)
+        network_out:
+          type: integer
+          description: Total transmitted network traffic (in bytes)
+      description: |
+        Network used in communicating with the API.
     Event:
       required:
         - id
