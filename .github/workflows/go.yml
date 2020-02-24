@@ -109,7 +109,7 @@ jobs:
     strategy:
       matrix: #Duplicated below because anchors aren't supported :/
         goarch: ["amd64", "arm", "arm64", "386"]
-        goos: ["linux"]
+        goos: ["linux", "darwin"]
     steps:
       - name: Install Go
         uses: actions/setup-go@v1
