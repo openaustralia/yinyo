@@ -109,7 +109,7 @@ jobs:
     strategy:
       matrix: #Duplicated below because anchors aren't supported :/
         goarch: ["amd64", "arm", "arm64", "386"]
-        goos: ["linux", "darwin"]
+        goos: ["linux", "darwin", "windows"]
         exclude:
           - goos: "darwin"
             goarch: "arm"
@@ -117,6 +117,10 @@ jobs:
             goarch: "arm64"
           - goos: "darwin"
             goarch: "386"
+          - goos: "windows"
+            goarch: "arm"
+          - goos: "windows"
+            goarch: "arm64"
     steps:
       - name: Install Go
         uses: actions/setup-go@v1
@@ -157,7 +161,7 @@ jobs:
     strategy:
       matrix:
         goarch: ["amd64", "arm", "arm64", "386"]
-        goos: ["linux", "darwin"]
+        goos: ["linux", "darwin", "windows"]
         exclude:
           - goos: "darwin"
             goarch: "arm"
@@ -165,6 +169,10 @@ jobs:
             goarch: "arm64"
           - goos: "darwin"
             goarch: "386"
+          - goos: "windows"
+            goarch: "arm"
+          - goos: "windows"
+            goarch: "arm64"
     if: github.event_name == 'release'
     steps:
       - uses: actions/download-artifact@v1
