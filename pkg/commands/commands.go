@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -42,6 +43,7 @@ type App interface {
 	GetEvents(runName string, lastID string) EventIterator
 	CreateEvent(runName string, event protocol.Event) error
 	GetTokenCache(runName string) (string, error)
+	RecordTraffic(runName string, external bool, in int64, out int64) error
 }
 
 // EventIterator is the interface for getting individual events in a list of events
@@ -447,5 +449,10 @@ func (app *AppImplementation) postCallbackEvent(runName string, event protocol.E
 			return errors.New("callback: " + resp.Status)
 		}
 	}
+	return nil
+}
+
+func (app *AppImplementation) RecordTraffic(runName string, external bool, in int64, out int64) error {
+	log.Println("bytes read and written", external, runName, in, out)
 	return nil
 }

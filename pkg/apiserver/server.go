@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync/atomic"
 
 	"github.com/felixge/httpsnoop"
 	"github.com/gorilla/mux"
@@ -245,11 +246,36 @@ func logRequests(next http.Handler) http.Handler {
 	})
 }
 
-func recordTraffic(next http.Handler) http.Handler {
+type readMeasurer struct {
+	rc        io.ReadCloser
+	BytesRead int64
+}
+
+func newReadMeasurer(rc io.ReadCloser) *readMeasurer {
+	return &readMeasurer{rc: rc}
+}
+
+func (r *readMeasurer) Read(p []byte) (n int, err error) {
+	n, err = r.rc.Read(p)
+	atomic.AddInt64(&r.BytesRead, int64(n))
+	return
+}
+
+func (r *readMeasurer) Close() error {
+	return r.rc.Close()
+}
+
+func (server *Server) recordTraffic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Figure out much we've read too
+		runName := mux.Vars(r)["id"]
+		readMeasurer := newReadMeasurer(r.Body)
+		r.Body = readMeasurer
 		m := httpsnoop.CaptureMetrics(next, w, r)
-		log.Println("bytes written", m.Written)
+		// TODO: Don't ignore any errors from isExternal
+		external, _ := isExternal(r)
+		if runName != "" {
+			server.app.RecordTraffic(runName, external, readMeasurer.BytesRead, m.Written)
+		}
 	})
 }
 
@@ -372,7 +398,7 @@ func (server *Server) InitialiseRoutes() {
 	authenticatedRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
 	authenticatedRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
 	authenticatedRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
-	server.router.Use(recordTraffic)
+	server.router.Use(server.recordTraffic)
 	authenticatedRouter.Use(server.authenticate)
 	server.router.Use(logRequests)
 }
