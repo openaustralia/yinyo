@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -478,7 +477,6 @@ func (app *AppImplementation) postCallbackEvent(runName string, event protocol.E
 }
 
 func (app *AppImplementation) RecordTraffic(runName string, external bool, in int64, out int64) error {
-	log.Println("bytes read and written", external, runName, in, out)
 	// We only record traffic that is going out or coming in via the public internet
 	if external {
 		_, err := app.incrementKeyValueData(runName, exitDataAPINetworkInKey, in)
