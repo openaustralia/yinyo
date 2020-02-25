@@ -313,7 +313,6 @@ func (app *AppImplementation) StartRun(
 	envString := strings.TrimSpace(buf.String())
 	command := []string{
 		runBinary,
-		"wrapper",
 		runName,
 		runToken,
 		"--output", output,
