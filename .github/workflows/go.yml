@@ -148,12 +148,13 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          go build cmd/yinyo/yinyo.go
+          mkdir bin
+          go build -o bin cmd/yinyo/yinyo.go
       - name: upload artifacts
         uses: actions/upload-artifact@master
         with:
           name: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: yinyo*
+          path: bin
   release:
     runs-on: ubuntu-latest
     needs: build
