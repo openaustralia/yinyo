@@ -5,7 +5,7 @@
 ## 2. Run your first scraper
 
 ```bash
-yinyo client test/scrapers/test-python --output data.sqlite
+yinyo test/scrapers/test-python --output data.sqlite
 ```
 
 This will stream the console output of the scraper straight to you
@@ -127,7 +127,7 @@ This will output a stream of events formatted as JSON in real-time
 {"id":"1580183648184-0","time":"2020-01-28T03:54:08.182780901Z","type":"last","data":{}}
 ```
 
-You might notice that this is taking longer than when we ran this with `yinyo client`. It's having to install python and some dependencies which takes some time. That's because we've ignored caching here just to keep things a bit simpler
+You might notice that this is taking longer than when we ran this with `yinyo`. It's having to install python and some dependencies which takes some time. That's because we've ignored caching here just to keep things a bit simpler
 
 ### 6. Get the output
 

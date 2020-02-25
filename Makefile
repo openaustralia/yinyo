@@ -3,7 +3,7 @@
 all: run
 
 run: install
-	yinyo client test/scrapers/test-python --output data.sqlite
+	yinyo test/scrapers/test-python --output data.sqlite
 
 test:
 	go test -short -cover ./...
@@ -12,7 +12,7 @@ integration:
 	go test -cover ./...
 
 install:
-	go install ./...
+	go install cmd/yinyo/yinyo.go
 
 ppa:
 	sudo add-apt-repository ppa:longsleep/golang-backports

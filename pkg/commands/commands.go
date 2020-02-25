@@ -25,7 +25,7 @@ import (
 )
 
 const dockerImage = "openaustralia/yinyo-scraper:v1"
-const runBinary = "/bin/yinyo"
+const runBinary = "/bin/wrapper"
 
 // App is the interface for the operations of the server
 type App interface {
@@ -313,7 +313,6 @@ func (app *AppImplementation) StartRun(
 	envString := strings.TrimSpace(buf.String())
 	command := []string{
 		runBinary,
-		"wrapper",
 		runName,
 		runToken,
 		"--output", output,
