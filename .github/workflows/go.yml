@@ -189,9 +189,10 @@ jobs:
         run: |
           ls
           ls yinyo_${{ matrix.goos }}_${{ matrix.goarch }}
+          echo "::set-env name=BINARY::$(ls yinyo_${{ matrix.goos }}_${{ matrix.goarch }})
       - name: Go Release Binary
         uses: Shopify/upload-to-release@1.0.0
         with:
           name: yinyo_${{ env.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}/command-line-arguments
+          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}/${{ env.BINARY }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
