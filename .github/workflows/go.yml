@@ -185,9 +185,13 @@ jobs:
         run: |
           echo "::set-env name=VERSION::$(echo ${{ github.ref }} | sed 's@refs/[^/]*/v\?@@')"
         shell: bash
+      - name: debug
+        run: |
+          ls
+          ls yinyo_${{ matrix.goos }}_${{ matrix.goarch }}
       - name: Go Release Binary
         uses: Shopify/upload-to-release@1.0.0
         with:
           name: yinyo_${{ env.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}/command-line-arguments*
+          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}/command-line-arguments
           repo-token: ${{ secrets.GITHUB_TOKEN }}
