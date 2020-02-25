@@ -148,7 +148,7 @@ jobs:
       - name: upload artifacts
         uses: actions/upload-artifact@master
         with:
-          name: binaries_${{ matrix.goos }}_${{ matrix.goarch }}
+          name: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}
           path: yinyo
   release:
     runs-on: ubuntu-latest
@@ -168,7 +168,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: binaries_${{ matrix.goos }}_${{ matrix.goarch }}
+          name: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}
       - name: set variables
         run: |
           echo "::set-env name=VERSION::$(echo ${{ github.ref }} | sed 's@refs/[^/]*/v\?@@')"
@@ -177,5 +177,5 @@ jobs:
         uses: Shopify/upload-to-release@1.0.0
         with:
           name: yinyo_${{ env.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: binaries_${{ matrix.goos }}_${{ matrix.goarch }}/yinyo
+          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
