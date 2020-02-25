@@ -189,5 +189,5 @@ jobs:
         uses: Shopify/upload-to-release@1.0.0
         with:
           name: yinyo_${{ env.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}/yinyo*
           repo-token: ${{ secrets.GITHUB_TOKEN }}
