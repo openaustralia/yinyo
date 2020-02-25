@@ -25,7 +25,8 @@ RUN rm empty.go
 # rebuilding everything when another (not relevant) file changes
 COPY cmd cmd
 COPY pkg pkg
-RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/yinyo
+RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/server
+RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/wrapper
 
 # Create unprivileged user
 RUN adduser -D yinyo
@@ -69,7 +70,7 @@ RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-ke
     apt-get update && \
     apt-get -y install google-chrome-stable
 
-COPY --from=builder /go/bin/yinyo /bin/yinyo
+COPY --from=builder /go/bin/wrapper /bin/wrapper
 
 ####
 #### yinyo-server
@@ -79,10 +80,10 @@ FROM scratch as yinyo-server
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /go/bin/yinyo /go/bin/yinyo
+COPY --from=builder /go/bin/server /go/bin/server
 COPY --from=builder --chown=yinyo:0 /tmp /tmp
 
 # Run unprivileged
 USER yinyo
 
-CMD ["/go/bin/yinyo", "server"]
+CMD ["/go/bin/server", "server"]

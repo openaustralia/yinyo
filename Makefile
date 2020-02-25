@@ -12,7 +12,7 @@ integration:
 	go test -cover ./...
 
 install:
-	go install ./...
+	go install cmd/yinyo/yinyo.go
 
 ppa:
 	sudo add-apt-repository ppa:longsleep/golang-backports
