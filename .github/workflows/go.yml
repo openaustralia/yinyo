@@ -149,6 +149,9 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: |
           mkdir bin
+          # See https://github.com/golang/go/issues/34535
+          # This actually builds bin/command-line-arguments. Eek.
+          # This will be fixed in go 1.14 I think
           go build -o bin cmd/yinyo/yinyo.go
       - name: upload artifacts
         uses: actions/upload-artifact@master
