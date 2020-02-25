@@ -3,7 +3,7 @@
 all: run
 
 run: install
-	yinyo client test/scrapers/test-python --output data.sqlite
+	yinyo test/scrapers/test-python --output data.sqlite
 
 test:
 	go test -short -cover ./...
