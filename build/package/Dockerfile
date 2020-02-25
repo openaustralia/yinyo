@@ -86,4 +86,4 @@ COPY --from=builder --chown=yinyo:0 /tmp /tmp
 # Run unprivileged
 USER yinyo
 
-CMD ["/go/bin/server", "server"]
+CMD ["/go/bin/server"]
