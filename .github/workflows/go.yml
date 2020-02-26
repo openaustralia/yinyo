@@ -143,9 +143,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Set name of executable extension (Windows)
-      if: matrix.goos == "windows"
-      run: |
-        echo "::set-env name=EXTENSION::.exe"
+        if: matrix.goos == "windows"
+        run: |
+          echo "::set-env name=EXTENSION::.exe"
       - name: build
         env:
           GO111MODULE: on
