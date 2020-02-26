@@ -177,3 +177,8 @@ Sometimes after a while of testing and debugging the minikube VM runs out of dis
 minikube ssh
 docker system prune
 ```
+
+## Continuous integration
+
+We're using Github Actions to run the tests (`make test`), do some linting, measure coverage and build binaries of the yinyo client automatically on every push. Also,
+release binaries are automatically built as well whenever a release is made in GitHub.
