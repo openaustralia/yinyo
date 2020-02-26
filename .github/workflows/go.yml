@@ -185,14 +185,13 @@ jobs:
         run: |
           echo "::set-env name=VERSION::$(echo ${{ github.ref }} | sed 's@refs/[^/]*/v\?@@')"
         shell: bash
-      - name: debug
+      - name: Set name of executable extension (Windows)
+        if: matrix.goos == 'windows'
         run: |
-          ls
-          ls yinyo_${{ matrix.goos }}_${{ matrix.goarch }}
-          echo "::set-env name=BINARY::$(ls yinyo_${{ matrix.goos }}_${{ matrix.goarch }})"
+          echo "::set-env name=EXTENSION::.exe"
       - name: Go Release Binary
         uses: Shopify/upload-to-release@1.0.0
         with:
           name: yinyo_${{ env.VERSION }}_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}/${{ env.BINARY }}
+          path: yinyo_${{ matrix.goos }}_${{ matrix.goarch }}/yinyo${{ env.EXTENSION }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
