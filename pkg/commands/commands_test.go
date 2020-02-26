@@ -77,6 +77,8 @@ func TestCreateEvent(t *testing.T) {
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
+	keyValueStore.On("Increment", "run-name/exit_data/api/network_in", int64(0)).Return(int64(0), nil)
+	keyValueStore.On("Increment", "run-name/exit_data/api/network_out", int64(95)).Return(int64(95), nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -169,6 +171,9 @@ func TestCreateEventErrorOneTimeDuringCallback(t *testing.T) {
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
+	keyValueStore.On("Increment", "run-name/exit_data/api/network_in", int64(0)).Return(int64(0), nil)
+	// TODO: This number for the traffic is actually not correct. It should be double that because of a retry
+	keyValueStore.On("Increment", "run-name/exit_data/api/network_out", int64(95)).Return(int64(95), nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient

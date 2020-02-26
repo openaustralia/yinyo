@@ -460,14 +460,25 @@ func (app *AppImplementation) postCallbackEvent(runName string, event protocol.E
 
 	// Only do the callback if there's a sensible URL
 	if callbackURL != "" {
+		// Capture the size of the outgoing request now (before it's read)
+		out := b.Len()
+
 		client := retryablehttp.NewClient()
 		client.HTTPClient = app.HTTP
 
 		resp, err := client.Post(callbackURL, "application/json", &b)
 		if err != nil {
+			// TODO: In case of an error we've probably still sent traffic. Record this.
 			return err
 		}
 		defer resp.Body.Close()
+
+		// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
+		err = app.RecordTraffic(runName, true, 0, int64(out))
+		if err != nil {
+			return err
+		}
+
 		if resp.StatusCode != http.StatusOK {
 			return errors.New("callback: " + resp.Status)
 		}
