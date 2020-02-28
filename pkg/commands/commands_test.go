@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -32,7 +33,7 @@ func TestStartRun(t *testing.T) {
 
 	// Expect that the job will get dispatched
 	job.On(
-		"StartJob",
+		"Create",
 		"run-name",
 		"openaustralia/yinyo-scraper:v1",
 		[]string{"/bin/wrapper", "run-name", "supersecret", "--output", "output.txt", "--env", "FOO=bar"},
@@ -275,7 +276,7 @@ func TestDeleteRun(t *testing.T) {
 	stream := new(streammocks.Stream)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
-	jobDispatcher.On("DeleteJobAndToken", "run-name").Return(nil)
+	jobDispatcher.On("Delete", "run-name").Return(nil)
 	blobStore.On("Delete", "run-name/app.tgz").Return(nil)
 	blobStore.On("Delete", "run-name/output").Return(nil)
 	blobStore.On("Delete", "run-name/cache.tgz").Return(nil)
@@ -471,19 +472,18 @@ func TestGetExitDataRunNotStarted(t *testing.T) {
 }
 
 func TestCreateRun(t *testing.T) {
-	jobDispatcher := new(jobdispatchermocks.Jobs)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	app := AppImplementation{JobDispatcher: jobDispatcher, KeyValueStore: keyValueStore}
+	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	jobDispatcher.On("CreateJobAndToken", "run", mock.Anything).Return("run-foo", nil)
-	keyValueStore.On("Set", "run-foo/token", mock.Anything).Return(nil)
+	keyValueStore.On("Set", mock.Anything, mock.Anything).Return(nil)
 
 	run, err := app.CreateRun("")
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, "run-foo", run.Name)
-	jobDispatcher.AssertExpectations(t)
+	// run.Name should be a uuid. Check that it is
+	_, err = uuid.FromString(run.Name)
+	assert.Nil(t, err)
 	keyValueStore.AssertExpectations(t)
 }
 

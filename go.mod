@@ -16,6 +16,7 @@ require (
 	github.com/minio/minio-go/v6 v6.0.33
 	github.com/otiai10/copy v1.0.2
 	github.com/pkg/errors v0.8.1
+	github.com/satori/go.uuid v1.2.0
 	github.com/shirou/gopsutil v2.19.10+incompatible
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.4.0

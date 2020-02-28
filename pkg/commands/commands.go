@@ -14,6 +14,7 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
+	uuid "github.com/satori/go.uuid"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/openaustralia/yinyo/pkg/archive"
@@ -121,25 +122,24 @@ func New(startupOptions *StartupOptions) (App, error) {
 }
 
 // CreateRun creates a run
+// TODO: Remove namePrefix
 func (app *AppImplementation) CreateRun(namePrefix string) (protocol.Run, error) {
 	var createResult protocol.Run
-	if namePrefix == "" {
-		namePrefix = "run"
-	}
+
 	// Generate random token
 	runToken := uniuri.NewLen(32)
-	runName, err := app.JobDispatcher.CreateJobAndToken(namePrefix, runToken)
-	if err != nil {
-		return createResult, err
-	}
+
+	// Generate runName using uuid
+	runName := uuid.NewV4().String()
 
 	createResult = protocol.Run{
 		Name:  runName,
 		Token: runToken,
 	}
 
-	// Now cache the token for quicker access
-	err = app.setKeyValueData(runName, tokenCacheKey, runToken)
+	// Store away the runName and runToken in the key-value store
+	// TODO: Error if the key already exists - probably want to use redis SETNX
+	err := app.setKeyValueData(runName, tokenCacheKey, runToken)
 	return createResult, err
 }
 
@@ -320,7 +320,7 @@ func (app *AppImplementation) StartRun(
 	if envString != "" {
 		command = append(command, "--env", envString)
 	}
-	return app.JobDispatcher.StartJob(runName, dockerImage, command, maxRunTime)
+	return app.JobDispatcher.Create(runName, dockerImage, command, maxRunTime)
 }
 
 // Events is an iterator to retrieve events from a stream
@@ -392,7 +392,7 @@ func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) 
 // DeleteRun deletes the run. Should be the last thing called
 // TODO: If one delete operation fails the rest should still be attempted
 func (app *AppImplementation) DeleteRun(runName string) error {
-	err := app.JobDispatcher.DeleteJobAndToken(runName)
+	err := app.JobDispatcher.Delete(runName)
 	if err != nil {
 		return err
 	}

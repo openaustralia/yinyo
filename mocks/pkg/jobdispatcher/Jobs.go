@@ -9,34 +9,13 @@ type Jobs struct {
 	mock.Mock
 }
 
-// CreateJobAndToken provides a mock function with given fields: namePrefix, runToken
-func (_m *Jobs) CreateJobAndToken(namePrefix string, runToken string) (string, error) {
-	ret := _m.Called(namePrefix, runToken)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(string, string) string); ok {
-		r0 = rf(namePrefix, runToken)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(namePrefix, runToken)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// DeleteJobAndToken provides a mock function with given fields: runName
-func (_m *Jobs) DeleteJobAndToken(runName string) error {
-	ret := _m.Called(runName)
+// Create provides a mock function with given fields: runName, dockerImage, command, maxRunTime
+func (_m *Jobs) Create(runName string, dockerImage string, command []string, maxRunTime int64) error {
+	ret := _m.Called(runName, dockerImage, command, maxRunTime)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(runName)
+	if rf, ok := ret.Get(0).(func(string, string, []string, int64) error); ok {
+		r0 = rf(runName, dockerImage, command, maxRunTime)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -44,13 +23,13 @@ func (_m *Jobs) DeleteJobAndToken(runName string) error {
 	return r0
 }
 
-// StartJob provides a mock function with given fields: runName, dockerImage, command, maxRunTime
-func (_m *Jobs) StartJob(runName string, dockerImage string, command []string, maxRunTime int64) error {
-	ret := _m.Called(runName, dockerImage, command, maxRunTime)
+// Delete provides a mock function with given fields: runName
+func (_m *Jobs) Delete(runName string) error {
+	ret := _m.Called(runName)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, []string, int64) error); ok {
-		r0 = rf(runName, dockerImage, command, maxRunTime)
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(runName)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -5,12 +5,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/protocol"
+	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,61 +43,10 @@ func TestCreateRun(t *testing.T) {
 	}
 	defer run.Delete()
 
-	// The only purpose of name_prefix is to make runs easier for humans to identify
-	// So, expect the run to start with the name_prefix but there's probably more
-	assert.True(t, strings.HasPrefix(run.GetName(), "foo-"))
+	// Check that run name looks like a uuid
+	_, err = uuid.FromString(run.GetName())
+	assert.Nil(t, err)
 	assert.NotEqual(t, "", run.GetToken())
-}
-
-func TestCreateRunScraperNameEncoding(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode.")
-	}
-
-	client := defaultClient()
-	run, err := client.CreateRun("foo/b_12r")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer run.Delete()
-
-	// Only certain characters are allowed in kubernetes job names
-	assert.True(t, strings.HasPrefix(run.GetName(), "foo-b-12r-"))
-}
-
-// Check that run names are created to be unique even when the same scraper name
-// is given twice
-func TestCreateRunNamesUnique(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode.")
-	}
-
-	client := defaultClient()
-	run1, err := client.CreateRun("foo")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer run1.Delete()
-	run2, err := client.CreateRun("foo")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer run2.Delete()
-	assert.NotEqual(t, run1.GetName(), run2.GetName())
-}
-
-func TestNamePrefixOptional(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode.")
-	}
-
-	client := defaultClient()
-	run, err := client.CreateRun("")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer run.Delete()
-	assert.True(t, strings.HasPrefix(run.GetName(), "run-"))
 }
 
 func TestUploadDownloadApp(t *testing.T) {
