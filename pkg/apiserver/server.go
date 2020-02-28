@@ -9,7 +9,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"strings"
 	"sync/atomic"
 
 	"github.com/felixge/httpsnoop"
@@ -283,42 +282,19 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 	})
 }
 
-func extractBearerToken(header http.Header) (string, error) {
-	const bearerPrefix = "Bearer "
-	authHeader := header.Get("Authorization")
-
-	if !strings.HasPrefix(authHeader, bearerPrefix) {
-		return "", errors.New("expected Authorization header with bearer token")
-	}
-	return authHeader[len(bearerPrefix):], nil
-}
-
 // Middleware function, which will be called for each request
 // TODO: Refactor authenticate method to return an error
+// TODO: Rename this method
 func (server *Server) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		runName := mux.Vars(r)["id"]
-		runToken, err := extractBearerToken(r.Header)
-		if err != nil {
-			err = newHTTPError(err, http.StatusForbidden, err.Error())
-			logAndReturnError(err, w)
-			return
-		}
 
-		actualRunToken, err := server.app.GetTokenCache(runName)
-
+		_, err := server.app.GetTokenCache(runName)
 		if err != nil {
 			log.Println(err)
 			if errors.Is(err, commands.ErrNotFound) {
 				err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runName))
 			}
-			logAndReturnError(err, w)
-			return
-		}
-
-		if runToken != actualRunToken {
-			err = errors.New("authorization header has incorrect bearer token")
-			err = newHTTPError(err, http.StatusForbidden, err.Error())
 			logAndReturnError(err, w)
 			return
 		}

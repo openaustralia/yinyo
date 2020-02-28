@@ -23,7 +23,6 @@ type Run struct {
 // RunInterface is the interface to interact with existing runs
 type RunInterface interface {
 	GetName() string
-	GetToken() string
 	GetApp() (io.ReadCloser, error)
 	GetCache() (io.ReadCloser, error)
 	GetOutput() (io.ReadCloser, error)
@@ -140,19 +139,13 @@ func (run *Run) GetName() string {
 	return run.Name
 }
 
-// GetToken returns the token used for authenticating the run
-func (run *Run) GetToken() string {
-	return run.Token
-}
-
-// Make an API call for a particular run. These requests are always authenticated
+// Make an API call for a particular run.
 func (run *Run) request(method string, path string, body io.Reader) (*http.Response, error) {
 	url := run.Client.URL + fmt.Sprintf("/runs/%s", run.Name) + path
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+run.Token)
 	return run.Client.HTTPClient.Do(req)
 }
 

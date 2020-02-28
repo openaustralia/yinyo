@@ -46,7 +46,6 @@ func TestCreateRun(t *testing.T) {
 	// Check that run name looks like a uuid
 	_, err = uuid.FromString(run.GetName())
 	assert.Nil(t, err)
-	assert.NotEqual(t, "", run.GetToken())
 }
 
 func TestUploadDownloadApp(t *testing.T) {

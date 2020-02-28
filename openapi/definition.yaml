@@ -19,7 +19,7 @@ paths:
       tags: ["Core"]
       summary: Create run
       description: |
-        Returns with the "run name" which uniquely identifies this run and the "run token" which is a secret to ensure that only you can access the run from here on in. You will need these values to subsequently start, track and access this run.
+        Returns with the "run name" which uniquely identifies this run. You will need these values to subsequently start, track and access this run.
       responses:
         200:
           description: Created successfully
@@ -32,13 +32,8 @@ paths:
                     type: string
                     description: |
                       Uniquely identifies this run. Needed for any subsequent API calls for this run.
-                  token:
-                    type: string
-                    description: |
-                      Secret value needed to access the run
               example:
                 name: run-lvg44
-                token: bMMT7MnU2QbFZbk0lkut401D4uFScUI2
   /runs/{name}/app:
     put:
       tags: ["Core"]
@@ -86,13 +81,9 @@ paths:
                 Directory with code, configuration and data to run. Everything needs to be tarred and gzip compressed.
               format: binary
         required: true
-      security:
-        - token: []
       responses:
         200:
           description: Success
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
   /runs/{name}/cache:
@@ -110,15 +101,11 @@ paths:
               type: string
               format: binary
         required: true
-      security:
-        - token: []
       responses:
         200:
           description: Success
         400:
           $ref: "#/components/responses/bad_request"
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
     get:
@@ -126,8 +113,6 @@ paths:
       summary: Download a build cache
       parameters:
         - $ref: "#/components/parameters/name"
-      security:
-        - token: []
       responses:
         200:
           content:
@@ -137,8 +122,6 @@ paths:
                 type: string
                 format: binary
           description: Success
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
 
@@ -182,15 +165,11 @@ paths:
               callback: http://my-url-endpoint.com?key=special-secret-stuff
               max_run_time: 3600
 
-      security:
-        - token: []
       responses:
         200:
           description: Success
         400:
           $ref: "#/components/responses/bad_request"
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
   /runs/{name}/events:
@@ -207,8 +186,6 @@ paths:
           schema:
             type: string
 
-      security:
-        - token: []
       responses:
         200:
           description: Succesfully attached to stream
@@ -230,8 +207,6 @@ paths:
                   stage: "build"
                   stream: "stdout"
                   text: "Hello!"
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
   /runs/{name}/exit-data:
@@ -242,8 +217,6 @@ paths:
         Returns a rag-bag of useful information about the progress and completion of a run. Find out whether the run has finished and if so find out  whether the scraper ran succesfully or not. Also returns information about how much resources the run took.
       parameters:
         - $ref: "#/components/parameters/name"
-      security:
-        - token: []
       responses:
         200:
           description: Success
@@ -251,8 +224,6 @@ paths:
             "application/json":
               schema:
                 $ref: "#/components/schemas/ExitData"
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
 
@@ -264,8 +235,6 @@ paths:
         Usually at the end of the run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.
       parameters:
         - $ref: "#/components/parameters/name"
-      security:
-        - token: []
       responses:
         200:
           description: Success
@@ -274,8 +243,6 @@ paths:
               schema:
                 type: string
                 format: binary
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
   /runs/{name}:
@@ -286,13 +253,9 @@ paths:
         This does final clean up of everything associated with a run. Make sure you always do this as the last API call for a run. After doing this it's not possible to get any more information about this run.
       parameters:
         - $ref: "#/components/parameters/name"
-      security:
-        - token: []
       responses:
         200:
           description: Success
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
 components:
@@ -305,12 +268,6 @@ components:
       schema:
         type: string
   responses:
-    bad_auth:
-      description: The run token was incorrect
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
     bad_request:
       description: There was a problem with your request
       content:
@@ -492,7 +449,3 @@ components:
                 text:
                   type: string
                   description: Console message
-  securitySchemes:
-    token:
-      type: http
-      scheme: bearer

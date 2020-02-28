@@ -19,13 +19,13 @@ func main() {
 	var wrapperEnvironment map[string]string
 
 	var rootCmd = &cobra.Command{
-		Use:   "wrapper run_name run_token",
+		Use:   "wrapper run_name",
 		Short: "Manages the building and running of a scraper",
 		Long:  "Manages the building and running of a scraper inside a container. Used internally by the system.",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			run := &apiclient.Run{
-				Run:    protocol.Run{Name: args[0], Token: args[1]},
+				Run:    protocol.Run{Name: args[0]},
 				Client: apiclient.New(serverURL),
 			}
 			err := wrapper.Run(run, &wrapper.Options{

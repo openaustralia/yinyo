@@ -36,11 +36,9 @@ func TestStartRun(t *testing.T) {
 		"Create",
 		"run-name",
 		"openaustralia/yinyo-scraper:v1",
-		[]string{"/bin/wrapper", "run-name", "supersecret", "--output", "output.txt", "--env", "FOO=bar"},
+		[]string{"/bin/wrapper", "run-name", "--output", "output.txt", "--env", "FOO=bar"},
 		int64(86400),
 	).Return(nil)
-	// Expect that we'll need the secret token
-	keyValueStore.On("Get", "run-name/token").Return("supersecret", nil)
 	// Expect that we save the callback url in the key value store
 	keyValueStore.On("Set", "run-name/url", "http://foo.com").Return(nil)
 	// Expect that we try to get the code just to see if it exists

@@ -43,17 +43,16 @@ curl -X POST http://localhost:8080/runs
 You'll get a `name` and a `token` back which you'll need in the following steps
 
 ```json
-{ "name": "run-qjv4t", "token": "lLsBCZiBPYcTQb439YvPbz9GC3bPcYr5" }
+{ "name": "run-qjv4t" }
 ```
 
-So, to make this a bit easier with less typing, let's set a couple of environment variables
+So, to make this a bit easier with less typing, let's set an environment variable
 
 ```bash
 NAME=run-qjv4t
-TOKEN=lLsBCZiBPYcTQb439YvPbz9GC3bPcYr5
 ```
 
-(Replace the run `name` and `token` with your own values)
+(Replace the run `name` with your own value)
 
 ### 2. Tar and compress the code
 
@@ -64,7 +63,7 @@ tar -C test/scrapers/test-python/ -zcf code.tgz .
 ### 3. Upload the code
 
 ```bash
-curl -X PUT -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME/app" --data-binary @code.tgz
+curl -X PUT "http://localhost:8080/runs/$NAME/app" --data-binary @code.tgz
 ```
 
 ### 4. Start the run
@@ -72,13 +71,13 @@ curl -X PUT -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME/
 Note that we're also passing the path to the file that we want to get at the end of the run.
 
 ```bash
-curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "http://localhost:8080/runs/$NAME/start" -d '{"output":"data.sqlite"}'
+curl -X POST -H "Content-Type: application/json" "http://localhost:8080/runs/$NAME/start" -d '{"output":"data.sqlite"}'
 ```
 
 ### 5. Stream the events
 
 ```bash
-curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME/events"
+curl "http://localhost:8080/runs/$NAME/events"
 ```
 
 This will output a stream of events formatted as JSON in real-time
@@ -134,13 +133,13 @@ You might notice that this is taking longer than when we ran this with `yinyo`. 
 Now get the output file which we chose when we started the run and save it to a local file called `data.sqlite`.
 
 ```bash
-curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME/output" --output data.sqlite
+curl "http://localhost:8080/runs/$NAME/output" --output data.sqlite
 ```
 
 ### 7. Clean up
 
 ```bash
-curl -X DELETE -H "Authorization: Bearer $TOKEN" "http://localhost:8080/runs/$NAME"
+curl -X DELETE "http://localhost:8080/runs/$NAME"
 ```
 
 ## 4. Check out the [API reference](/api) to see what more you can do

@@ -12,7 +12,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dchest/uniuri"
 	"github.com/go-redis/redis"
 	uuid "github.com/satori/go.uuid"
 
@@ -42,6 +41,7 @@ type App interface {
 	GetExitData(runName string) (protocol.ExitData, error)
 	GetEvents(runName string, lastID string) EventIterator
 	CreateEvent(runName string, event protocol.Event) error
+	// TODO: Rename this method to something IsRunCreated and should return bool
 	GetTokenCache(runName string) (string, error)
 	RecordTraffic(runName string, external bool, in int64, out int64) error
 }
@@ -123,23 +123,14 @@ func New(startupOptions *StartupOptions) (App, error) {
 
 // CreateRun creates a run
 func (app *AppImplementation) CreateRun() (protocol.Run, error) {
-	var createResult protocol.Run
-
-	// Generate random token
-	runToken := uniuri.NewLen(32)
-
 	// Generate runName using uuid
 	runName := uuid.NewV4().String()
 
-	createResult = protocol.Run{
-		Name:  runName,
-		Token: runToken,
-	}
-
-	// Store away the runName and runToken in the key-value store
+	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
-	err := app.setKeyValueData(runName, tokenCacheKey, runToken)
-	return createResult, err
+	// TODO: Change the name of the key
+	err := app.setKeyValueData(runName, tokenCacheKey, "true")
+	return protocol.Run{Name: runName}, err
 }
 
 // GetApp downloads the tar & gzipped application code
@@ -291,10 +282,6 @@ func (app *AppImplementation) StartRun(
 	if err != nil {
 		return err
 	}
-	runToken, err := app.GetTokenCache(runName)
-	if err != nil {
-		return err
-	}
 
 	// Convert environment variable values to a single string that can be passed
 	// as a flag to wrapper
@@ -313,7 +300,6 @@ func (app *AppImplementation) StartRun(
 	command := []string{
 		runBinary,
 		runName,
-		runToken,
 		"--output", output,
 	}
 	if envString != "" {
