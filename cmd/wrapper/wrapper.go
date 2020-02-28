@@ -22,7 +22,7 @@ func main() {
 		Use:   "wrapper run_name",
 		Short: "Manages the building and running of a scraper",
 		Long:  "Manages the building and running of a scraper inside a container. Used internally by the system.",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			run := &apiclient.Run{
 				Run:    protocol.Run{Name: args[0]},
