@@ -31,20 +31,20 @@ func (_m *App) CreateEvent(runName string, event protocol.Event) error {
 	return r0
 }
 
-// CreateRun provides a mock function with given fields: namePrefix
-func (_m *App) CreateRun(namePrefix string) (protocol.Run, error) {
-	ret := _m.Called(namePrefix)
+// CreateRun provides a mock function with given fields:
+func (_m *App) CreateRun() (protocol.Run, error) {
+	ret := _m.Called()
 
 	var r0 protocol.Run
-	if rf, ok := ret.Get(0).(func(string) protocol.Run); ok {
-		r0 = rf(namePrefix)
+	if rf, ok := ret.Get(0).(func() protocol.Run); ok {
+		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(protocol.Run)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(namePrefix)
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}

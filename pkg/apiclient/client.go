@@ -110,15 +110,10 @@ func (client *Client) Hello() (string, error) {
 }
 
 // CreateRun is the first thing called. It creates a run
-func (client *Client) CreateRun(namePrefix string) (RunInterface, error) {
+func (client *Client) CreateRun() (RunInterface, error) {
 	run := &Run{Client: client}
 
 	uri := client.URL + "/runs"
-	if namePrefix != "" {
-		params := url.Values{}
-		params.Add("name_prefix", namePrefix)
-		uri += "?" + params.Encode()
-	}
 	req, err := http.NewRequest("POST", uri, nil)
 	if err != nil {
 		return run, err

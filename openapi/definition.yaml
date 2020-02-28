@@ -20,14 +20,6 @@ paths:
       summary: Create run
       description: |
         Returns with the "run name" which uniquely identifies this run and the "run token" which is a secret to ensure that only you can access the run from here on in. You will need these values to subsequently start, track and access this run.
-
-        You can optionally provide a suggested "name prefix" which will be put at the beginning of the unique name for the run. This is only useful to give more human meaningful names to the runs if that's important in your application. However, you can not depend on the prefix being used exactly as you provide it as some characters are not possible in run names.
-      parameters:
-        - name: name_prefix
-          description: Prefix used when generating run names
-          in: query
-          schema:
-            type: string
       responses:
         200:
           description: Created successfully

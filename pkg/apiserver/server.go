@@ -19,13 +19,7 @@ import (
 )
 
 func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
-	values := r.URL.Query()["name_prefix"]
-	namePrefix := ""
-	if len(values) > 0 {
-		namePrefix = values[0]
-	}
-
-	createResult, err := server.app.CreateRun(namePrefix)
+	createResult, err := server.app.CreateRun()
 	if err != nil {
 		return err
 	}

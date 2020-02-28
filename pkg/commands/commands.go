@@ -30,7 +30,7 @@ const runBinary = "/bin/wrapper"
 
 // App is the interface for the operations of the server
 type App interface {
-	CreateRun(namePrefix string) (protocol.Run, error)
+	CreateRun() (protocol.Run, error)
 	DeleteRun(runName string) error
 	StartRun(runName string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
 	GetApp(runName string) (io.Reader, error)
@@ -122,8 +122,7 @@ func New(startupOptions *StartupOptions) (App, error) {
 }
 
 // CreateRun creates a run
-// TODO: Remove namePrefix
-func (app *AppImplementation) CreateRun(namePrefix string) (protocol.Run, error) {
+func (app *AppImplementation) CreateRun() (protocol.Run, error) {
 	var createResult protocol.Run
 
 	// Generate random token

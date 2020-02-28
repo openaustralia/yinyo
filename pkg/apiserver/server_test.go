@@ -36,7 +36,7 @@ func makeRequest(app commands.App, method string, url string, body io.Reader, to
 
 func TestCreateRun(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("CreateRun", "").Return(protocol.Run{Name: "run-foo", Token: "dsfhg"}, nil)
+	app.On("CreateRun").Return(protocol.Run{Name: "run-foo", Token: "dsfhg"}, nil)
 
 	rr := makeRequest(app, "POST", "/runs", nil, "")
 
@@ -48,24 +48,10 @@ func TestCreateRun(t *testing.T) {
 	app.AssertExpectations(t)
 }
 
-func TestCreateRunWithPrefix(t *testing.T) {
-	app := new(commandsmocks.App)
-	app.On("CreateRun", "prefix").Return(protocol.Run{Name: "prefix-foo", Token: "abc"}, nil)
-
-	rr := makeRequest(app, "POST", "/runs?name_prefix=prefix", nil, "")
-
-	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t,
-		`{"name":"prefix-foo","token":"abc"}
-`, rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"application/json"}}, rr.Header())
-	app.AssertExpectations(t)
-}
-
 func TestCreateRunInternalServerError(t *testing.T) {
 	app := new(commandsmocks.App)
 	// There was some kind of internal error when creating a run
-	app.On("CreateRun", "").Return(protocol.Run{}, errors.New("Something internal"))
+	app.On("CreateRun").Return(protocol.Run{}, errors.New("Something internal"))
 
 	rr := makeRequest(app, "POST", "/runs", nil, "")
 

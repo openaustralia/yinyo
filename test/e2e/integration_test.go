@@ -37,7 +37,7 @@ func TestCreateRun(t *testing.T) {
 	}
 
 	client := defaultClient()
-	run, err := client.CreateRun("foo")
+	run, err := client.CreateRun()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestUploadDownloadApp(t *testing.T) {
 
 	// First we need to create a run
 	client := defaultClient()
-	run, err := client.CreateRun("")
+	run, err := client.CreateRun()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,12 +96,12 @@ func TestUploadDownloadApp(t *testing.T) {
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
 // TODO: Use high-level client library instead?
-func runScraper(name string, appDirectory string, cachePath string, env []protocol.EnvVariable) ([]protocol.Event, error) {
+func runScraper(appDirectory string, cachePath string, env []protocol.EnvVariable) ([]protocol.Event, error) {
 	var eventsList []protocol.Event
 
 	client := defaultClient()
 	// Create the run
-	run, err := client.CreateRun(name)
+	run, err := client.CreateRun()
 	if err != nil {
 		return eventsList, err
 	}
@@ -178,12 +178,12 @@ func runScraperWithPreCache(name string, env []protocol.EnvVariable) ([]protocol
 	// the whole scraper before we run the main tests
 	_, err := os.Stat(cachePath)
 	if os.IsNotExist(err) {
-		_, err = runScraper(name, appDirectory, cachePath, env)
+		_, err = runScraper(appDirectory, cachePath, env)
 		if err != nil {
 			return eventsList, err
 		}
 	}
-	eventsList, err = runScraper(name, appDirectory, cachePath, env)
+	eventsList, err = runScraper(appDirectory, cachePath, env)
 	if err != nil {
 		return eventsList, err
 	}
