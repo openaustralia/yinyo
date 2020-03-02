@@ -283,9 +283,8 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 }
 
 // Middleware function, which will be called for each request
-// TODO: Refactor authenticate method to return an error
-// TODO: Rename this method
-func (server *Server) authenticate(next http.Handler) http.Handler {
+// TODO: Refactor checkRunCreated method to return an error
+func (server *Server) checkRunCreated(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		runID := mux.Vars(r)["id"]
 
@@ -368,20 +367,20 @@ func (server *Server) InitialiseRoutes() {
 	server.router.Handle("/", appHandler(server.whoAmI))
 	server.router.Handle("/runs", appHandler(server.create)).Methods("POST")
 
-	authenticatedRouter := server.router.PathPrefix("/runs/{id}").Subrouter()
-	authenticatedRouter.Handle("/app", appHandler(server.getApp)).Methods("GET")
-	authenticatedRouter.Handle("/app", appHandler(server.putApp)).Methods("PUT")
-	authenticatedRouter.Handle("/cache", appHandler(server.getCache)).Methods("GET")
-	authenticatedRouter.Handle("/cache", appHandler(server.putCache)).Methods("PUT")
-	authenticatedRouter.Handle("/output", appHandler(server.getOutput)).Methods("GET")
-	authenticatedRouter.Handle("/output", appHandler(server.putOutput)).Methods("PUT")
-	authenticatedRouter.Handle("/exit-data", appHandler(server.getExitData)).Methods("GET")
-	authenticatedRouter.Handle("/start", appHandler(server.start)).Methods("POST")
-	authenticatedRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
-	authenticatedRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
-	authenticatedRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
+	runRouter := server.router.PathPrefix("/runs/{id}").Subrouter()
+	runRouter.Handle("/app", appHandler(server.getApp)).Methods("GET")
+	runRouter.Handle("/app", appHandler(server.putApp)).Methods("PUT")
+	runRouter.Handle("/cache", appHandler(server.getCache)).Methods("GET")
+	runRouter.Handle("/cache", appHandler(server.putCache)).Methods("PUT")
+	runRouter.Handle("/output", appHandler(server.getOutput)).Methods("GET")
+	runRouter.Handle("/output", appHandler(server.putOutput)).Methods("PUT")
+	runRouter.Handle("/exit-data", appHandler(server.getExitData)).Methods("GET")
+	runRouter.Handle("/start", appHandler(server.start)).Methods("POST")
+	runRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
+	runRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
+	runRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
 	server.router.Use(server.recordTraffic)
-	authenticatedRouter.Use(server.authenticate)
+	runRouter.Use(server.checkRunCreated)
 	server.router.Use(logRequests)
 }
 
