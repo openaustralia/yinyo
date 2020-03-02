@@ -308,8 +308,9 @@ func TestTokenCacheNotFound(t *testing.T) {
 
 	app := AppImplementation{KeyValueStore: keyValueStore}
 	// This run name should not exist
-	_, err := app.GetTokenCache("does-not-exit")
-	assert.True(t, errors.Is(err, ErrNotFound))
+	created, err := app.IsRunCreated("does-not-exit")
+	assert.Nil(t, err)
+	assert.False(t, created)
 
 	keyValueStore.AssertExpectations(t)
 }

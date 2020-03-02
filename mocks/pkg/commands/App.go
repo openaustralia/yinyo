@@ -167,15 +167,15 @@ func (_m *App) GetOutput(runID string) (io.Reader, error) {
 	return r0, r1
 }
 
-// GetTokenCache provides a mock function with given fields: runID
-func (_m *App) GetTokenCache(runID string) (string, error) {
+// IsRunCreated provides a mock function with given fields: runID
+func (_m *App) IsRunCreated(runID string) (bool, error) {
 	ret := _m.Called(runID)
 
-	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(string) bool); ok {
 		r0 = rf(runID)
 	} else {
-		r0 = ret.Get(0).(string)
+		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error

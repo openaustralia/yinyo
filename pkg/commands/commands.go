@@ -41,8 +41,7 @@ type App interface {
 	GetExitData(runID string) (protocol.ExitData, error)
 	GetEvents(runID string, lastID string) EventIterator
 	CreateEvent(runID string, event protocol.Event) error
-	// TODO: Rename this method to something IsRunCreated and should return bool
-	GetTokenCache(runID string) (string, error)
+	IsRunCreated(runID string) (bool, error)
 	RecordTraffic(runID string, external bool, in int64, out int64) error
 }
 
@@ -425,9 +424,15 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 	return app.deleteKeyValueData(runID, tokenCacheKey)
 }
 
-// GetTokenCache gets the cached runToken. Returns ErrNotFound if run name doesn't exist
-func (app *AppImplementation) GetTokenCache(runID string) (string, error) {
-	return app.getKeyValueData(runID, tokenCacheKey)
+func (app *AppImplementation) IsRunCreated(runID string) (bool, error) {
+	v, err := app.getKeyValueData(runID, tokenCacheKey)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return v == "true", nil
 }
 
 func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Event) error {

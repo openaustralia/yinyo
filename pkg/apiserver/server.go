@@ -289,16 +289,13 @@ func (server *Server) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		runID := mux.Vars(r)["id"]
 
-		v, err := server.app.GetTokenCache(runID)
+		created, err := server.app.IsRunCreated(runID)
 		if err != nil {
 			log.Println(err)
-			if errors.Is(err, commands.ErrNotFound) {
-				err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runID))
-			}
 			logAndReturnError(err, w)
 			return
 		}
-		if v != "true" {
+		if !created {
 			err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runID))
 			logAndReturnError(err, w)
 			return
