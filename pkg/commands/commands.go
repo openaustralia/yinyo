@@ -30,20 +30,20 @@ const runBinary = "/bin/wrapper"
 // App is the interface for the operations of the server
 type App interface {
 	CreateRun() (protocol.Run, error)
-	DeleteRun(runName string) error
-	StartRun(runName string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
-	GetApp(runName string) (io.Reader, error)
-	PutApp(reader io.Reader, objectSize int64, runName string) error
-	GetCache(runName string) (io.Reader, error)
-	PutCache(reader io.Reader, objectSize int64, runName string) error
-	GetOutput(runName string) (io.Reader, error)
-	PutOutput(reader io.Reader, objectSize int64, runName string) error
-	GetExitData(runName string) (protocol.ExitData, error)
-	GetEvents(runName string, lastID string) EventIterator
-	CreateEvent(runName string, event protocol.Event) error
+	DeleteRun(runID string) error
+	StartRun(runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
+	GetApp(runID string) (io.Reader, error)
+	PutApp(reader io.Reader, objectSize int64, runID string) error
+	GetCache(runID string) (io.Reader, error)
+	PutCache(reader io.Reader, objectSize int64, runID string) error
+	GetOutput(runID string) (io.Reader, error)
+	PutOutput(reader io.Reader, objectSize int64, runID string) error
+	GetExitData(runID string) (protocol.ExitData, error)
+	GetEvents(runID string, lastID string) EventIterator
+	CreateEvent(runID string, event protocol.Event) error
 	// TODO: Rename this method to something IsRunCreated and should return bool
-	GetTokenCache(runName string) (string, error)
-	RecordTraffic(runName string, external bool, in int64, out int64) error
+	GetTokenCache(runID string) (string, error)
+	RecordTraffic(runID string, external bool, in int64, out int64) error
 }
 
 // EventIterator is the interface for getting individual events in a list of events
@@ -123,19 +123,19 @@ func New(startupOptions *StartupOptions) (App, error) {
 
 // CreateRun creates a run
 func (app *AppImplementation) CreateRun() (protocol.Run, error) {
-	// Generate runName using uuid
-	runName := uuid.NewV4().String()
+	// Generate run ID using uuid
+	id := uuid.NewV4().String()
 
 	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
 	// TODO: Change the name of the key
-	err := app.setKeyValueData(runName, tokenCacheKey, "true")
-	return protocol.Run{Name: runName}, err
+	err := app.setKeyValueData(id, tokenCacheKey, "true")
+	return protocol.Run{ID: id}, err
 }
 
 // GetApp downloads the tar & gzipped application code
-func (app *AppImplementation) GetApp(runName string) (io.Reader, error) {
-	return app.getBlobStoreData(runName, filenameApp)
+func (app *AppImplementation) GetApp(runID string) (io.Reader, error) {
+	return app.getBlobStoreData(runID, filenameApp)
 }
 
 // Simultaneously check that the archive is valid and save to a temporary file
@@ -168,7 +168,7 @@ func (app *AppImplementation) validateArchiveToTempFile(reader io.Reader) (*os.F
 }
 
 // PutApp uploads the tar & gzipped application code
-func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName string) error {
+func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runID string) error {
 	tmpfile, err := app.validateArchiveToTempFile(reader)
 	if err != nil {
 		return err
@@ -176,39 +176,39 @@ func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runName
 	defer os.Remove(tmpfile.Name())
 
 	// Now upload the contents of the temporary file
-	return app.putBlobStoreData(tmpfile, objectSize, runName, filenameApp)
+	return app.putBlobStoreData(tmpfile, objectSize, runID, filenameApp)
 }
 
 // GetCache downloads the tar & gzipped build cache
-func (app *AppImplementation) GetCache(runName string) (io.Reader, error) {
-	return app.getBlobStoreData(runName, filenameCache)
+func (app *AppImplementation) GetCache(runID string) (io.Reader, error) {
+	return app.getBlobStoreData(runID, filenameCache)
 }
 
 // PutCache uploads the tar & gzipped build cache
-func (app *AppImplementation) PutCache(reader io.Reader, objectSize int64, runName string) error {
+func (app *AppImplementation) PutCache(reader io.Reader, objectSize int64, runID string) error {
 	tmpfile, err := app.validateArchiveToTempFile(reader)
 	if err != nil {
 		return err
 	}
 	defer os.Remove(tmpfile.Name())
 
-	return app.putBlobStoreData(tmpfile, objectSize, runName, filenameCache)
+	return app.putBlobStoreData(tmpfile, objectSize, runID, filenameCache)
 }
 
 // GetOutput downloads the scraper output
-func (app *AppImplementation) GetOutput(runName string) (io.Reader, error) {
-	return app.getBlobStoreData(runName, filenameOutput)
+func (app *AppImplementation) GetOutput(runID string) (io.Reader, error) {
+	return app.getBlobStoreData(runID, filenameOutput)
 }
 
 // PutOutput uploads the scraper output
-func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runName string) error {
-	return app.putBlobStoreData(reader, objectSize, runName, filenameOutput)
+func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runID string) error {
+	return app.putBlobStoreData(reader, objectSize, runID, filenameOutput)
 }
 
 // GetExitData downloads the exit data
-func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, error) {
+func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	build, err := app.getKeyValueData(runName, exitDataBuildKey)
+	build, err := app.getKeyValueData(runID, exitDataBuildKey)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -221,7 +221,7 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 		}
 		exitData.Build = &exitDataBuild
 	}
-	run, err := app.getKeyValueData(runName, exitDataRunKey)
+	run, err := app.getKeyValueData(runID, exitDataRunKey)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -234,7 +234,7 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 		}
 		exitData.Run = &exitDataRun
 	}
-	finished, err := app.getKeyValueData(runName, exitDataFinishedKey)
+	finished, err := app.getKeyValueData(runID, exitDataFinishedKey)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -247,7 +247,7 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 		}
 		exitData.Finished = exitDataFinished
 	}
-	apiNetworkIn, err := app.getKeyValueDataAsInt(runName, exitDataAPINetworkInKey)
+	apiNetworkIn, err := app.getKeyValueDataAsInt(runID, exitDataAPINetworkInKey)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -255,7 +255,7 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 	} else {
 		exitData.API.NetworkIn = uint64(apiNetworkIn)
 	}
-	apiNetworkOut, err := app.getKeyValueDataAsInt(runName, exitDataAPINetworkOutKey)
+	apiNetworkOut, err := app.getKeyValueDataAsInt(runID, exitDataAPINetworkOutKey)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -268,9 +268,9 @@ func (app *AppImplementation) GetExitData(runName string) (protocol.ExitData, er
 
 // StartRun starts the run
 func (app *AppImplementation) StartRun(
-	runName string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
+	runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
 	// First check that the app exists
-	_, err := app.GetApp(runName)
+	_, err := app.GetApp(runID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return ErrAppNotAvailable
@@ -278,7 +278,7 @@ func (app *AppImplementation) StartRun(
 		return err
 	}
 
-	err = app.setKeyValueData(runName, callbackKey, callbackURL)
+	err = app.setKeyValueData(runID, callbackKey, callbackURL)
 	if err != nil {
 		return err
 	}
@@ -299,29 +299,29 @@ func (app *AppImplementation) StartRun(
 	envString := strings.TrimSpace(buf.String())
 	command := []string{
 		runBinary,
-		runName,
+		runID,
 		"--output", output,
 	}
 	if envString != "" {
 		command = append(command, "--env", envString)
 	}
-	return app.JobDispatcher.Create(runName, dockerImage, command, maxRunTime)
+	return app.JobDispatcher.Create(runID, dockerImage, command, maxRunTime)
 }
 
 // Events is an iterator to retrieve events from a stream
 type Events struct {
-	app     *AppImplementation
-	runName string
-	lastID  string
-	more    bool
+	app    *AppImplementation
+	runID  string
+	lastID string
+	more   bool
 }
 
 // GetEvents returns an iterator to get at all the events.
 // Use "0" for lastId to start at the beginning of the stream. Otherwise use the id of the last
 // seen event to restart the stream from that point. Don't try to restart the stream from the
 // last event, otherwise More() will just wait around forever.
-func (app *AppImplementation) GetEvents(runName string, lastID string) EventIterator {
-	return &Events{app: app, runName: runName, lastID: lastID, more: true}
+func (app *AppImplementation) GetEvents(runID string, lastID string) EventIterator {
+	return &Events{app: app, runID: runID, lastID: lastID, more: true}
 }
 
 // More checks whether there are more events available. If true you can then call Next()
@@ -331,7 +331,7 @@ func (events *Events) More() bool {
 
 // Next returns the next event
 func (events *Events) Next() (e protocol.Event, err error) {
-	e, err = events.app.Stream.Get(events.runName, events.lastID)
+	e, err = events.app.Stream.Get(events.runID, events.lastID)
 	if err != nil {
 		return
 	}
@@ -346,9 +346,9 @@ func (events *Events) Next() (e protocol.Event, err error) {
 }
 
 // CreateEvent add an event to the stream
-func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) error {
-	// TODO: Use something like runName-events instead for the stream name
-	event, err := app.Stream.Add(runName, event)
+func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) error {
+	// TODO: Use something like runID-events instead for the stream name
+	event, err := app.Stream.Add(runID, event)
 	if err != nil {
 		return err
 	}
@@ -359,78 +359,78 @@ func (app *AppImplementation) CreateEvent(runName string, event protocol.Event) 
 		if err != nil {
 			return err
 		}
-		err = app.setKeyValueData(runName, exitDataKeyBase+f.Stage, string(exitDataBytes))
+		err = app.setKeyValueData(runID, exitDataKeyBase+f.Stage, string(exitDataBytes))
 		if err != nil {
 			return err
 		}
 	case protocol.LastData:
-		err = app.setKeyValueData(runName, exitDataFinishedKey, "true")
+		err = app.setKeyValueData(runID, exitDataFinishedKey, "true")
 		if err != nil {
 			return err
 		}
 	}
 	// We're intentionally doing the callback synchronously with the create event API call.
 	// This way we can ensure that events within a run maintain their ordering.
-	return app.postCallbackEvent(runName, event)
+	return app.postCallbackEvent(runID, event)
 }
 
 // DeleteRun deletes the run. Should be the last thing called
 // TODO: If one delete operation fails the rest should still be attempted
-func (app *AppImplementation) DeleteRun(runName string) error {
-	err := app.JobDispatcher.Delete(runName)
+func (app *AppImplementation) DeleteRun(runID string) error {
+	err := app.JobDispatcher.Delete(runID)
 	if err != nil {
 		return err
 	}
 
-	err = app.deleteBlobStoreData(runName, filenameApp)
+	err = app.deleteBlobStoreData(runID, filenameApp)
 	if err != nil {
 		return err
 	}
-	err = app.deleteBlobStoreData(runName, filenameOutput)
+	err = app.deleteBlobStoreData(runID, filenameOutput)
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runName, exitDataBuildKey)
+	err = app.deleteKeyValueData(runID, exitDataBuildKey)
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runName, exitDataRunKey)
+	err = app.deleteKeyValueData(runID, exitDataRunKey)
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runName, exitDataAPINetworkInKey)
+	err = app.deleteKeyValueData(runID, exitDataAPINetworkInKey)
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runName, exitDataAPINetworkOutKey)
+	err = app.deleteKeyValueData(runID, exitDataAPINetworkOutKey)
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runName, exitDataFinishedKey)
+	err = app.deleteKeyValueData(runID, exitDataFinishedKey)
 	if err != nil {
 		return err
 	}
-	err = app.deleteBlobStoreData(runName, filenameCache)
+	err = app.deleteBlobStoreData(runID, filenameCache)
 	if err != nil {
 		return err
 	}
-	err = app.Stream.Delete(runName)
+	err = app.Stream.Delete(runID)
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runName, callbackKey)
+	err = app.deleteKeyValueData(runID, callbackKey)
 	if err != nil {
 		return err
 	}
-	return app.deleteKeyValueData(runName, tokenCacheKey)
+	return app.deleteKeyValueData(runID, tokenCacheKey)
 }
 
 // GetTokenCache gets the cached runToken. Returns ErrNotFound if run name doesn't exist
-func (app *AppImplementation) GetTokenCache(runName string) (string, error) {
-	return app.getKeyValueData(runName, tokenCacheKey)
+func (app *AppImplementation) GetTokenCache(runID string) (string, error) {
+	return app.getKeyValueData(runID, tokenCacheKey)
 }
 
-func (app *AppImplementation) postCallbackEvent(runName string, event protocol.Event) error {
+func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Event) error {
 	var b bytes.Buffer
 	enc := json.NewEncoder(&b)
 	err := enc.Encode(event)
@@ -438,7 +438,7 @@ func (app *AppImplementation) postCallbackEvent(runName string, event protocol.E
 		return err
 	}
 
-	callbackURL, err := app.getKeyValueData(runName, callbackKey)
+	callbackURL, err := app.getKeyValueData(runID, callbackKey)
 	if err != nil {
 		return err
 	}
@@ -459,7 +459,7 @@ func (app *AppImplementation) postCallbackEvent(runName string, event protocol.E
 		defer resp.Body.Close()
 
 		// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
-		err = app.RecordTraffic(runName, true, 0, int64(out))
+		err = app.RecordTraffic(runID, true, 0, int64(out))
 		if err != nil {
 			return err
 		}
@@ -471,14 +471,14 @@ func (app *AppImplementation) postCallbackEvent(runName string, event protocol.E
 	return nil
 }
 
-func (app *AppImplementation) RecordTraffic(runName string, external bool, in int64, out int64) error {
+func (app *AppImplementation) RecordTraffic(runID string, external bool, in int64, out int64) error {
 	// We only record traffic that is going out or coming in via the public internet
 	if external {
-		_, err := app.incrementKeyValueData(runName, exitDataAPINetworkInKey, in)
+		_, err := app.incrementKeyValueData(runID, exitDataAPINetworkInKey, in)
 		if err != nil {
 			return err
 		}
-		_, err = app.incrementKeyValueData(runName, exitDataAPINetworkOutKey, out)
+		_, err = app.incrementKeyValueData(runID, exitDataAPINetworkOutKey, out)
 		if err != nil {
 			return err
 		}

@@ -479,8 +479,8 @@ func TestCreateRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// run.Name should be a uuid. Check that it is
-	_, err = uuid.FromString(run.Name)
+	// run.ID should be a uuid. Check that it is
+	_, err = uuid.FromString(run.ID)
 	assert.Nil(t, err)
 	keyValueStore.AssertExpectations(t)
 }

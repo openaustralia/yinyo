@@ -43,8 +43,8 @@ func TestCreateRun(t *testing.T) {
 	}
 	defer run.Delete()
 
-	// Check that run name looks like a uuid
-	_, err = uuid.FromString(run.GetName())
+	// Check that run id looks like a uuid
+	_, err = uuid.FromString(run.GetID())
 	assert.Nil(t, err)
 }
 

@@ -22,7 +22,7 @@ type Run struct {
 
 // RunInterface is the interface to interact with existing runs
 type RunInterface interface {
-	GetName() string
+	GetID() string
 	GetApp() (io.ReadCloser, error)
 	GetCache() (io.ReadCloser, error)
 	GetOutput() (io.ReadCloser, error)
@@ -134,14 +134,14 @@ func (client *Client) CreateRun() (RunInterface, error) {
 	return run, err
 }
 
-// GetName returns the name of the run
-func (run *Run) GetName() string {
-	return run.Name
+// GetID returns the name of the run
+func (run *Run) GetID() string {
+	return run.ID
 }
 
 // Make an API call for a particular run.
 func (run *Run) request(method string, path string, body io.Reader) (*http.Response, error) {
-	url := run.Client.URL + fmt.Sprintf("/runs/%s", run.Name) + path
+	url := run.Client.URL + fmt.Sprintf("/runs/%s", run.ID) + path
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err

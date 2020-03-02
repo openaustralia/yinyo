@@ -28,9 +28,9 @@ func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	reader, err := server.app.GetApp(runName)
+	reader, err := server.app.GetApp(runID)
 	if err != nil {
 		// Returns 404 if there is no app
 		if errors.Is(err, commands.ErrNotFound) {
@@ -43,8 +43,8 @@ func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) putApp(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	err := server.app.PutApp(r.Body, r.ContentLength, runName)
+	runID := mux.Vars(r)["id"]
+	err := server.app.PutApp(r.Body, r.ContentLength, runID)
 	if errors.Is(err, commands.ErrArchiveFormat) {
 		return newHTTPError(err, http.StatusBadRequest, err.Error())
 	}
@@ -52,8 +52,8 @@ func (server *Server) putApp(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	reader, err := server.app.GetCache(runName)
+	runID := mux.Vars(r)["id"]
+	reader, err := server.app.GetCache(runID)
 	if err != nil {
 		// Returns 404 if there is no cache
 		if errors.Is(err, commands.ErrNotFound) {
@@ -67,13 +67,13 @@ func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) putCache(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	return server.app.PutCache(r.Body, r.ContentLength, runName)
+	runID := mux.Vars(r)["id"]
+	return server.app.PutCache(r.Body, r.ContentLength, runID)
 }
 
 func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	reader, err := server.app.GetOutput(runName)
+	runID := mux.Vars(r)["id"]
+	reader, err := server.app.GetOutput(runID)
 	if err != nil {
 		// Returns 404 if there is no output
 		if errors.Is(err, commands.ErrNotFound) {
@@ -87,14 +87,14 @@ func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) putOutput(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	return server.app.PutOutput(r.Body, r.ContentLength, runName)
+	runID := mux.Vars(r)["id"]
+	return server.app.PutOutput(r.Body, r.ContentLength, runID)
 }
 
 func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 
-	exitData, err := server.app.GetExitData(runName)
+	exitData, err := server.app.GetExitData(runID)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 
 	decoder := json.NewDecoder(r.Body)
 	var l protocol.StartRunOptions
@@ -125,7 +125,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	err = server.app.StartRun(runName, l.Output, env, l.Callback.URL, l.MaxRunTime)
+	err = server.app.StartRun(runID, l.Output, env, l.Callback.URL, l.MaxRunTime)
 	if errors.Is(err, commands.ErrAppNotAvailable) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
 	}
@@ -133,7 +133,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 	lastID := mux.Vars(r)["last_id"]
 	if lastID == "" {
 		lastID = "0"
@@ -145,7 +145,7 @@ func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("couldn't access the flusher")
 	}
 
-	events := server.app.GetEvents(runName, lastID)
+	events := server.app.GetEvents(runID, lastID)
 	enc := json.NewEncoder(w)
 	for events.More() {
 		e, err := events.Next()
@@ -162,7 +162,7 @@ func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) createEvent(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 
 	// Read json message as is into a string
 	// TODO: Switch over to json decoder
@@ -178,13 +178,13 @@ func (server *Server) createEvent(w http.ResponseWriter, r *http.Request) error 
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
-	return server.app.CreateEvent(runName, event)
+	return server.app.CreateEvent(runID, event)
 }
 
 func (server *Server) delete(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 
-	return server.app.DeleteRun(runName)
+	return server.app.DeleteRun(runID)
 }
 
 func (server *Server) whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -260,7 +260,7 @@ func (r *readMeasurer) Close() error {
 
 func (server *Server) recordTraffic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		runName := mux.Vars(r)["id"]
+		runID := mux.Vars(r)["id"]
 		readMeasurer := newReadMeasurer(r.Body)
 		r.Body = readMeasurer
 		m := httpsnoop.CaptureMetrics(next, w, r)
@@ -271,8 +271,8 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 			logAndReturnError(err, w)
 			return
 		}
-		if runName != "" {
-			err = server.app.RecordTraffic(runName, external, readMeasurer.BytesRead, m.Written)
+		if runID != "" {
+			err = server.app.RecordTraffic(runID, external, readMeasurer.BytesRead, m.Written)
 			if err != nil {
 				// TODO: Will this actually work here
 				logAndReturnError(err, w)
@@ -287,13 +287,13 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 // TODO: Rename this method
 func (server *Server) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		runName := mux.Vars(r)["id"]
+		runID := mux.Vars(r)["id"]
 
-		_, err := server.app.GetTokenCache(runName)
+		_, err := server.app.GetTokenCache(runID)
 		if err != nil {
 			log.Println(err)
 			if errors.Is(err, commands.ErrNotFound) {
-				err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runName))
+				err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runID))
 			}
 			logAndReturnError(err, w)
 			return

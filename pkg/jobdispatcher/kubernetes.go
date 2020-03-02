@@ -32,7 +32,7 @@ func NewKubernetes() (Jobs, error) {
 }
 
 // maxRunTime is the maximum number of seconds that the job is allowed to take. If it exceeds this limit it will get stopped automatically
-func (client *kubernetesClient) Create(runName string, dockerImage string, command []string, maxRunTime int64) error {
+func (client *kubernetesClient) Create(runID string, dockerImage string, command []string, maxRunTime int64) error {
 	jobsClient := client.clientset.BatchV1().Jobs(namespace)
 
 	autoMountServiceAccountToken := false
@@ -41,7 +41,7 @@ func (client *kubernetesClient) Create(runName string, dockerImage string, comma
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: runName,
+			Name: runID,
 		},
 		Spec: batchv1.JobSpec{
 			BackoffLimit:          &backOffLimit,
@@ -52,7 +52,7 @@ func (client *kubernetesClient) Create(runName string, dockerImage string, comma
 					RestartPolicy:                "OnFailure",
 					Containers: []apiv1.Container{
 						{
-							Name:    runName,
+							Name:    runID,
 							Image:   dockerImage,
 							Command: command,
 							Resources: apiv1.ResourceRequirements{
@@ -78,11 +78,11 @@ func (client *kubernetesClient) Create(runName string, dockerImage string, comma
 	return err
 }
 
-func (client *kubernetesClient) Delete(runName string) error {
+func (client *kubernetesClient) Delete(runID string) error {
 	jobsClient := client.clientset.BatchV1().Jobs(namespace)
 
 	deletePolicy := metav1.DeletePropagationForeground
-	err := jobsClient.Delete(runName, &metav1.DeleteOptions{
+	err := jobsClient.Delete(runID, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 	if err != nil {

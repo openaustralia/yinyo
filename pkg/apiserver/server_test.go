@@ -32,7 +32,7 @@ func makeRequest(app commands.App, method string, url string, body io.Reader) *h
 
 func TestCreateRun(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("CreateRun").Return(protocol.Run{Name: "run-foo"}, nil)
+	app.On("CreateRun").Return(protocol.Run{ID: "run-foo"}, nil)
 
 	rr := makeRequest(app, "POST", "/runs", nil)
 

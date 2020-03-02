@@ -25,7 +25,7 @@ func main() {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			run := &apiclient.Run{
-				Run:    protocol.Run{Name: args[0]},
+				Run:    protocol.Run{ID: args[0]},
 				Client: apiclient.New(serverURL),
 			}
 			err := wrapper.Run(run, &wrapper.Options{
