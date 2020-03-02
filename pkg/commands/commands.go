@@ -33,11 +33,11 @@ type App interface {
 	DeleteRun(runID string) error
 	StartRun(runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
 	GetApp(runID string) (io.Reader, error)
-	PutApp(reader io.Reader, objectSize int64, runID string) error
+	PutApp(runID string, reader io.Reader, objectSize int64) error
 	GetCache(runID string) (io.Reader, error)
-	PutCache(reader io.Reader, objectSize int64, runID string) error
+	PutCache(runID string, reader io.Reader, objectSize int64) error
 	GetOutput(runID string) (io.Reader, error)
-	PutOutput(reader io.Reader, objectSize int64, runID string) error
+	PutOutput(runID string, reader io.Reader, objectSize int64) error
 	GetExitData(runID string) (protocol.ExitData, error)
 	GetEvents(runID string, lastID string) EventIterator
 	CreateEvent(runID string, event protocol.Event) error
@@ -166,7 +166,7 @@ func (app *AppImplementation) validateArchiveToTempFile(reader io.Reader) (*os.F
 }
 
 // PutApp uploads the tar & gzipped application code
-func (app *AppImplementation) PutApp(reader io.Reader, objectSize int64, runID string) error {
+func (app *AppImplementation) PutApp(runID string, reader io.Reader, objectSize int64) error {
 	tmpfile, err := app.validateArchiveToTempFile(reader)
 	if err != nil {
 		return err
@@ -183,7 +183,7 @@ func (app *AppImplementation) GetCache(runID string) (io.Reader, error) {
 }
 
 // PutCache uploads the tar & gzipped build cache
-func (app *AppImplementation) PutCache(reader io.Reader, objectSize int64, runID string) error {
+func (app *AppImplementation) PutCache(runID string, reader io.Reader, objectSize int64) error {
 	tmpfile, err := app.validateArchiveToTempFile(reader)
 	if err != nil {
 		return err
@@ -199,7 +199,7 @@ func (app *AppImplementation) GetOutput(runID string) (io.Reader, error) {
 }
 
 // PutOutput uploads the scraper output
-func (app *AppImplementation) PutOutput(reader io.Reader, objectSize int64, runID string) error {
+func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSize int64) error {
 	return app.putBlobStoreData(reader, objectSize, runID, filenameOutput)
 }
 

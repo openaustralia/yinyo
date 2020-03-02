@@ -188,13 +188,13 @@ func (_m *App) IsRunCreated(runID string) (bool, error) {
 	return r0, r1
 }
 
-// PutApp provides a mock function with given fields: reader, objectSize, runID
-func (_m *App) PutApp(reader io.Reader, objectSize int64, runID string) error {
-	ret := _m.Called(reader, objectSize, runID)
+// PutApp provides a mock function with given fields: runID, reader, objectSize
+func (_m *App) PutApp(runID string, reader io.Reader, objectSize int64) error {
+	ret := _m.Called(runID, reader, objectSize)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(io.Reader, int64, string) error); ok {
-		r0 = rf(reader, objectSize, runID)
+	if rf, ok := ret.Get(0).(func(string, io.Reader, int64) error); ok {
+		r0 = rf(runID, reader, objectSize)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -202,13 +202,13 @@ func (_m *App) PutApp(reader io.Reader, objectSize int64, runID string) error {
 	return r0
 }
 
-// PutCache provides a mock function with given fields: reader, objectSize, runID
-func (_m *App) PutCache(reader io.Reader, objectSize int64, runID string) error {
-	ret := _m.Called(reader, objectSize, runID)
+// PutCache provides a mock function with given fields: runID, reader, objectSize
+func (_m *App) PutCache(runID string, reader io.Reader, objectSize int64) error {
+	ret := _m.Called(runID, reader, objectSize)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(io.Reader, int64, string) error); ok {
-		r0 = rf(reader, objectSize, runID)
+	if rf, ok := ret.Get(0).(func(string, io.Reader, int64) error); ok {
+		r0 = rf(runID, reader, objectSize)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -216,13 +216,13 @@ func (_m *App) PutCache(reader io.Reader, objectSize int64, runID string) error 
 	return r0
 }
 
-// PutOutput provides a mock function with given fields: reader, objectSize, runID
-func (_m *App) PutOutput(reader io.Reader, objectSize int64, runID string) error {
-	ret := _m.Called(reader, objectSize, runID)
+// PutOutput provides a mock function with given fields: runID, reader, objectSize
+func (_m *App) PutOutput(runID string, reader io.Reader, objectSize int64) error {
+	ret := _m.Called(runID, reader, objectSize)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(io.Reader, int64, string) error); ok {
-		r0 = rf(reader, objectSize, runID)
+	if rf, ok := ret.Get(0).(func(string, io.Reader, int64) error); ok {
+		r0 = rf(runID, reader, objectSize)
 	} else {
 		r0 = ret.Error(0)
 	}

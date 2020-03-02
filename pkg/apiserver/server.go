@@ -44,7 +44,7 @@ func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
 
 func (server *Server) putApp(w http.ResponseWriter, r *http.Request) error {
 	runID := mux.Vars(r)["id"]
-	err := server.app.PutApp(r.Body, r.ContentLength, runID)
+	err := server.app.PutApp(runID, r.Body, r.ContentLength)
 	if errors.Is(err, commands.ErrArchiveFormat) {
 		return newHTTPError(err, http.StatusBadRequest, err.Error())
 	}
@@ -68,7 +68,7 @@ func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
 
 func (server *Server) putCache(w http.ResponseWriter, r *http.Request) error {
 	runID := mux.Vars(r)["id"]
-	return server.app.PutCache(r.Body, r.ContentLength, runID)
+	return server.app.PutCache(runID, r.Body, r.ContentLength)
 }
 
 func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
@@ -88,7 +88,7 @@ func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
 
 func (server *Server) putOutput(w http.ResponseWriter, r *http.Request) error {
 	runID := mux.Vars(r)["id"]
-	return server.app.PutOutput(r.Body, r.ContentLength, runID)
+	return server.app.PutOutput(runID, r.Body, r.ContentLength)
 }
 
 func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error {

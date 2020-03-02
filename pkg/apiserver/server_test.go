@@ -142,7 +142,7 @@ func TestCreateEventBadBody(t *testing.T) {
 func TestPutApp(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "run-name").Return(true, nil)
-	app.On("PutApp", mock.Anything, int64(3), "run-name").Return(nil)
+	app.On("PutApp", "run-name", mock.Anything, int64(3)).Return(nil)
 	app.On("RecordTraffic", "run-name", false, int64(0), int64(0)).Return(nil)
 
 	rr := makeRequest(app, "PUT", "/runs/run-name/app", strings.NewReader("foo"))
@@ -210,7 +210,7 @@ func TestGetCache(t *testing.T) {
 func TestPutCache(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "my-run").Return(true, nil)
-	app.On("PutCache", mock.Anything, int64(12), "my-run").Return(nil)
+	app.On("PutCache", "my-run", mock.Anything, int64(12)).Return(nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(0)).Return(nil)
 
 	rr := makeRequest(app, "PUT", "/runs/my-run/cache", strings.NewReader("cached stuff"))
@@ -236,7 +236,7 @@ func TestGetOutput(t *testing.T) {
 func TestPutOutput(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "my-run").Return(true, nil)
-	app.On("PutOutput", mock.Anything, int64(12), "my-run").Return(nil)
+	app.On("PutOutput", "my-run", mock.Anything, int64(12)).Return(nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(0)).Return(nil)
 
 	rr := makeRequest(app, "PUT", "/runs/my-run/output", strings.NewReader("output stuff"))

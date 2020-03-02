@@ -326,7 +326,7 @@ func TestPutApp(t *testing.T) {
 	defer file.Close()
 	stat, _ := file.Stat()
 
-	err := app.PutApp(file, stat.Size(), "run-name")
+	err := app.PutApp("run-name", file, stat.Size())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -361,7 +361,7 @@ func TestPutCache(t *testing.T) {
 
 	blobStore.On("Put", "run-name/cache.tgz", mock.Anything, stat.Size()).Return(nil)
 
-	err := app.PutCache(file, stat.Size(), "run-name")
+	err := app.PutCache("run-name", file, stat.Size())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -392,7 +392,7 @@ func TestPutOutput(t *testing.T) {
 	reader := strings.NewReader("output")
 	blobStore.On("Put", "run-name/output", reader, int64(6)).Return(nil)
 
-	err := app.PutOutput(reader, 6, "run-name")
+	err := app.PutOutput("run-name", reader, 6)
 	if err != nil {
 		t.Fatal(err)
 	}
