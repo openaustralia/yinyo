@@ -17,7 +17,6 @@ import (
 )
 
 // Makes a request to the server and records the response for testing purposes
-// Use "" for the token if you don't want the request to be authenticated
 func makeRequest(app commands.App, method string, url string, body io.Reader) *httptest.ResponseRecorder {
 	server := Server{app: app, maxRunTime: 86400}
 	server.InitialiseRoutes()
