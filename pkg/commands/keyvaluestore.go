@@ -8,7 +8,7 @@ import (
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 )
 
-const tokenCacheKey = "token"
+const createdKey = "created"
 const callbackKey = "url"
 const exitDataKeyBase = "exit_data/"
 const exitDataFinishedKey = exitDataKeyBase + "finished"

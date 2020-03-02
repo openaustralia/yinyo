@@ -280,7 +280,7 @@ func TestDeleteRun(t *testing.T) {
 	blobStore.On("Delete", "run-name/cache.tgz").Return(nil)
 	stream.On("Delete", "run-name").Return(nil)
 	keyValueStore.On("Delete", "run-name/url").Return(nil)
-	keyValueStore.On("Delete", "run-name/token").Return(nil)
+	keyValueStore.On("Delete", "run-name/created").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)
@@ -302,9 +302,9 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.AssertExpectations(t)
 }
 
-func TestTokenCacheNotFound(t *testing.T) {
+func TestIsRunCreatedNotFound(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	keyValueStore.On("Get", "does-not-exit/token").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "does-not-exit/created").Return("", keyvaluestore.ErrKeyNotExist)
 
 	app := AppImplementation{KeyValueStore: keyValueStore}
 	// This run name should not exist

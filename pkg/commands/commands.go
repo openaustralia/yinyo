@@ -127,8 +127,7 @@ func (app *AppImplementation) CreateRun() (protocol.Run, error) {
 
 	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
-	// TODO: Change the name of the key
-	err := app.setKeyValueData(id, tokenCacheKey, "true")
+	err := app.setKeyValueData(id, createdKey, "true")
 	return protocol.Run{ID: id}, err
 }
 
@@ -421,11 +420,11 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 	if err != nil {
 		return err
 	}
-	return app.deleteKeyValueData(runID, tokenCacheKey)
+	return app.deleteKeyValueData(runID, createdKey)
 }
 
 func (app *AppImplementation) IsRunCreated(runID string) (bool, error) {
-	v, err := app.getKeyValueData(runID, tokenCacheKey)
+	v, err := app.getKeyValueData(runID, createdKey)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return false, nil
