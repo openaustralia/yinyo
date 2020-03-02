@@ -38,7 +38,7 @@ func TestCreateRun(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, rr.Code)
 	assert.Equal(t,
-		`{"name":"run-foo"}
+		`{"id":"run-foo"}
 `, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json"}}, rr.Header())
 	app.AssertExpectations(t)
