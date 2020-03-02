@@ -60,7 +60,7 @@ func TestCreateRunInternalServerError(t *testing.T) {
 // Make sure that when we call start with a bad json body we get a sensible error
 func TestStartBadBody(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("GetTokenCache", "foo").Return("true", nil)
 	app.On("RecordTraffic", "foo", false, int64(13), int64(48)).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"env":"foo"}`))
@@ -74,7 +74,7 @@ func TestStartBadBody(t *testing.T) {
 // If we haven't uploaded an app error when starting a run
 func TestStartNoApp(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("GetTokenCache", "foo").Return("true", nil)
 	app.On("StartRun", "foo", "", map[string]string{}, "", int64(86400)).Return(commands.ErrAppNotAvailable)
 	app.On("RecordTraffic", "foo", false, int64(2), int64(58)).Return(nil)
 
@@ -88,7 +88,7 @@ func TestStartNoApp(t *testing.T) {
 
 func TestStart(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("GetTokenCache", "foo").Return("true", nil)
 	app.On("StartRun", "foo", "", map[string]string{}, "", int64(86400)).Return(nil)
 	app.On("RecordTraffic", "foo", false, int64(2), int64(0)).Return(nil)
 
@@ -101,7 +101,7 @@ func TestStart(t *testing.T) {
 
 func TestStartLowerMaxRunTime(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("GetTokenCache", "foo").Return("true", nil)
 	app.On("StartRun", "foo", "", map[string]string{}, "", int64(120)).Return(nil)
 	app.On("RecordTraffic", "foo", false, int64(21), int64(0)).Return(nil)
 
@@ -114,7 +114,7 @@ func TestStartLowerMaxRunTime(t *testing.T) {
 
 func TestStartHigherMaxRunTime(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("GetTokenCache", "foo").Return("true", nil)
 	app.On("RecordTraffic", "foo", false, int64(24), int64(56)).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"max_run_time": 100000}`))
@@ -128,7 +128,7 @@ func TestStartHigherMaxRunTime(t *testing.T) {
 
 func TestCreateEventBadBody(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "foo").Return("abc123", nil)
+	app.On("GetTokenCache", "foo").Return("true", nil)
 	app.On("RecordTraffic", "foo", false, int64(18), int64(48)).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/events", strings.NewReader(`{"event":"broken"}`))
@@ -141,7 +141,7 @@ func TestCreateEventBadBody(t *testing.T) {
 
 func TestPutApp(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "run-name").Return("abc123", nil)
+	app.On("GetTokenCache", "run-name").Return("true", nil)
 	app.On("PutApp", mock.Anything, int64(3), "run-name").Return(nil)
 	app.On("RecordTraffic", "run-name", false, int64(0), int64(0)).Return(nil)
 
@@ -166,7 +166,7 @@ func TestPutAppWrongRunName(t *testing.T) {
 
 func TestGetApp(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("GetApp", "my-run").Return(strings.NewReader("code stuff"), nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(10)).Return(nil)
 
@@ -181,7 +181,7 @@ func TestGetApp(t *testing.T) {
 // This tests if the app isn't found (rather than the run)
 func TestGetAppErrNotFound(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("GetApp", "my-run").Return(nil, commands.ErrNotFound)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(21)).Return(nil)
 
@@ -195,7 +195,7 @@ func TestGetAppErrNotFound(t *testing.T) {
 
 func TestGetCache(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("GetCache", "my-run").Return(strings.NewReader("cached stuff"), nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(12)).Return(nil)
 
@@ -209,7 +209,7 @@ func TestGetCache(t *testing.T) {
 
 func TestPutCache(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("PutCache", mock.Anything, int64(12), "my-run").Return(nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(0)).Return(nil)
 
@@ -221,7 +221,7 @@ func TestPutCache(t *testing.T) {
 
 func TestGetOutput(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("GetOutput", "my-run").Return(strings.NewReader("output stuff"), nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(12)).Return(nil)
 
@@ -235,7 +235,7 @@ func TestGetOutput(t *testing.T) {
 
 func TestPutOutput(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("PutOutput", mock.Anything, int64(12), "my-run").Return(nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(0)).Return(nil)
 
@@ -253,7 +253,7 @@ func TestGetExitData(t *testing.T) {
 		},
 		Finished: true,
 	}
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("GetExitData", "my-run").Return(exitData, nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(162)).Return(nil)
 
@@ -289,7 +289,7 @@ func TestGetEvents(t *testing.T) {
 		protocol.NewStartEvent("", time, "build"),
 		protocol.NewFinishEvent("", time, "build", protocol.ExitDataStage{}),
 	}}
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("GetEvents", "my-run", "0").Return(events)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(253)).Return(nil)
 
@@ -306,7 +306,7 @@ func TestGetEvents(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("GetTokenCache", "my-run").Return("abc123", nil)
+	app.On("GetTokenCache", "my-run").Return("true", nil)
 	app.On("DeleteRun", "my-run").Return(nil)
 	app.On("RecordTraffic", "my-run", false, int64(0), int64(0)).Return(nil)
 
