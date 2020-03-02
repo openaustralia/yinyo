@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -32,14 +33,12 @@ func TestStartRun(t *testing.T) {
 
 	// Expect that the job will get dispatched
 	job.On(
-		"StartJob",
+		"Create",
 		"run-name",
 		"openaustralia/yinyo-scraper:v1",
-		[]string{"/bin/wrapper", "run-name", "supersecret", "--output", "output.txt", "--env", "FOO=bar"},
+		[]string{"/bin/wrapper", "run-name", "--output", "output.txt", "--env", "FOO=bar"},
 		int64(86400),
 	).Return(nil)
-	// Expect that we'll need the secret token
-	keyValueStore.On("Get", "run-name/token").Return("supersecret", nil)
 	// Expect that we save the callback url in the key value store
 	keyValueStore.On("Set", "run-name/url", "http://foo.com").Return(nil)
 	// Expect that we try to get the code just to see if it exists
@@ -275,13 +274,13 @@ func TestDeleteRun(t *testing.T) {
 	stream := new(streammocks.Stream)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
-	jobDispatcher.On("DeleteJobAndToken", "run-name").Return(nil)
+	jobDispatcher.On("Delete", "run-name").Return(nil)
 	blobStore.On("Delete", "run-name/app.tgz").Return(nil)
 	blobStore.On("Delete", "run-name/output").Return(nil)
 	blobStore.On("Delete", "run-name/cache.tgz").Return(nil)
 	stream.On("Delete", "run-name").Return(nil)
 	keyValueStore.On("Delete", "run-name/url").Return(nil)
-	keyValueStore.On("Delete", "run-name/token").Return(nil)
+	keyValueStore.On("Delete", "run-name/created").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)
@@ -303,14 +302,15 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.AssertExpectations(t)
 }
 
-func TestTokenCacheNotFound(t *testing.T) {
+func TestIsRunCreatedNotFound(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	keyValueStore.On("Get", "does-not-exit/token").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "does-not-exit/created").Return("", keyvaluestore.ErrKeyNotExist)
 
 	app := AppImplementation{KeyValueStore: keyValueStore}
 	// This run name should not exist
-	_, err := app.GetTokenCache("does-not-exit")
-	assert.True(t, errors.Is(err, ErrNotFound))
+	created, err := app.IsRunCreated("does-not-exit")
+	assert.Nil(t, err)
+	assert.False(t, created)
 
 	keyValueStore.AssertExpectations(t)
 }
@@ -326,7 +326,7 @@ func TestPutApp(t *testing.T) {
 	defer file.Close()
 	stat, _ := file.Stat()
 
-	err := app.PutApp(file, stat.Size(), "run-name")
+	err := app.PutApp("run-name", file, stat.Size())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -361,7 +361,7 @@ func TestPutCache(t *testing.T) {
 
 	blobStore.On("Put", "run-name/cache.tgz", mock.Anything, stat.Size()).Return(nil)
 
-	err := app.PutCache(file, stat.Size(), "run-name")
+	err := app.PutCache("run-name", file, stat.Size())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -392,7 +392,7 @@ func TestPutOutput(t *testing.T) {
 	reader := strings.NewReader("output")
 	blobStore.On("Put", "run-name/output", reader, int64(6)).Return(nil)
 
-	err := app.PutOutput(reader, 6, "run-name")
+	err := app.PutOutput("run-name", reader, 6)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -471,19 +471,18 @@ func TestGetExitDataRunNotStarted(t *testing.T) {
 }
 
 func TestCreateRun(t *testing.T) {
-	jobDispatcher := new(jobdispatchermocks.Jobs)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	app := AppImplementation{JobDispatcher: jobDispatcher, KeyValueStore: keyValueStore}
+	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	jobDispatcher.On("CreateJobAndToken", "run", mock.Anything).Return("run-foo", nil)
-	keyValueStore.On("Set", "run-foo/token", mock.Anything).Return(nil)
+	keyValueStore.On("Set", mock.Anything, mock.Anything).Return(nil)
 
-	run, err := app.CreateRun("")
+	run, err := app.CreateRun()
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, "run-foo", run.Name)
-	jobDispatcher.AssertExpectations(t)
+	// run.ID should be a uuid. Check that it is
+	_, err = uuid.FromString(run.ID)
+	assert.Nil(t, err)
 	keyValueStore.AssertExpectations(t)
 }
 

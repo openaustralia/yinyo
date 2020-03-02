@@ -5,12 +5,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/protocol"
+	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,67 +37,15 @@ func TestCreateRun(t *testing.T) {
 	}
 
 	client := defaultClient()
-	run, err := client.CreateRun("foo")
+	run, err := client.CreateRun()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer run.Delete()
 
-	// The only purpose of name_prefix is to make runs easier for humans to identify
-	// So, expect the run to start with the name_prefix but there's probably more
-	assert.True(t, strings.HasPrefix(run.GetName(), "foo-"))
-	assert.NotEqual(t, "", run.GetToken())
-}
-
-func TestCreateRunScraperNameEncoding(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode.")
-	}
-
-	client := defaultClient()
-	run, err := client.CreateRun("foo/b_12r")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer run.Delete()
-
-	// Only certain characters are allowed in kubernetes job names
-	assert.True(t, strings.HasPrefix(run.GetName(), "foo-b-12r-"))
-}
-
-// Check that run names are created to be unique even when the same scraper name
-// is given twice
-func TestCreateRunNamesUnique(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode.")
-	}
-
-	client := defaultClient()
-	run1, err := client.CreateRun("foo")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer run1.Delete()
-	run2, err := client.CreateRun("foo")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer run2.Delete()
-	assert.NotEqual(t, run1.GetName(), run2.GetName())
-}
-
-func TestNamePrefixOptional(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration tests in short mode.")
-	}
-
-	client := defaultClient()
-	run, err := client.CreateRun("")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer run.Delete()
-	assert.True(t, strings.HasPrefix(run.GetName(), "run-"))
+	// Check that run id looks like a uuid
+	_, err = uuid.FromString(run.GetID())
+	assert.Nil(t, err)
 }
 
 func TestUploadDownloadApp(t *testing.T) {
@@ -107,7 +55,7 @@ func TestUploadDownloadApp(t *testing.T) {
 
 	// First we need to create a run
 	client := defaultClient()
-	run, err := client.CreateRun("")
+	run, err := client.CreateRun()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -147,12 +95,12 @@ func TestUploadDownloadApp(t *testing.T) {
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
 // TODO: Use high-level client library instead?
-func runScraper(name string, appDirectory string, cachePath string, env []protocol.EnvVariable) ([]protocol.Event, error) {
+func runScraper(appDirectory string, cachePath string, env []protocol.EnvVariable) ([]protocol.Event, error) {
 	var eventsList []protocol.Event
 
 	client := defaultClient()
 	// Create the run
-	run, err := client.CreateRun(name)
+	run, err := client.CreateRun()
 	if err != nil {
 		return eventsList, err
 	}
@@ -229,12 +177,12 @@ func runScraperWithPreCache(name string, env []protocol.EnvVariable) ([]protocol
 	// the whole scraper before we run the main tests
 	_, err := os.Stat(cachePath)
 	if os.IsNotExist(err) {
-		_, err = runScraper(name, appDirectory, cachePath, env)
+		_, err = runScraper(appDirectory, cachePath, env)
 		if err != nil {
 			return eventsList, err
 		}
 	}
-	eventsList, err = runScraper(name, appDirectory, cachePath, env)
+	eventsList, err = runScraper(appDirectory, cachePath, env)
 	if err != nil {
 		return eventsList, err
 	}

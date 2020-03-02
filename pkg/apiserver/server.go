@@ -9,7 +9,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"strings"
 	"sync/atomic"
 
 	"github.com/felixge/httpsnoop"
@@ -19,13 +18,7 @@ import (
 )
 
 func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
-	values := r.URL.Query()["name_prefix"]
-	namePrefix := ""
-	if len(values) > 0 {
-		namePrefix = values[0]
-	}
-
-	createResult, err := server.app.CreateRun(namePrefix)
+	createResult, err := server.app.CreateRun()
 	if err != nil {
 		return err
 	}
@@ -35,9 +28,9 @@ func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 	w.Header().Set("Content-Type", "application/gzip")
-	reader, err := server.app.GetApp(runName)
+	reader, err := server.app.GetApp(runID)
 	if err != nil {
 		// Returns 404 if there is no app
 		if errors.Is(err, commands.ErrNotFound) {
@@ -50,8 +43,8 @@ func (server *Server) getApp(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) putApp(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	err := server.app.PutApp(r.Body, r.ContentLength, runName)
+	runID := mux.Vars(r)["id"]
+	err := server.app.PutApp(runID, r.Body, r.ContentLength)
 	if errors.Is(err, commands.ErrArchiveFormat) {
 		return newHTTPError(err, http.StatusBadRequest, err.Error())
 	}
@@ -59,8 +52,8 @@ func (server *Server) putApp(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	reader, err := server.app.GetCache(runName)
+	runID := mux.Vars(r)["id"]
+	reader, err := server.app.GetCache(runID)
 	if err != nil {
 		// Returns 404 if there is no cache
 		if errors.Is(err, commands.ErrNotFound) {
@@ -74,13 +67,13 @@ func (server *Server) getCache(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) putCache(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	return server.app.PutCache(r.Body, r.ContentLength, runName)
+	runID := mux.Vars(r)["id"]
+	return server.app.PutCache(runID, r.Body, r.ContentLength)
 }
 
 func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	reader, err := server.app.GetOutput(runName)
+	runID := mux.Vars(r)["id"]
+	reader, err := server.app.GetOutput(runID)
 	if err != nil {
 		// Returns 404 if there is no output
 		if errors.Is(err, commands.ErrNotFound) {
@@ -94,14 +87,14 @@ func (server *Server) getOutput(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) putOutput(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
-	return server.app.PutOutput(r.Body, r.ContentLength, runName)
+	runID := mux.Vars(r)["id"]
+	return server.app.PutOutput(runID, r.Body, r.ContentLength)
 }
 
 func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 
-	exitData, err := server.app.GetExitData(runName)
+	exitData, err := server.app.GetExitData(runID)
 	if err != nil {
 		return err
 	}
@@ -112,7 +105,7 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 
 	decoder := json.NewDecoder(r.Body)
 	var l protocol.StartRunOptions
@@ -132,7 +125,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	err = server.app.StartRun(runName, l.Output, env, l.Callback.URL, l.MaxRunTime)
+	err = server.app.StartRun(runID, l.Output, env, l.Callback.URL, l.MaxRunTime)
 	if errors.Is(err, commands.ErrAppNotAvailable) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
 	}
@@ -140,7 +133,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 	lastID := mux.Vars(r)["last_id"]
 	if lastID == "" {
 		lastID = "0"
@@ -152,7 +145,7 @@ func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("couldn't access the flusher")
 	}
 
-	events := server.app.GetEvents(runName, lastID)
+	events := server.app.GetEvents(runID, lastID)
 	enc := json.NewEncoder(w)
 	for events.More() {
 		e, err := events.Next()
@@ -169,7 +162,7 @@ func (server *Server) getEvents(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) createEvent(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 
 	// Read json message as is into a string
 	// TODO: Switch over to json decoder
@@ -185,13 +178,13 @@ func (server *Server) createEvent(w http.ResponseWriter, r *http.Request) error 
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
-	return server.app.CreateEvent(runName, event)
+	return server.app.CreateEvent(runID, event)
 }
 
 func (server *Server) delete(w http.ResponseWriter, r *http.Request) error {
-	runName := mux.Vars(r)["id"]
+	runID := mux.Vars(r)["id"]
 
-	return server.app.DeleteRun(runName)
+	return server.app.DeleteRun(runID)
 }
 
 func (server *Server) whoAmI(w http.ResponseWriter, r *http.Request) error {
@@ -267,7 +260,7 @@ func (r *readMeasurer) Close() error {
 
 func (server *Server) recordTraffic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		runName := mux.Vars(r)["id"]
+		runID := mux.Vars(r)["id"]
 		readMeasurer := newReadMeasurer(r.Body)
 		r.Body = readMeasurer
 		m := httpsnoop.CaptureMetrics(next, w, r)
@@ -278,8 +271,8 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 			logAndReturnError(err, w)
 			return
 		}
-		if runName != "" {
-			err = server.app.RecordTraffic(runName, external, readMeasurer.BytesRead, m.Written)
+		if runID != "" {
+			err = server.app.RecordTraffic(runID, external, readMeasurer.BytesRead, m.Written)
 			if err != nil {
 				// TODO: Will this actually work here
 				logAndReturnError(err, w)
@@ -289,42 +282,20 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 	})
 }
 
-func extractBearerToken(header http.Header) (string, error) {
-	const bearerPrefix = "Bearer "
-	authHeader := header.Get("Authorization")
-
-	if !strings.HasPrefix(authHeader, bearerPrefix) {
-		return "", errors.New("expected Authorization header with bearer token")
-	}
-	return authHeader[len(bearerPrefix):], nil
-}
-
 // Middleware function, which will be called for each request
-// TODO: Refactor authenticate method to return an error
-func (server *Server) authenticate(next http.Handler) http.Handler {
+// TODO: Refactor checkRunCreated method to return an error
+func (server *Server) checkRunCreated(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		runName := mux.Vars(r)["id"]
-		runToken, err := extractBearerToken(r.Header)
-		if err != nil {
-			err = newHTTPError(err, http.StatusForbidden, err.Error())
-			logAndReturnError(err, w)
-			return
-		}
+		runID := mux.Vars(r)["id"]
 
-		actualRunToken, err := server.app.GetTokenCache(runName)
-
+		created, err := server.app.IsRunCreated(runID)
 		if err != nil {
 			log.Println(err)
-			if errors.Is(err, commands.ErrNotFound) {
-				err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runName))
-			}
 			logAndReturnError(err, w)
 			return
 		}
-
-		if runToken != actualRunToken {
-			err = errors.New("authorization header has incorrect bearer token")
-			err = newHTTPError(err, http.StatusForbidden, err.Error())
+		if !created {
+			err = newHTTPError(err, http.StatusNotFound, fmt.Sprintf("run %v: not found", runID))
 			logAndReturnError(err, w)
 			return
 		}
@@ -396,20 +367,20 @@ func (server *Server) InitialiseRoutes() {
 	server.router.Handle("/", appHandler(server.whoAmI))
 	server.router.Handle("/runs", appHandler(server.create)).Methods("POST")
 
-	authenticatedRouter := server.router.PathPrefix("/runs/{id}").Subrouter()
-	authenticatedRouter.Handle("/app", appHandler(server.getApp)).Methods("GET")
-	authenticatedRouter.Handle("/app", appHandler(server.putApp)).Methods("PUT")
-	authenticatedRouter.Handle("/cache", appHandler(server.getCache)).Methods("GET")
-	authenticatedRouter.Handle("/cache", appHandler(server.putCache)).Methods("PUT")
-	authenticatedRouter.Handle("/output", appHandler(server.getOutput)).Methods("GET")
-	authenticatedRouter.Handle("/output", appHandler(server.putOutput)).Methods("PUT")
-	authenticatedRouter.Handle("/exit-data", appHandler(server.getExitData)).Methods("GET")
-	authenticatedRouter.Handle("/start", appHandler(server.start)).Methods("POST")
-	authenticatedRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
-	authenticatedRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
-	authenticatedRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
+	runRouter := server.router.PathPrefix("/runs/{id}").Subrouter()
+	runRouter.Handle("/app", appHandler(server.getApp)).Methods("GET")
+	runRouter.Handle("/app", appHandler(server.putApp)).Methods("PUT")
+	runRouter.Handle("/cache", appHandler(server.getCache)).Methods("GET")
+	runRouter.Handle("/cache", appHandler(server.putCache)).Methods("PUT")
+	runRouter.Handle("/output", appHandler(server.getOutput)).Methods("GET")
+	runRouter.Handle("/output", appHandler(server.putOutput)).Methods("PUT")
+	runRouter.Handle("/exit-data", appHandler(server.getExitData)).Methods("GET")
+	runRouter.Handle("/start", appHandler(server.start)).Methods("POST")
+	runRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
+	runRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
+	runRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
 	server.router.Use(server.recordTraffic)
-	authenticatedRouter.Use(server.authenticate)
+	runRouter.Use(server.checkRunCreated)
 	server.router.Use(logRequests)
 }
 

@@ -60,8 +60,7 @@ type Usage struct {
 
 // Run is what you get when you create a run and what you need to update it
 type Run struct {
-	Name  string `json:"name"`
-	Token string `json:"token"`
+	ID string `json:"id"`
 }
 
 // JSONEvent is used for reading JSON

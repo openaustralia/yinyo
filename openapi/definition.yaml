@@ -19,15 +19,7 @@ paths:
       tags: ["Core"]
       summary: Create run
       description: |
-        Returns with the "run name" which uniquely identifies this run and the "run token" which is a secret to ensure that only you can access the run from here on in. You will need these values to subsequently start, track and access this run.
-
-        You can optionally provide a suggested "name prefix" which will be put at the beginning of the unique name for the run. This is only useful to give more human meaningful names to the runs if that's important in your application. However, you can not depend on the prefix being used exactly as you provide it as some characters are not possible in run names.
-      parameters:
-        - name: name_prefix
-          description: Prefix used when generating run names
-          in: query
-          schema:
-            type: string
+        Returns with the "run ID" which uniquely identifies this run. You will need this value to subsequently start, track and access this run.
       responses:
         200:
           description: Created successfully
@@ -40,14 +32,9 @@ paths:
                     type: string
                     description: |
                       Uniquely identifies this run. Needed for any subsequent API calls for this run.
-                  token:
-                    type: string
-                    description: |
-                      Secret value needed to access the run
               example:
-                name: run-lvg44
-                token: bMMT7MnU2QbFZbk0lkut401D4uFScUI2
-  /runs/{name}/app:
+                id: a9ff3b06-92c1-4150-8946-9920ea742d24
+  /runs/{id}/app:
     put:
       tags: ["Core"]
       summary: Upload the code to be run and any local data
@@ -84,7 +71,7 @@ paths:
         As this is a non-Heroku third-party buildpack no Heroku developer documentation is available. Instead take a look at the [GitHub repo](https://github.com/miyagawa/heroku-buildpack-perl) for the buildpack.
 
       parameters:
-        - $ref: "#/components/parameters/name"
+        - $ref: "#/components/parameters/id"
       requestBody:
         content:
           application/gzip:
@@ -94,22 +81,18 @@ paths:
                 Directory with code, configuration and data to run. Everything needs to be tarred and gzip compressed.
               format: binary
         required: true
-      security:
-        - token: []
       responses:
         200:
           description: Success
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
-  /runs/{name}/cache:
+  /runs/{id}/cache:
     summary: Manage build cache
     put:
       tags: ["Optional"]
       summary: Upload a build cache
       parameters:
-        - $ref: "#/components/parameters/name"
+        - $ref: "#/components/parameters/id"
       requestBody:
         content:
           application/gzip:
@@ -118,24 +101,18 @@ paths:
               type: string
               format: binary
         required: true
-      security:
-        - token: []
       responses:
         200:
           description: Success
         400:
           $ref: "#/components/responses/bad_request"
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
     get:
       tags: ["Optional"]
       summary: Download a build cache
       parameters:
-        - $ref: "#/components/parameters/name"
-      security:
-        - token: []
+        - $ref: "#/components/parameters/id"
       responses:
         200:
           content:
@@ -145,17 +122,15 @@ paths:
                 type: string
                 format: binary
           description: Success
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
 
-  /runs/{name}/start:
+  /runs/{id}/start:
     post:
       tags: ["Core"]
       summary: Start the run
       parameters:
-        - $ref: "#/components/parameters/name"
+        - $ref: "#/components/parameters/id"
       requestBody:
         content:
           application/json:
@@ -190,33 +165,27 @@ paths:
               callback: http://my-url-endpoint.com?key=special-secret-stuff
               max_run_time: 3600
 
-      security:
-        - token: []
       responses:
         200:
           description: Success
         400:
           $ref: "#/components/responses/bad_request"
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
-  /runs/{name}/events:
+  /runs/{id}/events:
     get:
       tags: ["Optional"]
       summary: Attach to run events stream
       description: |
         Watch what is happening to a run in real-time as it gets built and runs. By default this will stream all events that have occurred from the very beginning until now and then as new events occur stream those in real-time.
       parameters:
-        - $ref: "#/components/parameters/name"
+        - $ref: "#/components/parameters/id"
         - name: last_id
           description: Restart stream immediately after the event with the given ID
           in: query
           schema:
             type: string
 
-      security:
-        - token: []
       responses:
         200:
           description: Succesfully attached to stream
@@ -238,20 +207,16 @@ paths:
                   stage: "build"
                   stream: "stdout"
                   text: "Hello!"
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
-  /runs/{name}/exit-data:
+  /runs/{id}/exit-data:
     get:
       tags: ["Optional"]
       summary: Find out whether the run has finished and if so also return exit codes and usage metrics
       description: |
         Returns a rag-bag of useful information about the progress and completion of a run. Find out whether the run has finished and if so find out  whether the scraper ran succesfully or not. Also returns information about how much resources the run took.
       parameters:
-        - $ref: "#/components/parameters/name"
-      security:
-        - token: []
+        - $ref: "#/components/parameters/id"
       responses:
         200:
           description: Success
@@ -259,21 +224,17 @@ paths:
             "application/json":
               schema:
                 $ref: "#/components/schemas/ExitData"
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
 
-  /runs/{name}/output:
+  /runs/{id}/output:
     get:
       tags: ["Optional"]
       summary: Get output file
       description: |
         Usually at the end of the run you want to grab the contents of a file which is probably the result of scraping. This allows you to do that. The path to the file needs to be given when the run is started.
       parameters:
-        - $ref: "#/components/parameters/name"
-      security:
-        - token: []
+        - $ref: "#/components/parameters/id"
       responses:
         200:
           description: Success
@@ -282,43 +243,31 @@ paths:
               schema:
                 type: string
                 format: binary
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
-  /runs/{name}:
+  /runs/{id}:
     delete:
       tags: ["Core"]
       summary: Finalise scraper run
       description: |
         This does final clean up of everything associated with a run. Make sure you always do this as the last API call for a run. After doing this it's not possible to get any more information about this run.
       parameters:
-        - $ref: "#/components/parameters/name"
-      security:
-        - token: []
+        - $ref: "#/components/parameters/id"
       responses:
         200:
           description: Success
-        403:
-          $ref: "#/components/responses/bad_auth"
         404:
           $ref: "#/components/responses/not_found"
 components:
   parameters:
-    name:
-      name: name
+    id:
+      name: id
       in: path
-      description: The run name (as returned by creating a run)
+      description: The run ID (as returned by creating a run)
       required: true
       schema:
         type: string
   responses:
-    bad_auth:
-      description: The run token was incorrect
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
     bad_request:
       description: There was a problem with your request
       content:
@@ -500,7 +449,3 @@ components:
                 text:
                   type: string
                   description: Console message
-  securitySchemes:
-    token:
-      type: http
-      scheme: bearer
