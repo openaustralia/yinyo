@@ -81,6 +81,11 @@ spec:
                 secretKeyRef:
                   name: redis
                   key: password
+            - name: AUTHENTICATION_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: yinyo-server
+                  key: authentication_url
           livenessProbe:
             httpGet:
               path: /

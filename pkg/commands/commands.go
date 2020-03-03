@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -123,8 +125,47 @@ func New(startupOptions *StartupOptions) (App, error) {
 	}, nil
 }
 
+type authenticationResponse struct {
+	Allowed bool   `json:"allowed"`
+	Message string `json:"message"`
+}
+
 // CreateRun creates a run
 func (app *AppImplementation) CreateRun(params map[string]string) (protocol.Run, error) {
+	if app.AuthenticationURL != "" {
+		values := url.Values{}
+		for k, v := range params {
+			values.Set(k, v)
+		}
+		url := app.AuthenticationURL + "?" + values.Encode()
+		log.Printf("Making an authentication request to %v", url)
+
+		resp, err := app.HTTP.Post(url, "application/json", nil)
+		if err != nil {
+			return protocol.Run{}, err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return protocol.Run{}, fmt.Errorf("Response %v from POST to authentication url %v", resp.StatusCode, url)
+		}
+		// TODO: Check the actual response
+		dec := json.NewDecoder(resp.Body)
+		var response authenticationResponse
+		err = dec.Decode(&response)
+		if err != nil {
+			return protocol.Run{}, err
+		}
+		if !response.Allowed {
+			// TODO: Send the message back to the user and give a sensible error code
+			return protocol.Run{}, fmt.Errorf("Not allowed by authentication. Message: %v", response.Message)
+		}
+
+		// TODO: Do we want to do something with response.Message if allowed?
+
+		err = resp.Body.Close()
+		if err != nil {
+			return protocol.Run{}, err
+		}
+	}
 	// Generate run ID using uuid
 	id := uuid.NewV4().String()
 
