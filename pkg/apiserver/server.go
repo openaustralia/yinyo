@@ -18,7 +18,7 @@ import (
 )
 
 func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
-	createResult, err := server.app.CreateRun()
+	createResult, err := server.app.CreateRun(mux.Vars(r))
 	if err != nil {
 		return err
 	}

@@ -29,7 +29,7 @@ const runBinary = "/bin/wrapper"
 
 // App is the interface for the operations of the server
 type App interface {
-	CreateRun() (protocol.Run, error)
+	CreateRun(params map[string]string) (protocol.Run, error)
 	DeleteRun(runID string) error
 	StartRun(runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
 	GetApp(runID string) (io.Reader, error)
@@ -124,7 +124,7 @@ func New(startupOptions *StartupOptions) (App, error) {
 }
 
 // CreateRun creates a run
-func (app *AppImplementation) CreateRun() (protocol.Run, error) {
+func (app *AppImplementation) CreateRun(params map[string]string) (protocol.Run, error) {
 	// Generate run ID using uuid
 	id := uuid.NewV4().String()
 

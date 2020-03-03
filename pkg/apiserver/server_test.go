@@ -32,7 +32,7 @@ func makeRequest(app commands.App, method string, url string, body io.Reader) *h
 
 func TestCreateRun(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("CreateRun").Return(protocol.Run{ID: "run-foo"}, nil)
+	app.On("CreateRun", map[string]string{}).Return(protocol.Run{ID: "run-foo"}, nil)
 
 	rr := makeRequest(app, "POST", "/runs", nil)
 
@@ -47,7 +47,7 @@ func TestCreateRun(t *testing.T) {
 func TestCreateRunInternalServerError(t *testing.T) {
 	app := new(commandsmocks.App)
 	// There was some kind of internal error when creating a run
-	app.On("CreateRun").Return(protocol.Run{}, errors.New("Something internal"))
+	app.On("CreateRun", map[string]string{}).Return(protocol.Run{}, errors.New("Something internal"))
 
 	rr := makeRequest(app, "POST", "/runs", nil)
 

@@ -26,20 +26,20 @@ func (_m *App) CreateEvent(runID string, event protocol.Event) error {
 	return r0
 }
 
-// CreateRun provides a mock function with given fields:
-func (_m *App) CreateRun() (protocol.Run, error) {
-	ret := _m.Called()
+// CreateRun provides a mock function with given fields: params
+func (_m *App) CreateRun(params map[string]string) (protocol.Run, error) {
+	ret := _m.Called(params)
 
 	var r0 protocol.Run
-	if rf, ok := ret.Get(0).(func() protocol.Run); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(map[string]string) protocol.Run); ok {
+		r0 = rf(params)
 	} else {
 		r0 = ret.Get(0).(protocol.Run)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(map[string]string) error); ok {
+		r1 = rf(params)
 	} else {
 		r1 = ret.Error(1)
 	}
