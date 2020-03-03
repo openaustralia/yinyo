@@ -53,17 +53,19 @@ type EventIterator interface {
 
 // AppImplementation holds the state for the application
 type AppImplementation struct {
-	BlobStore     blobstore.BlobStore
-	JobDispatcher jobdispatcher.Jobs
-	Stream        stream.Stream
-	KeyValueStore keyvaluestore.KeyValueStore
-	HTTP          *http.Client
+	BlobStore         blobstore.BlobStore
+	JobDispatcher     jobdispatcher.Jobs
+	Stream            stream.Stream
+	KeyValueStore     keyvaluestore.KeyValueStore
+	HTTP              *http.Client
+	AuthenticationURL string
 }
 
 // StartupOptions are the options available when initialising the application
 type StartupOptions struct {
-	Minio MinioOptions
-	Redis RedisOptions
+	Minio             MinioOptions
+	Redis             RedisOptions
+	AuthenticationURL string
 }
 
 // MinioOptions are the options for the specific blob storage
@@ -112,11 +114,12 @@ func New(startupOptions *StartupOptions) (App, error) {
 	keyValueStore := keyvaluestore.NewRedis(redisClient)
 
 	return &AppImplementation{
-		BlobStore:     storeAccess,
-		JobDispatcher: jobDispatcher,
-		Stream:        streamClient,
-		KeyValueStore: keyValueStore,
-		HTTP:          http.DefaultClient,
+		BlobStore:         storeAccess,
+		JobDispatcher:     jobDispatcher,
+		Stream:            streamClient,
+		KeyValueStore:     keyValueStore,
+		HTTP:              http.DefaultClient,
+		AuthenticationURL: startupOptions.AuthenticationURL,
 	}, nil
 }
 

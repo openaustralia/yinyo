@@ -31,7 +31,9 @@ func main() {
 				Address:  "redis:6379",
 				Password: os.Getenv("REDIS_PASSWORD"),
 			}
-			err := server.Initialise(&commands.StartupOptions{Minio: minioOptions, Redis: redisOptions}, maxRunTime)
+			authenticationURL := os.Getenv("AUTHENTICATION_URL")
+			options := commands.StartupOptions{Minio: minioOptions, Redis: redisOptions, AuthenticationURL: authenticationURL}
+			err := server.Initialise(&options, maxRunTime)
 			if err != nil {
 				log.Fatal(err)
 			}
