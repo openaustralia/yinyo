@@ -45,7 +45,7 @@ a guide for people who are just interested in being users of the API.
 ### Main dependencies
 
 - [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/)
-- [KubeDB operator](https://kubedb.com/docs/v0.13.0-rc.0/setup/install/)
+- [Helm](https://helm.sh/)
 - [Skaffold](https://skaffold.dev/docs/quickstart/)
 - [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
 - [MinIO client (mc)](https://min.io/download)

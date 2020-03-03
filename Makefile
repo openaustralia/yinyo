@@ -35,8 +35,12 @@ apidocs:
 	shins openapi/definition.md --layout $(shell pwd)/site/layout.ejs -o site/content/api.html --inline --logo site/static/logo.svg --logo-url / --css site/api-overrides.css
 
 minikube:
-	minikube start --memory=3072 --disk-size='30gb' --kubernetes-version='v1.15.2'
-	curl -fsSL https://github.com/kubedb/installer/raw/v0.13.0-rc.0/deploy/kubedb.sh | bash
+	minikube start --memory=3072 --disk-size='30gb'
+	# We're using helm to install kubedb because that works with Kubernetes > 1.15
+	helm repo add appscode https://charts.appscode.com/stable/
+	helm repo update
+	helm install kubedb-operator appscode/kubedb --version v0.13.0-rc.0 --namespace kube-system
+	helm install kubedb-catalog appscode/kubedb-catalog --version v0.13.0-rc.0 --namespace kube-system
 
 dashboard:
 	minikube dashboard
