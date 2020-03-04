@@ -11,9 +11,6 @@ metadata:
   # "namespace" omitted since ClusterRoles are not namespaced
   name: yinyo-server
 rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["create", "get", "delete"]
   - apiGroups: ["batch"]
     resources: ["jobs"]
     verbs: ["create", "delete"]
