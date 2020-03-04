@@ -476,7 +476,7 @@ func TestCreateRun(t *testing.T) {
 
 	keyValueStore.On("Set", mock.Anything, mock.Anything).Return(nil)
 
-	run, err := app.CreateRun(map[string]string{})
+	run, err := app.CreateRun("")
 	if err != nil {
 		t.Fatal(err)
 	}

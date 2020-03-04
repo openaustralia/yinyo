@@ -25,6 +25,34 @@ func osStream(stream string) (*os.File, error) {
 	}
 }
 
+func run(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, showEventsJSON bool, apiKey string) error {
+	return apiclient.Simple(
+		scraperDirectory, clientServerURL, environment, outputFile, callbackURL, apiKey,
+		func(event protocol.Event) error {
+			if showEventsJSON {
+				// Convert the event back to JSON for display
+				b, err := json.Marshal(event)
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(b))
+			} else {
+				// Only display the log events to the user
+				l, ok := event.Data.(protocol.LogData)
+				if ok {
+					f, err := osStream(l.Stream)
+					if err != nil {
+						return err
+					}
+					fmt.Fprintln(f, l.Text)
+				}
+			}
+			return nil
+		},
+	)
+
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -39,33 +67,23 @@ func main() {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			scraperDirectory := args[0]
-			err := apiclient.Simple(
-				scraperDirectory, clientServerURL, environment, outputFile, callbackURL,
-				func(event protocol.Event) error {
-					if showEventsJSON {
-						// Convert the event back to JSON for display
-						b, err := json.Marshal(event)
-						if err != nil {
-							return err
-						}
-						fmt.Println(string(b))
+			// TODO: Get this value from a file in the user's home directory
+			apiKey := ""
+			for {
+				err := run(scraperDirectory, clientServerURL, environment, outputFile, callbackURL, showEventsJSON, apiKey)
+				if err != nil {
+					// If get unauthorized error back then we should let the user enter their api key and try again
+					// And we should save away the api key (for this particular server) for later use
+					if apiclient.IsUnauthorized(err) {
+						fmt.Print("Enter your api key: ")
+						fmt.Scanln(&apiKey)
 					} else {
-						// Only display the log events to the user
-						l, ok := event.Data.(protocol.LogData)
-						if ok {
-							f, err := osStream(l.Stream)
-							if err != nil {
-								return err
-							}
-							fmt.Fprintln(f, l.Text)
-						}
+						log.Fatal(err)
 					}
-					return nil
-				},
-			)
+				} else {
+					break
+				}
 
-			if err != nil {
-				log.Fatal(err)
 			}
 		},
 	}

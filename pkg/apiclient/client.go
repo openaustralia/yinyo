@@ -76,6 +76,12 @@ func IsNotFound(err error) bool {
 	return (err.Error() == "404 Not Found")
 }
 
+// IsUnauthorized checks whether a particular error message corresponds to a 401
+func IsUnauthorized(err error) bool {
+	// TODO: Don't want to depend on a hardcoded string here
+	return (err.Error() == "401 Unauthorized")
+}
+
 func checkContentType(resp *http.Response, expected string) error {
 	ct := resp.Header["Content-Type"]
 	if len(ct) == 1 && ct[0] == expected {
@@ -109,10 +115,15 @@ func (client *Client) Hello() (string, error) {
 }
 
 // CreateRun is the first thing called. It creates a run
-func (client *Client) CreateRun() (RunInterface, error) {
+func (client *Client) CreateRun(apiKey string) (RunInterface, error) {
 	run := &Run{Client: client}
 
 	uri := client.URL + "/runs"
+	if apiKey != "" {
+		v := url.Values{}
+		v.Add("api_key", apiKey)
+		uri = uri + "?" + v.Encode()
+	}
 	req, err := http.NewRequest("POST", uri, nil)
 	if err != nil {
 		return run, err

@@ -54,10 +54,10 @@ func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvV
 // Simple is a super simple high level way of running a scraper that exists on the local file system
 // giving you a local callback for every event (including logs). This is used by the command line client
 // It makes a simple common use case a little simpler to implement
-func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, eventCallback func(event protocol.Event) error) error {
+func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, apiKey string, eventCallback func(event protocol.Event) error) error {
 	client := New(clientServerURL)
 	// Create the run
-	run, err := client.CreateRun()
+	run, err := client.CreateRun(apiKey)
 	if err != nil {
 		return err
 	}

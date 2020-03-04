@@ -18,7 +18,7 @@ import (
 )
 
 func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
-	createResult, err := server.app.CreateRun(mux.Vars(r))
+	createResult, err := server.app.CreateRun(r.URL.Query().Get("api_key"))
 	if err != nil {
 		if errors.Is(err, commands.ErrNotAllowed) {
 			return newHTTPError(err, http.StatusUnauthorized, err.Error())

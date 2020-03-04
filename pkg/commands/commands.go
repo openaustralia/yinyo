@@ -31,7 +31,7 @@ const runBinary = "/bin/wrapper"
 
 // App is the interface for the operations of the server
 type App interface {
-	CreateRun(params map[string]string) (protocol.Run, error)
+	CreateRun(apiKey string) (protocol.Run, error)
 	DeleteRun(runID string) error
 	StartRun(runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
 	GetApp(runID string) (io.Reader, error)
@@ -131,13 +131,11 @@ type authenticationResponse struct {
 }
 
 // CreateRun creates a run
-func (app *AppImplementation) CreateRun(params map[string]string) (protocol.Run, error) {
+func (app *AppImplementation) CreateRun(apiKey string) (protocol.Run, error) {
 	if app.AuthenticationURL != "" {
-		values := url.Values{}
-		for k, v := range params {
-			values.Set(k, v)
-		}
-		url := app.AuthenticationURL + "?" + values.Encode()
+		v := url.Values{}
+		v.Add("api_key", apiKey)
+		url := app.AuthenticationURL + "?" + v.Encode()
 		log.Printf("Making an authentication request to %v", url)
 
 		resp, err := app.HTTP.Post(url, "application/json", nil)
