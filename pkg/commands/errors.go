@@ -11,3 +11,5 @@ var ErrAppNotAvailable = errors.New("app not available")
 
 // ErrArchiveFormat is the error you get trying to upload an archive with a bad format
 var ErrArchiveFormat = errors.New("archive format")
+
+var ErrNotAllowed = errors.New("not allowed")

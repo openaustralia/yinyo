@@ -155,8 +155,8 @@ func (app *AppImplementation) CreateRun(params map[string]string) (protocol.Run,
 			return protocol.Run{}, err
 		}
 		if !response.Allowed {
-			// TODO: Send the message back to the user and give a sensible error code
-			return protocol.Run{}, fmt.Errorf("Not allowed by authentication. Message: %v", response.Message)
+			// TODO: Send the message back to the user
+			return protocol.Run{}, ErrNotAllowed
 		}
 
 		// TODO: Do we want to do something with response.Message if allowed?
