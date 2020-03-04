@@ -78,11 +78,12 @@ spec:
                 secretKeyRef:
                   name: redis
                   key: password
-            - name: AUTHENTICATION_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: yinyo-server
-                  key: authentication_url
+            # Uncomment the lines below to enable talking to an external authentication server
+            # - name: AUTHENTICATION_URL
+            #   valueFrom:
+            #     configMapKeyRef:
+            #       name: yinyo-server
+            #       key: authentication_url
           livenessProbe:
             httpGet:
               path: /
