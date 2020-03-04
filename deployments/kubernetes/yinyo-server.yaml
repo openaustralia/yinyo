@@ -84,6 +84,11 @@ spec:
             #     configMapKeyRef:
             #       name: yinyo-server
             #       key: authentication_url
+            # - name: USAGE_URL
+            #   valueFrom:
+            #     configMapKeyRef:
+            #       name: yinyo-server
+            #       key: usage_url
           livenessProbe:
             httpGet:
               path: /

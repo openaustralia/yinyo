@@ -61,6 +61,7 @@ type AppImplementation struct {
 	KeyValueStore     keyvaluestore.KeyValueStore
 	HTTP              *http.Client
 	AuthenticationURL string
+	UsageURL          string
 }
 
 // StartupOptions are the options available when initialising the application
@@ -68,6 +69,7 @@ type StartupOptions struct {
 	Minio             MinioOptions
 	Redis             RedisOptions
 	AuthenticationURL string
+	UsageURL          string
 }
 
 // MinioOptions are the options for the specific blob storage
@@ -122,6 +124,7 @@ func New(startupOptions *StartupOptions) (App, error) {
 		KeyValueStore:     keyValueStore,
 		HTTP:              http.DefaultClient,
 		AuthenticationURL: startupOptions.AuthenticationURL,
+		UsageURL:          startupOptions.UsageURL,
 	}, nil
 }
 
