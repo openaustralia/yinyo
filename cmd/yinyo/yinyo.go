@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/protocol"
@@ -53,6 +54,51 @@ func run(scraperDirectory string, clientServerURL string, environment map[string
 
 }
 
+func apiKeysPath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".yinyo"), nil
+}
+
+// Write to user's local directory as .yinyo
+// Store a separate api key for each server URL
+func saveAPIKeys(apiKeys map[string]string) error {
+	path, err := apiKeysPath()
+	if err != nil {
+		return err
+	}
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	return enc.Encode(apiKeys)
+}
+
+func loadAPIKeys() (map[string]string, error) {
+	apiKeys := make(map[string]string)
+	path, err := apiKeysPath()
+	if err != nil {
+		return apiKeys, err
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return apiKeys, nil
+		}
+		return apiKeys, err
+	}
+	defer f.Close()
+
+	dec := json.NewDecoder(f)
+	err = dec.Decode(&apiKeys)
+	return apiKeys, err
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -67,16 +113,24 @@ func main() {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			scraperDirectory := args[0]
-			// TODO: Get this value from a file in the user's home directory
-			apiKey := ""
+			apiKeys, err := loadAPIKeys()
+			if err != nil {
+				log.Fatal(err)
+			}
 			for {
-				err := run(scraperDirectory, clientServerURL, environment, outputFile, callbackURL, showEventsJSON, apiKey)
+				err := run(scraperDirectory, clientServerURL, environment, outputFile, callbackURL, showEventsJSON, apiKeys[clientServerURL])
 				if err != nil {
 					// If get unauthorized error back then we should let the user enter their api key and try again
 					// And we should save away the api key (for this particular server) for later use
 					if apiclient.IsUnauthorized(err) {
 						fmt.Print("Enter your api key: ")
+						var apiKey string
 						fmt.Scanln(&apiKey)
+						apiKeys[clientServerURL] = apiKey
+						err = saveAPIKeys(apiKeys)
+						if err != nil {
+							log.Fatal(err)
+						}
 					} else {
 						log.Fatal(err)
 					}
