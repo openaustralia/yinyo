@@ -230,8 +230,8 @@ func (_m *App) PutOutput(runID string, reader io.Reader, objectSize int64) error
 	return r0
 }
 
-// RecordTraffic provides a mock function with given fields: runID, external, in, out
-func (_m *App) RecordTraffic(runID string, external bool, in int64, out int64) error {
+// RecordAPINetworkUsage provides a mock function with given fields: runID, external, in, out
+func (_m *App) RecordAPINetworkUsage(runID string, external bool, in int64, out int64) error {
 	ret := _m.Called(runID, external, in, out)
 
 	var r0 error

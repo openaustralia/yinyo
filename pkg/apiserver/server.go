@@ -275,7 +275,7 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 			return
 		}
 		if runID != "" {
-			err = server.app.RecordTraffic(runID, external, readMeasurer.BytesRead, m.Written)
+			err = server.app.RecordAPINetworkUsage(runID, external, readMeasurer.BytesRead, m.Written)
 			if err != nil {
 				// TODO: Will this actually work here
 				logAndReturnError(err, w)
