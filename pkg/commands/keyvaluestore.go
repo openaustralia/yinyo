@@ -44,6 +44,35 @@ func (app *AppImplementation) newExitDataAPINetworkOutKey(runID string) Key {
 	return app.newExitDataAPIKey(runID, "network_out")
 }
 
+func (app *AppImplementation) deleteAllKeys(runID string) error {
+	// TODO: If one of these deletes fails just carry on
+	err := app.newExitDataBuildKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	err = app.newExitDataRunKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	err = app.newExitDataAPINetworkInKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	err = app.newExitDataAPINetworkOutKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	err = app.newExitDataFinishedKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	err = app.newCallbackKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	return app.newCreatedKey(runID).delete()
+}
+
 type Key struct {
 	key    string
 	client keyvaluestore.KeyValueStore

@@ -424,7 +424,6 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 	if err != nil {
 		return err
 	}
-
 	err = app.deleteBlobStoreData(runID, filenameApp)
 	if err != nil {
 		return err
@@ -433,39 +432,15 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 	if err != nil {
 		return err
 	}
-	err = app.newExitDataBuildKey(runID).delete()
-	if err != nil {
-		return err
-	}
-	err = app.newExitDataRunKey(runID).delete()
-	if err != nil {
-		return err
-	}
-	err = app.newExitDataAPINetworkInKey(runID).delete()
-	if err != nil {
-		return err
-	}
-	err = app.newExitDataAPINetworkOutKey(runID).delete()
-	if err != nil {
-		return err
-	}
-	err = app.newExitDataFinishedKey(runID).delete()
-	if err != nil {
-		return err
-	}
 	err = app.deleteBlobStoreData(runID, filenameCache)
 	if err != nil {
 		return err
 	}
-	err = app.Stream.Delete(runID)
+	err = app.deleteAllKeys(runID)
 	if err != nil {
 		return err
 	}
-	err = app.newCallbackKey(runID).delete()
-	if err != nil {
-		return err
-	}
-	return app.newCreatedKey(runID).delete()
+	return app.Stream.Delete(runID)
 }
 
 func (app *AppImplementation) IsRunCreated(runID string) (bool, error) {
