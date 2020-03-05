@@ -8,15 +8,41 @@ import (
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 )
 
-const createdKey = "created"
-const callbackKey = "url"
-const exitDataKeyBase = "exit_data/"
-const exitDataFinishedKey = exitDataKeyBase + "finished"
-const exitDataBuildKey = exitDataKeyBase + "build"
-const exitDataRunKey = exitDataKeyBase + "run"
-const exitDataAPIKeyBase = exitDataKeyBase + "api/"
-const exitDataAPINetworkInKey = exitDataAPIKeyBase + "network_in"
-const exitDataAPINetworkOutKey = exitDataAPIKeyBase + "network_out"
+func (app *AppImplementation) newCreatedKey(runID string) Key {
+	return app.newKey(runID, "created")
+}
+
+func (app *AppImplementation) newCallbackKey(runID string) Key {
+	return app.newKey(runID, "url")
+}
+
+func (app *AppImplementation) newExitDataKey(runID string, key string) Key {
+	return app.newKey(runID, "exit_data/"+key)
+}
+
+func (app *AppImplementation) newExitDataFinishedKey(runID string) Key {
+	return app.newExitDataKey(runID, "finished")
+}
+
+func (app *AppImplementation) newExitDataBuildKey(runID string) Key {
+	return app.newExitDataKey(runID, "build")
+}
+
+func (app *AppImplementation) newExitDataRunKey(runID string) Key {
+	return app.newExitDataKey(runID, "run")
+}
+
+func (app *AppImplementation) newExitDataAPIKey(runID string, key string) Key {
+	return app.newExitDataKey(runID, "api/"+key)
+}
+
+func (app *AppImplementation) newExitDataAPINetworkInKey(runID string) Key {
+	return app.newExitDataAPIKey(runID, "network_in")
+}
+
+func (app *AppImplementation) newExitDataAPINetworkOutKey(runID string) Key {
+	return app.newExitDataAPIKey(runID, "network_out")
+}
 
 type Key struct {
 	key    string
