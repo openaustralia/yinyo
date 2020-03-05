@@ -172,7 +172,7 @@ func (app *AppImplementation) CreateRun(apiKey string) (protocol.Run, error) {
 
 	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
-	err := app.setKeyValueData(id, createdKey, "true")
+	err := app.newKey(id, createdKey).set("true")
 	return protocol.Run{ID: id}, err
 }
 
@@ -251,7 +251,7 @@ func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSi
 // GetExitData downloads the exit data
 func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	build, err := app.getKeyValueData(runID, exitDataBuildKey)
+	build, err := app.newKey(runID, exitDataBuildKey).get()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -264,7 +264,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		}
 		exitData.Build = &exitDataBuild
 	}
-	run, err := app.getKeyValueData(runID, exitDataRunKey)
+	run, err := app.newKey(runID, exitDataRunKey).get()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -277,7 +277,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		}
 		exitData.Run = &exitDataRun
 	}
-	finished, err := app.getKeyValueData(runID, exitDataFinishedKey)
+	finished, err := app.newKey(runID, exitDataFinishedKey).get()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -290,7 +290,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		}
 		exitData.Finished = exitDataFinished
 	}
-	apiNetworkIn, err := app.getKeyValueDataAsInt(runID, exitDataAPINetworkInKey)
+	apiNetworkIn, err := app.newKey(runID, exitDataAPINetworkInKey).getAsInt()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -298,7 +298,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 	} else {
 		exitData.API.NetworkIn = uint64(apiNetworkIn)
 	}
-	apiNetworkOut, err := app.getKeyValueDataAsInt(runID, exitDataAPINetworkOutKey)
+	apiNetworkOut, err := app.newKey(runID, exitDataAPINetworkOutKey).getAsInt()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -321,7 +321,7 @@ func (app *AppImplementation) StartRun(
 		return err
 	}
 
-	err = app.setKeyValueData(runID, callbackKey, callbackURL)
+	err = app.newKey(runID, callbackKey).set(callbackURL)
 	if err != nil {
 		return err
 	}
@@ -402,12 +402,12 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 		if err != nil {
 			return err
 		}
-		err = app.setKeyValueData(runID, exitDataKeyBase+f.Stage, string(exitDataBytes))
+		err = app.newKey(runID, exitDataKeyBase+f.Stage).set(string(exitDataBytes))
 		if err != nil {
 			return err
 		}
 	case protocol.LastData:
-		err = app.setKeyValueData(runID, exitDataFinishedKey, "true")
+		err = app.newKey(runID, exitDataFinishedKey).set("true")
 		if err != nil {
 			return err
 		}
@@ -433,23 +433,23 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runID, exitDataBuildKey)
+	err = app.newKey(runID, exitDataBuildKey).delete()
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runID, exitDataRunKey)
+	err = app.newKey(runID, exitDataRunKey).delete()
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runID, exitDataAPINetworkInKey)
+	err = app.newKey(runID, exitDataAPINetworkInKey).delete()
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runID, exitDataAPINetworkOutKey)
+	err = app.newKey(runID, exitDataAPINetworkOutKey).delete()
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runID, exitDataFinishedKey)
+	err = app.newKey(runID, exitDataFinishedKey).delete()
 	if err != nil {
 		return err
 	}
@@ -461,15 +461,15 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runID, callbackKey)
+	err = app.newKey(runID, callbackKey).delete()
 	if err != nil {
 		return err
 	}
-	return app.deleteKeyValueData(runID, createdKey)
+	return app.newKey(runID, createdKey).delete()
 }
 
 func (app *AppImplementation) IsRunCreated(runID string) (bool, error) {
-	v, err := app.getKeyValueData(runID, createdKey)
+	v, err := app.newKey(runID, createdKey).get()
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return false, nil
@@ -487,7 +487,7 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		return err
 	}
 
-	callbackURL, err := app.getKeyValueData(runID, callbackKey)
+	callbackURL, err := app.newKey(runID, callbackKey).get()
 	if err != nil {
 		return err
 	}
@@ -523,11 +523,11 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 func (app *AppImplementation) RecordAPINetworkUsage(runID string, external bool, in int64, out int64) error {
 	// We only record traffic that is going out or coming in via the public internet
 	if external {
-		_, err := app.incrementKeyValueData(runID, exitDataAPINetworkInKey, in)
+		_, err := app.newKey(runID, exitDataAPINetworkInKey).increment(in)
 		if err != nil {
 			return err
 		}
-		_, err = app.incrementKeyValueData(runID, exitDataAPINetworkOutKey, out)
+		_, err = app.newKey(runID, exitDataAPINetworkOutKey).increment(out)
 		if err != nil {
 			return err
 		}
