@@ -249,16 +249,7 @@ func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSi
 }
 
 func (app *AppImplementation) setExitDataStage(runID string, stage string, value protocol.ExitDataStage) error {
-	b, err := json.Marshal(value)
-	if err != nil {
-		return err
-	}
-	err = app.newExitDataKey(runID, stage).set(string(b))
-	if err != nil {
-		return err
-	}
-
-	err = app.newExitDataExitCodeKey(runID, stage).setAsInt(value.ExitCode)
+	err := app.newExitDataExitCodeKey(runID, stage).setAsInt(value.ExitCode)
 	if err != nil {
 		return err
 	}

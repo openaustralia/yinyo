@@ -61,12 +61,7 @@ func (app *AppImplementation) newExitDataAPINetworkOutKey(runID string) Key {
 }
 
 func (app *AppImplementation) deleteExitDataKeys(runID string, stage string) error {
-	err := app.newExitDataKey(runID, stage).delete()
-	if err != nil {
-		return err
-	}
-
-	err = app.newExitDataExitCodeKey(runID, stage).delete()
+	err := app.newExitDataExitCodeKey(runID, stage).delete()
 	if err != nil {
 		return err
 	}
