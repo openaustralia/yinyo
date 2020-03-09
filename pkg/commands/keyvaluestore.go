@@ -24,14 +24,6 @@ func (app *AppImplementation) newExitDataFinishedKey(runID string) Key {
 	return app.newExitDataKey(runID, "finished")
 }
 
-func (app *AppImplementation) newExitDataBuildKey(runID string) Key {
-	return app.newExitDataKey(runID, "build")
-}
-
-func (app *AppImplementation) newExitDataRunKey(runID string) Key {
-	return app.newExitDataKey(runID, "run")
-}
-
 func (app *AppImplementation) newExitDataAPIKey(runID string, key string) Key {
 	return app.newExitDataKey(runID, "api/"+key)
 }
@@ -46,11 +38,11 @@ func (app *AppImplementation) newExitDataAPINetworkOutKey(runID string) Key {
 
 func (app *AppImplementation) deleteAllKeys(runID string) error {
 	// TODO: If one of these deletes fails just carry on
-	err := app.newExitDataBuildKey(runID).delete()
+	err := app.newExitDataKey(runID, "build").delete()
 	if err != nil {
 		return err
 	}
-	err = app.newExitDataRunKey(runID).delete()
+	err = app.newExitDataKey(runID, "run").delete()
 	if err != nil {
 		return err
 	}

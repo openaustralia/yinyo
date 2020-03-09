@@ -251,7 +251,7 @@ func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSi
 // GetExitData downloads the exit data
 func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	build, err := app.newExitDataBuildKey(runID).get()
+	build, err := app.newExitDataKey(runID, "build").get()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -264,7 +264,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		}
 		exitData.Build = &exitDataBuild
 	}
-	run, err := app.newExitDataRunKey(runID).get()
+	run, err := app.newExitDataKey(runID, "run").get()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
