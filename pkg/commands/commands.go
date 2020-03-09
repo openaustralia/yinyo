@@ -248,6 +248,14 @@ func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSi
 	return app.putBlobStoreData(reader, objectSize, runID, filenameOutput)
 }
 
+func (app *AppImplementation) setExitDataStage(runID string, stage string, value protocol.ExitDataStage) error {
+	b, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return app.newExitDataKey(runID, stage).set(string(b))
+}
+
 func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
 	value, err := app.newExitDataKey(runID, stage).get()
 	if err != nil {
@@ -395,11 +403,7 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 	// If this is a finish event or a last event do some extra special handling
 	switch f := event.Data.(type) {
 	case protocol.FinishData:
-		exitDataBytes, err := json.Marshal(f.ExitData)
-		if err != nil {
-			return err
-		}
-		err = app.newExitDataKey(runID, f.Stage).set(string(exitDataBytes))
+		err = app.setExitDataStage(runID, f.Stage, f.ExitData)
 		if err != nil {
 			return err
 		}
