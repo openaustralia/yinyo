@@ -248,35 +248,32 @@ func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSi
 	return app.putBlobStoreData(reader, objectSize, runID, filenameOutput)
 }
 
+func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
+	value, err := app.newExitDataKey(runID, stage).get()
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var exitDataStage protocol.ExitDataStage
+	err = json.Unmarshal([]byte(value), &exitDataStage)
+	return &exitDataStage, err
+}
+
 // GetExitData downloads the exit data
 func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	build, err := app.newExitDataKey(runID, "build").get()
+	build, err := app.getExitDataStage(runID, "build")
 	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		var exitDataBuild protocol.ExitDataStage
-		err = json.Unmarshal([]byte(build), &exitDataBuild)
-		if err != nil {
-			return exitData, err
-		}
-		exitData.Build = &exitDataBuild
+		return exitData, err
 	}
-	run, err := app.newExitDataKey(runID, "run").get()
+	exitData.Build = build
+	run, err := app.getExitDataStage(runID, "run")
 	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		var exitDataRun protocol.ExitDataStage
-		err = json.Unmarshal([]byte(run), &exitDataRun)
-		if err != nil {
-			return exitData, err
-		}
-		exitData.Run = &exitDataRun
+		return exitData, err
 	}
+	exitData.Run = run
 	finished, err := app.newExitDataFinishedKey(runID).get()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
