@@ -254,11 +254,6 @@ func (app *AppImplementation) setExitDataStage(runID string, stage string, value
 		return err
 	}
 
-	err = app.newExitDataWallTimeKey(runID, stage).setAsFloat64(value.Usage.WallTime)
-	if err != nil {
-		return err
-	}
-
 	err = app.newExitDataMaxRSSKey(runID, stage).setAsUint64(value.Usage.MaxRSS)
 	if err != nil {
 		return err
@@ -288,14 +283,6 @@ func (app *AppImplementation) getExitDataStage(runID string, stage string) (*pro
 		return nil, err
 	}
 	exitDataStage.ExitCode = exitCode
-
-	wallTime, err := app.newExitDataWallTimeKey(runID, stage).getAsFloat64()
-	if err != nil {
-		// There's kind of no need to check for ErrNotFound here on in because we should have already
-		// had the error on the first key if the stage was missing
-		return nil, err
-	}
-	exitDataStage.Usage.WallTime = wallTime
 
 	maxRss, err := app.newExitDataMaxRSSKey(runID, stage).getAsUint64()
 	if err != nil {

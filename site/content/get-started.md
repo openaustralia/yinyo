@@ -113,7 +113,7 @@ This will output a stream of events formatted as JSON in real-time
 {"id":"1580183628838-0","time":"2020-01-28T03:53:48.830730376Z","type":"log","data":{"stage":"build","stream":"stdout","text":"\u001b[1G       "}}
 {"id":"1580183629805-0","time":"2020-01-28T03:53:49.771548419Z","type":"log","data":{"stage":"build","stream":"stdout","text":"\u001b[1G       \u001b[1G-----\u003e Discovering process types"}}
 {"id":"1580183629813-0","time":"2020-01-28T03:53:49.80782406Z","type":"log","data":{"stage":"build","stream":"stdout","text":"\u001b[1G       Procfile declares types -\u003e scraper"}}
-{"id":"1580183629853-0","time":"2020-01-28T03:53:49.832331568Z","type":"finish","data":{"stage":"build","exit_data":{"exit_code":0,"usage":{"wall_time":208.322458275,"max_rss":77045760,"network_in":50109438,"network_out":1307044}}}}
+{"id":"1580183629853-0","time":"2020-01-28T03:53:49.832331568Z","type":"finish","data":{"stage":"build","exit_data":{"exit_code":0,"usage":{"max_rss":77045760,"network_in":50109438,"network_out":1307044}}}}
 {"id":"1580183638633-0","time":"2020-01-28T03:53:58.625907685Z","type":"start","data":{"stage":"run"}}
 {"id":"1580183641377-0","time":"2020-01-28T03:54:01.368828538Z","type":"log","data":{"stage":"run","stream":"stdout","text":"Hello from test-python!"}}
 {"id":"1580183641386-0","time":"2020-01-28T03:54:01.380169548Z","type":"log","data":{"stage":"run","stream":"stdout","text":"1..."}}
@@ -122,7 +122,7 @@ This will output a stream of events formatted as JSON in real-time
 {"id":"1580183643372-0","time":"2020-01-28T03:54:03.370619368Z","type":"log","data":{"stage":"run","stream":"stdout","text":"3..."}}
 {"id":"1580183644373-0","time":"2020-01-28T03:54:04.371837081Z","type":"log","data":{"stage":"run","stream":"stdout","text":"4..."}}
 {"id":"1580183645376-0","time":"2020-01-28T03:54:05.37319053Z","type":"log","data":{"stage":"run","stream":"stdout","text":"5..."}}
-{"id":"1580183646397-0","time":"2020-01-28T03:54:06.38666964Z","type":"finish","data":{"stage":"run","exit_data":{"exit_code":0,"usage":{"wall_time":7.75252631,"max_rss":136421376,"network_in":28585,"network_out":7125}}}}
+{"id":"1580183646397-0","time":"2020-01-28T03:54:06.38666964Z","type":"finish","data":{"stage":"run","exit_data":{"exit_code":0,"usage":{"max_rss":136421376,"network_in":28585,"network_out":7125}}}}
 {"id":"1580183648184-0","time":"2020-01-28T03:54:08.182780901Z","type":"last","data":{}}
 ```
 

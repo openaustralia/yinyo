@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"syscall"
-	"time"
 
 	"github.com/kballard/go-shellquote"
 	"github.com/openaustralia/yinyo/pkg/apiclient"
@@ -114,8 +113,6 @@ func runExternalCommandWithSuccess(run apiclient.RunInterface, stage string, com
 		return false, err
 	}
 
-	// Capture the time and the network counters
-	start := time.Now()
 	statsStart, err := aggregateCounters()
 	if err != nil {
 		return false, err
@@ -134,7 +131,6 @@ func runExternalCommandWithSuccess(run apiclient.RunInterface, stage string, com
 	exitData.Usage.NetworkIn = statsEnd.BytesRecv - statsStart.BytesRecv
 	// Don't include the log events in the network out measurement
 	exitData.Usage.NetworkOut = statsEnd.BytesSent - statsStart.BytesSent - count
-	exitData.Usage.WallTime = time.Since(start).Seconds()
 	// This bit will only return something when run on Linux I think
 	rusage, ok := state.SysUsage().(*syscall.Rusage)
 	if ok {

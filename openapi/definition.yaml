@@ -349,9 +349,6 @@ components:
     Usage:
       type: object
       properties:
-        wall_time:
-          type: number
-          description: Wall clock (in seconds)
         max_rss:
           type: integer
           description: |

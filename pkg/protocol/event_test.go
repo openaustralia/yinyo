@@ -34,8 +34,8 @@ func TestMarshalStartEvent(t *testing.T) {
 func TestMarshalFinishEvent(t *testing.T) {
 	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	testMarshal(t,
-		NewFinishEvent("", time, "build", ExitDataStage{ExitCode: 0, Usage: Usage{WallTime: 1.0, MaxRSS: 128, NetworkIn: 50, NetworkOut: 100}}),
-		`{"time":"2000-01-02T03:45:00Z","type":"finish","data":{"stage":"build","exit_data":{"exit_code":0,"usage":{"wall_time":1,"max_rss":128,"network_in":50,"network_out":100}}}}`,
+		NewFinishEvent("", time, "build", ExitDataStage{ExitCode: 0, Usage: Usage{MaxRSS: 128, NetworkIn: 50, NetworkOut: 100}}),
+		`{"time":"2000-01-02T03:45:00Z","type":"finish","data":{"stage":"build","exit_data":{"exit_code":0,"usage":{"max_rss":128,"network_in":50,"network_out":100}}}}`,
 	)
 }
 

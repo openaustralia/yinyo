@@ -53,7 +53,6 @@ func TestSimpleRun(t *testing.T) {
 			// The usage values are going to be a little different each time. So, the best we
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
 			e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
@@ -66,7 +65,6 @@ func TestSimpleRun(t *testing.T) {
 			// The usage values are going to be a little different each time. So, the best we
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
 			e.Usage.MaxRSS > 0
 
 	})).Return(10, nil)
@@ -143,7 +141,6 @@ func TestFailingBuild(t *testing.T) {
 			// The usage values are going to be a little different each time. So, the best we
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
 			e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
@@ -183,7 +180,6 @@ func TestFailingRun(t *testing.T) {
 			// The usage values are going to be a little different each time. So, the best we
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
 			e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
@@ -196,7 +192,6 @@ func TestFailingRun(t *testing.T) {
 			// The usage values are going to be a little different each time. So, the best we
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
 			e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("CreateLastEvent").Return(10, nil)

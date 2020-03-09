@@ -109,14 +109,13 @@ func TestCreateFinishEvent(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
 
-	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.Usage{WallTime: 1, MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
+	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.Usage{MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
 	event := protocol.NewFinishEvent("", time, "build", exitData)
 	eventWithID := protocol.NewFinishEvent("123", time, "build", exitData)
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
 	keyValueStore.On("Set", "run-name/exit_data/build/exit_code", "12").Return(nil)
-	keyValueStore.On("Set", "run-name/exit_data/build/wall_time", "1").Return(nil)
 	keyValueStore.On("Set", "run-name/exit_data/build/max_rss", "100").Return(nil)
 	keyValueStore.On("Set", "run-name/exit_data/build/network_in", "200").Return(nil)
 	keyValueStore.On("Set", "run-name/exit_data/build/network_out", "300").Return(nil)
@@ -286,12 +285,10 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.On("Delete", "run-name/url").Return(nil)
 	keyValueStore.On("Delete", "run-name/created").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build/exit_code").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/build/wall_time").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build/max_rss").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build/network_in").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build/network_out").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run/exit_code").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/run/wall_time").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run/max_rss").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run/network_in").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run/network_out").Return(nil)
@@ -416,13 +413,11 @@ func TestGetExitData(t *testing.T) {
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
 	keyValueStore.On("Get", "run-name/exit_data/build/exit_code").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/wall_time").Return("1", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/max_rss").Return("0", nil)
+	keyValueStore.On("Get", "run-name/exit_data/build/max_rss").Return("1", nil)
 	keyValueStore.On("Get", "run-name/exit_data/build/network_in").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/build/network_out").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/run/exit_code").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/run/wall_time").Return("2", nil)
-	keyValueStore.On("Get", "run-name/exit_data/run/max_rss").Return("0", nil)
+	keyValueStore.On("Get", "run-name/exit_data/run/max_rss").Return("2", nil)
 	keyValueStore.On("Get", "run-name/exit_data/run/network_in").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/run/network_out").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
@@ -433,8 +428,8 @@ func TestGetExitData(t *testing.T) {
 		t.Fatal(err)
 	}
 	expectedExitData := protocol.ExitData{
-		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{WallTime: 1}},
-		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{WallTime: 2}},
+		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{MaxRSS: 1}},
+		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{MaxRSS: 2}},
 		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: true,
 	}
@@ -448,7 +443,6 @@ func TestGetExitDataBuildErrored(t *testing.T) {
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
 	keyValueStore.On("Get", "run-name/exit_data/build/exit_code").Return("15", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/wall_time").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/build/max_rss").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/build/network_in").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/build/network_out").Return("0", nil)
