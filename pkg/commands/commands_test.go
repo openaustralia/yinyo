@@ -116,6 +116,12 @@ func TestCreateFinishEvent(t *testing.T) {
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
 	keyValueStore.On("Set", "run-name/exit_data/build", `{"exit_code":12,"usage":{"wall_time":1,"cpu_time":0.1,"max_rss":100,"network_in":200,"network_out":300}}`).Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/build/exit_code", "12").Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/build/wall_time", "1").Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/build/cpu_time", "0.1").Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/build/max_rss", "100").Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/build/network_in", "200").Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/build/network_out", "300").Return(nil)
 
 	app.CreateEvent("run-name", event)
 

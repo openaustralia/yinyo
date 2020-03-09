@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -18,6 +19,30 @@ func (app *AppImplementation) newCallbackKey(runID string) Key {
 
 func (app *AppImplementation) newExitDataKey(runID string, key string) Key {
 	return app.newKey(runID, "exit_data/"+key)
+}
+
+func (app *AppImplementation) newExitDataExitCodeKey(runID string, stage string) Key {
+	return app.newExitDataKey(runID, stage+"/exit_code")
+}
+
+func (app *AppImplementation) newExitDataWallTimeKey(runID string, stage string) Key {
+	return app.newExitDataKey(runID, stage+"/wall_time")
+}
+
+func (app *AppImplementation) newExitDataCPUTimeKey(runID string, stage string) Key {
+	return app.newExitDataKey(runID, stage+"/cpu_time")
+}
+
+func (app *AppImplementation) newExitDataMaxRSSKey(runID string, stage string) Key {
+	return app.newExitDataKey(runID, stage+"/max_rss")
+}
+
+func (app *AppImplementation) newExitDataNetworkInKey(runID string, stage string) Key {
+	return app.newExitDataKey(runID, stage+"/network_in")
+}
+
+func (app *AppImplementation) newExitDataNetworkOutKey(runID string, stage string) Key {
+	return app.newExitDataKey(runID, stage+"/network_out")
 }
 
 func (app *AppImplementation) newExitDataFinishedKey(runID string) Key {
@@ -76,6 +101,30 @@ func (app *AppImplementation) newKey(runID string, key string) Key {
 
 func (key Key) set(value string) error {
 	return key.client.Set(key.key, value)
+}
+
+func (key Key) setAsInt(value int) error {
+	b, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return key.set(string(b))
+}
+
+func (key Key) setAsFloat64(value float64) error {
+	b, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return key.set(string(b))
+}
+
+func (key Key) setAsUint64(value uint64) error {
+	b, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return key.set(string(b))
 }
 
 func (key Key) get() (string, error) {

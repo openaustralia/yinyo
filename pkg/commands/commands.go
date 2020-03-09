@@ -253,7 +253,42 @@ func (app *AppImplementation) setExitDataStage(runID string, stage string, value
 	if err != nil {
 		return err
 	}
-	return app.newExitDataKey(runID, stage).set(string(b))
+	err = app.newExitDataKey(runID, stage).set(string(b))
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataExitCodeKey(runID, stage).setAsInt(value.ExitCode)
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataWallTimeKey(runID, stage).setAsFloat64(value.Usage.WallTime)
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataCPUTimeKey(runID, stage).setAsFloat64(value.Usage.CPUTime)
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataMaxRSSKey(runID, stage).setAsUint64(value.Usage.MaxRSS)
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataNetworkInKey(runID, stage).setAsUint64(value.Usage.NetworkIn)
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataNetworkOutKey(runID, stage).setAsUint64(value.Usage.NetworkOut)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
