@@ -61,13 +61,52 @@ func (app *AppImplementation) newExitDataAPINetworkOutKey(runID string) Key {
 	return app.newExitDataAPIKey(runID, "network_out")
 }
 
-func (app *AppImplementation) deleteAllKeys(runID string) error {
-	// TODO: If one of these deletes fails just carry on
-	err := app.newExitDataKey(runID, "build").delete()
+func (app *AppImplementation) deleteExitDataKeys(runID string, stage string) error {
+	err := app.newExitDataKey(runID, stage).delete()
 	if err != nil {
 		return err
 	}
-	err = app.newExitDataKey(runID, "run").delete()
+
+	err = app.newExitDataExitCodeKey(runID, stage).delete()
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataWallTimeKey(runID, stage).delete()
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataCPUTimeKey(runID, stage).delete()
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataMaxRSSKey(runID, stage).delete()
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataNetworkInKey(runID, stage).delete()
+	if err != nil {
+		return err
+	}
+
+	err = app.newExitDataNetworkOutKey(runID, stage).delete()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (app *AppImplementation) deleteAllKeys(runID string) error {
+	// TODO: If one of these deletes fails just carry on
+	err := app.deleteExitDataKeys(runID, "build")
+	if err != nil {
+		return err
+	}
+	err = app.deleteExitDataKeys(runID, "run")
 	if err != nil {
 		return err
 	}
