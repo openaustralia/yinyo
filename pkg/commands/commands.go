@@ -292,16 +292,50 @@ func (app *AppImplementation) setExitDataStage(runID string, stage string, value
 }
 
 func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
-	value, err := app.newExitDataKey(runID, stage).get()
+	var exitDataStage protocol.ExitDataStage
+
+	exitCode, err := app.newExitDataExitCodeKey(runID, stage).getAsInt()
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	var exitDataStage protocol.ExitDataStage
-	err = json.Unmarshal([]byte(value), &exitDataStage)
-	return &exitDataStage, err
+	exitDataStage.ExitCode = exitCode
+
+	wallTime, err := app.newExitDataWallTimeKey(runID, stage).getAsFloat64()
+	if err != nil {
+		// There's kind of no need to check for ErrNotFound here on in because we should have already
+		// had the error on the first key if the stage was missing
+		return nil, err
+	}
+	exitDataStage.Usage.WallTime = wallTime
+
+	cpuTime, err := app.newExitDataCPUTimeKey(runID, stage).getAsFloat64()
+	if err != nil {
+		return nil, err
+	}
+	exitDataStage.Usage.CPUTime = cpuTime
+
+	maxRss, err := app.newExitDataMaxRSSKey(runID, stage).getAsUint64()
+	if err != nil {
+		return nil, err
+	}
+	exitDataStage.Usage.MaxRSS = maxRss
+
+	networkIn, err := app.newExitDataNetworkInKey(runID, stage).getAsUint64()
+	if err != nil {
+		return nil, err
+	}
+	exitDataStage.Usage.NetworkIn = networkIn
+
+	networkOut, err := app.newExitDataNetworkOutKey(runID, stage).getAsUint64()
+	if err != nil {
+		return nil, err
+	}
+	exitDataStage.Usage.NetworkOut = networkOut
+
+	return &exitDataStage, nil
 }
 
 // GetExitData downloads the exit data

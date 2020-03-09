@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 )
@@ -174,12 +173,44 @@ func (key Key) get() (string, error) {
 	return value, err
 }
 
-func (key Key) getAsInt64() (int64, error) {
-	v, err := key.get()
+func (key Key) getAsInt() (int, error) {
+	var value int
+	string, err := key.get()
 	if err != nil {
-		return 0, err
+		return value, err
 	}
-	return strconv.ParseInt(v, 10, 64)
+	err = json.Unmarshal([]byte(string), &value)
+	return value, err
+}
+
+func (key Key) getAsInt64() (int64, error) {
+	var value int64
+	string, err := key.get()
+	if err != nil {
+		return value, err
+	}
+	err = json.Unmarshal([]byte(string), &value)
+	return value, err
+}
+
+func (key Key) getAsUint64() (uint64, error) {
+	var value uint64
+	string, err := key.get()
+	if err != nil {
+		return value, err
+	}
+	err = json.Unmarshal([]byte(string), &value)
+	return value, err
+}
+
+func (key Key) getAsFloat64() (float64, error) {
+	var value float64
+	string, err := key.get()
+	if err != nil {
+		return value, err
+	}
+	err = json.Unmarshal([]byte(string), &value)
+	return value, err
 }
 
 func (key Key) delete() error {
