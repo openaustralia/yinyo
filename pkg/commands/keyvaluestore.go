@@ -174,7 +174,7 @@ func (key Key) get() (string, error) {
 	return value, err
 }
 
-func (key Key) getAsInt() (int64, error) {
+func (key Key) getAsInt64() (int64, error) {
 	v, err := key.get()
 	if err != nil {
 		return 0, err

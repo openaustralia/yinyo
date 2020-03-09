@@ -330,7 +330,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		}
 		exitData.Finished = exitDataFinished
 	}
-	apiNetworkIn, err := app.newExitDataAPINetworkInKey(runID).getAsInt()
+	apiNetworkIn, err := app.newExitDataAPINetworkInKey(runID).getAsInt64()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -338,7 +338,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 	} else {
 		exitData.API.NetworkIn = uint64(apiNetworkIn)
 	}
-	apiNetworkOut, err := app.newExitDataAPINetworkOutKey(runID).getAsInt()
+	apiNetworkOut, err := app.newExitDataAPINetworkOutKey(runID).getAsInt64()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
