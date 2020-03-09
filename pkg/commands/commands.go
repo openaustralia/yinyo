@@ -259,11 +259,6 @@ func (app *AppImplementation) setExitDataStage(runID string, stage string, value
 		return err
 	}
 
-	err = app.newExitDataCPUTimeKey(runID, stage).setAsFloat64(value.Usage.CPUTime)
-	if err != nil {
-		return err
-	}
-
 	err = app.newExitDataMaxRSSKey(runID, stage).setAsUint64(value.Usage.MaxRSS)
 	if err != nil {
 		return err
@@ -301,12 +296,6 @@ func (app *AppImplementation) getExitDataStage(runID string, stage string) (*pro
 		return nil, err
 	}
 	exitDataStage.Usage.WallTime = wallTime
-
-	cpuTime, err := app.newExitDataCPUTimeKey(runID, stage).getAsFloat64()
-	if err != nil {
-		return nil, err
-	}
-	exitDataStage.Usage.CPUTime = cpuTime
 
 	maxRss, err := app.newExitDataMaxRSSKey(runID, stage).getAsUint64()
 	if err != nil {

@@ -28,10 +28,6 @@ func (app *AppImplementation) newExitDataWallTimeKey(runID string, stage string)
 	return app.newExitDataKey(runID, stage+"/wall_time")
 }
 
-func (app *AppImplementation) newExitDataCPUTimeKey(runID string, stage string) Key {
-	return app.newExitDataKey(runID, stage+"/cpu_time")
-}
-
 func (app *AppImplementation) newExitDataMaxRSSKey(runID string, stage string) Key {
 	return app.newExitDataKey(runID, stage+"/max_rss")
 }
@@ -67,11 +63,6 @@ func (app *AppImplementation) deleteExitDataKeys(runID string, stage string) err
 	}
 
 	err = app.newExitDataWallTimeKey(runID, stage).delete()
-	if err != nil {
-		return err
-	}
-
-	err = app.newExitDataCPUTimeKey(runID, stage).delete()
 	if err != nil {
 		return err
 	}

@@ -52,7 +52,6 @@ type APIUsage struct {
 // Usage gives the resource usage for a single stage
 type Usage struct {
 	WallTime   float64 `json:"wall_time"`   // In seconds
-	CPUTime    float64 `json:"cpu_time"`    // In seconds
 	MaxRSS     uint64  `json:"max_rss"`     // In bytes
 	NetworkIn  uint64  `json:"network_in"`  // In bytes
 	NetworkOut uint64  `json:"network_out"` // In bytes

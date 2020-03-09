@@ -135,7 +135,6 @@ func runExternalCommandWithSuccess(run apiclient.RunInterface, stage string, com
 	// Don't include the log events in the network out measurement
 	exitData.Usage.NetworkOut = statsEnd.BytesSent - statsStart.BytesSent - count
 	exitData.Usage.WallTime = time.Since(start).Seconds()
-	exitData.Usage.CPUTime = state.UserTime().Seconds() + state.SystemTime().Seconds()
 	// This bit will only return something when run on Linux I think
 	rusage, ok := state.SysUsage().(*syscall.Rusage)
 	if ok {

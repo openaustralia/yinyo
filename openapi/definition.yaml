@@ -352,11 +352,6 @@ components:
         wall_time:
           type: number
           description: Wall clock (in seconds)
-        cpu_time:
-          type: number
-          description: |
-            Total time spent executing by the CPU.
-            It's the sum of time spent in user and kernel mode (in seconds)
         max_rss:
           type: integer
           description: |

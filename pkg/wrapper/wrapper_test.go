@@ -54,7 +54,6 @@ func TestSimpleRun(t *testing.T) {
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
 			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
@@ -68,7 +67,6 @@ func TestSimpleRun(t *testing.T) {
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
 			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
 
 	})).Return(10, nil)
@@ -146,7 +144,6 @@ func TestFailingBuild(t *testing.T) {
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
 			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
@@ -187,7 +184,6 @@ func TestFailingRun(t *testing.T) {
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
 			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
@@ -201,7 +197,6 @@ func TestFailingRun(t *testing.T) {
 			// can do for the moment is just check that they are not zero
 			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
 			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
 			e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("CreateLastEvent").Return(10, nil)
