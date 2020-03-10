@@ -140,16 +140,6 @@ func (key Key) getAsInt() (int, error) {
 	return value, err
 }
 
-func (key Key) getAsInt64() (int64, error) {
-	var value int64
-	string, err := key.get()
-	if err != nil {
-		return value, err
-	}
-	err = json.Unmarshal([]byte(string), &value)
-	return value, err
-}
-
 func (key Key) getAsUint64() (uint64, error) {
 	var value uint64
 	string, err := key.get()
