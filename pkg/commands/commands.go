@@ -44,7 +44,7 @@ type App interface {
 	GetEvents(runID string, lastID string) EventIterator
 	CreateEvent(runID string, event protocol.Event) error
 	IsRunCreated(runID string) (bool, error)
-	RecordNetworkUsage(runID string, source string, in int64, out int64) error
+	RecordNetworkUsage(runID string, source string, in uint64, out uint64) error
 }
 
 // EventIterator is the interface for getting individual events in a list of events
@@ -521,7 +521,7 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 
 		// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
 		// TODO: Should we give this a source callbacks?
-		err = app.RecordNetworkUsage(runID, "api", 0, int64(out))
+		err = app.RecordNetworkUsage(runID, "api", 0, uint64(out))
 		if err != nil {
 			return err
 		}
@@ -533,11 +533,11 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 	return nil
 }
 
-func (app *AppImplementation) RecordNetworkUsage(runID string, source string, in int64, out int64) error {
-	_, err := app.newExitDataNetworkInKey(runID, source).increment(in)
+func (app *AppImplementation) RecordNetworkUsage(runID string, source string, in uint64, out uint64) error {
+	_, err := app.newExitDataNetworkInKey(runID, source).increment(int64(in))
 	if err != nil {
 		return err
 	}
-	_, err = app.newExitDataNetworkOutKey(runID, source).increment(out)
+	_, err = app.newExitDataNetworkOutKey(runID, source).increment(int64(out))
 	return err
 }

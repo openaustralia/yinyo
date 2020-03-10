@@ -231,11 +231,11 @@ func (_m *App) PutOutput(runID string, reader io.Reader, objectSize int64) error
 }
 
 // RecordNetworkUsage provides a mock function with given fields: runID, source, in, out
-func (_m *App) RecordNetworkUsage(runID string, source string, in int64, out int64) error {
+func (_m *App) RecordNetworkUsage(runID string, source string, in uint64, out uint64) error {
 	ret := _m.Called(runID, source, in, out)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, int64, int64) error); ok {
+	if rf, ok := ret.Get(0).(func(string, string, uint64, uint64) error); ok {
 		r0 = rf(runID, source, in, out)
 	} else {
 		r0 = ret.Error(0)
