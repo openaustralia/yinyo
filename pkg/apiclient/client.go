@@ -122,6 +122,7 @@ func (client *Client) CreateRun(options protocol.CreateRunOptions) (RunInterface
 	if options.APIKey != "" {
 		v := url.Values{}
 		v.Add("api_key", options.APIKey)
+		v.Add("callback_url", options.CallbackURL)
 		uri = uri + "?" + v.Encode()
 	}
 	req, err := http.NewRequest("POST", uri, nil)
