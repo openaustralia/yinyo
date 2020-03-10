@@ -337,21 +337,21 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		}
 		exitData.Finished = exitDataFinished
 	}
-	apiNetworkIn, err := app.newExitDataNetworkInKey(runID, "api").getAsInt64()
+	apiNetworkIn, err := app.newExitDataNetworkInKey(runID, "api").getAsUint64()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
 		}
 	} else {
-		exitData.API.NetworkIn = uint64(apiNetworkIn)
+		exitData.API.NetworkIn = apiNetworkIn
 	}
-	apiNetworkOut, err := app.newExitDataNetworkOutKey(runID, "api").getAsInt64()
+	apiNetworkOut, err := app.newExitDataNetworkOutKey(runID, "api").getAsUint64()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
 		}
 	} else {
-		exitData.API.NetworkOut = uint64(apiNetworkOut)
+		exitData.API.NetworkOut = apiNetworkOut
 	}
 	return exitData, nil
 }
