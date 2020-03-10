@@ -26,20 +26,20 @@ func (_m *App) CreateEvent(runID string, event protocol.Event) error {
 	return r0
 }
 
-// CreateRun provides a mock function with given fields: apiKey
-func (_m *App) CreateRun(apiKey string) (protocol.Run, error) {
-	ret := _m.Called(apiKey)
+// CreateRun provides a mock function with given fields: options
+func (_m *App) CreateRun(options protocol.CreateRunOptions) (protocol.Run, error) {
+	ret := _m.Called(options)
 
 	var r0 protocol.Run
-	if rf, ok := ret.Get(0).(func(string) protocol.Run); ok {
-		r0 = rf(apiKey)
+	if rf, ok := ret.Get(0).(func(protocol.CreateRunOptions) protocol.Run); ok {
+		r0 = rf(options)
 	} else {
 		r0 = ret.Get(0).(protocol.Run)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(apiKey)
+	if rf, ok := ret.Get(1).(func(protocol.CreateRunOptions) error); ok {
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -244,13 +244,13 @@ func (_m *App) RecordAPINetworkUsage(runID string, external bool, in int64, out 
 	return r0
 }
 
-// StartRun provides a mock function with given fields: runID, output, env, callbackURL, maxRunTime
-func (_m *App) StartRun(runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
-	ret := _m.Called(runID, output, env, callbackURL, maxRunTime)
+// StartRun provides a mock function with given fields: runID, options
+func (_m *App) StartRun(runID string, options protocol.StartRunOptions) error {
+	ret := _m.Called(runID, options)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string, map[string]string, string, int64) error); ok {
-		r0 = rf(runID, output, env, callbackURL, maxRunTime)
+	if rf, ok := ret.Get(0).(func(string, protocol.StartRunOptions) error); ok {
+		r0 = rf(runID, options)
 	} else {
 		r0 = ret.Error(0)
 	}

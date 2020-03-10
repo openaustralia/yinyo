@@ -31,9 +31,9 @@ const runBinary = "/bin/wrapper"
 
 // App is the interface for the operations of the server
 type App interface {
-	CreateRun(apiKey string) (protocol.Run, error)
+	CreateRun(options protocol.CreateRunOptions) (protocol.Run, error)
 	DeleteRun(runID string) error
-	StartRun(runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
+	StartRun(runID string, options protocol.StartRunOptions) error
 	GetApp(runID string) (io.Reader, error)
 	PutApp(runID string, reader io.Reader, objectSize int64) error
 	GetCache(runID string) (io.Reader, error)
@@ -134,10 +134,10 @@ type authenticationResponse struct {
 }
 
 // CreateRun creates a run
-func (app *AppImplementation) CreateRun(apiKey string) (protocol.Run, error) {
+func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (protocol.Run, error) {
 	if app.AuthenticationURL != "" {
 		v := url.Values{}
-		v.Add("api_key", apiKey)
+		v.Add("api_key", options.APIKey)
 		url := app.AuthenticationURL + "?" + v.Encode()
 		log.Printf("Making an authentication request to %v", url)
 
@@ -351,8 +351,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 }
 
 // StartRun starts the run
-func (app *AppImplementation) StartRun(
-	runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
+func (app *AppImplementation) StartRun(runID string, options protocol.StartRunOptions) error {
 	// First check that the app exists
 	_, err := app.GetApp(runID)
 	if err != nil {
@@ -362,16 +361,16 @@ func (app *AppImplementation) StartRun(
 		return err
 	}
 
-	err = app.newCallbackKey(runID).set(callbackURL)
+	err = app.newCallbackKey(runID).set(options.Callback.URL)
 	if err != nil {
 		return err
 	}
 
 	// Convert environment variable values to a single string that can be passed
 	// as a flag to wrapper
-	records := make([]string, 0, len(env)>>1)
-	for k, v := range env {
-		records = append(records, k+"="+v)
+	records := make([]string, 0, len(options.Env)>>1)
+	for _, v := range options.Env {
+		records = append(records, v.Name+"="+v.Value)
 	}
 	var buf bytes.Buffer
 	w := csv.NewWriter(&buf)
@@ -384,12 +383,12 @@ func (app *AppImplementation) StartRun(
 	command := []string{
 		runBinary,
 		runID,
-		"--output", output,
+		"--output", options.Output,
 	}
 	if envString != "" {
 		command = append(command, "--env", envString)
 	}
-	return app.JobDispatcher.Create(runID, dockerImage, command, maxRunTime)
+	return app.JobDispatcher.Create(runID, dockerImage, command, options.MaxRunTime)
 }
 
 // Events is an iterator to retrieve events from a stream

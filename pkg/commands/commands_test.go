@@ -45,13 +45,14 @@ func TestStartRun(t *testing.T) {
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
 	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
-	// TODO: Pass an options struct instead (we get named parameters effectively then)
 	err := app.StartRun(
-		"run-name",                      // Run name
-		"output.txt",                    // Output filename
-		map[string]string{"FOO": "bar"}, // Environment variables
-		"http://foo.com",                // Callback URL
-		86400,                           // Max run time
+		"run-name",
+		protocol.StartRunOptions{
+			Output:     "output.txt",
+			Env:        []protocol.EnvVariable{{Name: "FOO", Value: "bar"}},
+			Callback:   protocol.Callback{URL: "http://foo.com"},
+			MaxRunTime: 86400,
+		},
 	)
 	assert.Nil(t, err)
 
@@ -494,7 +495,7 @@ func TestCreateRun(t *testing.T) {
 
 	keyValueStore.On("Set", mock.Anything, mock.Anything).Return(nil)
 
-	run, err := app.CreateRun("")
+	run, err := app.CreateRun(protocol.CreateRunOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -512,7 +513,7 @@ func TestStartNoApp(t *testing.T) {
 	blobstoreClient.On("Get", "foo/app.tgz").Return(nil, errors.New("Doesn't exist"))
 	blobstoreClient.On("IsNotExist", errors.New("Doesn't exist")).Return(true)
 
-	err := app.StartRun("foo", "", map[string]string{}, "", 0)
+	err := app.StartRun("foo", protocol.StartRunOptions{})
 	assert.True(t, errors.Is(err, ErrAppNotAvailable))
 
 	blobstoreClient.AssertExpectations(t)

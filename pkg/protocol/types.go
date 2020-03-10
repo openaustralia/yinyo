@@ -8,6 +8,10 @@ import (
 // All the types here are used in the yinyo API. So, they all will get serialised and deserialised.
 // Therefore, for all types include an explicit instruction for JSON marshalling/unmarshalling.
 
+type CreateRunOptions struct {
+	APIKey string
+}
+
 // StartRunOptions are options that can be used when starting a run
 type StartRunOptions struct {
 	Output     string        `json:"output"`

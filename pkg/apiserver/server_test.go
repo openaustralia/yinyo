@@ -32,7 +32,7 @@ func makeRequest(app commands.App, method string, url string, body io.Reader) *h
 
 func TestCreateRun(t *testing.T) {
 	app := new(commandsmocks.App)
-	app.On("CreateRun", "").Return(protocol.Run{ID: "run-foo"}, nil)
+	app.On("CreateRun", protocol.CreateRunOptions{}).Return(protocol.Run{ID: "run-foo"}, nil)
 
 	rr := makeRequest(app, "POST", "/runs", nil)
 
@@ -47,7 +47,7 @@ func TestCreateRun(t *testing.T) {
 func TestCreateRunInternalServerError(t *testing.T) {
 	app := new(commandsmocks.App)
 	// There was some kind of internal error when creating a run
-	app.On("CreateRun", "").Return(protocol.Run{}, errors.New("Something internal"))
+	app.On("CreateRun", protocol.CreateRunOptions{}).Return(protocol.Run{}, errors.New("Something internal"))
 
 	rr := makeRequest(app, "POST", "/runs", nil)
 
@@ -75,7 +75,7 @@ func TestStartBadBody(t *testing.T) {
 func TestStartNoApp(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", map[string]string{}, "", int64(86400)).Return(commands.ErrAppNotAvailable)
+	app.On("StartRun", "foo", protocol.StartRunOptions{MaxRunTime: 86400}).Return(commands.ErrAppNotAvailable)
 	app.On("RecordAPINetworkUsage", "foo", false, int64(2), int64(58)).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{}`))
@@ -89,7 +89,7 @@ func TestStartNoApp(t *testing.T) {
 func TestStart(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", map[string]string{}, "", int64(86400)).Return(nil)
+	app.On("StartRun", "foo", protocol.StartRunOptions{MaxRunTime: 86400}).Return(nil)
 	app.On("RecordAPINetworkUsage", "foo", false, int64(2), int64(0)).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader("{}"))
@@ -102,7 +102,7 @@ func TestStart(t *testing.T) {
 func TestStartLowerMaxRunTime(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", map[string]string{}, "", int64(120)).Return(nil)
+	app.On("StartRun", "foo", protocol.StartRunOptions{MaxRunTime: 120}).Return(nil)
 	app.On("RecordAPINetworkUsage", "foo", false, int64(21), int64(0)).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"max_run_time": 120}`))
