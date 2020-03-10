@@ -168,12 +168,18 @@ func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (prot
 		}
 	}
 	// Generate run ID using uuid
-	id := uuid.NewV4().String()
+	runID := uuid.NewV4().String()
+	run := protocol.Run{ID: runID}
 
 	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
-	err := app.newCreatedKey(id).set("true")
-	return protocol.Run{ID: id}, err
+	err := app.newCreatedKey(runID).set("true")
+	if err != nil {
+		return run, err
+	}
+
+	err = app.newCallbackKey(runID).set(options.CallbackURL)
+	return run, err
 }
 
 // GetApp downloads the tar & gzipped application code
@@ -358,11 +364,6 @@ func (app *AppImplementation) StartRun(runID string, options protocol.StartRunOp
 		if errors.Is(err, ErrNotFound) {
 			return ErrAppNotAvailable
 		}
-		return err
-	}
-
-	err = app.newCallbackKey(runID).set(options.Callback.URL)
-	if err != nil {
 		return err
 	}
 

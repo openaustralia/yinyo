@@ -8,23 +8,17 @@ import (
 // All the types here are used in the yinyo API. So, they all will get serialised and deserialised.
 // Therefore, for all types include an explicit instruction for JSON marshalling/unmarshalling.
 
+// These parameters are actually passed in the URL so are not serialised/deserialised to JSON
 type CreateRunOptions struct {
-	APIKey string
+	APIKey      string
+	CallbackURL string
 }
 
 // StartRunOptions are options that can be used when starting a run
 type StartRunOptions struct {
 	Output     string        `json:"output"`
-	Callback   Callback      `json:"callback"`
 	Env        []EnvVariable `json:"env"`
 	MaxRunTime int64         `json:"max_run_time"`
-}
-
-// Callback represents what we need to know to make a particular callback request
-// This is not just a string so that we could support adding headers or other special things
-// in the callback request
-type Callback struct {
-	URL string `json:"url"`
 }
 
 // EnvVariable is the name and value of an environment variable

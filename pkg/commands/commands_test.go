@@ -28,7 +28,6 @@ func TestStoragePath(t *testing.T) {
 
 func TestStartRun(t *testing.T) {
 	job := new(jobdispatchermocks.Jobs)
-	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	blobStore := new(blobstoremocks.BlobStore)
 
 	// Expect that the job will get dispatched
@@ -39,25 +38,21 @@ func TestStartRun(t *testing.T) {
 		[]string{"/bin/wrapper", "run-name", "--output", "output.txt", "--env", "FOO=bar"},
 		int64(86400),
 	).Return(nil)
-	// Expect that we save the callback url in the key value store
-	keyValueStore.On("Set", "run-name/url", "http://foo.com").Return(nil)
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
-	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
+	app := AppImplementation{JobDispatcher: job, BlobStore: blobStore}
 	err := app.StartRun(
 		"run-name",
 		protocol.StartRunOptions{
 			Output:     "output.txt",
 			Env:        []protocol.EnvVariable{{Name: "FOO", Value: "bar"}},
-			Callback:   protocol.Callback{URL: "http://foo.com"},
 			MaxRunTime: 86400,
 		},
 	)
 	assert.Nil(t, err)
 
 	job.AssertExpectations(t)
-	keyValueStore.AssertExpectations(t)
 	blobStore.AssertExpectations(t)
 }
 

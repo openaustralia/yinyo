@@ -20,6 +20,13 @@ paths:
       summary: Create run
       description: |
         Returns with the "run ID" which uniquely identifies this run. You will need this value to subsequently start, track and access this run.
+      parameters:
+        - name: callback_url
+          description: |
+            Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: Created successfully
@@ -147,11 +154,6 @@ paths:
                     Optionally set environment variables for the run.
                   items:
                     $ref: "#/components/schemas/Env"
-                callback:
-                  type: string
-                  format: uri
-                  description: |
-                    Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick
                 max_run_time:
                   type: integer
                   description: |
@@ -162,7 +164,6 @@ paths:
               env:
                 - name: MY_ENVIRONMENT_VARIABLE
                   value: foo
-              callback: http://my-url-endpoint.com?key=special-secret-stuff
               max_run_time: 3600
 
       responses:
