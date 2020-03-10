@@ -126,14 +126,6 @@ func (key Key) setAsInt(value int) error {
 	return key.set(string(b))
 }
 
-func (key Key) setAsFloat64(value float64) error {
-	b, err := json.Marshal(value)
-	if err != nil {
-		return err
-	}
-	return key.set(string(b))
-}
-
 func (key Key) setAsUint64(value uint64) error {
 	b, err := json.Marshal(value)
 	if err != nil {
@@ -172,16 +164,6 @@ func (key Key) getAsInt64() (int64, error) {
 
 func (key Key) getAsUint64() (uint64, error) {
 	var value uint64
-	string, err := key.get()
-	if err != nil {
-		return value, err
-	}
-	err = json.Unmarshal([]byte(string), &value)
-	return value, err
-}
-
-func (key Key) getAsFloat64() (float64, error) {
-	var value float64
 	string, err := key.get()
 	if err != nil {
 		return value, err
