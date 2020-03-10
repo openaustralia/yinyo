@@ -337,7 +337,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		}
 		exitData.Finished = exitDataFinished
 	}
-	apiNetworkIn, err := app.newExitDataAPINetworkInKey(runID).getAsInt64()
+	apiNetworkIn, err := app.newExitDataNetworkInKey(runID, "api").getAsInt64()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -345,7 +345,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 	} else {
 		exitData.API.NetworkIn = uint64(apiNetworkIn)
 	}
-	apiNetworkOut, err := app.newExitDataAPINetworkOutKey(runID).getAsInt64()
+	apiNetworkOut, err := app.newExitDataNetworkOutKey(runID, "api").getAsInt64()
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return exitData, err
@@ -535,11 +535,11 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 func (app *AppImplementation) RecordAPINetworkUsage(runID string, external bool, in int64, out int64) error {
 	// We only record traffic that is going out or coming in via the public internet
 	if external {
-		_, err := app.newExitDataAPINetworkInKey(runID).increment(in)
+		_, err := app.newExitDataNetworkInKey(runID, "api").increment(in)
 		if err != nil {
 			return err
 		}
-		_, err = app.newExitDataAPINetworkOutKey(runID).increment(out)
+		_, err = app.newExitDataNetworkOutKey(runID, "api").increment(out)
 		if err != nil {
 			return err
 		}

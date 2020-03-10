@@ -40,18 +40,6 @@ func (app *AppImplementation) newExitDataFinishedKey(runID string) Key {
 	return app.newExitDataKey(runID, "finished")
 }
 
-func (app *AppImplementation) newExitDataAPIKey(runID string, key string) Key {
-	return app.newExitDataKey(runID, "api/"+key)
-}
-
-func (app *AppImplementation) newExitDataAPINetworkInKey(runID string) Key {
-	return app.newExitDataAPIKey(runID, "network_in")
-}
-
-func (app *AppImplementation) newExitDataAPINetworkOutKey(runID string) Key {
-	return app.newExitDataAPIKey(runID, "network_out")
-}
-
 func (app *AppImplementation) deleteExitDataKeys(runID string, stage string) error {
 	err := app.newExitDataExitCodeKey(runID, stage).delete()
 	if err != nil {
@@ -86,11 +74,11 @@ func (app *AppImplementation) deleteAllKeys(runID string) error {
 	if err != nil {
 		return err
 	}
-	err = app.newExitDataAPINetworkInKey(runID).delete()
+	err = app.newExitDataNetworkInKey(runID, "api").delete()
 	if err != nil {
 		return err
 	}
-	err = app.newExitDataAPINetworkOutKey(runID).delete()
+	err = app.newExitDataNetworkOutKey(runID, "api").delete()
 	if err != nil {
 		return err
 	}
