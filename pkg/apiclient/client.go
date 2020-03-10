@@ -115,13 +115,13 @@ func (client *Client) Hello() (string, error) {
 }
 
 // CreateRun is the first thing called. It creates a run
-func (client *Client) CreateRun(apiKey string) (RunInterface, error) {
+func (client *Client) CreateRun(options protocol.CreateRunOptions) (RunInterface, error) {
 	run := &Run{Client: client}
 
 	uri := client.URL + "/runs"
-	if apiKey != "" {
+	if options.APIKey != "" {
 		v := url.Values{}
-		v.Add("api_key", apiKey)
+		v.Add("api_key", options.APIKey)
 		uri = uri + "?" + v.Encode()
 	}
 	req, err := http.NewRequest("POST", uri, nil)

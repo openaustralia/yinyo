@@ -37,7 +37,7 @@ func TestCreateRun(t *testing.T) {
 	}
 
 	client := defaultClient()
-	run, err := client.CreateRun("")
+	run, err := client.CreateRun(protocol.CreateRunOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func TestUploadDownloadApp(t *testing.T) {
 
 	// First we need to create a run
 	client := defaultClient()
-	run, err := client.CreateRun("")
+	run, err := client.CreateRun(protocol.CreateRunOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,7 +100,7 @@ func runScraper(appDirectory string, cachePath string, env []protocol.EnvVariabl
 
 	client := defaultClient()
 	// Create the run
-	run, err := client.CreateRun("")
+	run, err := client.CreateRun(protocol.CreateRunOptions{})
 	if err != nil {
 		return eventsList, err
 	}

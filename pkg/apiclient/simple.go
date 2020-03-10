@@ -57,7 +57,7 @@ func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvV
 func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, apiKey string, eventCallback func(event protocol.Event) error) error {
 	client := New(clientServerURL)
 	// Create the run
-	run, err := client.CreateRun(apiKey)
+	run, err := client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
 	if err != nil {
 		return err
 	}
