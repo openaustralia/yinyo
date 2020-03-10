@@ -39,6 +39,14 @@ func TestMarshalFinishEvent(t *testing.T) {
 	)
 }
 
+func TestMarshalNetworkEvent(t *testing.T) {
+	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
+	testMarshal(t,
+		NewNetworkEvent("", time, 50, 100),
+		`{"time":"2000-01-02T03:45:00Z","type":"network","data":{"in":50,"out":100}}`,
+	)
+}
+
 func TestMarshalLogEvent(t *testing.T) {
 	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	testMarshal(t,

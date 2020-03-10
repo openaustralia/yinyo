@@ -96,6 +96,27 @@ func (_m *RunInterface) CreateLogEvent(stage string, stream string, text string)
 	return r0, r1
 }
 
+// CreateNetworkEvent provides a mock function with given fields: in, out
+func (_m *RunInterface) CreateNetworkEvent(in uint64, out uint64) (int, error) {
+	ret := _m.Called(in, out)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(uint64, uint64) int); ok {
+		r0 = rf(in, out)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(uint64, uint64) error); ok {
+		r1 = rf(in, out)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateStartEvent provides a mock function with given fields: stage
 func (_m *RunInterface) CreateStartEvent(stage string) (int, error) {
 	ret := _m.Called(stage)

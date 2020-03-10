@@ -34,6 +34,10 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 		var d LastData
 		err = json.Unmarshal(*jsonEvent.Data, &d)
 		e.Data = d
+	case "network":
+		var d NetworkData
+		err = json.Unmarshal(*jsonEvent.Data, &d)
+		e.Data = d
 	default:
 		return errors.New("unexpected type")
 	}
@@ -53,6 +57,11 @@ func NewStartEvent(id string, time time.Time, stage string) Event {
 // NewFinishEvent creates and returns a new finish event
 func NewFinishEvent(id string, time time.Time, stage string, exitData ExitDataStage) Event {
 	return Event{ID: id, Time: time, Type: "finish", Data: FinishData{Stage: stage, ExitData: exitData}}
+}
+
+// NewFinishEvent creates and returns a new network event
+func NewNetworkEvent(id string, time time.Time, in uint64, out uint64) Event {
+	return Event{ID: id, Time: time, Type: "network", Data: NetworkData{In: in, Out: out}}
 }
 
 // NewLastEvent creates and returns a new last event

@@ -90,6 +90,12 @@ type FinishData struct {
 	ExitData ExitDataStage `json:"exit_data"`
 }
 
+// NetworkData represents a record of some network traffic going to/from the public internet
+type NetworkData struct {
+	In  uint64 `json:"in"`  // In bytes
+	Out uint64 `json:"out"` // In bytes
+}
+
 // LogData is the output of some text from the build or run of a scraper
 type LogData struct {
 	Stage  string `json:"stage"`

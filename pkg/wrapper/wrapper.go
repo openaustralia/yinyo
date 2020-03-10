@@ -128,9 +128,12 @@ func runExternalCommandWithSuccess(run apiclient.RunInterface, stage string, com
 		return false, err
 	}
 
-	exitData.Usage.NetworkIn = statsEnd.BytesRecv - statsStart.BytesRecv
+	networkIn := statsEnd.BytesRecv - statsStart.BytesRecv
 	// Don't include the log events in the network out measurement
-	exitData.Usage.NetworkOut = statsEnd.BytesSent - statsStart.BytesSent - count
+	networkOut := statsEnd.BytesSent - statsStart.BytesSent - count
+
+	exitData.Usage.NetworkIn = networkIn
+	exitData.Usage.NetworkOut = networkOut
 	// This bit will only return something when run on Linux I think
 	rusage, ok := state.SysUsage().(*syscall.Rusage)
 	if ok {
@@ -139,6 +142,11 @@ func runExternalCommandWithSuccess(run apiclient.RunInterface, stage string, com
 	}
 	exitData.ExitCode = state.ExitCode()
 
+	// TODO: Just before we say that the stage is finished let's send out the network usage
+	_, err = run.CreateNetworkEvent(networkIn, networkOut)
+	if err != nil {
+		return false, err
+	}
 	_, err = run.CreateFinishEvent(stage, exitData)
 	return exitData.ExitCode == 0, err
 }
