@@ -49,7 +49,7 @@ func TestSimpleRun(t *testing.T) {
 	run.On("CreateLogEvent", "build", "stdout", "runtime.txt").Return(10, nil)
 	run.On("CreateLogEvent", "build", "stdout", "scraper.py").Return(10, nil)
 	// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
-	run.On("CreateNetworkEvent", mock.Anything, mock.Anything).Return(10, nil)
+	run.On("CreateNetworkEvent", "build", mock.Anything, mock.Anything).Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// The usage values are going to be a little different each time. So, the best we
 		// can do for the moment is just check that they are not zero
@@ -59,14 +59,13 @@ func TestSimpleRun(t *testing.T) {
 	run.On("CreateStartEvent", "run").Return(10, nil)
 	run.On("CreateLogEvent", "run", "stdout", "Ran").Return(10, nil)
 	run.On("PutOutputFromFile", filepath.Join(appPath, "output.txt")).Return(nil)
+	// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
+	run.On("CreateNetworkEvent", "run", mock.Anything, mock.Anything).Return(10, nil)
 	run.On("CreateFinishEvent", "run", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
-		return e.ExitCode == 0 &&
-			// The usage values are going to be a little different each time. So, the best we
-			// can do for the moment is just check that they are not zero
-			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.MaxRSS > 0
-
+		// The usage values are going to be a little different each time. So, the best we
+		// can do for the moment is just check that they are not zero
+		return e.ExitCode == 0 && e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("CreateLastEvent").Return(10, nil)
 
@@ -96,12 +95,12 @@ func TestEnvironmentVariables(t *testing.T) {
 	run.On("GetAppToDirectory", importPath).Return(nil)
 	run.On("GetCacheToDirectory", cachePath).Return(nil)
 	run.On("CreateLogEvent", "build", "stdout", "Build").Return(10, nil)
-	run.On("CreateNetworkEvent", mock.Anything, mock.Anything).Return(10, nil)
+	run.On("CreateNetworkEvent", "build", mock.Anything, mock.Anything).Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.Anything).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
 	run.On("CreateStartEvent", "run").Return(10, nil)
 	run.On("CreateLogEvent", "run", "stdout", "Run").Return(10, nil)
-	run.On("CreateNetworkEvent", mock.Anything, mock.Anything).Return(10, nil)
+	run.On("CreateNetworkEvent", "run", mock.Anything, mock.Anything).Return(10, nil)
 	run.On("CreateFinishEvent", "run", mock.Anything).Return(10, nil)
 	run.On("CreateLastEvent").Return(10, nil)
 
@@ -138,7 +137,7 @@ func TestFailingBuild(t *testing.T) {
 	run.On("GetCacheToDirectory", cachePath).Return(errors.New("404 Not Found"))
 	run.On("CreateLogEvent", "build", "stderr", "bash: failing_command: command not found").Return(10, nil)
 	// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
-	run.On("CreateNetworkEvent", mock.Anything, mock.Anything).Return(10, nil)
+	run.On("CreateNetworkEvent", "build", mock.Anything, mock.Anything).Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
 		// The usage values are going to be a little different each time. So, the best we
@@ -177,7 +176,7 @@ func TestFailingRun(t *testing.T) {
 	run.On("GetCacheToDirectory", cachePath).Return(errors.New("404 Not Found"))
 	run.On("CreateLogEvent", "build", "stdout", "build").Return(10, nil)
 	// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
-	run.On("CreateNetworkEvent", mock.Anything, mock.Anything).Return(10, nil)
+	run.On("CreateNetworkEvent", "build", mock.Anything, mock.Anything).Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
 		// The usage values are going to be a little different each time. So, the best we
@@ -188,13 +187,13 @@ func TestFailingRun(t *testing.T) {
 	run.On("CreateStartEvent", "run").Return(10, nil)
 	run.On("CreateLogEvent", "run", "stderr", "bash: failing_command: command not found").Return(10, nil)
 	run.On("PutOutputFromFile", filepath.Join(appPath, "output.txt")).Return(nil)
+	// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
+	run.On("CreateNetworkEvent", "run", mock.Anything, mock.Anything).Return(10, nil)
 	run.On("CreateFinishEvent", "run", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
-		return e.ExitCode == 127 &&
-			// The usage values are going to be a little different each time. So, the best we
-			// can do for the moment is just check that they are not zero
-			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.MaxRSS > 0
+		// The usage values are going to be a little different each time. So, the best we
+		// can do for the moment is just check that they are not zero
+		return e.ExitCode == 127 && e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("CreateLastEvent").Return(10, nil)
 

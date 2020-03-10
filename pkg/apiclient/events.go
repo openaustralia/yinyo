@@ -18,8 +18,8 @@ func (run *Run) CreateFinishEvent(stage string, exitData protocol.ExitDataStage)
 	return run.CreateEvent(protocol.NewFinishEvent("", time.Now(), stage, exitData))
 }
 
-func (run *Run) CreateNetworkEvent(in uint64, out uint64) (int, error) {
-	return run.CreateEvent(protocol.NewNetworkEvent("", time.Now(), in, out))
+func (run *Run) CreateNetworkEvent(source string, in uint64, out uint64) (int, error) {
+	return run.CreateEvent(protocol.NewNetworkEvent("", time.Now(), source, in, out))
 }
 
 // CreateLogEvent creates and sends a "log" event
