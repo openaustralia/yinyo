@@ -113,8 +113,8 @@ func TestCreateFinishEvent(t *testing.T) {
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
 	keyValueStore.On("Set", "run-name/exit_data/build/exit_code", "12").Return(nil)
 	keyValueStore.On("Set", "run-name/exit_data/build/max_rss", "100").Return(nil)
-	keyValueStore.On("Set", "run-name/exit_data/build/network_in", "200").Return(nil)
-	keyValueStore.On("Set", "run-name/exit_data/build/network_out", "300").Return(nil)
+	keyValueStore.On("Increment", "run-name/exit_data/build/network_in", int64(200)).Return(int64(200), nil)
+	keyValueStore.On("Increment", "run-name/exit_data/build/network_out", int64(300)).Return(int64(300), nil)
 
 	app.CreateEvent("run-name", event)
 
