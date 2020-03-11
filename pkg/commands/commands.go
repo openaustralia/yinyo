@@ -44,7 +44,7 @@ type App interface {
 	GetEvents(runID string, lastID string) EventIterator
 	CreateEvent(runID string, event protocol.Event) error
 	IsRunCreated(runID string) (bool, error)
-	RecordNetworkUsage(runID string, source string, in uint64, out uint64) error
+	ReportNetworkUsage(runID string, source string, in uint64, out uint64) error
 }
 
 // EventIterator is the interface for getting individual events in a list of events
@@ -265,7 +265,11 @@ func (app *AppImplementation) setExitDataStage(runID string, stage string, value
 		return err
 	}
 
-	return app.RecordNetworkUsage(runID, stage, value.Usage.NetworkIn, value.Usage.NetworkOut)
+	err = app.newExitDataNetworkInKey(runID, stage).setAsUint64(value.Usage.NetworkIn)
+	if err != nil {
+		return err
+	}
+	return app.newExitDataNetworkOutKey(runID, stage).setAsUint64(value.Usage.NetworkOut)
 }
 
 func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
@@ -417,6 +421,10 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 		if err != nil {
 			return err
 		}
+		err := app.ReportNetworkUsage(runID, f.Stage, f.ExitData.Usage.NetworkIn, f.ExitData.Usage.NetworkOut)
+		if err != nil {
+			return err
+		}
 	case protocol.LastData:
 		err = app.newExitDataFinishedKey(runID).set("true")
 		if err != nil {
@@ -494,7 +502,7 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		defer resp.Body.Close()
 
 		// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
-		err = app.RecordNetworkUsage(runID, "callback", 0, uint64(out))
+		err = app.ReportNetworkUsage(runID, "callback", 0, uint64(out))
 		if err != nil {
 			return err
 		}
@@ -504,17 +512,4 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		}
 	}
 	return nil
-}
-
-func (app *AppImplementation) RecordNetworkUsage(runID string, source string, in uint64, out uint64) error {
-	log.Printf("Network Usage: source: %v, in: %v, out: %v", source, in, out)
-	if source == "api" || source == "callback" {
-		return nil
-	}
-	_, err := app.newExitDataNetworkInKey(runID, source).increment(int64(in))
-	if err != nil {
-		return err
-	}
-	_, err = app.newExitDataNetworkOutKey(runID, source).increment(int64(out))
-	return err
 }

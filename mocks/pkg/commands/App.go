@@ -230,8 +230,8 @@ func (_m *App) PutOutput(runID string, reader io.Reader, objectSize int64) error
 	return r0
 }
 
-// RecordNetworkUsage provides a mock function with given fields: runID, source, in, out
-func (_m *App) RecordNetworkUsage(runID string, source string, in uint64, out uint64) error {
+// ReportNetworkUsage provides a mock function with given fields: runID, source, in, out
+func (_m *App) ReportNetworkUsage(runID string, source string, in uint64, out uint64) error {
 	ret := _m.Called(runID, source, in, out)
 
 	var r0 error
