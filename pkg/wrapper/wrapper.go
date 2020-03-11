@@ -208,7 +208,12 @@ func setup(run apiclient.RunInterface, options *Options) error {
 }
 
 func runWithError(run apiclient.RunInterface, options *Options) error {
-	err := setup(run, options)
+	_, err := run.CreateFirstEvent()
+	if err != nil {
+		return err
+	}
+
+	err = setup(run, options)
 	if err != nil {
 		return err
 	}

@@ -32,6 +32,7 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
@@ -89,6 +90,7 @@ func TestEnvironmentVariables(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil)
 	run.On("GetCacheToDirectory", cachePath).Return(nil)
@@ -125,6 +127,7 @@ func TestFailingBuild(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
@@ -163,6 +166,7 @@ func TestFailingRun(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
@@ -212,6 +216,7 @@ func TestInternalError(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	// Let's simulate an error with the blob storage. So, the wrapper is trying to
 	// get the application and there's a problem.
 	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))

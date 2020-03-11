@@ -47,6 +47,14 @@ func TestMarshalLogEvent(t *testing.T) {
 	)
 }
 
+func TestMarshalFirstEvent(t *testing.T) {
+	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
+	testMarshal(t,
+		NewFirstEvent("", time),
+		`{"time":"2000-01-02T03:45:00Z","type":"first","data":{}}`,
+	)
+}
+
 func TestMarshalLastEvent(t *testing.T) {
 	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	testMarshal(t,

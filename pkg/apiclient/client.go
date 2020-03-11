@@ -46,6 +46,7 @@ type RunInterface interface {
 	CreateStartEvent(stage string) (int, error)
 	CreateFinishEvent(stage string, exitData protocol.ExitDataStage) (int, error)
 	CreateLogEvent(stage string, stream string, text string) (int, error)
+	CreateFirstEvent() (int, error)
 	CreateLastEvent() (int, error)
 }
 

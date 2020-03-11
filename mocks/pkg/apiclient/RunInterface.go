@@ -54,6 +54,27 @@ func (_m *RunInterface) CreateFinishEvent(stage string, exitData protocol.ExitDa
 	return r0, r1
 }
 
+// CreateFirstEvent provides a mock function with given fields:
+func (_m *RunInterface) CreateFirstEvent() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateLastEvent provides a mock function with given fields:
 func (_m *RunInterface) CreateLastEvent() (int, error) {
 	ret := _m.Called()

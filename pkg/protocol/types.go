@@ -90,6 +90,10 @@ type LogData struct {
 	Text   string `json:"text"`
 }
 
+// FirstData is the first event that's sent in a run
+type FirstData struct {
+}
+
 // LastData is the last event that's sent in a run
 type LastData struct {
 }
