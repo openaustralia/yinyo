@@ -20,57 +20,17 @@ func (app *AppImplementation) newExitDataKey(runID string, key string) Key {
 	return app.newKey(runID, "exit_data/"+key)
 }
 
-func (app *AppImplementation) newExitDataExitCodeKey(runID string, stage string) Key {
-	return app.newExitDataKey(runID, stage+"/exit_code")
-}
-
-func (app *AppImplementation) newExitDataMaxRSSKey(runID string, stage string) Key {
-	return app.newExitDataKey(runID, stage+"/max_rss")
-}
-
-func (app *AppImplementation) newExitDataNetworkInKey(runID string, stage string) Key {
-	return app.newExitDataKey(runID, stage+"/network_in")
-}
-
-func (app *AppImplementation) newExitDataNetworkOutKey(runID string, stage string) Key {
-	return app.newExitDataKey(runID, stage+"/network_out")
-}
-
 func (app *AppImplementation) newExitDataFinishedKey(runID string) Key {
 	return app.newExitDataKey(runID, "finished")
 }
 
-func (app *AppImplementation) deleteExitDataKeys(runID string, stage string) error {
-	err := app.newExitDataExitCodeKey(runID, stage).delete()
-	if err != nil {
-		return err
-	}
-
-	err = app.newExitDataMaxRSSKey(runID, stage).delete()
-	if err != nil {
-		return err
-	}
-
-	err = app.newExitDataNetworkInKey(runID, stage).delete()
-	if err != nil {
-		return err
-	}
-
-	err = app.newExitDataNetworkOutKey(runID, stage).delete()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (app *AppImplementation) deleteAllKeys(runID string) error {
 	// TODO: If one of these deletes fails just carry on
-	err := app.deleteExitDataKeys(runID, "build")
+	err := app.newExitDataKey(runID, "build").delete()
 	if err != nil {
 		return err
 	}
-	err = app.deleteExitDataKeys(runID, "run")
+	err = app.newExitDataKey(runID, "run").delete()
 	if err != nil {
 		return err
 	}

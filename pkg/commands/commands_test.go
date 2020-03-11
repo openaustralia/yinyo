@@ -271,14 +271,8 @@ func TestDeleteRun(t *testing.T) {
 	stream.On("Delete", "run-name").Return(nil)
 	keyValueStore.On("Delete", "run-name/url").Return(nil)
 	keyValueStore.On("Delete", "run-name/created").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/build/exit_code").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/build/max_rss").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/build/network_in").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/build/network_out").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/run/exit_code").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/run/max_rss").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/run/network_in").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/run/network_out").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)
 
 	app := AppImplementation{
