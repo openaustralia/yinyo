@@ -108,10 +108,7 @@ func TestCreateFinishEvent(t *testing.T) {
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
-	keyValueStore.On("Set", "run-name/exit_data/build/exit_code", "12").Return(nil)
-	keyValueStore.On("Set", "run-name/exit_data/build/max_rss", "100").Return(nil)
-	keyValueStore.On("Set", "run-name/exit_data/build/network_in", "200").Return(nil)
-	keyValueStore.On("Set", "run-name/exit_data/build/network_out", "300").Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/build", `{"exit_code":12,"usage":{"max_rss":100,"network_in":200,"network_out":300}}`).Return(nil)
 
 	app.CreateEvent("run-name", event)
 
@@ -400,14 +397,8 @@ func TestGetExitData(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	keyValueStore.On("Get", "run-name/exit_data/build/exit_code").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/max_rss").Return("1", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/network_in").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/network_out").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/run/exit_code").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/run/max_rss").Return("2", nil)
-	keyValueStore.On("Get", "run-name/exit_data/run/network_in").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/run/network_out").Return("0", nil)
+	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":0,"usage":{"max_rss":1,"network_in":0,"network_out":0}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/run").Return(`{"exit_code":0,"usage":{"max_rss":2,"network_in":0,"network_out":0}}`, nil)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
 	e, err := app.GetExitData("run-name")
 	if err != nil {
@@ -427,11 +418,8 @@ func TestGetExitDataBuildErrored(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	keyValueStore.On("Get", "run-name/exit_data/build/exit_code").Return("15", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/max_rss").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/network_in").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/build/network_out").Return("0", nil)
-	keyValueStore.On("Get", "run-name/exit_data/run/exit_code").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":15,"usage":{"max_rss":0,"network_in":0,"network_out":0}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
 
 	e, err := app.GetExitData("run-name")
@@ -451,8 +439,8 @@ func TestGetExitDataRunNotStarted(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	keyValueStore.On("Get", "run-name/exit_data/build/exit_code").Return("", keyvaluestore.ErrKeyNotExist)
-	keyValueStore.On("Get", "run-name/exit_data/run/exit_code").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "run-name/exit_data/build").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("", keyvaluestore.ErrKeyNotExist)
 
 	e, err := app.GetExitData("run-name")

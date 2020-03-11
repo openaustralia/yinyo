@@ -255,57 +255,19 @@ func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSi
 }
 
 func (app *AppImplementation) setExitDataStage(runID string, stage string, value protocol.ExitDataStage) error {
-	err := app.newExitDataExitCodeKey(runID, stage).set(value.ExitCode)
-	if err != nil {
-		return err
-	}
-
-	err = app.newExitDataMaxRSSKey(runID, stage).set(value.Usage.MaxRSS)
-	if err != nil {
-		return err
-	}
-
-	err = app.newExitDataNetworkInKey(runID, stage).set(value.Usage.NetworkIn)
-	if err != nil {
-		return err
-	}
-	return app.newExitDataNetworkOutKey(runID, stage).set(value.Usage.NetworkOut)
+	return app.newExitDataKey(runID, stage).set(value)
 }
 
 func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
 	var exitDataStage protocol.ExitDataStage
 
-	var exitCode int
-	err := app.newExitDataExitCodeKey(runID, stage).get(&exitCode)
+	err := app.newExitDataKey(runID, stage).get(&exitDataStage)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	exitDataStage.ExitCode = exitCode
-
-	var maxRss uint64
-	err = app.newExitDataMaxRSSKey(runID, stage).get(&maxRss)
-	if err != nil {
-		return nil, err
-	}
-	exitDataStage.Usage.MaxRSS = maxRss
-
-	var networkIn uint64
-	err = app.newExitDataNetworkInKey(runID, stage).get(&networkIn)
-	if err != nil {
-		return nil, err
-	}
-	exitDataStage.Usage.NetworkIn = networkIn
-
-	var networkOut uint64
-	err = app.newExitDataNetworkOutKey(runID, stage).get(&networkOut)
-	if err != nil {
-		return nil, err
-	}
-	exitDataStage.Usage.NetworkOut = networkOut
-
 	return &exitDataStage, nil
 }
 
