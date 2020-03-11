@@ -327,22 +327,6 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		}
 		exitData.Finished = exitDataFinished
 	}
-	apiNetworkIn, err := app.newExitDataNetworkInKey(runID, "api").getAsUint64()
-	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		exitData.API.NetworkIn = apiNetworkIn
-	}
-	apiNetworkOut, err := app.newExitDataNetworkOutKey(runID, "api").getAsUint64()
-	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		exitData.API.NetworkOut = apiNetworkOut
-	}
 	return exitData, nil
 }
 
@@ -510,8 +494,7 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		defer resp.Body.Close()
 
 		// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
-		// TODO: Should we give this a source callbacks?
-		err = app.RecordNetworkUsage(runID, "api", 0, uint64(out))
+		err = app.RecordNetworkUsage(runID, "callback", 0, uint64(out))
 		if err != nil {
 			return err
 		}
@@ -524,6 +507,10 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 }
 
 func (app *AppImplementation) RecordNetworkUsage(runID string, source string, in uint64, out uint64) error {
+	log.Printf("Network Usage: source: %v, in: %v, out: %v", source, in, out)
+	if source == "api" || source == "callback" {
+		return nil
+	}
 	_, err := app.newExitDataNetworkInKey(runID, source).increment(int64(in))
 	if err != nil {
 		return err

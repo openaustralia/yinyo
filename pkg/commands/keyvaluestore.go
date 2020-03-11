@@ -74,14 +74,6 @@ func (app *AppImplementation) deleteAllKeys(runID string) error {
 	if err != nil {
 		return err
 	}
-	err = app.newExitDataNetworkInKey(runID, "api").delete()
-	if err != nil {
-		return err
-	}
-	err = app.newExitDataNetworkOutKey(runID, "api").delete()
-	if err != nil {
-		return err
-	}
 	err = app.newExitDataFinishedKey(runID).delete()
 	if err != nil {
 		return err

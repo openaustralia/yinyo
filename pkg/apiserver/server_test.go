@@ -245,7 +245,7 @@ func TestGetExitData(t *testing.T) {
 	rr := makeRequest(app, "GET", "/runs/my-run/exit-data", nil)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, `{"build":{"exit_code":12,"usage":{"max_rss":0,"network_in":0,"network_out":0}},"api":{"network_in":0,"network_out":0},"finished":true}
+	assert.Equal(t, `{"build":{"exit_code":12,"usage":{"max_rss":0,"network_in":0,"network_out":0}},"finished":true}
 `, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json"}}, rr.Header())
 	app.AssertExpectations(t)

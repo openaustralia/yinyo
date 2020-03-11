@@ -72,9 +72,6 @@ func TestCreateEvent(t *testing.T) {
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
-	keyValueStore.On("Increment", "run-name/exit_data/api/network_in", int64(0)).Return(int64(0), nil)
-	// We seem to be getting different sizes when running tests on Github
-	keyValueStore.On("Increment", "run-name/exit_data/api/network_out", mock.Anything).Return(int64(0), nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -170,9 +167,6 @@ func TestCreateEventErrorOneTimeDuringCallback(t *testing.T) {
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
-	keyValueStore.On("Increment", "run-name/exit_data/api/network_in", int64(0)).Return(int64(0), nil)
-	// We seem to be getting different sizes when running tests on Github
-	keyValueStore.On("Increment", "run-name/exit_data/api/network_out", mock.Anything).Return(int64(0), nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -289,8 +283,6 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.On("Delete", "run-name/exit_data/run/network_in").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run/network_out").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/api/network_in").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/api/network_out").Return(nil)
 
 	app := AppImplementation{
 		JobDispatcher: jobDispatcher,
@@ -417,8 +409,6 @@ func TestGetExitData(t *testing.T) {
 	keyValueStore.On("Get", "run-name/exit_data/run/network_in").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/run/network_out").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_in").Return("2000", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_out").Return("123", nil)
 	e, err := app.GetExitData("run-name")
 	if err != nil {
 		t.Fatal(err)
@@ -426,7 +416,6 @@ func TestGetExitData(t *testing.T) {
 	expectedExitData := protocol.ExitData{
 		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{MaxRSS: 1}},
 		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{MaxRSS: 2}},
-		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: true,
 	}
 
@@ -444,8 +433,6 @@ func TestGetExitDataBuildErrored(t *testing.T) {
 	keyValueStore.On("Get", "run-name/exit_data/build/network_out").Return("0", nil)
 	keyValueStore.On("Get", "run-name/exit_data/run/exit_code").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_in").Return("2000", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_out").Return("123", nil)
 
 	e, err := app.GetExitData("run-name")
 	if err != nil {
@@ -453,7 +440,6 @@ func TestGetExitDataBuildErrored(t *testing.T) {
 	}
 	expectedExitData := protocol.ExitData{
 		Build:    &protocol.ExitDataStage{ExitCode: 15},
-		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: true,
 	}
 
@@ -468,15 +454,12 @@ func TestGetExitDataRunNotStarted(t *testing.T) {
 	keyValueStore.On("Get", "run-name/exit_data/build/exit_code").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/run/exit_code").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("", keyvaluestore.ErrKeyNotExist)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_in").Return("2000", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_out").Return("123", nil)
 
 	e, err := app.GetExitData("run-name")
 	if err != nil {
 		t.Fatal(err)
 	}
 	expectedExitData := protocol.ExitData{
-		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: false,
 	}
 
