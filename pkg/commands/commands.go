@@ -173,7 +173,7 @@ func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (prot
 
 	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
-	err := app.newCreatedKey(runID).set("true")
+	err := app.newCreatedKey(runID).set(true)
 	if err != nil {
 		return run, err
 	}
@@ -255,21 +255,21 @@ func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSi
 }
 
 func (app *AppImplementation) setExitDataStage(runID string, stage string, value protocol.ExitDataStage) error {
-	err := app.newExitDataExitCodeKey(runID, stage).setAsInt(value.ExitCode)
+	err := app.newExitDataExitCodeKey(runID, stage).set(value.ExitCode)
 	if err != nil {
 		return err
 	}
 
-	err = app.newExitDataMaxRSSKey(runID, stage).setAsUint64(value.Usage.MaxRSS)
+	err = app.newExitDataMaxRSSKey(runID, stage).set(value.Usage.MaxRSS)
 	if err != nil {
 		return err
 	}
 
-	err = app.newExitDataNetworkInKey(runID, stage).setAsUint64(value.Usage.NetworkIn)
+	err = app.newExitDataNetworkInKey(runID, stage).set(value.Usage.NetworkIn)
 	if err != nil {
 		return err
 	}
-	return app.newExitDataNetworkOutKey(runID, stage).setAsUint64(value.Usage.NetworkOut)
+	return app.newExitDataNetworkOutKey(runID, stage).set(value.Usage.NetworkOut)
 }
 
 func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
@@ -426,7 +426,7 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 			return err
 		}
 	case protocol.LastData:
-		err = app.newExitDataFinishedKey(runID).set("true")
+		err = app.newExitDataFinishedKey(runID).set(true)
 		if err != nil {
 			return err
 		}

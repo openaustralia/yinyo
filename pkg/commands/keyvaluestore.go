@@ -94,24 +94,12 @@ func (app *AppImplementation) newKey(runID string, key string) Key {
 	return Key{key: runID + "/" + key, client: app.KeyValueStore}
 }
 
-func (key Key) set(value string) error {
-	return key.client.Set(key.key, value)
-}
-
-func (key Key) setAsInt(value int) error {
+func (key Key) set(value interface{}) error {
 	b, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
-	return key.set(string(b))
-}
-
-func (key Key) setAsUint64(value uint64) error {
-	b, err := json.Marshal(value)
-	if err != nil {
-		return err
-	}
-	return key.set(string(b))
+	return key.client.Set(key.key, string(b))
 }
 
 func (key Key) get() (string, error) {
