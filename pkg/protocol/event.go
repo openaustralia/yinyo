@@ -59,11 +59,6 @@ func NewFinishEvent(id string, time time.Time, stage string, exitData ExitDataSt
 	return Event{ID: id, Time: time, Type: "finish", Data: FinishData{Stage: stage, ExitData: exitData}}
 }
 
-// NewFinishEvent creates and returns a new network event
-func NewNetworkEvent(id string, time time.Time, source string, in uint64, out uint64) Event {
-	return Event{ID: id, Time: time, Type: "network", Data: NetworkData{Source: source, In: in, Out: out}}
-}
-
 // NewLastEvent creates and returns a new last event
 func NewLastEvent(id string, time time.Time) Event {
 	return Event{ID: id, Time: time, Type: "last", Data: LastData{}}

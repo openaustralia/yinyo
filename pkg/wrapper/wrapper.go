@@ -142,11 +142,6 @@ func runExternalCommandWithSuccess(run apiclient.RunInterface, stage string, com
 	}
 	exitData.ExitCode = state.ExitCode()
 
-	// Just before we say that the stage is finished let's send out the network usage
-	_, err = run.CreateNetworkEvent(stage, networkIn, networkOut)
-	if err != nil {
-		return false, err
-	}
 	_, err = run.CreateFinishEvent(stage, exitData)
 	return exitData.ExitCode == 0, err
 }
