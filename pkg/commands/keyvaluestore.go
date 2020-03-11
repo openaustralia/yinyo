@@ -116,7 +116,3 @@ func (key Key) get(value interface{}) error {
 func (key Key) delete() error {
 	return key.client.Delete(key.key)
 }
-
-func (key Key) increment(value int64) (int64, error) {
-	return key.client.Increment(key.key, value)
-}
