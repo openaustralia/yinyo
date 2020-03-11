@@ -116,6 +116,25 @@ func TestCreateFinishEvent(t *testing.T) {
 	keyValueStore.AssertExpectations(t)
 }
 
+func TestCreateFirstEvent(t *testing.T) {
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
+
+	time := time.Date(2020, 3, 11, 15, 24, 30, 0, time.UTC)
+	event := protocol.NewFirstEvent("", time)
+	eventWithID := protocol.NewFirstEvent("123", time)
+
+	stream.On("Add", "run-name", event).Return(eventWithID, nil)
+	keyValueStore.On("Set", "run-name/first_time", `"2020-03-11T15:24:30Z"`).Return(nil)
+	keyValueStore.On("Get", "run-name/url").Return("", nil)
+
+	app.CreateEvent("run-name", event)
+
+	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+}
+
 func TestCreateLastEvent(t *testing.T) {
 	stream := new(streammocks.Stream)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
@@ -127,6 +146,7 @@ func TestCreateLastEvent(t *testing.T) {
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
+	keyValueStore.On("Get", "run-name/first_time").Return(`"2020-03-11T15:24:30Z"`, nil)
 	keyValueStore.On("Set", "run-name/exit_data/finished", `true`).Return(nil)
 
 	app.CreateEvent("run-name", event)
@@ -271,6 +291,7 @@ func TestDeleteRun(t *testing.T) {
 	stream.On("Delete", "run-name").Return(nil)
 	keyValueStore.On("Delete", "run-name/url").Return(nil)
 	keyValueStore.On("Delete", "run-name/created").Return(nil)
+	keyValueStore.On("Delete", "run-name/first_time").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)

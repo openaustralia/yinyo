@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis"
 	uuid "github.com/satori/go.uuid"
@@ -45,6 +46,7 @@ type App interface {
 	CreateEvent(runID string, event protocol.Event) error
 	IsRunCreated(runID string) (bool, error)
 	ReportNetworkUsage(runID string, source string, in uint64, out uint64) error
+	ReportMemoryUsage(runID string, memory uint64, duration time.Duration) error
 }
 
 // EventIterator is the interface for getting individual events in a list of events
@@ -373,8 +375,14 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 	if err != nil {
 		return err
 	}
-	// If this is a finish event or a last event do some extra special handling
+	// If this is a start, finish or last event do some extra special handling
 	switch f := event.Data.(type) {
+	case protocol.FirstData:
+		// Record the time that this was started
+		err = app.newFirstTimeKey(runID).set(event.Time)
+		if err != nil {
+			return err
+		}
 	case protocol.FinishData:
 		err = app.setExitDataStage(runID, f.Stage, f.ExitData)
 		if err != nil {
@@ -386,6 +394,18 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 		}
 	case protocol.LastData:
 		err = app.newExitDataFinishedKey(runID).set(true)
+		if err != nil {
+			return err
+		}
+		// Now determine how long the container was alive for and report back
+		var firstTime time.Time
+		err = app.newFirstTimeKey(runID).get(&firstTime)
+		if err != nil {
+			return err
+		}
+		duration := event.Time.Sub(firstTime)
+		// TODO: Report the real memory usage
+		err = app.ReportMemoryUsage(runID, 512*1024*1024, duration)
 		if err != nil {
 			return err
 		}

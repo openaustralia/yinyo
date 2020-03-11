@@ -16,6 +16,10 @@ func (app *AppImplementation) newCallbackKey(runID string) Key {
 	return app.newKey(runID, "url")
 }
 
+func (app *AppImplementation) newFirstTimeKey(runID string) Key {
+	return app.newKey(runID, "first_time")
+}
+
 func (app *AppImplementation) newExitDataKey(runID string, key string) Key {
 	return app.newKey(runID, "exit_data/"+key)
 }
@@ -26,7 +30,11 @@ func (app *AppImplementation) newExitDataFinishedKey(runID string) Key {
 
 func (app *AppImplementation) deleteAllKeys(runID string) error {
 	// TODO: If one of these deletes fails just carry on
-	err := app.newExitDataKey(runID, "build").delete()
+	err := app.newFirstTimeKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	err = app.newExitDataKey(runID, "build").delete()
 	if err != nil {
 		return err
 	}
