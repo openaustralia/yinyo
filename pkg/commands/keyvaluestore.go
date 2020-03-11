@@ -102,32 +102,15 @@ func (key Key) set(value interface{}) error {
 	return key.client.Set(key.key, string(b))
 }
 
-func (key Key) get() (string, error) {
-	value, err := key.client.Get(key.key)
-	if errors.Is(err, keyvaluestore.ErrKeyNotExist) {
-		return value, fmt.Errorf("%w", ErrNotFound)
-	}
-	return value, err
-}
-
-func (key Key) getAsInt() (int, error) {
-	var value int
-	string, err := key.get()
+func (key Key) get(value interface{}) error {
+	string, err := key.client.Get(key.key)
 	if err != nil {
-		return value, err
+		if errors.Is(err, keyvaluestore.ErrKeyNotExist) {
+			return fmt.Errorf("%w", ErrNotFound)
+		}
+		return err
 	}
-	err = json.Unmarshal([]byte(string), &value)
-	return value, err
-}
-
-func (key Key) getAsUint64() (uint64, error) {
-	var value uint64
-	string, err := key.get()
-	if err != nil {
-		return value, err
-	}
-	err = json.Unmarshal([]byte(string), &value)
-	return value, err
+	return json.Unmarshal([]byte(string), value)
 }
 
 func (key Key) delete() error {

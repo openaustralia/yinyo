@@ -275,7 +275,8 @@ func (app *AppImplementation) setExitDataStage(runID string, stage string, value
 func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
 	var exitDataStage protocol.ExitDataStage
 
-	exitCode, err := app.newExitDataExitCodeKey(runID, stage).getAsInt()
+	var exitCode int
+	err := app.newExitDataExitCodeKey(runID, stage).get(&exitCode)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, nil
@@ -284,19 +285,22 @@ func (app *AppImplementation) getExitDataStage(runID string, stage string) (*pro
 	}
 	exitDataStage.ExitCode = exitCode
 
-	maxRss, err := app.newExitDataMaxRSSKey(runID, stage).getAsUint64()
+	var maxRss uint64
+	err = app.newExitDataMaxRSSKey(runID, stage).get(&maxRss)
 	if err != nil {
 		return nil, err
 	}
 	exitDataStage.Usage.MaxRSS = maxRss
 
-	networkIn, err := app.newExitDataNetworkInKey(runID, stage).getAsUint64()
+	var networkIn uint64
+	err = app.newExitDataNetworkInKey(runID, stage).get(&networkIn)
 	if err != nil {
 		return nil, err
 	}
 	exitDataStage.Usage.NetworkIn = networkIn
 
-	networkOut, err := app.newExitDataNetworkOutKey(runID, stage).getAsUint64()
+	var networkOut uint64
+	err = app.newExitDataNetworkOutKey(runID, stage).get(&networkOut)
 	if err != nil {
 		return nil, err
 	}
@@ -318,19 +322,12 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		return exitData, err
 	}
 	exitData.Run = run
-	finished, err := app.newExitDataFinishedKey(runID).get()
-	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		var exitDataFinished bool
-		err = json.Unmarshal([]byte(finished), &exitDataFinished)
-		if err != nil {
-			return exitData, err
-		}
-		exitData.Finished = exitDataFinished
+	var exitDataFinished bool
+	err = app.newExitDataFinishedKey(runID).get(&exitDataFinished)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return exitData, err
 	}
+	exitData.Finished = exitDataFinished
 	return exitData, nil
 }
 
@@ -463,14 +460,12 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 }
 
 func (app *AppImplementation) IsRunCreated(runID string) (bool, error) {
-	v, err := app.newCreatedKey(runID).get()
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			return false, nil
-		}
-		return false, err
+	var v bool
+	err := app.newCreatedKey(runID).get(&v)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return v, err
 	}
-	return v == "true", nil
+	return v, nil
 }
 
 func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Event) error {
@@ -481,7 +476,8 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		return err
 	}
 
-	callbackURL, err := app.newCallbackKey(runID).get()
+	var callbackURL string
+	err = app.newCallbackKey(runID).get(&callbackURL)
 	if err != nil {
 		return err
 	}

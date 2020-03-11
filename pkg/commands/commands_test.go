@@ -71,7 +71,7 @@ func TestCreateEvent(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
+	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -144,7 +144,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "run-name/url").Return("", nil)
+	keyValueStore.On("Get", "run-name/url").Return(`""`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -166,7 +166,7 @@ func TestCreateEventErrorOneTimeDuringCallback(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
+	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -206,7 +206,7 @@ func TestCreateEventErrorFiveTimesDuringCallback(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
+	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
