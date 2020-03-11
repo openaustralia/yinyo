@@ -34,10 +34,6 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 		var d LastData
 		err = json.Unmarshal(*jsonEvent.Data, &d)
 		e.Data = d
-	case "network":
-		var d NetworkData
-		err = json.Unmarshal(*jsonEvent.Data, &d)
-		e.Data = d
 	default:
 		return errors.New("unexpected type")
 	}
