@@ -18,12 +18,7 @@ import (
 )
 
 func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
-	// TODO: Pass options in POST body instead of url
-	options := protocol.CreateRunOptions{
-		APIKey:      r.URL.Query().Get("api_key"),
-		CallbackURL: r.URL.Query().Get("callback_url"),
-	}
-	createResult, err := server.app.CreateRun(options)
+	createResult, err := server.app.CreateRun(protocol.CreateRunOptions{APIKey: r.URL.Query().Get("api_key")})
 	if err != nil {
 		if errors.Is(err, commands.ErrNotAllowed) {
 			return newHTTPError(err, http.StatusUnauthorized, err.Error())
