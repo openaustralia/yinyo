@@ -42,12 +42,12 @@ type ExitData struct {
 
 // ExitDataStage gives the exit data for a single stage
 type ExitDataStage struct {
-	ExitCode int   `json:"exit_code"`
-	Usage    Usage `json:"usage"`
+	ExitCode int        `json:"exit_code"`
+	Usage    StageUsage `json:"usage"`
 }
 
 // Usage gives the resource usage for a single stage
-type Usage struct {
+type StageUsage struct {
 	MaxRSS     uint64 `json:"max_rss"`     // In bytes
 	NetworkIn  uint64 `json:"network_in"`  // In bytes
 	NetworkOut uint64 `json:"network_out"` // In bytes

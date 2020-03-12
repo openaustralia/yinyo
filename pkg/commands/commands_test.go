@@ -107,7 +107,7 @@ func TestCreateFinishEvent(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
 
-	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.Usage{MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
+	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.StageUsage{MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
 	event := protocol.NewFinishEvent("", time, "build", exitData)
 	eventWithID := protocol.NewFinishEvent("123", time, "build", exitData)
 
@@ -425,8 +425,8 @@ func TestGetExitData(t *testing.T) {
 		t.Fatal(err)
 	}
 	expectedExitData := protocol.ExitData{
-		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{MaxRSS: 1}},
-		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{MaxRSS: 2}},
+		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.StageUsage{MaxRSS: 1}},
+		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.StageUsage{MaxRSS: 2}},
 		Finished: true,
 	}
 
