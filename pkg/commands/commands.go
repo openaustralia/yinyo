@@ -449,38 +449,50 @@ func (app *AppImplementation) IsRunCreated(runID string) (bool, error) {
 	return v, nil
 }
 
-func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Event) error {
-	b, err := json.Marshal(event)
+// Submits a callback using a POST with the body set to the data serialised as JSON
+// Returns an approximation of the number of bytes written
+func (app *AppImplementation) postCallback(url string, data interface{}) (int, error) {
+	b, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
+	client := retryablehttp.NewClient()
+	client.HTTPClient = app.HTTP
+
+	resp, err := client.Post(url, "application/json", b)
+	if err != nil {
+		// If we're erroring just assume that no data was sent
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
+	if resp.StatusCode != http.StatusOK {
+		return len(b), errors.New("callback: " + resp.Status)
+	}
+	return len(b), nil
+}
+
+func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Event) error {
 	var callbackURL string
-	err = app.newCallbackKey(runID).get(&callbackURL)
+	err := app.newCallbackKey(runID).get(&callbackURL)
 	if err != nil {
 		return err
 	}
 
 	// Only do the callback if there's a sensible URL
 	if callbackURL != "" {
-		client := retryablehttp.NewClient()
-		client.HTTPClient = app.HTTP
-
-		resp, err := client.Post(callbackURL, "application/json", b)
-		if err != nil {
-			// TODO: In case of an error we've probably still sent traffic. Record this.
-			return err
+		size, err := app.postCallback(callbackURL, event)
+		// Record amount written even if there was an error
+		if size > 0 {
+			err = app.ReportNetworkUsage(runID, "callback", 0, uint64(size))
+			if err != nil {
+				return err
+			}
 		}
-		defer resp.Body.Close()
-
-		// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
-		err = app.ReportNetworkUsage(runID, "callback", 0, uint64(len(b)))
 		if err != nil {
 			return err
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			return errors.New("callback: " + resp.Status)
 		}
 	}
 	return nil
