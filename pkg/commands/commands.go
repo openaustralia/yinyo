@@ -450,9 +450,7 @@ func (app *AppImplementation) IsRunCreated(runID string) (bool, error) {
 }
 
 func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Event) error {
-	var b bytes.Buffer
-	enc := json.NewEncoder(&b)
-	err := enc.Encode(event)
+	b, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
@@ -465,13 +463,10 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 
 	// Only do the callback if there's a sensible URL
 	if callbackURL != "" {
-		// Capture the size of the outgoing request now (before it's read)
-		out := b.Len()
-
 		client := retryablehttp.NewClient()
 		client.HTTPClient = app.HTTP
 
-		resp, err := client.Post(callbackURL, "application/json", &b)
+		resp, err := client.Post(callbackURL, "application/json", b)
 		if err != nil {
 			// TODO: In case of an error we've probably still sent traffic. Record this.
 			return err
@@ -479,7 +474,7 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		defer resp.Body.Close()
 
 		// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
-		err = app.ReportNetworkUsage(runID, "callback", 0, uint64(out))
+		err = app.ReportNetworkUsage(runID, "callback", 0, uint64(len(b)))
 		if err != nil {
 			return err
 		}
