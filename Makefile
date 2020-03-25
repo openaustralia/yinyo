@@ -46,7 +46,7 @@ dashboard:
 	minikube dashboard
 
 skaffold:
-	skaffold dev --port-forward=true
+	skaffold dev --port-forward=true --status-check=false
 
 minio_access_key = $(shell grep access_key configs/secrets-minio.env | cut -d "=" -f 2)
 minio_secret_key = $(shell grep secret_key configs/secrets-minio.env | cut -d "=" -f 2)
