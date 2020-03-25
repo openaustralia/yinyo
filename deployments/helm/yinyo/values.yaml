@@ -4,7 +4,7 @@
 
 # TODO: Make replicaCount actually do something
 replicaCount: 1
-bucketName: yinyo
+storeBucket: yinyo
 
 # image:
 #   repository: nginx
@@ -76,7 +76,7 @@ minio:
   accessKey: "yinyo"
   secretKey: "changeme123"
   buckets:
-    # buckets.name needs to be the same value as bucketName above. Ugh.
+    # buckets.name needs to be the same value as storeBucket above. Ugh.
     # See https://github.com/helm/helm/issues/6699
     - name: yinyo
       policy: none
