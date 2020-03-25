@@ -1,75 +1,45 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: yinyo-server
----
-# This role gives the minimal permissions necessary for yinyo-server to do its job
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  # "namespace" omitted since ClusterRoles are not namespaced
-  name: yinyo-server
-rules:
-  - apiGroups: ["batch"]
-    resources: ["jobs"]
-    verbs: ["create", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: yinyo-server
-  namespace: yinyo-scrapers
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: yinyo-server
-subjects:
-  - kind: ServiceAccount
-    name: yinyo-server
-    namespace: default
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: yinyo-server
+  name: {{ .Release.Name }}-server
   labels:
-    app: yinyo-server
+    app: {{ .Release.Name }}-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: yinyo-server
+      app: {{ .Release.Name }}-server
   template:
     metadata:
       labels:
-        app: yinyo-server
+        app: {{ .Release.Name }}-server
     spec:
-      serviceAccountName: yinyo-server
+      serviceAccountName: {{ .Release.Name }}-server
       containers:
-        - name: yinyo-server
-          image: openaustralia/yinyo-server
+        - name: {{ .Release.Name }}-server
+          image: {{ .Values.image }}
           ports:
             - containerPort: 8080
           env:
             - name: STORE_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: yinyo-server
+                  name: {{ .Release.Name }}-server
                   key: store_host
             - name: STORE_BUCKET
               valueFrom:
                 configMapKeyRef:
-                  name: yinyo-server
+                  name: {{ .Release.Name }}-server
                   key: store_bucket
             - name: STORE_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: yinyo-server
+                  name: {{ .Release.Name }}-server
                   key: store_access_key
             - name: STORE_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: yinyo-server
+                  name: {{ .Release.Name }}-server
                   key: store_secret_key
             - name: REDIS_PASSWORD
               valueFrom:
@@ -95,16 +65,3 @@ spec:
             httpGet:
               path: /
               port: 8080
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: yinyo-server
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 8080
-      targetPort: 8080
-      protocol: TCP
-  selector:
-    app: yinyo-server

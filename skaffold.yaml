@@ -14,4 +14,12 @@ build:
     envTemplate:
       template: "{{.IMAGE_NAME}}:v1"
 deploy:
-  kustomize: {}
+  helm:
+    releases:
+      - name: yinyo
+        chartPath: deployments/helm/yinyo
+        values:
+          # TODO: Rename this
+          image: openaustralia/yinyo-server
+        # To force the dependencies to be updated: "helm dep build"
+        skipBuildDependencies: true

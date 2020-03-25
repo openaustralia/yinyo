@@ -1,0 +1,10 @@
+# This role gives the minimal permissions necessary for yinyo-server to do its job
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: {{ .Release.Name }}-server
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "delete"]

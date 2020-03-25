@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-server
+data:
+  store_host: "{{ .Release.Name }}-minio:9000"
+  store_bucket: "{{ .Release.Name }}"
+  # See https://minikube.sigs.k8s.io/docs/tasks/accessing-host-resources/ on how to figure out the ip address of the host
+  authentication_url: "http://192.168.64.1:3000/authentication"
+  usage_url: "http://192.168.64.1:3000/usage"

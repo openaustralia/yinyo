@@ -1,0 +1,9 @@
+dependencies:
+- name: minio
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 5.0.17
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: ~10.5.13
+digest: sha256:cc60000727084828be2b7d530887a74ed865f0ca7e97768383b054bded78a2c8
+generated: "2020-03-24T16:56:55.262759+11:00"

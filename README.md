@@ -47,8 +47,6 @@ a guide for people who are just interested in being users of the API.
 - [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/)
 - [Helm](https://helm.sh/)
 - [Skaffold](https://skaffold.dev/docs/quickstart/)
-- [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
-- [MinIO client (mc)](https://min.io/download)
 - [Go 1.13](https://golang.org/dl/)
 
   - Ubuntu - use `make ppa` or [read instructions](https://github.com/golang/go/wiki/Ubuntu)
@@ -73,12 +71,6 @@ make skaffold
 ```
 
 Leave `skaffold` running and open a new terminal window.
-
-Now setup the storage buckets on Minio
-
-```bash
-make buckets
-```
 
 Now compile and install the binary into your GOPATH that allows you to run a scraper
 
