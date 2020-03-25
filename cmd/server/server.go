@@ -10,6 +10,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func getMandatoryEnv(name string) string {
+	host, ok := os.LookupEnv(name)
+	if !ok {
+		log.Fatalf("environment variable %v was not set", name)
+	}
+	return host
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -22,14 +30,14 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			server := apiserver.Server{}
 			minioOptions := commands.MinioOptions{
-				Host:      os.Getenv("STORE_HOST"),
-				Bucket:    os.Getenv("STORE_BUCKET"),
-				AccessKey: os.Getenv("STORE_ACCESS_KEY"),
-				SecretKey: os.Getenv("STORE_SECRET_KEY"),
+				Host:      getMandatoryEnv("STORE_HOST"),
+				Bucket:    getMandatoryEnv("STORE_BUCKET"),
+				AccessKey: getMandatoryEnv("STORE_ACCESS_KEY"),
+				SecretKey: getMandatoryEnv("STORE_SECRET_KEY"),
 			}
 			redisOptions := commands.RedisOptions{
 				Address:  "redis:6379",
-				Password: os.Getenv("REDIS_PASSWORD"),
+				Password: getMandatoryEnv("REDIS_PASSWORD"),
 			}
 			authenticationURL := os.Getenv("AUTHENTICATION_URL")
 			usageURL := os.Getenv("USAGE_URL")
