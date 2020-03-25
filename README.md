@@ -45,7 +45,7 @@ a guide for people who are just interested in being users of the API.
 ### Main dependencies
 
 - [Minikube](https://kubernetes.io/docs/setup/learning-environment/minikube/)
-- [Helm](https://helm.sh/)
+- [Helm](https://helm.sh/docs/intro/install/)
 - [Skaffold](https://skaffold.dev/docs/quickstart/)
 - [Go 1.13](https://golang.org/dl/)
 
