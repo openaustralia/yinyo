@@ -23,6 +23,11 @@ func (run *Run) CreateLogEvent(stage string, stream string, text string) (int, e
 	return run.CreateEvent(protocol.NewLogEvent("", time.Now(), stage, stream, text))
 }
 
+// CreateFirstEvent creates and sends a "first" event
+func (run *Run) CreateFirstEvent() (int, error) {
+	return run.CreateEvent(protocol.NewFirstEvent("", time.Now()))
+}
+
 // CreateLastEvent creates and sends a "last" event
 func (run *Run) CreateLastEvent() (int, error) {
 	return run.CreateEvent(protocol.NewLastEvent("", time.Now()))

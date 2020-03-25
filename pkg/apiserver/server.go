@@ -18,8 +18,11 @@ import (
 )
 
 func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
-	createResult, err := server.app.CreateRun()
+	createResult, err := server.app.CreateRun(protocol.CreateRunOptions{APIKey: r.URL.Query().Get("api_key")})
 	if err != nil {
+		if errors.Is(err, commands.ErrNotAllowed) {
+			return newHTTPError(err, http.StatusUnauthorized, err.Error())
+		}
 		return err
 	}
 
@@ -108,24 +111,24 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 	runID := mux.Vars(r)["id"]
 
 	decoder := json.NewDecoder(r.Body)
-	var l protocol.StartRunOptions
-	err := decoder.Decode(&l)
+	var options protocol.StartRunOptions
+	err := decoder.Decode(&options)
 	if err != nil {
 		return newHTTPError(err, http.StatusBadRequest, "JSON in body not correctly formatted")
 	}
 
-	if l.MaxRunTime == 0 {
-		l.MaxRunTime = server.maxRunTime
-	} else if l.MaxRunTime > server.maxRunTime {
+	if options.MaxRunTime == 0 {
+		options.MaxRunTime = server.maxRunTime
+	} else if options.MaxRunTime > server.maxRunTime {
 		return newHTTPError(err, http.StatusBadRequest, fmt.Sprintf("max_run_time should not be larger than %v", server.maxRunTime))
 	}
 
 	env := make(map[string]string)
-	for _, keyvalue := range l.Env {
+	for _, keyvalue := range options.Env {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	err = server.app.StartRun(runID, l.Output, env, l.Callback.URL, l.MaxRunTime)
+	err = server.app.StartRun(runID, options)
 	if errors.Is(err, commands.ErrAppNotAvailable) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
 	}
@@ -271,8 +274,8 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 			logAndReturnError(err, w)
 			return
 		}
-		if runID != "" {
-			err = server.app.RecordTraffic(runID, external, readMeasurer.BytesRead, m.Written)
+		if runID != "" && external {
+			err = server.app.ReportNetworkUsage(runID, "api", uint64(readMeasurer.BytesRead), uint64(m.Written))
 			if err != nil {
 				// TODO: Will this actually work here
 				logAndReturnError(err, w)

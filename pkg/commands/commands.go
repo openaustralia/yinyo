@@ -8,9 +8,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis"
 	uuid "github.com/satori/go.uuid"
@@ -29,9 +32,9 @@ const runBinary = "/bin/wrapper"
 
 // App is the interface for the operations of the server
 type App interface {
-	CreateRun() (protocol.Run, error)
+	CreateRun(options protocol.CreateRunOptions) (protocol.Run, error)
 	DeleteRun(runID string) error
-	StartRun(runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error
+	StartRun(runID string, options protocol.StartRunOptions) error
 	GetApp(runID string) (io.Reader, error)
 	PutApp(runID string, reader io.Reader, objectSize int64) error
 	GetCache(runID string) (io.Reader, error)
@@ -42,7 +45,8 @@ type App interface {
 	GetEvents(runID string, lastID string) EventIterator
 	CreateEvent(runID string, event protocol.Event) error
 	IsRunCreated(runID string) (bool, error)
-	RecordTraffic(runID string, external bool, in int64, out int64) error
+	ReportNetworkUsage(runID string, source string, in uint64, out uint64) error
+	ReportMemoryUsage(runID string, memory uint64, duration time.Duration) error
 }
 
 // EventIterator is the interface for getting individual events in a list of events
@@ -53,17 +57,21 @@ type EventIterator interface {
 
 // AppImplementation holds the state for the application
 type AppImplementation struct {
-	BlobStore     blobstore.BlobStore
-	JobDispatcher jobdispatcher.Jobs
-	Stream        stream.Stream
-	KeyValueStore keyvaluestore.KeyValueStore
-	HTTP          *http.Client
+	BlobStore         blobstore.BlobStore
+	JobDispatcher     jobdispatcher.Jobs
+	Stream            stream.Stream
+	KeyValueStore     keyvaluestore.KeyValueStore
+	HTTP              *http.Client
+	AuthenticationURL string
+	UsageURL          string
 }
 
 // StartupOptions are the options available when initialising the application
 type StartupOptions struct {
-	Minio MinioOptions
-	Redis RedisOptions
+	Minio             MinioOptions
+	Redis             RedisOptions
+	AuthenticationURL string
+	UsageURL          string
 }
 
 // MinioOptions are the options for the specific blob storage
@@ -112,22 +120,61 @@ func New(startupOptions *StartupOptions) (App, error) {
 	keyValueStore := keyvaluestore.NewRedis(redisClient)
 
 	return &AppImplementation{
-		BlobStore:     storeAccess,
-		JobDispatcher: jobDispatcher,
-		Stream:        streamClient,
-		KeyValueStore: keyValueStore,
-		HTTP:          http.DefaultClient,
+		BlobStore:         storeAccess,
+		JobDispatcher:     jobDispatcher,
+		Stream:            streamClient,
+		KeyValueStore:     keyValueStore,
+		HTTP:              http.DefaultClient,
+		AuthenticationURL: startupOptions.AuthenticationURL,
+		UsageURL:          startupOptions.UsageURL,
 	}, nil
 }
 
+type authenticationResponse struct {
+	Allowed bool   `json:"allowed"`
+	Message string `json:"message"`
+}
+
 // CreateRun creates a run
-func (app *AppImplementation) CreateRun() (protocol.Run, error) {
+func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (protocol.Run, error) {
+	if app.AuthenticationURL != "" {
+		v := url.Values{}
+		v.Add("api_key", options.APIKey)
+		url := app.AuthenticationURL + "?" + v.Encode()
+		log.Printf("Making an authentication request to %v", url)
+
+		resp, err := app.HTTP.Post(url, "application/json", nil)
+		if err != nil {
+			return protocol.Run{}, err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return protocol.Run{}, fmt.Errorf("Response %v from POST to authentication url %v", resp.StatusCode, url)
+		}
+		// TODO: Check the actual response
+		dec := json.NewDecoder(resp.Body)
+		var response authenticationResponse
+		err = dec.Decode(&response)
+		if err != nil {
+			return protocol.Run{}, err
+		}
+		if !response.Allowed {
+			// TODO: Send the message back to the user
+			return protocol.Run{}, ErrNotAllowed
+		}
+
+		// TODO: Do we want to do something with response.Message if allowed?
+
+		err = resp.Body.Close()
+		if err != nil {
+			return protocol.Run{}, err
+		}
+	}
 	// Generate run ID using uuid
 	id := uuid.NewV4().String()
 
 	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
-	err := app.setKeyValueData(id, createdKey, "true")
+	err := app.newCreatedKey(id).set(true)
 	return protocol.Run{ID: id}, err
 }
 
@@ -203,70 +250,47 @@ func (app *AppImplementation) PutOutput(runID string, reader io.Reader, objectSi
 	return app.putBlobStoreData(reader, objectSize, runID, filenameOutput)
 }
 
+func (app *AppImplementation) setExitDataStage(runID string, stage string, value protocol.ExitDataStage) error {
+	return app.newExitDataKey(runID, stage).set(value)
+}
+
+func (app *AppImplementation) getExitDataStage(runID string, stage string) (*protocol.ExitDataStage, error) {
+	var exitDataStage protocol.ExitDataStage
+
+	err := app.newExitDataKey(runID, stage).get(&exitDataStage)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &exitDataStage, nil
+}
+
 // GetExitData downloads the exit data
 func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, error) {
 	var exitData protocol.ExitData
-	build, err := app.getKeyValueData(runID, exitDataBuildKey)
+	build, err := app.getExitDataStage(runID, "build")
 	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		var exitDataBuild protocol.ExitDataStage
-		err = json.Unmarshal([]byte(build), &exitDataBuild)
-		if err != nil {
-			return exitData, err
-		}
-		exitData.Build = &exitDataBuild
+		return exitData, err
 	}
-	run, err := app.getKeyValueData(runID, exitDataRunKey)
+	exitData.Build = build
+	run, err := app.getExitDataStage(runID, "run")
 	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		var exitDataRun protocol.ExitDataStage
-		err = json.Unmarshal([]byte(run), &exitDataRun)
-		if err != nil {
-			return exitData, err
-		}
-		exitData.Run = &exitDataRun
+		return exitData, err
 	}
-	finished, err := app.getKeyValueData(runID, exitDataFinishedKey)
-	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		var exitDataFinished bool
-		err = json.Unmarshal([]byte(finished), &exitDataFinished)
-		if err != nil {
-			return exitData, err
-		}
-		exitData.Finished = exitDataFinished
+	exitData.Run = run
+	var exitDataFinished bool
+	err = app.newExitDataFinishedKey(runID).get(&exitDataFinished)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return exitData, err
 	}
-	apiNetworkIn, err := app.getKeyValueDataAsInt(runID, exitDataAPINetworkInKey)
-	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		exitData.API.NetworkIn = uint64(apiNetworkIn)
-	}
-	apiNetworkOut, err := app.getKeyValueDataAsInt(runID, exitDataAPINetworkOutKey)
-	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return exitData, err
-		}
-	} else {
-		exitData.API.NetworkOut = uint64(apiNetworkOut)
-	}
+	exitData.Finished = exitDataFinished
 	return exitData, nil
 }
 
 // StartRun starts the run
-func (app *AppImplementation) StartRun(
-	runID string, output string, env map[string]string, callbackURL string, maxRunTime int64) error {
+func (app *AppImplementation) StartRun(runID string, options protocol.StartRunOptions) error {
 	// First check that the app exists
 	_, err := app.GetApp(runID)
 	if err != nil {
@@ -276,16 +300,16 @@ func (app *AppImplementation) StartRun(
 		return err
 	}
 
-	err = app.setKeyValueData(runID, callbackKey, callbackURL)
+	err = app.newCallbackKey(runID).set(options.Callback.URL)
 	if err != nil {
 		return err
 	}
 
 	// Convert environment variable values to a single string that can be passed
 	// as a flag to wrapper
-	records := make([]string, 0, len(env)>>1)
-	for k, v := range env {
-		records = append(records, k+"="+v)
+	records := make([]string, 0, len(options.Env)>>1)
+	for _, v := range options.Env {
+		records = append(records, v.Name+"="+v.Value)
 	}
 	var buf bytes.Buffer
 	w := csv.NewWriter(&buf)
@@ -298,12 +322,12 @@ func (app *AppImplementation) StartRun(
 	command := []string{
 		runBinary,
 		runID,
-		"--output", output,
+		"--output", options.Output,
 	}
 	if envString != "" {
 		command = append(command, "--env", envString)
 	}
-	return app.JobDispatcher.Create(runID, dockerImage, command, maxRunTime)
+	return app.JobDispatcher.Create(runID, dockerImage, command, options.MaxRunTime)
 }
 
 // Events is an iterator to retrieve events from a stream
@@ -350,19 +374,37 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 	if err != nil {
 		return err
 	}
-	// If this is a finish event or a last event do some extra special handling
+	// If this is a start, finish or last event do some extra special handling
 	switch f := event.Data.(type) {
-	case protocol.FinishData:
-		exitDataBytes, err := json.Marshal(f.ExitData)
+	case protocol.FirstData:
+		// Record the time that this was started
+		err = app.newFirstTimeKey(runID).set(event.Time)
 		if err != nil {
 			return err
 		}
-		err = app.setKeyValueData(runID, exitDataKeyBase+f.Stage, string(exitDataBytes))
+	case protocol.FinishData:
+		err = app.setExitDataStage(runID, f.Stage, f.ExitData)
+		if err != nil {
+			return err
+		}
+		err := app.ReportNetworkUsage(runID, f.Stage, f.ExitData.Usage.NetworkIn, f.ExitData.Usage.NetworkOut)
 		if err != nil {
 			return err
 		}
 	case protocol.LastData:
-		err = app.setKeyValueData(runID, exitDataFinishedKey, "true")
+		err = app.newExitDataFinishedKey(runID).set(true)
+		if err != nil {
+			return err
+		}
+		// Now determine how long the container was alive for and report back
+		var firstTime time.Time
+		err = app.newFirstTimeKey(runID).get(&firstTime)
+		if err != nil {
+			return err
+		}
+		duration := event.Time.Sub(firstTime)
+		// TODO: Report the real memory usage
+		err = app.ReportMemoryUsage(runID, 512*1024*1024, duration)
 		if err != nil {
 			return err
 		}
@@ -379,7 +421,6 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 	if err != nil {
 		return err
 	}
-
 	err = app.deleteBlobStoreData(runID, filenameApp)
 	if err != nil {
 		return err
@@ -388,101 +429,68 @@ func (app *AppImplementation) DeleteRun(runID string) error {
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runID, exitDataBuildKey)
-	if err != nil {
-		return err
-	}
-	err = app.deleteKeyValueData(runID, exitDataRunKey)
-	if err != nil {
-		return err
-	}
-	err = app.deleteKeyValueData(runID, exitDataAPINetworkInKey)
-	if err != nil {
-		return err
-	}
-	err = app.deleteKeyValueData(runID, exitDataAPINetworkOutKey)
-	if err != nil {
-		return err
-	}
-	err = app.deleteKeyValueData(runID, exitDataFinishedKey)
-	if err != nil {
-		return err
-	}
 	err = app.deleteBlobStoreData(runID, filenameCache)
 	if err != nil {
 		return err
 	}
-	err = app.Stream.Delete(runID)
+	err = app.deleteAllKeys(runID)
 	if err != nil {
 		return err
 	}
-	err = app.deleteKeyValueData(runID, callbackKey)
-	if err != nil {
-		return err
-	}
-	return app.deleteKeyValueData(runID, createdKey)
+	return app.Stream.Delete(runID)
 }
 
 func (app *AppImplementation) IsRunCreated(runID string) (bool, error) {
-	v, err := app.getKeyValueData(runID, createdKey)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			return false, nil
-		}
-		return false, err
+	var v bool
+	err := app.newCreatedKey(runID).get(&v)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return v, err
 	}
-	return v == "true", nil
+	return v, nil
+}
+
+// Submits a callback using a POST with the body set to the data serialised as JSON
+// Returns an approximation of the number of bytes written
+func (app *AppImplementation) postCallback(url string, data interface{}) (int, error) {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return 0, err
+	}
+
+	client := retryablehttp.NewClient()
+	client.HTTPClient = app.HTTP
+
+	resp, err := client.Post(url, "application/json", b)
+	if err != nil {
+		// If we're erroring just assume that no data was sent
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
+	if resp.StatusCode != http.StatusOK {
+		return len(b), errors.New("callback: " + resp.Status)
+	}
+	return len(b), nil
 }
 
 func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Event) error {
-	var b bytes.Buffer
-	enc := json.NewEncoder(&b)
-	err := enc.Encode(event)
-	if err != nil {
-		return err
-	}
-
-	callbackURL, err := app.getKeyValueData(runID, callbackKey)
+	var callbackURL string
+	err := app.newCallbackKey(runID).get(&callbackURL)
 	if err != nil {
 		return err
 	}
 
 	// Only do the callback if there's a sensible URL
 	if callbackURL != "" {
-		// Capture the size of the outgoing request now (before it's read)
-		out := b.Len()
-
-		client := retryablehttp.NewClient()
-		client.HTTPClient = app.HTTP
-
-		resp, err := client.Post(callbackURL, "application/json", &b)
-		if err != nil {
-			// TODO: In case of an error we've probably still sent traffic. Record this.
-			return err
+		size, err := app.postCallback(callbackURL, event)
+		// Record amount written even if there was an error
+		if size > 0 {
+			err = app.ReportNetworkUsage(runID, "callback", 0, uint64(size))
+			if err != nil {
+				return err
+			}
 		}
-		defer resp.Body.Close()
-
-		// TODO: We're ignoring the automated retries on the callbacks here in figuring out amount of traffic
-		err = app.RecordTraffic(runID, true, 0, int64(out))
-		if err != nil {
-			return err
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			return errors.New("callback: " + resp.Status)
-		}
-	}
-	return nil
-}
-
-func (app *AppImplementation) RecordTraffic(runID string, external bool, in int64, out int64) error {
-	// We only record traffic that is going out or coming in via the public internet
-	if external {
-		_, err := app.incrementKeyValueData(runID, exitDataAPINetworkInKey, in)
-		if err != nil {
-			return err
-		}
-		_, err = app.incrementKeyValueData(runID, exitDataAPINetworkOutKey, out)
 		if err != nil {
 			return err
 		}

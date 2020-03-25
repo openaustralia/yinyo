@@ -30,6 +30,10 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 		var d LogData
 		err = json.Unmarshal(*jsonEvent.Data, &d)
 		e.Data = d
+	case "first":
+		var d FirstData
+		err = json.Unmarshal(*jsonEvent.Data, &d)
+		e.Data = d
 	case "last":
 		var d LastData
 		err = json.Unmarshal(*jsonEvent.Data, &d)
@@ -53,6 +57,11 @@ func NewStartEvent(id string, time time.Time, stage string) Event {
 // NewFinishEvent creates and returns a new finish event
 func NewFinishEvent(id string, time time.Time, stage string, exitData ExitDataStage) Event {
 	return Event{ID: id, Time: time, Type: "finish", Data: FinishData{Stage: stage, ExitData: exitData}}
+}
+
+// NewFirstEvent creates and returns a new last event
+func NewFirstEvent(id string, time time.Time) Event {
+	return Event{ID: id, Time: time, Type: "first", Data: FirstData{}}
 }
 
 // NewLastEvent creates and returns a new last event

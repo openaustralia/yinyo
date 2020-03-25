@@ -40,18 +40,19 @@ func TestStartRun(t *testing.T) {
 		int64(86400),
 	).Return(nil)
 	// Expect that we save the callback url in the key value store
-	keyValueStore.On("Set", "run-name/url", "http://foo.com").Return(nil)
+	keyValueStore.On("Set", "run-name/url", `"http://foo.com"`).Return(nil)
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
 	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
-	// TODO: Pass an options struct instead (we get named parameters effectively then)
 	err := app.StartRun(
-		"run-name",                      // Run name
-		"output.txt",                    // Output filename
-		map[string]string{"FOO": "bar"}, // Environment variables
-		"http://foo.com",                // Callback URL
-		86400,                           // Max run time
+		"run-name",
+		protocol.StartRunOptions{
+			Output:     "output.txt",
+			Env:        []protocol.EnvVariable{{Name: "FOO", Value: "bar"}},
+			Callback:   protocol.Callback{URL: "http://foo.com"},
+			MaxRunTime: 86400,
+		},
 	)
 	assert.Nil(t, err)
 
@@ -75,10 +76,7 @@ func TestCreateEvent(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
-	keyValueStore.On("Increment", "run-name/exit_data/api/network_in", int64(0)).Return(int64(0), nil)
-	// We seem to be getting different sizes when running tests on Github
-	keyValueStore.On("Increment", "run-name/exit_data/api/network_out", mock.Anything).Return(int64(0), nil)
+	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -109,13 +107,32 @@ func TestCreateFinishEvent(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
 
-	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.Usage{WallTime: 1, CPUTime: 0.1, MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
+	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.StageUsage{MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
 	event := protocol.NewFinishEvent("", time, "build", exitData)
 	eventWithID := protocol.NewFinishEvent("123", time, "build", exitData)
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
-	keyValueStore.On("Set", "run-name/exit_data/build", `{"exit_code":12,"usage":{"wall_time":1,"cpu_time":0.1,"max_rss":100,"network_in":200,"network_out":300}}`).Return(nil)
+	keyValueStore.On("Set", "run-name/exit_data/build", `{"exit_code":12,"usage":{"max_rss":100,"network_in":200,"network_out":300}}`).Return(nil)
+
+	app.CreateEvent("run-name", event)
+
+	stream.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+}
+
+func TestCreateFirstEvent(t *testing.T) {
+	stream := new(streammocks.Stream)
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
+
+	time := time.Date(2020, 3, 11, 15, 24, 30, 0, time.UTC)
+	event := protocol.NewFirstEvent("", time)
+	eventWithID := protocol.NewFirstEvent("123", time)
+
+	stream.On("Add", "run-name", event).Return(eventWithID, nil)
+	keyValueStore.On("Set", "run-name/first_time", `"2020-03-11T15:24:30Z"`).Return(nil)
+	keyValueStore.On("Get", "run-name/url").Return("", nil)
 
 	app.CreateEvent("run-name", event)
 
@@ -134,6 +151,7 @@ func TestCreateLastEvent(t *testing.T) {
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
+	keyValueStore.On("Get", "run-name/first_time").Return(`"2020-03-11T15:24:30Z"`, nil)
 	keyValueStore.On("Set", "run-name/exit_data/finished", `true`).Return(nil)
 
 	app.CreateEvent("run-name", event)
@@ -148,7 +166,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "run-name/url").Return("", nil)
+	keyValueStore.On("Get", "run-name/url").Return(`""`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -170,10 +188,7 @@ func TestCreateEventErrorOneTimeDuringCallback(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
-	keyValueStore.On("Increment", "run-name/exit_data/api/network_in", int64(0)).Return(int64(0), nil)
-	// We seem to be getting different sizes when running tests on Github
-	keyValueStore.On("Increment", "run-name/exit_data/api/network_out", mock.Anything).Return(int64(0), nil)
+	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -213,7 +228,7 @@ func TestCreateEventErrorFiveTimesDuringCallback(t *testing.T) {
 
 	time := time.Now()
 	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
-	keyValueStore.On("Get", "run-name/url").Return("http://foo.com/bar", nil)
+	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
 	httpClient := http.DefaultClient
@@ -281,11 +296,10 @@ func TestDeleteRun(t *testing.T) {
 	stream.On("Delete", "run-name").Return(nil)
 	keyValueStore.On("Delete", "run-name/url").Return(nil)
 	keyValueStore.On("Delete", "run-name/created").Return(nil)
+	keyValueStore.On("Delete", "run-name/first_time").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/api/network_in").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/api/network_out").Return(nil)
 
 	app := AppImplementation{
 		JobDispatcher: jobDispatcher,
@@ -403,19 +417,16 @@ func TestGetExitData(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":0,"usage":{"wall_time":1,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`, nil)
-	keyValueStore.On("Get", "run-name/exit_data/run").Return(`{"exit_code":0,"usage":{"wall_time":2,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":0,"usage":{"max_rss":1,"network_in":0,"network_out":0}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/run").Return(`{"exit_code":0,"usage":{"max_rss":2,"network_in":0,"network_out":0}}`, nil)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_in").Return("2000", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_out").Return("123", nil)
 	e, err := app.GetExitData("run-name")
 	if err != nil {
 		t.Fatal(err)
 	}
 	expectedExitData := protocol.ExitData{
-		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{WallTime: 1}},
-		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.Usage{WallTime: 2}},
-		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
+		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.StageUsage{MaxRSS: 1}},
+		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.StageUsage{MaxRSS: 2}},
 		Finished: true,
 	}
 
@@ -427,11 +438,9 @@ func TestGetExitDataBuildErrored(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
-	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":15,"usage":{"wall_time":0,"cpu_time":0,"max_rss":0,"network_in":0,"network_out":0}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":15,"usage":{"max_rss":0,"network_in":0,"network_out":0}}`, nil)
 	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_in").Return("2000", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_out").Return("123", nil)
 
 	e, err := app.GetExitData("run-name")
 	if err != nil {
@@ -439,7 +448,6 @@ func TestGetExitDataBuildErrored(t *testing.T) {
 	}
 	expectedExitData := protocol.ExitData{
 		Build:    &protocol.ExitDataStage{ExitCode: 15},
-		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: true,
 	}
 
@@ -454,15 +462,12 @@ func TestGetExitDataRunNotStarted(t *testing.T) {
 	keyValueStore.On("Get", "run-name/exit_data/build").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("", keyvaluestore.ErrKeyNotExist)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_in").Return("2000", nil)
-	keyValueStore.On("Get", "run-name/exit_data/api/network_out").Return("123", nil)
 
 	e, err := app.GetExitData("run-name")
 	if err != nil {
 		t.Fatal(err)
 	}
 	expectedExitData := protocol.ExitData{
-		API:      protocol.APIUsage{NetworkIn: 2000, NetworkOut: 123},
 		Finished: false,
 	}
 
@@ -476,7 +481,7 @@ func TestCreateRun(t *testing.T) {
 
 	keyValueStore.On("Set", mock.Anything, mock.Anything).Return(nil)
 
-	run, err := app.CreateRun()
+	run, err := app.CreateRun(protocol.CreateRunOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -494,7 +499,7 @@ func TestStartNoApp(t *testing.T) {
 	blobstoreClient.On("Get", "foo/app.tgz").Return(nil, errors.New("Doesn't exist"))
 	blobstoreClient.On("IsNotExist", errors.New("Doesn't exist")).Return(true)
 
-	err := app.StartRun("foo", "", map[string]string{}, "", 0)
+	err := app.StartRun("foo", protocol.StartRunOptions{})
 	assert.True(t, errors.Is(err, ErrAppNotAvailable))
 
 	blobstoreClient.AssertExpectations(t)

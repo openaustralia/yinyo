@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/protocol"
@@ -25,6 +26,79 @@ func osStream(stream string) (*os.File, error) {
 	}
 }
 
+func run(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, showEventsJSON bool, apiKey string) error {
+	return apiclient.Simple(
+		scraperDirectory, clientServerURL, environment, outputFile, callbackURL, apiKey,
+		func(event protocol.Event) error {
+			if showEventsJSON {
+				// Convert the event back to JSON for display
+				b, err := json.Marshal(event)
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(b))
+			} else {
+				// Only display the log events to the user
+				l, ok := event.Data.(protocol.LogData)
+				if ok {
+					f, err := osStream(l.Stream)
+					if err != nil {
+						return err
+					}
+					fmt.Fprintln(f, l.Text)
+				}
+			}
+			return nil
+		},
+	)
+
+}
+
+func apiKeysPath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".yinyo"), nil
+}
+
+// Write to user's local directory as .yinyo
+// Store a separate api key for each server URL
+func saveAPIKeys(apiKeys map[string]string) error {
+	path, err := apiKeysPath()
+	if err != nil {
+		return err
+	}
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	return enc.Encode(apiKeys)
+}
+
+func loadAPIKeys() (map[string]string, error) {
+	apiKeys := make(map[string]string)
+	path, err := apiKeysPath()
+	if err != nil {
+		return apiKeys, err
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return apiKeys, nil
+		}
+		return apiKeys, err
+	}
+	defer f.Close()
+
+	dec := json.NewDecoder(f)
+	err = dec.Decode(&apiKeys)
+	return apiKeys, err
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -39,33 +113,31 @@ func main() {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			scraperDirectory := args[0]
-			err := apiclient.Simple(
-				scraperDirectory, clientServerURL, environment, outputFile, callbackURL,
-				func(event protocol.Event) error {
-					if showEventsJSON {
-						// Convert the event back to JSON for display
-						b, err := json.Marshal(event)
-						if err != nil {
-							return err
-						}
-						fmt.Println(string(b))
-					} else {
-						// Only display the log events to the user
-						l, ok := event.Data.(protocol.LogData)
-						if ok {
-							f, err := osStream(l.Stream)
-							if err != nil {
-								return err
-							}
-							fmt.Fprintln(f, l.Text)
-						}
-					}
-					return nil
-				},
-			)
-
+			apiKeys, err := loadAPIKeys()
 			if err != nil {
 				log.Fatal(err)
+			}
+			for {
+				err := run(scraperDirectory, clientServerURL, environment, outputFile, callbackURL, showEventsJSON, apiKeys[clientServerURL])
+				if err != nil {
+					// If get unauthorized error back then we should let the user enter their api key and try again
+					// And we should save away the api key (for this particular server) for later use
+					if apiclient.IsUnauthorized(err) {
+						fmt.Print("Enter your api key: ")
+						var apiKey string
+						fmt.Scanln(&apiKey)
+						apiKeys[clientServerURL] = apiKey
+						err = saveAPIKeys(apiKeys)
+						if err != nil {
+							log.Fatal(err)
+						}
+					} else {
+						log.Fatal(err)
+					}
+				} else {
+					break
+				}
+
 			}
 		},
 	}
@@ -75,7 +147,7 @@ func main() {
 	rootCmd.Flags().StringVar(&outputFile, "output", "", "The output is written to the same local directory at the end. The output file path is given relative to the scraper directory")
 	rootCmd.Flags().StringVar(&clientServerURL, "server", "http://localhost:8080", "Override yinyo server URL")
 	rootCmd.Flags().StringToStringVar(&environment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
-	rootCmd.Flags().BoolVar(&showEventsJSON, "eventsjson", false, "Show the full events output as JSON instead of the default of just showing the log events as text")
+	rootCmd.Flags().BoolVar(&showEventsJSON, "allevents", false, "Show the full events output as JSON instead of the default of just showing the log events as text")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

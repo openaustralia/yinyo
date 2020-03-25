@@ -1,51 +1,86 @@
 package commands
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 )
 
-const createdKey = "created"
-const callbackKey = "url"
-const exitDataKeyBase = "exit_data/"
-const exitDataFinishedKey = exitDataKeyBase + "finished"
-const exitDataBuildKey = exitDataKeyBase + "build"
-const exitDataRunKey = exitDataKeyBase + "run"
-const exitDataAPIKeyBase = exitDataKeyBase + "api/"
-const exitDataAPINetworkInKey = exitDataAPIKeyBase + "network_in"
-const exitDataAPINetworkOutKey = exitDataAPIKeyBase + "network_out"
-
-func keyValuePath(runID string, key string) string {
-	return runID + "/" + key
+func (app *AppImplementation) newCreatedKey(runID string) Key {
+	return app.newKey(runID, "created")
 }
 
-func (app *AppImplementation) setKeyValueData(runID string, key string, value string) error {
-	return app.KeyValueStore.Set(keyValuePath(runID, key), value)
+func (app *AppImplementation) newCallbackKey(runID string) Key {
+	return app.newKey(runID, "url")
 }
 
-func (app *AppImplementation) getKeyValueData(runID string, key string) (string, error) {
-	value, err := app.KeyValueStore.Get(keyValuePath(runID, key))
-	if errors.Is(err, keyvaluestore.ErrKeyNotExist) {
-		return value, fmt.Errorf("%w", ErrNotFound)
-	}
-	return value, err
+func (app *AppImplementation) newFirstTimeKey(runID string) Key {
+	return app.newKey(runID, "first_time")
 }
 
-func (app *AppImplementation) getKeyValueDataAsInt(runID string, key string) (int64, error) {
-	v, err := app.getKeyValueData(runID, key)
+func (app *AppImplementation) newExitDataKey(runID string, key string) Key {
+	return app.newKey(runID, "exit_data/"+key)
+}
+
+func (app *AppImplementation) newExitDataFinishedKey(runID string) Key {
+	return app.newExitDataKey(runID, "finished")
+}
+
+func (app *AppImplementation) deleteAllKeys(runID string) error {
+	// TODO: If one of these deletes fails just carry on
+	err := app.newFirstTimeKey(runID).delete()
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return strconv.ParseInt(v, 10, 64)
+	err = app.newExitDataKey(runID, "build").delete()
+	if err != nil {
+		return err
+	}
+	err = app.newExitDataKey(runID, "run").delete()
+	if err != nil {
+		return err
+	}
+	err = app.newExitDataFinishedKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	err = app.newCallbackKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	return app.newCreatedKey(runID).delete()
 }
 
-func (app *AppImplementation) deleteKeyValueData(runID string, key string) error {
-	return app.KeyValueStore.Delete(keyValuePath(runID, key))
+type Key struct {
+	key    string
+	client keyvaluestore.KeyValueStore
 }
 
-func (app *AppImplementation) incrementKeyValueData(runID string, key string, value int64) (int64, error) {
-	return app.KeyValueStore.Increment(keyValuePath(runID, key), value)
+func (app *AppImplementation) newKey(runID string, key string) Key {
+	return Key{key: runID + "/" + key, client: app.KeyValueStore}
+}
+
+func (key Key) set(value interface{}) error {
+	b, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return key.client.Set(key.key, string(b))
+}
+
+func (key Key) get(value interface{}) error {
+	string, err := key.client.Get(key.key)
+	if err != nil {
+		if errors.Is(err, keyvaluestore.ErrKeyNotExist) {
+			return fmt.Errorf("%w", ErrNotFound)
+		}
+		return err
+	}
+	return json.Unmarshal([]byte(string), value)
+}
+
+func (key Key) delete() error {
+	return key.client.Delete(key.key)
 }

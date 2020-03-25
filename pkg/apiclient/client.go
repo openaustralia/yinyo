@@ -46,6 +46,7 @@ type RunInterface interface {
 	CreateStartEvent(stage string) (int, error)
 	CreateFinishEvent(stage string, exitData protocol.ExitDataStage) (int, error)
 	CreateLogEvent(stage string, stream string, text string) (int, error)
+	CreateFirstEvent() (int, error)
 	CreateLastEvent() (int, error)
 }
 
@@ -74,6 +75,12 @@ func checkOK(resp *http.Response) error {
 func IsNotFound(err error) bool {
 	// TODO: Don't want to depend on a hardcoded string here
 	return (err.Error() == "404 Not Found")
+}
+
+// IsUnauthorized checks whether a particular error message corresponds to a 401
+func IsUnauthorized(err error) bool {
+	// TODO: Don't want to depend on a hardcoded string here
+	return (err.Error() == "401 Unauthorized")
 }
 
 func checkContentType(resp *http.Response, expected string) error {
@@ -109,10 +116,15 @@ func (client *Client) Hello() (string, error) {
 }
 
 // CreateRun is the first thing called. It creates a run
-func (client *Client) CreateRun() (RunInterface, error) {
+func (client *Client) CreateRun(options protocol.CreateRunOptions) (RunInterface, error) {
 	run := &Run{Client: client}
 
 	uri := client.URL + "/runs"
+	if options.APIKey != "" {
+		v := url.Values{}
+		v.Add("api_key", options.APIKey)
+		uri = uri + "?" + v.Encode()
+	}
 	req, err := http.NewRequest("POST", uri, nil)
 	if err != nil {
 		return run, err

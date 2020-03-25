@@ -32,6 +32,7 @@ func TestSimpleRun(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
@@ -49,13 +50,10 @@ func TestSimpleRun(t *testing.T) {
 	run.On("CreateLogEvent", "build", "stdout", "runtime.txt").Return(10, nil)
 	run.On("CreateLogEvent", "build", "stdout", "scraper.py").Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
-		return e.ExitCode == 0 &&
-			// The usage values are going to be a little different each time. So, the best we
-			// can do for the moment is just check that they are not zero
-			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
-			e.Usage.MaxRSS > 0
+		// The usage values are going to be a little different each time. So, the best we
+		// can do for the moment is just check that they are not zero
+		// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
+		return e.ExitCode == 0 && e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
 	run.On("CreateStartEvent", "run").Return(10, nil)
@@ -63,14 +61,10 @@ func TestSimpleRun(t *testing.T) {
 	run.On("PutOutputFromFile", filepath.Join(appPath, "output.txt")).Return(nil)
 	run.On("CreateFinishEvent", "run", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
-		return e.ExitCode == 0 &&
-			// The usage values are going to be a little different each time. So, the best we
-			// can do for the moment is just check that they are not zero
-			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
-			e.Usage.MaxRSS > 0
-
+		// The usage values are going to be a little different each time. So, the best we
+		// can do for the moment is just check that they are not zero
+		// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
+		return e.ExitCode == 0 && e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("CreateLastEvent").Return(10, nil)
 
@@ -96,6 +90,7 @@ func TestEnvironmentVariables(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil)
 	run.On("GetCacheToDirectory", cachePath).Return(nil)
@@ -132,6 +127,7 @@ func TestFailingBuild(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
@@ -141,13 +137,10 @@ func TestFailingBuild(t *testing.T) {
 	run.On("CreateLogEvent", "build", "stderr", "bash: failing_command: command not found").Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
-		return e.ExitCode == 127 &&
-			// The usage values are going to be a little different each time. So, the best we
-			// can do for the moment is just check that they are not zero
-			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
-			e.Usage.MaxRSS > 0
+		// The usage values are going to be a little different each time. So, the best we
+		// can do for the moment is just check that they are not zero
+		// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
+		return e.ExitCode == 127 && e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
 	run.On("CreateLastEvent").Return(10, nil)
@@ -173,6 +166,7 @@ func TestFailingRun(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	run.On("CreateStartEvent", "build").Return(10, nil)
 	run.On("GetAppToDirectory", importPath).Return(nil).Run(func(args mock.Arguments) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
@@ -182,13 +176,10 @@ func TestFailingRun(t *testing.T) {
 	run.On("CreateLogEvent", "build", "stdout", "build").Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
-		return e.ExitCode == 0 &&
-			// The usage values are going to be a little different each time. So, the best we
-			// can do for the moment is just check that they are not zero
-			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
-			e.Usage.MaxRSS > 0
+		// The usage values are going to be a little different each time. So, the best we
+		// can do for the moment is just check that they are not zero
+		// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
+		return e.ExitCode == 0 && e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("PutCacheFromDirectory", cachePath).Return(nil)
 	run.On("CreateStartEvent", "run").Return(10, nil)
@@ -196,13 +187,10 @@ func TestFailingRun(t *testing.T) {
 	run.On("PutOutputFromFile", filepath.Join(appPath, "output.txt")).Return(nil)
 	run.On("CreateFinishEvent", "run", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
-		return e.ExitCode == 127 &&
-			// The usage values are going to be a little different each time. So, the best we
-			// can do for the moment is just check that they are not zero
-			// Also not checking network usage because it will be non-zero when run under Linux and zero when run on OS X
-			e.Usage.WallTime > 0 &&
-			e.Usage.CPUTime > 0 &&
-			e.Usage.MaxRSS > 0
+		// The usage values are going to be a little different each time. So, the best we
+		// can do for the moment is just check that they are not zero
+		// Not checking network usage numbers because they will be non-zero when run under Linux and zero when run on OS X
+		return e.ExitCode == 127 && e.Usage.MaxRSS > 0
 	})).Return(10, nil)
 	run.On("CreateLastEvent").Return(10, nil)
 
@@ -228,6 +216,7 @@ func TestInternalError(t *testing.T) {
 	defer os.RemoveAll(envPath)
 
 	run := new(mocks.RunInterface)
+	run.On("CreateFirstEvent").Return(10, nil)
 	// Let's simulate an error with the blob storage. So, the wrapper is trying to
 	// get the application and there's a problem.
 	run.On("GetAppToDirectory", importPath).Return(errors.New("Something went wrong"))

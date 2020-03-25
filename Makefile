@@ -40,6 +40,7 @@ minikube:
 	helm repo add appscode https://charts.appscode.com/stable/
 	helm repo update
 	helm install kubedb-operator appscode/kubedb --version v0.13.0-rc.0 --namespace kube-system
+	# TODO: Actually need to wait between the two "helm install" commands.
 	helm install kubedb-catalog appscode/kubedb-catalog --version v0.13.0-rc.0 --namespace kube-system
 
 dashboard:

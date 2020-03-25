@@ -8,6 +8,10 @@ import (
 // All the types here are used in the yinyo API. So, they all will get serialised and deserialised.
 // Therefore, for all types include an explicit instruction for JSON marshalling/unmarshalling.
 
+type CreateRunOptions struct {
+	APIKey string
+}
+
 // StartRunOptions are options that can be used when starting a run
 type StartRunOptions struct {
 	Output     string        `json:"output"`
@@ -33,29 +37,20 @@ type EnvVariable struct {
 type ExitData struct {
 	Build    *ExitDataStage `json:"build,omitempty"`
 	Run      *ExitDataStage `json:"run,omitempty"`
-	API      APIUsage       `json:"api"`
 	Finished bool           `json:"finished"`
 }
 
 // ExitDataStage gives the exit data for a single stage
 type ExitDataStage struct {
-	ExitCode int   `json:"exit_code"`
-	Usage    Usage `json:"usage"`
-}
-
-type APIUsage struct {
-	// TODO: Extract out common bits between APIUsage and Usage
-	NetworkIn  uint64 `json:"network_in"`  // In bytes
-	NetworkOut uint64 `json:"network_out"` // In bytes
+	ExitCode int        `json:"exit_code"`
+	Usage    StageUsage `json:"usage"`
 }
 
 // Usage gives the resource usage for a single stage
-type Usage struct {
-	WallTime   float64 `json:"wall_time"`   // In seconds
-	CPUTime    float64 `json:"cpu_time"`    // In seconds
-	MaxRSS     uint64  `json:"max_rss"`     // In bytes
-	NetworkIn  uint64  `json:"network_in"`  // In bytes
-	NetworkOut uint64  `json:"network_out"` // In bytes
+type StageUsage struct {
+	MaxRSS     uint64 `json:"max_rss"`     // In bytes
+	NetworkIn  uint64 `json:"network_in"`  // In bytes
+	NetworkOut uint64 `json:"network_out"` // In bytes
 }
 
 // Run is what you get when you create a run and what you need to update it
@@ -99,6 +94,10 @@ type LogData struct {
 	Stage  string `json:"stage"`
 	Stream string `json:"stream"`
 	Text   string `json:"text"`
+}
+
+// FirstData is the first event that's sent in a run
+type FirstData struct {
 }
 
 // LastData is the last event that's sent in a run
