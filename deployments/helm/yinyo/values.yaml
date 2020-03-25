@@ -15,9 +15,10 @@ replicaCount: 3
 #   host: "redis-master:6379"
 #   password: changeme123
 
+# Uncomment the lines below to enable talking to an external authentication server
 # See https://minikube.sigs.k8s.io/docs/tasks/accessing-host-resources/ on how to figure out the ip address of the host
-authenticationURL: "http://192.168.64.1:3000/authentication"
-usageURL: "http://192.168.64.1:3000/usage"
+# authenticationURL: "http://192.168.64.1:3000/authentication"
+# usageURL: "http://192.168.64.1:3000/usage"
 
 # TODO: Install a specific version. Also this doesn't actually exist at the moment on docker hub
 image: openaustralia/yinyo-server
