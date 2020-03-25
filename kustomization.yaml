@@ -6,21 +6,17 @@ resources:
 
 secretGenerator:
   - name: minio
-    namespace: yinyo-system
     envs:
       - configs/secrets-minio.env
   - name: yinyo-server
-    namespace: yinyo-system
     envs:
       - configs/secrets-yinyo-server.env
   - name: redis
-    namespace: yinyo-system
     envs:
       - configs/secrets-redis.env
 
 configMapGenerator:
   - name: yinyo-server
-    namespace: yinyo-system
     envs:
       - configs/config-yinyo-server.env
 

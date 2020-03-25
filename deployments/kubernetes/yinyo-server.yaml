@@ -2,7 +2,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: yinyo-server
-  namespace: yinyo-system
 ---
 # This role gives the minimal permissions necessary for yinyo-server to do its job
 apiVersion: rbac.authorization.k8s.io/v1
@@ -27,13 +26,12 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: yinyo-server
-    namespace: yinyo-system
+    namespace: default
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: yinyo-server
-  namespace: yinyo-system
   labels:
     app: yinyo-server
 spec:
@@ -91,7 +89,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: yinyo-server
-  namespace: yinyo-system
 spec:
   type: LoadBalancer
   ports:

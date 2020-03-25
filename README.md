@@ -147,12 +147,12 @@ Point your web browser at [http://localhost:9000](http://localhost:9000). Login 
 make dashboard
 ```
 
-You'll want to look in the "yinyo-system" and "yinyo-scrapers" namespaces.
+You'll want to look in the "default" and "yinyo-scrapers" namespaces.
 
 ### Accessing Redis
 
 ```bash
-> kubectl exec -it redis-0 -n yinyo-system sh
+> kubectl exec -it redis-0 sh
 /data # redis-cli
 127.0.0.1:6379> auth changeme123
 OK

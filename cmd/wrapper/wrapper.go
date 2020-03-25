@@ -49,7 +49,7 @@ func main() {
 	rootCmd.Flags().StringVar(&cachePath, "cachepath", "/tmp/cache", "herokuish cache path")
 	rootCmd.Flags().StringVar(&envPath, "envpath", "/tmp/env", "herokuish env path")
 	rootCmd.Flags().StringVar(&runOutput, "output", "", "relative path to output file")
-	rootCmd.Flags().StringVar(&serverURL, "server", "http://yinyo-server.yinyo-system:8080", "override yinyo server URL")
+	rootCmd.Flags().StringVar(&serverURL, "server", "http://yinyo-server.default:8080", "override yinyo server URL")
 	rootCmd.Flags().StringVar(&buildCommand, "buildcommand", "/bin/herokuish buildpack build", "override the herokuish build command (for testing)")
 	rootCmd.Flags().StringVar(&runCommand, "runcommand", "/bin/herokuish procfile start scraper", "override the herokuish run command (for testing)")
 	rootCmd.Flags().StringToStringVar(&wrapperEnvironment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
