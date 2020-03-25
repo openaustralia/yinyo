@@ -41,6 +41,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-server
                   key: store_secret_key
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-server
+                  key: redis_host
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:

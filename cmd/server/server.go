@@ -36,7 +36,7 @@ func main() {
 				SecretKey: getMandatoryEnv("STORE_SECRET_KEY"),
 			}
 			redisOptions := commands.RedisOptions{
-				Address:  "redis-master:6379",
+				Address:  getMandatoryEnv("REDIS_HOST"),
 				Password: getMandatoryEnv("REDIS_PASSWORD"),
 			}
 			authenticationURL := os.Getenv("AUTHENTICATION_URL")

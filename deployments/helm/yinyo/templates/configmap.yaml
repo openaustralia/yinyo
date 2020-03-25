@@ -5,6 +5,7 @@ metadata:
 data:
   store_host: "{{ .Values.store.host }}"
   store_bucket: "{{ .Values.store.bucket }}"
+  redis_host: "{{ .Values.redis.host }}"
   # See https://minikube.sigs.k8s.io/docs/tasks/accessing-host-resources/ on how to figure out the ip address of the host
   authentication_url: {{ .Values.authenticationURL }}
   usage_url: {{ .Values.usageURL }}

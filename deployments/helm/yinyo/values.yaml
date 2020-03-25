@@ -13,6 +13,7 @@ replicaCount: 1
 #   secretKey: changeme123
 
 # redis:
+#   host: "redis-master:6379"
 #   password: changeme123
 
 # See https://minikube.sigs.k8s.io/docs/tasks/accessing-host-resources/ on how to figure out the ip address of the host

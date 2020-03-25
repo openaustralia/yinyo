@@ -6,4 +6,5 @@ store:
   secretKey: changeme123
 
 redis:
+  host: "redis-master:6379"
   password: changeme123
