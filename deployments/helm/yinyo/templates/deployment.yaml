@@ -44,8 +44,8 @@ spec:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: redis
-                  key: password
+                  name: {{ .Release.Name }}-server
+                  key: redis_password
             # Uncomment the lines below to enable talking to an external authentication server
             # - name: AUTHENTICATION_URL
             #   valueFrom:

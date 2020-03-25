@@ -64,6 +64,12 @@ Start Minikube if you haven't already
 make minikube
 ```
 
+Let helm know where to find some of the development dependencies
+```
+helm repo add stable https://kubernetes-charts.storage.googleapis.com
+helm repo add bitnami https://charts.bitnami.com/bitnami
+```
+
 Run skaffold. This will build all the bits and pieces and deploy things to your local kubernetes for you. The first time it builds everything it it takes a few minutes. After that when you make any changes to the code it does everything much faster.
 
 ```bash

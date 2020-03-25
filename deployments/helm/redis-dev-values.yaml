@@ -1,0 +1,8 @@
+cluster:
+  enabled: false
+usePassword: true
+# TODO: Make it access via the secret
+password: "changeme123"
+master:
+  persistence:
+    size: 1Gi

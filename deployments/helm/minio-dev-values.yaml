@@ -1,0 +1,11 @@
+persistence:
+  size: "10Mi"
+# TODO: Move this elsewhere and get rid of duplication with values in secret
+# TODO: Get rid of authentication in development
+accessKey: "yinyo"
+secretKey: "changeme123"
+buckets:
+  # buckets.name needs to be the same value as storeBucket above. Ugh.
+  # See https://github.com/helm/helm/issues/6699
+  - name: yinyo
+    policy: none

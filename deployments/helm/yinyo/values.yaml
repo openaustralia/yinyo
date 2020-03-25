@@ -67,25 +67,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-minio:
-  persistence:
-    size: 10Mi
-  # TODO: Move this elsewhere and get rid of duplication with values in secret
-  accessKey: "yinyo"
-  secretKey: "changeme123"
-  buckets:
-    # buckets.name needs to be the same value as storeBucket above. Ugh.
-    # See https://github.com/helm/helm/issues/6699
-    - name: yinyo
-      policy: none
-
-redis:
-  cluster:
-    enabled: false
-  usePassword: true
-  # TODO: Make it access via the secret
-  password: "changeme123"
-  master:
-    persistence:
-      size: 1Gi

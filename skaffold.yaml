@@ -23,3 +23,15 @@ deploy:
           image: openaustralia/yinyo-server
         # To force the dependencies to be updated: "helm dep build"
         skipBuildDependencies: true
+      - name: minio
+        remote: true
+        chartPath: stable/minio
+        version: "~5.0.17"
+        valuesFiles:
+          - deployments/helm/minio-dev-values.yaml
+      - name: redis
+        remote: true
+        chartPath: bitnami/redis
+        version: "~10.5.13"
+        valuesFiles:
+          - deployments/helm/redis-dev-values.yaml
