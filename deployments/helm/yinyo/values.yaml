@@ -2,7 +2,9 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# TODO: Make replicaCount actually do something
 replicaCount: 1
+bucketName: yinyo
 
 # image:
 #   repository: nginx
@@ -74,7 +76,8 @@ minio:
   accessKey: "yinyo"
   secretKey: "changeme123"
   buckets:
-    # TODO: Bucket name should come from the release name
+    # buckets.name needs to be the same value as bucketName above. Ugh.
+    # See https://github.com/helm/helm/issues/6699
     - name: yinyo
       policy: none
 
