@@ -27,14 +27,13 @@ import (
 	"github.com/openaustralia/yinyo/pkg/stream"
 )
 
-const dockerImage = "openaustralia/yinyo-scraper:v1"
 const runBinary = "/bin/wrapper"
 
 // App is the interface for the operations of the server
 type App interface {
 	CreateRun(options protocol.CreateRunOptions) (protocol.Run, error)
 	DeleteRun(runID string) error
-	StartRun(runID string, options protocol.StartRunOptions) error
+	StartRun(runID string, dockerImage string, options protocol.StartRunOptions) error
 	GetApp(runID string) (io.Reader, error)
 	PutApp(runID string, reader io.Reader, objectSize int64) error
 	GetCache(runID string) (io.Reader, error)
@@ -290,7 +289,7 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 }
 
 // StartRun starts the run
-func (app *AppImplementation) StartRun(runID string, options protocol.StartRunOptions) error {
+func (app *AppImplementation) StartRun(runID string, dockerImage string, options protocol.StartRunOptions) error {
 	// First check that the app exists
 	_, err := app.GetApp(runID)
 	if err != nil {

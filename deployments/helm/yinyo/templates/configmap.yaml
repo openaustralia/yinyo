@@ -8,3 +8,4 @@ data:
   redis_host: "{{ .Values.redis.host }}"
   authentication_url: {{ .Values.authenticationURL }}
   usage_url: {{ .Values.usageURL }}
+  run_docker_image: {{ .Values.runImage }}

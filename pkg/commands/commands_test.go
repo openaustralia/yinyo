@@ -35,7 +35,7 @@ func TestStartRun(t *testing.T) {
 	job.On(
 		"Create",
 		"run-name",
-		"openaustralia/yinyo-scraper:v1",
+		"image",
 		[]string{"/bin/wrapper", "run-name", "--output", "output.txt", "--env", "FOO=bar"},
 		int64(86400),
 	).Return(nil)
@@ -47,6 +47,7 @@ func TestStartRun(t *testing.T) {
 	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
 	err := app.StartRun(
 		"run-name",
+		"image",
 		protocol.StartRunOptions{
 			Output:     "output.txt",
 			Env:        []protocol.EnvVariable{{Name: "FOO", Value: "bar"}},
@@ -499,7 +500,7 @@ func TestStartNoApp(t *testing.T) {
 	blobstoreClient.On("Get", "foo/app.tgz").Return(nil, errors.New("Doesn't exist"))
 	blobstoreClient.On("IsNotExist", errors.New("Doesn't exist")).Return(true)
 
-	err := app.StartRun("foo", protocol.StartRunOptions{})
+	err := app.StartRun("foo", "image", protocol.StartRunOptions{})
 	assert.True(t, errors.Is(err, ErrAppNotAvailable))
 
 	blobstoreClient.AssertExpectations(t)

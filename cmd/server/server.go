@@ -41,8 +41,9 @@ func main() {
 			}
 			authenticationURL := os.Getenv("AUTHENTICATION_URL")
 			usageURL := os.Getenv("USAGE_URL")
+			runDockerImage := getMandatoryEnv("RUN_DOCKER_IMAGE")
 			options := commands.StartupOptions{Minio: minioOptions, Redis: redisOptions, AuthenticationURL: authenticationURL, UsageURL: usageURL}
-			err := server.Initialise(&options, maxRunTime)
+			err := server.Initialise(&options, maxRunTime, runDockerImage)
 			if err != nil {
 				log.Fatal(err)
 			}

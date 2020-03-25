@@ -10,9 +10,6 @@ build:
       docker:
         dockerfile: build/package/Dockerfile
         target: yinyo-run
-  tagPolicy:
-    envTemplate:
-      template: "{{.IMAGE_NAME}}:v1"
 deploy:
   helm:
     releases:
@@ -23,6 +20,7 @@ deploy:
         values:
           # TODO: Rename this
           image: openaustralia/yinyo-server
+          runImage: openaustralia/yinyo-scraper
       - name: minio
         remote: true
         chartPath: stable/minio

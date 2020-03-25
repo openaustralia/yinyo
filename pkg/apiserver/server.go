@@ -128,7 +128,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 		env[keyvalue.Name] = keyvalue.Value
 	}
 
-	err = server.app.StartRun(runID, options)
+	err = server.app.StartRun(runID, server.runDockerImage, options)
 	if errors.Is(err, commands.ErrAppNotAvailable) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
 	}
@@ -347,19 +347,21 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Server holds the internal state for the server
 type Server struct {
-	router     *mux.Router
-	app        commands.App
-	maxRunTime int64 // the global maximum run time in seconds that every run can not exceed
+	router         *mux.Router
+	app            commands.App
+	maxRunTime     int64 // the global maximum run time in seconds that every run can not exceed
+	runDockerImage string
 }
 
 // Initialise the server's state
-func (server *Server) Initialise(startupOptions *commands.StartupOptions, maxRunTime int64) error {
+func (server *Server) Initialise(startupOptions *commands.StartupOptions, maxRunTime int64, runDockerImage string) error {
 	app, err := commands.New(startupOptions)
 	if err != nil {
 		return err
 	}
 	server.app = app
 	server.maxRunTime = maxRunTime
+	server.runDockerImage = runDockerImage
 	server.InitialiseRoutes()
 	return nil
 }

@@ -74,7 +74,7 @@ func TestStartBadBody(t *testing.T) {
 func TestStartNoApp(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", protocol.StartRunOptions{MaxRunTime: 86400}).Return(commands.ErrAppNotAvailable)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400}).Return(commands.ErrAppNotAvailable)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{}`))
 
@@ -87,7 +87,7 @@ func TestStartNoApp(t *testing.T) {
 func TestStart(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", protocol.StartRunOptions{MaxRunTime: 86400}).Return(nil)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader("{}"))
 
@@ -99,7 +99,7 @@ func TestStart(t *testing.T) {
 func TestStartLowerMaxRunTime(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", protocol.StartRunOptions{MaxRunTime: 120}).Return(nil)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 120}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"max_run_time": 120}`))
 

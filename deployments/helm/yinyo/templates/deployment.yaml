@@ -51,6 +51,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-server
                   key: redis_password
+            - name: RUN_DOCKER_IMAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-server
+                  key: run_docker_image
             # Uncomment the lines below to enable talking to an external authentication server
             # - name: AUTHENTICATION_URL
             #   valueFrom:

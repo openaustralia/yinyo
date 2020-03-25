@@ -259,13 +259,13 @@ func (_m *App) ReportNetworkUsage(runID string, source string, in uint64, out ui
 	return r0
 }
 
-// StartRun provides a mock function with given fields: runID, options
-func (_m *App) StartRun(runID string, options protocol.StartRunOptions) error {
-	ret := _m.Called(runID, options)
+// StartRun provides a mock function with given fields: runID, dockerImage, options
+func (_m *App) StartRun(runID string, dockerImage string, options protocol.StartRunOptions) error {
+	ret := _m.Called(runID, dockerImage, options)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, protocol.StartRunOptions) error); ok {
-		r0 = rf(runID, options)
+	if rf, ok := ret.Get(0).(func(string, string, protocol.StartRunOptions) error); ok {
+		r0 = rf(runID, dockerImage, options)
 	} else {
 		r0 = ret.Error(0)
 	}
