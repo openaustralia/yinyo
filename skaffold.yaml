@@ -18,11 +18,11 @@ deploy:
     releases:
       - name: yinyo
         chartPath: deployments/helm/yinyo
+        valuesFiles:
+          - deployments/helm/yinyo-dev-values.yaml
         values:
           # TODO: Rename this
           image: openaustralia/yinyo-server
-        # To force the dependencies to be updated: "helm dep build"
-        skipBuildDependencies: true
       - name: minio
         remote: true
         chartPath: stable/minio

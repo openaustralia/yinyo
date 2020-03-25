@@ -4,7 +4,20 @@
 
 # TODO: Make replicaCount actually do something
 replicaCount: 1
-storeBucket: yinyo
+
+# TODO: Rename to S3
+# store:
+#   host: "minio:9000"
+#   bucket: yinyo
+#   accessKey: yinyo
+#   secretKey: changeme123
+
+# redis:
+#   password: changeme123
+
+# See https://minikube.sigs.k8s.io/docs/tasks/accessing-host-resources/ on how to figure out the ip address of the host
+authenticationURL: "http://192.168.64.1:3000/authentication"
+usageURL: "http://192.168.64.1:3000/usage"
 
 # TODO: Install a specific version. Also this doesn't actually exist at the moment on docker hub
 image: openaustralia/yinyo-server

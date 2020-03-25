@@ -1,0 +1,9 @@
+
+store:
+  host: "minio:9000"
+  bucket: yinyo
+  accessKey: yinyo
+  secretKey: changeme123
+
+redis:
+  password: changeme123

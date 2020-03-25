@@ -3,8 +3,8 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-server
 data:
-  store_host: "minio:9000"
-  store_bucket: "{{ .Values.storeBucket }}"
+  store_host: "{{ .Values.store.host }}"
+  store_bucket: "{{ .Values.store.bucket }}"
   # See https://minikube.sigs.k8s.io/docs/tasks/accessing-host-resources/ on how to figure out the ip address of the host
-  authentication_url: "http://192.168.64.1:3000/authentication"
-  usage_url: "http://192.168.64.1:3000/usage"
+  authentication_url: {{ .Values.authenticationURL }}
+  usage_url: {{ .Values.usageURL }}
