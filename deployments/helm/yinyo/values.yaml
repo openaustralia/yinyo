@@ -5,13 +5,13 @@
 replicaCount: 3
 
 # TODO: Rename to S3
-# store:
+store: {}
 #   host: "minio:9000"
 #   bucket: yinyo
 #   accessKey: yinyo
 #   secretKey: changeme123
 
-# redis:
+redis: {}
 #   host: "redis-master:6379"
 #   password: changeme123
 

@@ -3,9 +3,9 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-server
 data:
-  store_host: "{{ .Values.store.host }}"
-  store_bucket: "{{ .Values.store.bucket }}"
-  redis_host: "{{ .Values.redis.host }}"
+  store_host: "{{ required "store.host is required" .Values.store.host }}"
+  store_bucket: "{{ required "store.bucket is required" .Values.store.bucket }}"
+  redis_host: "{{ required "redis.host is required" .Values.redis.host }}"
   {{- if .Values.authenticationURL }}
   authentication_url: {{ .Values.authenticationURL }}
   {{ end }}
