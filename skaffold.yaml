@@ -5,7 +5,7 @@ build:
     - image: openaustralia/yinyo-server
       docker:
         dockerfile: build/package/server/Dockerfile
-    - image: openaustralia/yinyo-scraper
+    - image: openaustralia/yinyo-run
       docker:
         dockerfile: build/package/wrapper/Dockerfile
 deploy:
@@ -16,9 +16,8 @@ deploy:
         valuesFiles:
           - deployments/helm/yinyo-dev-values.yaml
         values:
-          # TODO: Rename this
           image: openaustralia/yinyo-server
-          runImage: openaustralia/yinyo-scraper
+          runImage: openaustralia/yinyo-run
       - name: minio
         remote: true
         chartPath: stable/minio
