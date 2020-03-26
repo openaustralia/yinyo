@@ -14,8 +14,7 @@ type kubernetesClient struct {
 	clientset *kubernetes.Clientset
 }
 
-// TODO: Rename this to yinyo-runs? We're avoiding using the word scrapers elsewhere
-const namespace = "yinyo-scrapers"
+const namespace = "yinyo-runs"
 
 // NewKubernetes returns the Kubernetes implementation of Client
 func NewKubernetes() (Jobs, error) {

@@ -146,7 +146,7 @@ Point your web browser at [http://localhost:9000](http://localhost:9000). Login 
 make dashboard
 ```
 
-You'll want to look in the "default" and "yinyo-scrapers" namespaces.
+You'll want to look in the "default" and "yinyo-runs" namespaces.
 
 ### Accessing Redis
 
