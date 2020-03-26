@@ -35,12 +35,12 @@ FROM mlandauer/herokuish:for-morph-ng as yinyo-run
 RUN apt-get update && apt-get install -y libsqlite3-dev
 
 # Add prerun script which will disable output buffering for ruby
-ADD build/package/wrapper/prerun.rb /usr/local/lib/prerun.rb
+ADD build/package/run/prerun.rb /usr/local/lib/prerun.rb
 
 # Add perl buildpack
 RUN /bin/herokuish buildpack install https://github.com/miyagawa/heroku-buildpack-perl.git 2da7480a8339f01968ce3979655555a0ade20564
 
-ADD build/package/wrapper/start.sh /bin/
+ADD build/package/run/start.sh /bin/
 RUN chmod +x /bin/start.sh
 
 # Install geckdriver for firefox

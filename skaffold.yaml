@@ -7,7 +7,7 @@ build:
         dockerfile: build/package/server/Dockerfile
     - image: openaustralia/yinyo-run
       docker:
-        dockerfile: build/package/wrapper/Dockerfile
+        dockerfile: build/package/run/Dockerfile
 deploy:
   helm:
     releases:
