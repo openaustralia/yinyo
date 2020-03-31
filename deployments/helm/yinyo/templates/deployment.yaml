@@ -14,12 +14,8 @@ spec:
       labels:
         app: {{ .Release.Name }}-server
       annotations:
-        # Force an upgrade if the configmap or secrets are changed
+        # Force an upgrade if the configmap is changed
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        checksum/config-store: {{ include (print $.Template.BasePath "/configmap-store.yaml") . | sha256sum }}
-        checksum/config-redis: {{ include (print $.Template.BasePath "/configmap-redis.yaml") . | sha256sum }}
-        checksum/secret-store: {{ include (print $.Template.BasePath "/secret-store.yaml") . | sha256sum }}
-        checksum/secret-redis: {{ include (print $.Template.BasePath "/secret-redis.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ .Release.Name }}-server
       containers:
