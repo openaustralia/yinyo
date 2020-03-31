@@ -4,17 +4,6 @@
 
 replicaCount: 3
 
-# TODO: Rename to S3
-store: {}
-#   host: "minio:9000"
-#   bucket: yinyo
-#   accessKey: yinyo
-#   secretKey: changeme123
-
-redis: {}
-#   host: "redis-master:6379"
-#   password: changeme123
-
 # Uncomment the lines below to enable talking to an external authentication server
 # See https://minikube.sigs.k8s.io/docs/tasks/accessing-host-resources/ on how to figure out the ip address of the host
 # authenticationURL: "http://192.168.64.1:3000/authentication"

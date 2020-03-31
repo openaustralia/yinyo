@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Release.Name }}-server-redis
-data:
-  host: "{{ required "redis.host is required" .Values.redis.host }}"

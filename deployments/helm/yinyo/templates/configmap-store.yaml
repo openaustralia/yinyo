@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Release.Name }}-server-store
-data:
-  host: "{{ required "store.host is required" .Values.store.host }}"
-  bucket: "{{ required "store.bucket is required" .Values.store.bucket }}"
