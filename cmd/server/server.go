@@ -35,9 +35,14 @@ func main() {
 				AccessKey: getMandatoryEnv("STORE_ACCESS_KEY"),
 				SecretKey: getMandatoryEnv("STORE_SECRET_KEY"),
 			}
+			var tls bool
+			if os.Getenv("REDIS_TLS") == "true" {
+				tls = true
+			}
 			redisOptions := commands.RedisOptions{
 				Address:  getMandatoryEnv("REDIS_HOST"),
 				Password: getMandatoryEnv("REDIS_PASSWORD"),
+				TLS:      tls,
 			}
 			authenticationURL := os.Getenv("AUTHENTICATION_URL")
 			usageURL := os.Getenv("USAGE_URL")

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -85,6 +86,7 @@ type MinioOptions struct {
 type RedisOptions struct {
 	Address  string
 	Password string
+	TLS      bool
 }
 
 // New initialises the main state of the application
@@ -100,9 +102,14 @@ func New(startupOptions *StartupOptions) (App, error) {
 	}
 
 	// Connect to redis and initially just check that we can connect
+	var tlsConfig *tls.Config
+	if startupOptions.Redis.TLS {
+		tlsConfig = &tls.Config{}
+	}
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     startupOptions.Redis.Address,
-		Password: startupOptions.Redis.Password,
+		Addr:      startupOptions.Redis.Address,
+		Password:  startupOptions.Redis.Password,
+		TLSConfig: tlsConfig,
 	})
 	_, err = redisClient.Ping().Result()
 	if err != nil {

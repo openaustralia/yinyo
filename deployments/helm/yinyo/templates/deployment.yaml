@@ -54,6 +54,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-server-redis
                   key: password
+            - name: REDIS_TLS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-server-redis
+                  key: tls
             - name: RUN_DOCKER_IMAGE
               valueFrom:
                 configMapKeyRef:

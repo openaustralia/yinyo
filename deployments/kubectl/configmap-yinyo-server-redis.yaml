@@ -4,3 +4,4 @@ metadata:
   name: yinyo-server-redis
 data:
   host: "redis-master:6379"
+  tls: "false"
