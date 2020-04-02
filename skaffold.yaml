@@ -9,6 +9,8 @@ build:
       docker:
         dockerfile: build/package/run/Dockerfile
 deploy:
+  kubectl:
+    manifests: ["deployments/kubectl/*.yaml"]
   helm:
     releases:
       - name: yinyo

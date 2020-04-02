@@ -1,0 +1,7 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: yinyo-server-store
+data:
+  host: "minio:9000"
+  bucket: yinyo
