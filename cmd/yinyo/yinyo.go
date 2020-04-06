@@ -26,9 +26,10 @@ func osStream(stream string) (*os.File, error) {
 	}
 }
 
-func run(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, showEventsJSON bool, apiKey string) error {
+func run(scraperDirectory string, clientServerURL string, environment map[string]string,
+	outputFile string, cache bool, callbackURL string, showEventsJSON bool, apiKey string) error {
 	return apiclient.Simple(
-		scraperDirectory, clientServerURL, environment, outputFile, callbackURL, apiKey,
+		scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey,
 		func(event protocol.Event) error {
 			if showEventsJSON {
 				// Convert the event back to JSON for display
@@ -104,7 +105,7 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 
 	var callbackURL, outputFile, clientServerURL string
-	var showEventsJSON bool
+	var showEventsJSON, cache bool
 	var environment map[string]string
 
 	var rootCmd = &cobra.Command{
@@ -118,7 +119,7 @@ func main() {
 				log.Fatal(err)
 			}
 			for {
-				err := run(scraperDirectory, clientServerURL, environment, outputFile, callbackURL, showEventsJSON, apiKeys[clientServerURL])
+				err := run(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, showEventsJSON, apiKeys[clientServerURL])
 				if err != nil {
 					// If get unauthorized error back then we should let the user enter their api key and try again
 					// And we should save away the api key (for this particular server) for later use
@@ -148,7 +149,7 @@ func main() {
 	rootCmd.Flags().StringVar(&clientServerURL, "server", "http://localhost:8080", "Override yinyo server URL")
 	rootCmd.Flags().StringToStringVar(&environment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
 	rootCmd.Flags().BoolVar(&showEventsJSON, "allevents", false, "Show the full events output as JSON instead of the default of just showing the log events as text")
-
+	rootCmd.Flags().BoolVar(&cache, "cache", false, "Enable the download and upload of the build cache")
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

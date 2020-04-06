@@ -54,7 +54,8 @@ func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvV
 // Simple is a super simple high level way of running a scraper that exists on the local file system
 // giving you a local callback for every event (including logs). This is used by the command line client
 // It makes a simple common use case a little simpler to implement
-func Simple(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, callbackURL string, apiKey string, eventCallback func(event protocol.Event) error) error {
+func Simple(scraperDirectory string, clientServerURL string, environment map[string]string,
+	outputFile string, cache bool, callbackURL string, apiKey string, eventCallback func(event protocol.Event) error) error {
 	client := New(clientServerURL)
 	// Create the run
 	run, err := client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
@@ -67,8 +68,10 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	}
 	// Upload the cache
 	cachePath := filepath.Join(scraperDirectory, cacheName)
-	if err = uploadCacheIfExists(run, cachePath); err != nil {
-		return err
+	if cache {
+		if err = uploadCacheIfExists(run, cachePath); err != nil {
+			return err
+		}
 	}
 	// Start the run
 	err = run.Start(&protocol.StartRunOptions{
@@ -97,8 +100,10 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 		return err
 	}
 	// Get the build cache
-	if err = run.GetCacheToFile(cachePath); err != nil {
-		return err
+	if cache {
+		if err = run.GetCacheToFile(cachePath); err != nil {
+			return err
+		}
 	}
 	// Delete the run
 	if err = run.Delete(); err != nil {
