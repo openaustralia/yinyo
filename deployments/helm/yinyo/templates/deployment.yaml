@@ -78,6 +78,10 @@ spec:
                   name: yinyo-server
                   key: usage_url
             {{ end }}
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
           livenessProbe:
             httpGet:
               path: /
