@@ -63,8 +63,8 @@ func (client *kubernetesClient) Create(runID string, dockerImage string, command
 									apiv1.ResourceCPU:    resource.MustParse("250m"),  // 1/4 of a vCPU
 								},
 								Limits: apiv1.ResourceList{
-									apiv1.ResourceMemory: resource.MustParse("512Mi"), // 512 MB
-									apiv1.ResourceCPU:    resource.MustParse("1000m"), // One vCPU
+									apiv1.ResourceMemory: resource.MustParse("1024Mi"), // 1024 MB
+									apiv1.ResourceCPU:    resource.MustParse("1000m"),  // One vCPU
 								},
 							},
 						},
