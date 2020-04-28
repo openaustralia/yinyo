@@ -210,7 +210,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: openaustralia/yinyo-run
           tag_with_sha: true
-          path: build/package/run
+          dockerfile: build/package/run/Dockerfile
 
   deploy-server:
     name: Deploy Server Image
@@ -227,4 +227,4 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: openaustralia/yinyo-server
           tag_with_sha: true
-          path: build/package/server
+          dockerfile: build/package/server/Dockerfile
