@@ -1,9 +1,9 @@
 name: Test, Build and Release
-on: 
+on:
   push:
   pull_request:
   release:
-    types: published
+    types: [published]
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -91,7 +91,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      
 
       - name: Calc coverage
         run: |
