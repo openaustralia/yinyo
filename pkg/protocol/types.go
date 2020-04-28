@@ -60,18 +60,20 @@ type Run struct {
 
 // JSONEvent is used for reading JSON
 type JSONEvent struct {
-	ID   string           `json:"id"`
-	Time time.Time        `json:"time"`
-	Type string           `json:"type"`
-	Data *json.RawMessage `json:"data"`
+	ID    string           `json:"id"`
+	RunID string           `json:"run_id"`
+	Time  time.Time        `json:"time"`
+	Type  string           `json:"type"`
+	Data  *json.RawMessage `json:"data"`
 }
 
 // Event is the top level struct for representing events
 type Event struct {
-	ID   string    `json:"id,omitempty"`
-	Time time.Time `json:"time"`
-	Type string    `json:"type"`
-	Data Data      `json:"data"`
+	ID    string    `json:"id,omitempty"`
+	RunID string    `json:"run_id"`
+	Time  time.Time `json:"time"`
+	Type  string    `json:"type"`
+	Data  Data      `json:"data"`
 }
 
 // Data is the interface for all core event data

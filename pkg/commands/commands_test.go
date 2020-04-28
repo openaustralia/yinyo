@@ -76,7 +76,7 @@ func TestCreateEvent(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
 	time := time.Now()
-	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
+	stream.On("Add", "run-name", protocol.NewStartEvent("", "abc", time, "build")).Return(protocol.NewStartEvent("123", "abc", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -94,7 +94,7 @@ func TestCreateEvent(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
+	err := app.CreateEvent("run-name", protocol.NewStartEvent("", "abc", time, "build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -109,8 +109,8 @@ func TestCreateFinishEvent(t *testing.T) {
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
 
 	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.StageUsage{MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
-	event := protocol.NewFinishEvent("", time, "build", exitData)
-	eventWithID := protocol.NewFinishEvent("123", time, "build", exitData)
+	event := protocol.NewFinishEvent("", "abc", time, "build", exitData)
+	eventWithID := protocol.NewFinishEvent("123", "abc", time, "build", exitData)
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
@@ -128,8 +128,8 @@ func TestCreateFirstEvent(t *testing.T) {
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
 
 	time := time.Date(2020, 3, 11, 15, 24, 30, 0, time.UTC)
-	event := protocol.NewFirstEvent("", time)
-	eventWithID := protocol.NewFirstEvent("123", time)
+	event := protocol.NewFirstEvent("", "abc", time)
+	eventWithID := protocol.NewFirstEvent("123", "abc", time)
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Set", "run-name/first_time", `"2020-03-11T15:24:30Z"`).Return(nil)
@@ -147,8 +147,8 @@ func TestCreateLastEvent(t *testing.T) {
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
 
 	time := time.Now()
-	event := protocol.NewLastEvent("", time)
-	eventWithID := protocol.NewLastEvent("123", time)
+	event := protocol.NewLastEvent("", "abc", time)
+	eventWithID := protocol.NewLastEvent("123", "abc", time)
 
 	stream.On("Add", "run-name", event).Return(eventWithID, nil)
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
@@ -166,7 +166,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
 	time := time.Now()
-	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
+	stream.On("Add", "run-name", protocol.NewStartEvent("", "abc", time, "build")).Return(protocol.NewStartEvent("123", "abc", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return(`""`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -175,7 +175,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
+	err := app.CreateEvent("run-name", protocol.NewStartEvent("", "abc", time, "build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -188,7 +188,7 @@ func TestCreateEventErrorOneTimeDuringCallback(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
 	time := time.Now()
-	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
+	stream.On("Add", "run-name", protocol.NewStartEvent("", "abc", time, "build")).Return(protocol.NewStartEvent("123", "abc", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -216,7 +216,7 @@ func TestCreateEventErrorOneTimeDuringCallback(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
+	err := app.CreateEvent("run-name", protocol.NewStartEvent("", "abc", time, "build"))
 	assert.Nil(t, err)
 
 	stream.AssertExpectations(t)
@@ -228,7 +228,7 @@ func TestCreateEventErrorFiveTimesDuringCallback(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
 
 	time := time.Now()
-	stream.On("Add", "run-name", protocol.NewStartEvent("", time, "build")).Return(protocol.NewStartEvent("123", time, "build"), nil)
+	stream.On("Add", "run-name", protocol.NewStartEvent("", "abc", time, "build")).Return(protocol.NewStartEvent("123", "abc", time, "build"), nil)
 	keyValueStore.On("Get", "run-name/url").Return(`"http://foo.com/bar"`, nil)
 
 	// Mock out the http RoundTripper so that no actual http request is made
@@ -247,7 +247,7 @@ func TestCreateEventErrorFiveTimesDuringCallback(t *testing.T) {
 	httpClient.Transport = roundTripper
 
 	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
-	err := app.CreateEvent("run-name", protocol.NewStartEvent("", time, "build"))
+	err := app.CreateEvent("run-name", protocol.NewStartEvent("", "abc", time, "build"))
 	assert.EqualError(t, err, "POST http://foo.com/bar giving up after 5 attempts")
 
 	stream.AssertExpectations(t)
@@ -259,8 +259,8 @@ func TestGetEvents(t *testing.T) {
 	stream := new(streammocks.Stream)
 
 	time := time.Now()
-	stream.On("Get", "run-name", "0").Return(protocol.NewStartEvent("123", time, "build"), nil)
-	stream.On("Get", "run-name", "123").Return(protocol.NewLastEvent("456", time), nil)
+	stream.On("Get", "run-name", "0").Return(protocol.NewStartEvent("123", "abc", time, "build"), nil)
+	stream.On("Get", "run-name", "123").Return(protocol.NewLastEvent("456", "abc", time), nil)
 
 	app := AppImplementation{Stream: stream}
 
@@ -272,13 +272,13 @@ func TestGetEvents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, protocol.NewStartEvent("123", time, "build"), e)
+	assert.Equal(t, protocol.NewStartEvent("123", "abc", time, "build"), e)
 	assert.True(t, events.More())
 	e, err = events.Next()
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, protocol.NewLastEvent("456", time), e)
+	assert.Equal(t, protocol.NewLastEvent("456", "abc", time), e)
 	assert.False(t, events.More())
 
 	stream.AssertExpectations(t)

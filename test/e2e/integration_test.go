@@ -203,21 +203,21 @@ func TestHelloWorld(t *testing.T) {
 	// Copy across the IDs and times from the eventsList to the expected because we don't know what they
 	// will be ahead of time and this make it easy to compare expected and eventsList
 	expected := []protocol.Event{
-		protocol.NewFirstEvent(eventsList[0].ID, eventsList[0].Time),
-		protocol.NewStartEvent(eventsList[1].ID, eventsList[1].Time, "build"),
-		protocol.NewLogEvent(eventsList[2].ID, eventsList[2].Time, "build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
-		protocol.NewLogEvent(eventsList[3].ID, eventsList[3].Time, "build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
-		protocol.NewLogEvent(eventsList[4].ID, eventsList[4].Time, "build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
-		protocol.NewLogEvent(eventsList[5].ID, eventsList[5].Time, "build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
-		protocol.NewLogEvent(eventsList[6].ID, eventsList[6].Time, "build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
-		protocol.NewLogEvent(eventsList[7].ID, eventsList[7].Time, "build", "stdout", "\u001b[1G       "),
-		protocol.NewLogEvent(eventsList[8].ID, eventsList[8].Time, "build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
-		protocol.NewLogEvent(eventsList[9].ID, eventsList[9].Time, "build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
-		protocol.NewFinishEvent(eventsList[10].ID, eventsList[10].Time, "build", eventsList[10].Data.(protocol.FinishData).ExitData),
-		protocol.NewStartEvent(eventsList[11].ID, eventsList[11].Time, "run"),
-		protocol.NewLogEvent(eventsList[12].ID, eventsList[12].Time, "run", "stdout", "Hello World!"),
-		protocol.NewFinishEvent(eventsList[13].ID, eventsList[13].Time, "run", eventsList[13].Data.(protocol.FinishData).ExitData),
-		protocol.NewLastEvent(eventsList[14].ID, eventsList[14].Time),
+		protocol.NewFirstEvent(eventsList[0].ID, eventsList[0].RunID, eventsList[0].Time),
+		protocol.NewStartEvent(eventsList[1].ID, eventsList[1].RunID, eventsList[1].Time, "build"),
+		protocol.NewLogEvent(eventsList[2].ID, eventsList[2].RunID, eventsList[2].Time, "build", "stdout", "\u001b[1G       \u001b[1G-----> Python app detected"),
+		protocol.NewLogEvent(eventsList[3].ID, eventsList[3].RunID, eventsList[3].Time, "build", "stdout", "\u001b[1G       !     Python has released a security update! Please consider upgrading to python-2.7.16"),
+		protocol.NewLogEvent(eventsList[4].ID, eventsList[4].RunID, eventsList[4].Time, "build", "stdout", "\u001b[1G       Learn More: https://devcenter.heroku.com/articles/python-runtimes"),
+		protocol.NewLogEvent(eventsList[5].ID, eventsList[5].RunID, eventsList[5].Time, "build", "stdout", "\u001b[1G-----> Installing requirements with pip"),
+		protocol.NewLogEvent(eventsList[6].ID, eventsList[6].RunID, eventsList[6].Time, "build", "stdout", "\u001b[1G       You must give at least one requirement to install (see \"pip help install\")"),
+		protocol.NewLogEvent(eventsList[7].ID, eventsList[7].RunID, eventsList[7].Time, "build", "stdout", "\u001b[1G       "),
+		protocol.NewLogEvent(eventsList[8].ID, eventsList[8].RunID, eventsList[8].Time, "build", "stdout", "\u001b[1G       \u001b[1G-----> Discovering process types"),
+		protocol.NewLogEvent(eventsList[9].ID, eventsList[9].RunID, eventsList[9].Time, "build", "stdout", "\u001b[1G       Procfile declares types -> scraper"),
+		protocol.NewFinishEvent(eventsList[10].ID, eventsList[10].RunID, eventsList[10].Time, "build", eventsList[10].Data.(protocol.FinishData).ExitData),
+		protocol.NewStartEvent(eventsList[11].ID, eventsList[11].RunID, eventsList[11].Time, "run"),
+		protocol.NewLogEvent(eventsList[12].ID, eventsList[12].RunID, eventsList[12].Time, "run", "stdout", "Hello World!"),
+		protocol.NewFinishEvent(eventsList[13].ID, eventsList[13].RunID, eventsList[13].Time, "run", eventsList[13].Data.(protocol.FinishData).ExitData),
+		protocol.NewLastEvent(eventsList[14].ID, eventsList[14].RunID, eventsList[14].Time),
 	}
 	assert.Equal(t, expected, eventsList)
 }

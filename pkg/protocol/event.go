@@ -15,6 +15,7 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	}
 
 	e.Type = jsonEvent.Type
+	e.RunID = jsonEvent.RunID
 	e.ID = jsonEvent.ID
 	e.Time = jsonEvent.Time
 	switch jsonEvent.Type {
@@ -45,26 +46,26 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 }
 
 // NewLogEvent creates and returns a new log event
-func NewLogEvent(id string, time time.Time, stage string, stream string, text string) Event {
-	return Event{ID: id, Time: time, Type: "log", Data: LogData{Stage: stage, Stream: stream, Text: text}}
+func NewLogEvent(id string, runID string, time time.Time, stage string, stream string, text string) Event {
+	return Event{ID: id, RunID: runID, Time: time, Type: "log", Data: LogData{Stage: stage, Stream: stream, Text: text}}
 }
 
 // NewStartEvent creates and returns a new start event
-func NewStartEvent(id string, time time.Time, stage string) Event {
-	return Event{ID: id, Time: time, Type: "start", Data: StartData{Stage: stage}}
+func NewStartEvent(id string, runID string, time time.Time, stage string) Event {
+	return Event{ID: id, RunID: runID, Time: time, Type: "start", Data: StartData{Stage: stage}}
 }
 
 // NewFinishEvent creates and returns a new finish event
-func NewFinishEvent(id string, time time.Time, stage string, exitData ExitDataStage) Event {
-	return Event{ID: id, Time: time, Type: "finish", Data: FinishData{Stage: stage, ExitData: exitData}}
+func NewFinishEvent(id string, runID string, time time.Time, stage string, exitData ExitDataStage) Event {
+	return Event{ID: id, RunID: runID, Time: time, Type: "finish", Data: FinishData{Stage: stage, ExitData: exitData}}
 }
 
 // NewFirstEvent creates and returns a new last event
-func NewFirstEvent(id string, time time.Time) Event {
-	return Event{ID: id, Time: time, Type: "first", Data: FirstData{}}
+func NewFirstEvent(id string, runID string, time time.Time) Event {
+	return Event{ID: id, RunID: runID, Time: time, Type: "first", Data: FirstData{}}
 }
 
 // NewLastEvent creates and returns a new last event
-func NewLastEvent(id string, time time.Time) Event {
-	return Event{ID: id, Time: time, Type: "last", Data: LastData{}}
+func NewLastEvent(id string, runID string, time time.Time) Event {
+	return Event{ID: id, RunID: runID, Time: time, Type: "last", Data: LastData{}}
 }

@@ -271,8 +271,8 @@ func TestGetEvents(t *testing.T) {
 	app := new(commandsmocks.App)
 	time := time.Date(2000, time.January, 2, 3, 45, 0, 0, time.UTC)
 	events := &events{contents: []protocol.Event{
-		protocol.NewStartEvent("", time, "build"),
-		protocol.NewFinishEvent("", time, "build", protocol.ExitDataStage{}),
+		protocol.NewStartEvent("", "abc", time, "build"),
+		protocol.NewFinishEvent("", "abc", time, "build", protocol.ExitDataStage{}),
 	}}
 	app.On("IsRunCreated", "my-run").Return(true, nil)
 	app.On("GetEvents", "my-run", "0").Return(events)
@@ -280,8 +280,8 @@ func TestGetEvents(t *testing.T) {
 	rr := makeRequest(app, "GET", "/runs/my-run/events", nil)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, `{"time":"2000-01-02T03:45:00Z","type":"start","data":{"stage":"build"}}
-{"time":"2000-01-02T03:45:00Z","type":"finish","data":{"stage":"build","exit_data":{"exit_code":0,"usage":{"max_rss":0,"network_in":0,"network_out":0}}}}
+	assert.Equal(t, `{"run_id":"abc","time":"2000-01-02T03:45:00Z","type":"start","data":{"stage":"build"}}
+{"run_id":"abc","time":"2000-01-02T03:45:00Z","type":"finish","data":{"stage":"build","exit_data":{"exit_code":0,"usage":{"max_rss":0,"network_in":0,"network_out":0}}}}
 `, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/ld+json"}}, rr.Header())
 
