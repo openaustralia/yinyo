@@ -375,12 +375,15 @@ components:
     Event:
       required:
         - id
+        - run_id
         - time
         - type
         - data
       type: object
       properties:
         id:
+          type: string
+        run_id:
           type: string
         type:
           type: string
