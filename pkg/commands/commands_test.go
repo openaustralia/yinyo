@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -489,6 +490,74 @@ func TestCreateRun(t *testing.T) {
 	// run.ID should be a uuid. Check that it is
 	_, err = uuid.FromString(run.ID)
 	assert.Nil(t, err)
+	keyValueStore.AssertExpectations(t)
+}
+
+func TestCreateRunWithAuthenticationAllowed(t *testing.T) {
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+
+	// Mock out the http RoundTripper so that no actual http request is made
+	httpClient := http.DefaultClient
+	roundTripper := new(MockRoundTripper)
+	httpClient.Transport = roundTripper
+
+	app := AppImplementation{AuthenticationURL: "http://foo.com/authenticate", HTTP: httpClient, KeyValueStore: keyValueStore}
+
+	// Mock a response where the authentication allowed things to go ahead
+	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
+		values, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r.URL.Host == "foo.com" && values.Get("api_key") == "foobar" && values.Get("run_id") != ""
+	})).Return(
+		&http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"allowed":true}`)),
+		},
+		nil,
+	)
+
+	keyValueStore.On("Set", mock.Anything, "true").Return(nil)
+
+	_, err := app.CreateRun(protocol.CreateRunOptions{APIKey: "foobar"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	roundTripper.AssertExpectations(t)
+	keyValueStore.AssertExpectations(t)
+}
+
+func TestCreateRunWithAuthenticationNotAllowed(t *testing.T) {
+	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
+
+	// Mock out the http RoundTripper so that no actual http request is made
+	httpClient := http.DefaultClient
+	roundTripper := new(MockRoundTripper)
+	httpClient.Transport = roundTripper
+
+	app := AppImplementation{AuthenticationURL: "http://foo.com/authenticate", HTTP: httpClient, KeyValueStore: keyValueStore}
+
+	// Mock a response where the authentication allowed things to go ahead
+	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
+		values, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r.URL.Host == "foo.com" && values.Get("api_key") == "foobar" && values.Get("run_id") != ""
+	})).Return(
+		&http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"allowed":false}`)),
+		},
+		nil,
+	)
+
+	_, err := app.CreateRun(protocol.CreateRunOptions{APIKey: "foobar"})
+	assert.Equal(t, ErrNotAllowed, err)
+
+	roundTripper.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)
 }
 

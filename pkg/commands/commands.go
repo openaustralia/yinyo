@@ -143,9 +143,13 @@ type authenticationResponse struct {
 
 // CreateRun creates a run
 func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (protocol.Run, error) {
+	// Generate run ID using uuid
+	id := uuid.NewV4().String()
+
 	if app.AuthenticationURL != "" {
 		v := url.Values{}
 		v.Add("api_key", options.APIKey)
+		v.Add("run_id", id)
 		url := app.AuthenticationURL + "?" + v.Encode()
 		log.Printf("Making an authentication request to %v", url)
 
@@ -175,8 +179,6 @@ func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (prot
 			return protocol.Run{}, err
 		}
 	}
-	// Generate run ID using uuid
-	id := uuid.NewV4().String()
 
 	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
