@@ -20,7 +20,7 @@ spec:
       serviceAccountName: {{ .Release.Name }}-server
       containers:
         - name: {{ .Release.Name }}-server
-          image: {{ .Values.image }}
+          image: {{ .Values.server.image }}
           ports:
             - containerPort: 8080
           env:

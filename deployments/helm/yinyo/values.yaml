@@ -9,9 +9,11 @@ replicaCount: 3
 # authenticationURL: "http://192.168.64.1:3000/authentication"
 # usageURL: "http://192.168.64.1:3000/usage"
 
-# TODO: Install a specific version. Also this doesn't actually exist at the moment on docker hub
-image: openaustralia/yinyo-server
-runImage: openaustralia/yinyo-run
+# TODO: Install a specific version.
+server:
+  image: openaustralia/yinyo-server
+runner:
+  image: openaustralia/yinyo-run
 
 imagePullSecrets: []
 nameOverride: ""

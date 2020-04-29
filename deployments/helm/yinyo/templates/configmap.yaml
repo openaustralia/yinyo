@@ -9,4 +9,4 @@ data:
   {{- if .Values.usageURL }}
   usage_url: {{ .Values.usageURL }}
   {{ end }}
-  run_docker_image: {{ .Values.runImage }}
+  run_docker_image: {{ .Values.runner.image }}
