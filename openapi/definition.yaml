@@ -156,7 +156,10 @@ paths:
                   type: integer
                   description: |
                     Optionally set the maximum number of seconds the run is allowed to go for. If it exceeds this it will be automatically stopped.
-
+                memory:
+                  type: integer
+                  description: |
+                    Set amount of memory (in bytes) allocated to run. If your run uses more memory than you allocated it will get killed.
             example:
               output: my_output.txt
               env:
