@@ -20,6 +20,22 @@ func getMandatoryEnv(name string) string {
 	return host
 }
 
+func durationStringToSeconds(durationString string) int64 {
+	duration, err := time.ParseDuration(durationString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return int64(duration.Seconds())
+}
+
+func memoryStringToBytes(memoryString string) int64 {
+	memory, err := resource.ParseQuantity(memoryString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return memory.Value()
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -50,23 +66,14 @@ func main() {
 			usageURL := os.Getenv("USAGE_URL")
 			runDockerImage := getMandatoryEnv("RUN_DOCKER_IMAGE")
 			options := commands.StartupOptions{Minio: minioOptions, Redis: redisOptions, AuthenticationURL: authenticationURL, UsageURL: usageURL}
-			defaultMaxRunTime, err := time.ParseDuration(defaultMaxRunTimeString)
-			if err != nil {
-				log.Fatal(err)
-			}
-			maxRunTime, err := time.ParseDuration(maxRunTimeString)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defaultMemory, err := resource.ParseQuantity(defaultMemoryString)
-			if err != nil {
-				log.Fatal(err)
-			}
-			maxMemory, err := resource.ParseQuantity(maxMemoryString)
-			if err != nil {
-				log.Fatal(err)
-			}
-			err = server.Initialise(&options, int64(defaultMaxRunTime.Seconds()), int64(maxRunTime.Seconds()), defaultMemory.Value(), maxMemory.Value(), runDockerImage)
+			err := server.Initialise(
+				&options,
+				durationStringToSeconds(defaultMaxRunTimeString),
+				durationStringToSeconds(maxRunTimeString),
+				memoryStringToBytes(defaultMemoryString),
+				memoryStringToBytes(maxMemoryString),
+				runDockerImage,
+			)
 			if err != nil {
 				log.Fatal(err)
 			}
