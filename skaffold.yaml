@@ -18,8 +18,8 @@ deploy:
         valuesFiles:
           - deployments/helm/yinyo-dev-values.yaml
         values:
-          image: openaustralia/yinyo-server
-          runImage: openaustralia/yinyo-run
+          server.image: openaustralia/yinyo-server
+          runner.image: openaustralia/yinyo-run
       - name: minio
         remote: true
         chartPath: stable/minio
