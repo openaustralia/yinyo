@@ -24,11 +24,16 @@ func TestHello(t *testing.T) {
 	}
 
 	client := defaultClient()
-	text, err := client.Hello()
+	hello, err := client.Hello()
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, "Hello from Yinyo!\n", text)
+	expectedHello := protocol.Hello{
+		Message:    "Hello from Yinyo!",
+		MaxRunTime: protocol.DefaultAndMax{Default: 3600, Max: 86400},
+		Memory:     protocol.DefaultAndMax{Default: 1073741824, Max: 1610612736},
+	}
+	assert.Equal(t, expectedHello, hello)
 }
 
 func TestCreateRun(t *testing.T) {

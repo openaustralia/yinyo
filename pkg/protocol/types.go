@@ -106,3 +106,17 @@ type FirstData struct {
 // LastData is the last event that's sent in a run
 type LastData struct {
 }
+
+// Gives some basic useful information about the server
+type Hello struct {
+	Message string `json:"message"`
+	// ServerVersion string        `json:"server_version"`
+	// RunnerVersion string        `json:"runner_version"`
+	MaxRunTime DefaultAndMax `json:"max_run_time"`
+	Memory     DefaultAndMax `json:"memory"`
+}
+
+type DefaultAndMax struct {
+	Default int64 `json:"default"`
+	Max     int64 `json:"max"`
+}

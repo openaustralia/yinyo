@@ -330,7 +330,9 @@ func TestHello(t *testing.T) {
 	rr := makeRequest(app, "GET", "/", nil)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, "Hello from Yinyo!\n", rr.Body.String())
-	assert.Equal(t, http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}}, rr.Header())
+	assert.Equal(t, `{"message":"Hello from Yinyo!","max_run_time":{"default":3600,"max":86400},"memory":{"default":1073741824,"max":1610612736}}
+`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json"}}, rr.Header())
+
 	app.AssertExpectations(t)
 }

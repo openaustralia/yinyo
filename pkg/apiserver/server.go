@@ -197,8 +197,21 @@ func (server *Server) delete(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (server *Server) hello(w http.ResponseWriter, r *http.Request) error {
-	fmt.Fprintln(w, "Hello from Yinyo!")
-	return nil
+	hello := protocol.Hello{
+		Message: "Hello from Yinyo!",
+		MaxRunTime: protocol.DefaultAndMax{
+			Default: server.defaultMaxRunTime,
+			Max:     server.maxRunTime,
+		},
+		Memory: protocol.DefaultAndMax{
+			Default: server.defaultMemory,
+			Max:     server.maxMemory,
+		},
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	enc := json.NewEncoder(w)
+	return enc.Encode(hello)
 }
 
 // isPrivate reports whether `ip' is a private address, according to

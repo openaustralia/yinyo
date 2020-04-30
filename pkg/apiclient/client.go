@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -92,27 +91,25 @@ func checkContentType(resp *http.Response, expected string) error {
 }
 
 // Hello does a simple ping type request to the API
-func (client *Client) Hello() (string, error) {
+func (client *Client) Hello() (hello protocol.Hello, err error) {
 	req, err := http.NewRequest("GET", client.URL, nil)
 	if err != nil {
-		return "", err
+		return
 	}
 	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
-		return "", err
+		return
 	}
 	if err = checkOK(resp); err != nil {
-		return "", err
+		return
 	}
-	if err = checkContentType(resp, "text/plain; charset=utf-8"); err != nil {
-		return "", err
+	if err = checkContentType(resp, "application/json"); err != nil {
+		return
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	dec := json.NewDecoder(resp.Body)
+	err = dec.Decode(&hello)
+	return
 }
 
 // CreateRun is the first thing called. It creates a run
