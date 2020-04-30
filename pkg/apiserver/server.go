@@ -17,7 +17,7 @@ import (
 	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
-func (server *Server) create(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) createRun(w http.ResponseWriter, r *http.Request) error {
 	createResult, err := server.app.CreateRun(protocol.CreateRunOptions{APIKey: r.URL.Query().Get("api_key")})
 	if err != nil {
 		if errors.Is(err, commands.ErrNotAllowed) {
@@ -107,7 +107,7 @@ func (server *Server) getExitData(w http.ResponseWriter, r *http.Request) error 
 	return enc.Encode(exitData)
 }
 
-func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) startRun(w http.ResponseWriter, r *http.Request) error {
 	runID := mux.Vars(r)["id"]
 
 	decoder := json.NewDecoder(r.Body)
@@ -196,7 +196,7 @@ func (server *Server) delete(w http.ResponseWriter, r *http.Request) error {
 	return server.app.DeleteRun(runID)
 }
 
-func (server *Server) whoAmI(w http.ResponseWriter, r *http.Request) error {
+func (server *Server) hello(w http.ResponseWriter, r *http.Request) error {
 	fmt.Fprintln(w, "Hello from Yinyo!")
 	return nil
 }
@@ -381,8 +381,8 @@ func (server *Server) Initialise(startupOptions *commands.StartupOptions, defaul
 // InitialiseRoutes sets up the routes
 func (server *Server) InitialiseRoutes() {
 	server.router = mux.NewRouter().StrictSlash(true)
-	server.router.Handle("/", appHandler(server.whoAmI))
-	server.router.Handle("/runs", appHandler(server.create)).Methods("POST")
+	server.router.Handle("/", appHandler(server.hello))
+	server.router.Handle("/runs", appHandler(server.createRun)).Methods("POST")
 
 	runRouter := server.router.PathPrefix("/runs/{id}").Subrouter()
 	runRouter.Handle("/app", appHandler(server.getApp)).Methods("GET")
@@ -392,7 +392,7 @@ func (server *Server) InitialiseRoutes() {
 	runRouter.Handle("/output", appHandler(server.getOutput)).Methods("GET")
 	runRouter.Handle("/output", appHandler(server.putOutput)).Methods("PUT")
 	runRouter.Handle("/exit-data", appHandler(server.getExitData)).Methods("GET")
-	runRouter.Handle("/start", appHandler(server.start)).Methods("POST")
+	runRouter.Handle("/start", appHandler(server.startRun)).Methods("POST")
 	runRouter.Handle("/events", appHandler(server.getEvents)).Methods("GET")
 	runRouter.Handle("/events", appHandler(server.createEvent)).Methods("POST")
 	runRouter.Handle("", appHandler(server.delete)).Methods("DELETE")
