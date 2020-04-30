@@ -18,7 +18,7 @@ import (
 
 // Makes a request to the server and records the response for testing purposes
 func makeRequest(app commands.App, method string, url string, body io.Reader) *httptest.ResponseRecorder {
-	server := Server{app: app, maxRunTime: 86400}
+	server := Server{app: app, maxRunTime: 86400, defaultMemory: 1073741824, maxMemory: 1610612736}
 	server.InitialiseRoutes()
 
 	req, _ := http.NewRequest(method, url, body)
@@ -74,7 +74,7 @@ func TestStartBadBody(t *testing.T) {
 func TestStartNoApp(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400}).Return(commands.ErrAppNotAvailable)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400, Memory: 1073741824}).Return(commands.ErrAppNotAvailable)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{}`))
 
@@ -84,10 +84,10 @@ func TestStartNoApp(t *testing.T) {
 	app.AssertExpectations(t)
 }
 
-func TestStart(t *testing.T) {
+func TestStartWithDefaults(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400}).Return(nil)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400, Memory: 1073741824}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader("{}"))
 
@@ -99,7 +99,7 @@ func TestStart(t *testing.T) {
 func TestStartLowerMaxRunTime(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 120}).Return(nil)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 120, Memory: 1073741824}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"max_run_time": 120}`))
 
@@ -116,6 +116,31 @@ func TestStartHigherMaxRunTime(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 	assert.Equal(t, `{"error":"max_run_time should not be larger than 86400"}`, rr.Body.String())
+	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
+
+	app.AssertExpectations(t)
+}
+
+func TestStartLowerMaxMemory(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("IsRunCreated", "foo").Return(true, nil)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400, Memory: 1024}).Return(nil)
+
+	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"memory": 1024}`))
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	app.AssertExpectations(t)
+}
+
+func TestStartHigherMaxMemory(t *testing.T) {
+	app := new(commandsmocks.App)
+	app.On("IsRunCreated", "foo").Return(true, nil)
+
+	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"memory": 2147483648}`))
+
+	assert.Equal(t, http.StatusBadRequest, rr.Code)
+	assert.Equal(t, `{"error":"memory should not be larger than 1610612736"}`, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}, rr.Header())
 
 	app.AssertExpectations(t)

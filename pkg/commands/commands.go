@@ -335,7 +335,7 @@ func (app *AppImplementation) StartRun(runID string, dockerImage string, options
 	if envString != "" {
 		command = append(command, "--env", envString)
 	}
-	return app.JobDispatcher.Create(runID, dockerImage, command, options.MaxRunTime)
+	return app.JobDispatcher.Create(runID, dockerImage, command, options.MaxRunTime, options.Memory)
 }
 
 // Events is an iterator to retrieve events from a stream

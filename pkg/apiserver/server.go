@@ -123,6 +123,12 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 		return newHTTPError(err, http.StatusBadRequest, fmt.Sprintf("max_run_time should not be larger than %v", server.maxRunTime))
 	}
 
+	if options.Memory == 0 {
+		options.Memory = server.defaultMemory
+	} else if options.Memory > server.maxMemory {
+		return newHTTPError(err, http.StatusBadRequest, fmt.Sprintf("memory should not be larger than %v", server.maxMemory))
+	}
+
 	env := make(map[string]string)
 	for _, keyvalue := range options.Env {
 		env[keyvalue.Name] = keyvalue.Value
@@ -350,17 +356,21 @@ type Server struct {
 	router         *mux.Router
 	app            commands.App
 	maxRunTime     int64 // the global maximum run time in seconds that every run can not exceed
+	defaultMemory  int64 // If the user doesn't specify memory for a run this is what is used
+	maxMemory      int64 // The user can't get memory for a run above this value. Probably limit this to what is schedulable on a single kubernetes worker node
 	runDockerImage string
 }
 
 // Initialise the server's state
-func (server *Server) Initialise(startupOptions *commands.StartupOptions, maxRunTime int64, runDockerImage string) error {
+func (server *Server) Initialise(startupOptions *commands.StartupOptions, maxRunTime int64, defaultMemory int64, maxMemory int64, runDockerImage string) error {
 	app, err := commands.New(startupOptions)
 	if err != nil {
 		return err
 	}
 	server.app = app
 	server.maxRunTime = maxRunTime
+	server.defaultMemory = defaultMemory
+	server.maxMemory = maxMemory
 	server.runDockerImage = runDockerImage
 	server.InitialiseRoutes()
 	return nil

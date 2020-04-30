@@ -39,6 +39,7 @@ func TestStartRun(t *testing.T) {
 		"image",
 		[]string{"/bin/wrapper", "run-name", "--output", "output.txt", "--env", "FOO=bar"},
 		int64(86400),
+		int64(512*1024*1024),
 	).Return(nil)
 	// Expect that we save the callback url in the key value store
 	keyValueStore.On("Set", "run-name/url", `"http://foo.com"`).Return(nil)
@@ -54,6 +55,7 @@ func TestStartRun(t *testing.T) {
 			Env:        []protocol.EnvVariable{{Name: "FOO", Value: "bar"}},
 			Callback:   protocol.Callback{URL: "http://foo.com"},
 			MaxRunTime: 86400,
+			Memory:     512 * 1024 * 1024,
 		},
 	)
 	assert.Nil(t, err)

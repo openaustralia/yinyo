@@ -31,12 +31,15 @@ func NewKubernetes() (Jobs, error) {
 }
 
 // maxRunTime is the maximum number of seconds that the job is allowed to take. If it exceeds this limit it will get stopped automatically
-func (client *kubernetesClient) Create(runID string, dockerImage string, command []string, maxRunTime int64) error {
+// memory is the amount of memory (in bytes) that is allocated to this job. If more is used it will get killed. Note that this
+// memory is effectively reserved for a job so allocating too much if it's not used is wasteful.
+func (client *kubernetesClient) Create(runID string, dockerImage string, command []string, maxRunTime int64, memory int64) error {
 	jobsClient := client.clientset.BatchV1().Jobs(namespace)
 
 	autoMountServiceAccountToken := false
 	// Allow the job to get restarted up to 5 times before it's considered failed
 	backOffLimit := int32(5)
+	memoryQuantity := resource.NewQuantity(memory, resource.BinarySI)
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -55,16 +58,13 @@ func (client *kubernetesClient) Create(runID string, dockerImage string, command
 							Image:   dockerImage,
 							Command: command,
 							Resources: apiv1.ResourceRequirements{
-								// TODO: Make the requests and limits configurable.
-								// Not doing it though until we figure out a sensible and easy way to expose it to users.
-								// There's also the question of how it connects up with the resource measurement
 								Requests: apiv1.ResourceList{
-									apiv1.ResourceMemory: resource.MustParse("128Mi"), // 128 MB
-									apiv1.ResourceCPU:    resource.MustParse("250m"),  // 1/4 of a vCPU
+									apiv1.ResourceMemory: *memoryQuantity,
+									apiv1.ResourceCPU:    resource.MustParse("250m"), // 1/4 of a vCPU
 								},
 								Limits: apiv1.ResourceList{
-									apiv1.ResourceMemory: resource.MustParse("1024Mi"), // 1024 MB
-									apiv1.ResourceCPU:    resource.MustParse("1000m"),  // One vCPU
+									apiv1.ResourceMemory: *memoryQuantity,
+									apiv1.ResourceCPU:    resource.MustParse("1000m"), // One vCPU
 								},
 							},
 						},

@@ -18,6 +18,7 @@ type StartRunOptions struct {
 	Callback   Callback      `json:"callback"`
 	Env        []EnvVariable `json:"env"`
 	MaxRunTime int64         `json:"max_run_time"`
+	Memory     int64         `json:"memory"`
 }
 
 // Callback represents what we need to know to make a particular callback request
