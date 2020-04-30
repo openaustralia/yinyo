@@ -18,7 +18,7 @@ import (
 
 // Makes a request to the server and records the response for testing purposes
 func makeRequest(app commands.App, method string, url string, body io.Reader) *httptest.ResponseRecorder {
-	server := Server{app: app, maxRunTime: 86400, defaultMemory: 1073741824, maxMemory: 1610612736}
+	server := Server{app: app, defaultMaxRunTime: 3600, maxRunTime: 86400, defaultMemory: 1073741824, maxMemory: 1610612736}
 	server.InitialiseRoutes()
 
 	req, _ := http.NewRequest(method, url, body)
@@ -74,7 +74,7 @@ func TestStartBadBody(t *testing.T) {
 func TestStartNoApp(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400, Memory: 1073741824}).Return(commands.ErrAppNotAvailable)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1073741824}).Return(commands.ErrAppNotAvailable)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{}`))
 
@@ -87,7 +87,7 @@ func TestStartNoApp(t *testing.T) {
 func TestStartWithDefaults(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400, Memory: 1073741824}).Return(nil)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1073741824}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader("{}"))
 
@@ -124,7 +124,7 @@ func TestStartHigherMaxRunTime(t *testing.T) {
 func TestStartLowerMaxMemory(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 86400, Memory: 1024}).Return(nil)
+	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1024}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"memory": 1024}`))
 

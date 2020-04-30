@@ -118,7 +118,7 @@ func (server *Server) start(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if options.MaxRunTime == 0 {
-		options.MaxRunTime = server.maxRunTime
+		options.MaxRunTime = server.defaultMaxRunTime
 	} else if options.MaxRunTime > server.maxRunTime {
 		return newHTTPError(err, http.StatusBadRequest, fmt.Sprintf("max_run_time should not be larger than %v", server.maxRunTime))
 	}
@@ -353,21 +353,23 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Server holds the internal state for the server
 type Server struct {
-	router         *mux.Router
-	app            commands.App
-	maxRunTime     int64 // the global maximum run time in seconds that every run can not exceed
-	defaultMemory  int64 // If the user doesn't specify memory for a run this is what is used
-	maxMemory      int64 // The user can't get memory for a run above this value. Probably limit this to what is schedulable on a single kubernetes worker node
-	runDockerImage string
+	router            *mux.Router
+	app               commands.App
+	defaultMaxRunTime int64 // If the user doesn't specify the max run time for a run this is what is used
+	maxRunTime        int64 // the global maximum run time in seconds that every run can not exceed
+	defaultMemory     int64 // If the user doesn't specify memory for a run this is what is used
+	maxMemory         int64 // The user can't get memory for a run above this value. Probably limit this to what is schedulable on a single kubernetes worker node
+	runDockerImage    string
 }
 
 // Initialise the server's state
-func (server *Server) Initialise(startupOptions *commands.StartupOptions, maxRunTime int64, defaultMemory int64, maxMemory int64, runDockerImage string) error {
+func (server *Server) Initialise(startupOptions *commands.StartupOptions, defaultMaxRunTime int64, maxRunTime int64, defaultMemory int64, maxMemory int64, runDockerImage string) error {
 	app, err := commands.New(startupOptions)
 	if err != nil {
 		return err
 	}
 	server.app = app
+	server.defaultMaxRunTime = defaultMaxRunTime
 	server.maxRunTime = maxRunTime
 	server.defaultMemory = defaultMemory
 	server.maxMemory = maxMemory
