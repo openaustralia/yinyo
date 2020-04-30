@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/openaustralia/yinyo/pkg/apiserver"
 	"github.com/openaustralia/yinyo/pkg/commands"
@@ -23,8 +24,7 @@ func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
 
-	var maxRunTime int64
-	var defaultMemoryString, maxMemoryString string
+	var maxRunTimeString, defaultMemoryString, maxMemoryString string
 
 	var rootCmd = &cobra.Command{
 		Use:   "server",
@@ -50,6 +50,10 @@ func main() {
 			usageURL := os.Getenv("USAGE_URL")
 			runDockerImage := getMandatoryEnv("RUN_DOCKER_IMAGE")
 			options := commands.StartupOptions{Minio: minioOptions, Redis: redisOptions, AuthenticationURL: authenticationURL, UsageURL: usageURL}
+			maxRunTime, err := time.ParseDuration(maxRunTimeString)
+			if err != nil {
+				log.Fatal(err)
+			}
 			defaultMemory, err := resource.ParseQuantity(defaultMemoryString)
 			if err != nil {
 				log.Fatal(err)
@@ -58,7 +62,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = server.Initialise(&options, maxRunTime, defaultMemory.Value(), maxMemory.Value(), runDockerImage)
+			err = server.Initialise(&options, int64(maxRunTime.Seconds()), defaultMemory.Value(), maxMemory.Value(), runDockerImage)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -66,7 +70,7 @@ func main() {
 		},
 	}
 
-	rootCmd.Flags().Int64Var(&maxRunTime, "maxruntime", 86400, "Set the global maximum run time in seconds that all runs can not exceed")
+	rootCmd.Flags().StringVar(&maxRunTimeString, "maxruntime", "24h", "Set the global maximum run time that all runs can not exceed")
 	rootCmd.Flags().StringVar(&defaultMemoryString, "defaultmemory", "1Gi", "Set the default memory that a run allocates if the user doesn't say")
 	rootCmd.Flags().StringVar(&maxMemoryString, "maxmemory", "1.5Gi", "Set the maximum memory that a run can allocate")
 
