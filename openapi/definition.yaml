@@ -328,25 +328,25 @@ components:
       description: The stage of the life-cycle of the run
       enum:
         - build
-        - run
+        - execute
     ExitData:
       type: object
       properties:
         build:
           $ref: "#/components/schemas/ExitDataStage"
-        run:
+        execute:
           $ref: "#/components/schemas/ExitDataStage"
         api:
           $ref: "#/components/schemas/ApiUsage"
         finished:
           type: boolean
-          description: True if the run has finished either by running succesfully or by failing in the build or run stage. This occurs when the "last" event is sent.
+          description: True if the run has finished either by running succesfully or by failing in the build or execute stage. This occurs when the "last" event is sent.
     ExitDataStage:
       type: object
       properties:
         exit_code:
           type: number
-          description: Process exit code for build or run. If there was no error this should be 0.
+          description: Process exit code for build or execute. If there was no error this should be 0.
         usage:
           $ref: "#/components/schemas/Usage"
     Usage:

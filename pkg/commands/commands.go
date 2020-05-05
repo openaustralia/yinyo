@@ -283,11 +283,11 @@ func (app *AppImplementation) GetExitData(runID string) (protocol.ExitData, erro
 		return exitData, err
 	}
 	exitData.Build = build
-	run, err := app.getExitDataStage(runID, "run")
+	execute, err := app.getExitDataStage(runID, "execute")
 	if err != nil {
 		return exitData, err
 	}
-	exitData.Run = run
+	exitData.Execute = execute
 	var exitDataFinished bool
 	err = app.newExitDataFinishedKey(runID).get(&exitDataFinished)
 	if err != nil && !errors.Is(err, ErrNotFound) {

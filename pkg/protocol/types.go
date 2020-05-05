@@ -37,7 +37,7 @@ type EnvVariable struct {
 // ExitData holds information about how things ran and how much resources were used
 type ExitData struct {
 	Build    *ExitDataStage `json:"build,omitempty"`
-	Run      *ExitDataStage `json:"run,omitempty"`
+	Execute  *ExitDataStage `json:"execute,omitempty"`
 	Finished bool           `json:"finished"`
 }
 

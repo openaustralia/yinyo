@@ -38,7 +38,7 @@ func (app *AppImplementation) deleteAllKeys(runID string) error {
 	if err != nil {
 		return err
 	}
-	err = app.newExitDataKey(runID, "run").delete()
+	err = app.newExitDataKey(runID, "execute").delete()
 	if err != nil {
 		return err
 	}

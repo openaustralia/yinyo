@@ -236,7 +236,7 @@ func runWithError(run apiclient.RunInterface, options *Options) error {
 
 	// Only do the main run if the build was successful
 	if success {
-		_, err := runExternalCommandWithSuccess(run, "run", options.RunCommand, env)
+		_, err := runExternalCommandWithSuccess(run, "execute", options.RunCommand, env)
 		if err != nil {
 			return err
 		}

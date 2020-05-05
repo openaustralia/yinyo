@@ -302,7 +302,7 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.On("Delete", "run-name/created").Return(nil)
 	keyValueStore.On("Delete", "run-name/first_time").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
-	keyValueStore.On("Delete", "run-name/exit_data/run").Return(nil)
+	keyValueStore.On("Delete", "run-name/exit_data/execute").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)
 
 	app := AppImplementation{
@@ -422,7 +422,7 @@ func TestGetExitData(t *testing.T) {
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
 	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":0,"usage":{"max_rss":1,"network_in":0,"network_out":0}}`, nil)
-	keyValueStore.On("Get", "run-name/exit_data/run").Return(`{"exit_code":0,"usage":{"max_rss":2,"network_in":0,"network_out":0}}`, nil)
+	keyValueStore.On("Get", "run-name/exit_data/execute").Return(`{"exit_code":0,"usage":{"max_rss":2,"network_in":0,"network_out":0}}`, nil)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
 	e, err := app.GetExitData("run-name")
 	if err != nil {
@@ -430,7 +430,7 @@ func TestGetExitData(t *testing.T) {
 	}
 	expectedExitData := protocol.ExitData{
 		Build:    &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.StageUsage{MaxRSS: 1}},
-		Run:      &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.StageUsage{MaxRSS: 2}},
+		Execute:  &protocol.ExitDataStage{ExitCode: 0, Usage: protocol.StageUsage{MaxRSS: 2}},
 		Finished: true,
 	}
 
@@ -443,7 +443,7 @@ func TestGetExitDataBuildErrored(t *testing.T) {
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
 	keyValueStore.On("Get", "run-name/exit_data/build").Return(`{"exit_code":15,"usage":{"max_rss":0,"network_in":0,"network_out":0}}`, nil)
-	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "run-name/exit_data/execute").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("true", nil)
 
 	e, err := app.GetExitData("run-name")
@@ -464,7 +464,7 @@ func TestGetExitDataRunNotStarted(t *testing.T) {
 	app := AppImplementation{KeyValueStore: keyValueStore}
 
 	keyValueStore.On("Get", "run-name/exit_data/build").Return("", keyvaluestore.ErrKeyNotExist)
-	keyValueStore.On("Get", "run-name/exit_data/run").Return("", keyvaluestore.ErrKeyNotExist)
+	keyValueStore.On("Get", "run-name/exit_data/execute").Return("", keyvaluestore.ErrKeyNotExist)
 	keyValueStore.On("Get", "run-name/exit_data/finished").Return("", keyvaluestore.ErrKeyNotExist)
 
 	e, err := app.GetExitData("run-name")
