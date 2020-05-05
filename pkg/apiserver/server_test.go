@@ -18,7 +18,7 @@ import (
 
 // Makes a request to the server and records the response for testing purposes
 func makeRequest(app commands.App, method string, url string, body io.Reader) *httptest.ResponseRecorder {
-	server := Server{app: app, defaultMaxRunTime: 3600, maxRunTime: 86400, defaultMemory: 1073741824, maxMemory: 1610612736, version: "development"}
+	server := Server{app: app, defaultMaxRunTime: 3600, maxRunTime: 86400, defaultMemory: 1073741824, maxMemory: 1610612736, version: "development", runDockerImage: "openaustralia/yinyo-runner:abc"}
 	server.InitialiseRoutes()
 
 	req, _ := http.NewRequest(method, url, body)
@@ -74,7 +74,7 @@ func TestStartBadBody(t *testing.T) {
 func TestStartNoApp(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1073741824}).Return(commands.ErrAppNotAvailable)
+	app.On("StartRun", "foo", "openaustralia/yinyo-runner:abc", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1073741824}).Return(commands.ErrAppNotAvailable)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{}`))
 
@@ -87,7 +87,7 @@ func TestStartNoApp(t *testing.T) {
 func TestStartWithDefaults(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1073741824}).Return(nil)
+	app.On("StartRun", "foo", "openaustralia/yinyo-runner:abc", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1073741824}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader("{}"))
 
@@ -99,7 +99,7 @@ func TestStartWithDefaults(t *testing.T) {
 func TestStartLowerMaxRunTime(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 120, Memory: 1073741824}).Return(nil)
+	app.On("StartRun", "foo", "openaustralia/yinyo-runner:abc", protocol.StartRunOptions{MaxRunTime: 120, Memory: 1073741824}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"max_run_time": 120}`))
 
@@ -124,7 +124,7 @@ func TestStartHigherMaxRunTime(t *testing.T) {
 func TestStartLowerMaxMemory(t *testing.T) {
 	app := new(commandsmocks.App)
 	app.On("IsRunCreated", "foo").Return(true, nil)
-	app.On("StartRun", "foo", "", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1024}).Return(nil)
+	app.On("StartRun", "foo", "openaustralia/yinyo-runner:abc", protocol.StartRunOptions{MaxRunTime: 3600, Memory: 1024}).Return(nil)
 
 	rr := makeRequest(app, "POST", "/runs/foo/start", strings.NewReader(`{"memory": 1024}`))
 
@@ -330,7 +330,7 @@ func TestHello(t *testing.T) {
 	rr := makeRequest(app, "GET", "/", nil)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, `{"message":"Hello from Yinyo!","max_run_time":{"default":3600,"max":86400},"memory":{"default":1073741824,"max":1610612736},"version":"development"}
+	assert.Equal(t, `{"message":"Hello from Yinyo!","max_run_time":{"default":3600,"max":86400},"memory":{"default":1073741824,"max":1610612736},"version":"development","runner_image":"openaustralia/yinyo-runner:abc"}
 `, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json"}}, rr.Header())
 

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/cheggaaa/pb/v3"
@@ -34,6 +35,8 @@ func TestHello(t *testing.T) {
 	assert.Equal(t, protocol.DefaultAndMax{Default: 1073741824, Max: 1610612736}, hello.Memory)
 	// We can't say for sure what the git revision is going to be. So, just test for the length
 	assert.Equal(t, 40, len(hello.Version))
+	// Again we can't say for sure what the image is going to be
+	assert.True(t, strings.HasPrefix(hello.RunnerImage, "openaustralia/yinyo-run:"))
 }
 
 func TestCreateRun(t *testing.T) {

@@ -207,7 +207,8 @@ func (server *Server) hello(w http.ResponseWriter, r *http.Request) error {
 			Default: server.defaultMemory,
 			Max:     server.maxMemory,
 		},
-		Version: server.version,
+		Version:     server.version,
+		RunnerImage: server.runDockerImage,
 	}
 	w.Header().Set("Content-Type", "application/json")
 

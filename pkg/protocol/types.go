@@ -109,11 +109,11 @@ type LastData struct {
 
 // Hello gives some basic useful information about the server
 type Hello struct {
-	Message    string        `json:"message"`
-	MaxRunTime DefaultAndMax `json:"max_run_time"`
-	Memory     DefaultAndMax `json:"memory"`
-	Version    string        `json:"version"`
-	// RunnerImage string        `json:"runner_image"`
+	Message     string        `json:"message"`
+	MaxRunTime  DefaultAndMax `json:"max_run_time"`
+	Memory      DefaultAndMax `json:"memory"`
+	Version     string        `json:"version"`
+	RunnerImage string        `json:"runner_image"`
 }
 
 // DefaultAndMax is a useful type for int64 resources that have a default and a maximum value
