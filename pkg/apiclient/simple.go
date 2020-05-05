@@ -67,8 +67,8 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 		return err
 	}
 	// Upload the cache
-	cachePath := filepath.Join(scraperDirectory, cacheName)
 	if cache {
+		cachePath := filepath.Join(scraperDirectory, cacheName)
 		if err = uploadCacheIfExists(run, cachePath); err != nil {
 			return err
 		}
@@ -82,6 +82,13 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	if err != nil {
 		return err
 	}
+	return ConnectToStartedRun(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback)
+}
+
+// ConnectToStartedRun connects to a run that has been started and handles the rest
+func ConnectToStartedRun(runID string, scraperDirectory string, clientServerURL string, outputFile string, cache bool, eventCallback func(event protocol.Event) error) error {
+	run := &Run{Client: New(clientServerURL), Run: protocol.Run{ID: runID}}
+
 	// Listen for events
 	events, err := run.GetEvents("")
 	if err != nil {
@@ -101,6 +108,7 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	}
 	// Get the build cache
 	if cache {
+		cachePath := filepath.Join(scraperDirectory, cacheName)
 		if err = run.GetCacheToFile(cachePath); err != nil {
 			return err
 		}
