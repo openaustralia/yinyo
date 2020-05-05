@@ -18,7 +18,7 @@ import (
 
 // Makes a request to the server and records the response for testing purposes
 func makeRequest(app commands.App, method string, url string, body io.Reader) *httptest.ResponseRecorder {
-	server := Server{app: app, defaultMaxRunTime: 3600, maxRunTime: 86400, defaultMemory: 1073741824, maxMemory: 1610612736}
+	server := Server{app: app, defaultMaxRunTime: 3600, maxRunTime: 86400, defaultMemory: 1073741824, maxMemory: 1610612736, version: "development"}
 	server.InitialiseRoutes()
 
 	req, _ := http.NewRequest(method, url, body)
@@ -330,7 +330,7 @@ func TestHello(t *testing.T) {
 	rr := makeRequest(app, "GET", "/", nil)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, `{"message":"Hello from Yinyo!","max_run_time":{"default":3600,"max":86400},"memory":{"default":1073741824,"max":1610612736}}
+	assert.Equal(t, `{"message":"Hello from Yinyo!","max_run_time":{"default":3600,"max":86400},"memory":{"default":1073741824,"max":1610612736},"version":"development"}
 `, rr.Body.String())
 	assert.Equal(t, http.Header{"Content-Type": []string{"application/json"}}, rr.Header())
 

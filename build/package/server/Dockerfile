@@ -25,7 +25,10 @@ RUN rm empty.go
 # rebuilding everything when another (not relevant) file changes
 COPY cmd cmd
 COPY pkg pkg
-RUN CGO_ENABLED=0 go install github.com/openaustralia/yinyo/cmd/server
+COPY .git .
+
+RUN GIT_COMMIT=$(git rev-list -1 HEAD) && \
+    CGO_ENABLED=0 go install -ldflags "-X main.GitCommit=$GIT_COMMIT" github.com/openaustralia/yinyo/cmd/server
 
 # Create unprivileged user
 RUN adduser -D yinyo

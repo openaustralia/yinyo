@@ -207,6 +207,7 @@ func (server *Server) hello(w http.ResponseWriter, r *http.Request) error {
 			Default: server.defaultMemory,
 			Max:     server.maxMemory,
 		},
+		Version: server.version,
 	}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -373,10 +374,13 @@ type Server struct {
 	defaultMemory     int64 // If the user doesn't specify memory for a run this is what is used
 	maxMemory         int64 // The user can't get memory for a run above this value. Probably limit this to what is schedulable on a single kubernetes worker node
 	runDockerImage    string
+	version           string
 }
 
 // Initialise the server's state
-func (server *Server) Initialise(startupOptions *commands.StartupOptions, defaultMaxRunTime int64, maxRunTime int64, defaultMemory int64, maxMemory int64, runDockerImage string) error {
+func (server *Server) Initialise(startupOptions *commands.StartupOptions,
+	defaultMaxRunTime int64, maxRunTime int64, defaultMemory int64,
+	maxMemory int64, runDockerImage string, version string) error {
 	app, err := commands.New(startupOptions)
 	if err != nil {
 		return err
@@ -387,6 +391,7 @@ func (server *Server) Initialise(startupOptions *commands.StartupOptions, defaul
 	server.defaultMemory = defaultMemory
 	server.maxMemory = maxMemory
 	server.runDockerImage = runDockerImage
+	server.version = version
 	server.InitialiseRoutes()
 	return nil
 }

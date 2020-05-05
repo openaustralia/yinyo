@@ -28,12 +28,12 @@ func TestHello(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectedHello := protocol.Hello{
-		Message:    "Hello from Yinyo!",
-		MaxRunTime: protocol.DefaultAndMax{Default: 3600, Max: 86400},
-		Memory:     protocol.DefaultAndMax{Default: 1073741824, Max: 1610612736},
-	}
-	assert.Equal(t, expectedHello, hello)
+
+	assert.Equal(t, protocol.DefaultAndMax{Default: 3600, Max: 86400}, hello.MaxRunTime)
+	assert.Equal(t, protocol.DefaultAndMax{Default: 1073741824, Max: 1610612736}, hello.Memory)
+	assert.Equal(t, protocol.DefaultAndMax{Default: 1073741824, Max: 1610612736}, hello.Memory)
+	// We can't say for sure what the git revision is going to be. So, just test for the length
+	assert.Equal(t, 40, len(hello.Version))
 }
 
 func TestCreateRun(t *testing.T) {

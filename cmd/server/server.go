@@ -36,6 +36,9 @@ func memoryStringToBytes(memoryString string) int64 {
 	return memory.Value()
 }
 
+// GitCommit is overridden in the build to give a version number exposed to the user
+var GitCommit = "development"
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -73,6 +76,7 @@ func main() {
 				memoryStringToBytes(defaultMemoryString),
 				memoryStringToBytes(maxMemoryString),
 				runDockerImage,
+				GitCommit,
 			)
 			if err != nil {
 				log.Fatal(err)
@@ -80,6 +84,8 @@ func main() {
 			server.Run(":8080")
 		},
 	}
+
+	rootCmd.Version = GitCommit
 
 	rootCmd.Flags().StringVar(&defaultMaxRunTimeString, "defaultmaxruntime", "1h", "Set the default maximum run time if the user doesn't say")
 	rootCmd.Flags().StringVar(&maxRunTimeString, "maxruntime", "24h", "Set the global maximum run time that all runs can not exceed")
