@@ -103,7 +103,7 @@ func TestUploadDownloadApp(t *testing.T) {
 // TODO: Add a test for calling CreateRun("TestHelloWorld")
 
 // TODO: Use high-level client library instead?
-func runScraper(appDirectory string, cachePath string, env []protocol.EnvVariable) ([]protocol.Event, error) {
+func runScraper(appDirectory, cachePath string, env []protocol.EnvVariable) ([]protocol.Event, error) {
 	var eventsList []protocol.Event
 
 	client := defaultClient()

@@ -17,7 +17,7 @@ import (
 )
 
 // Makes a request to the server and records the response for testing purposes
-func makeRequest(app commands.App, method string, url string, body io.Reader) *httptest.ResponseRecorder {
+func makeRequest(app commands.App, method, url string, body io.Reader) *httptest.ResponseRecorder {
 	server := Server{app: app, defaultMaxRunTime: 3600, maxRunTime: 86400, defaultMemory: 1073741824, maxMemory: 1610612736, version: "development", runDockerImage: "openaustralia/yinyo-runner:abc"}
 	server.InitialiseRoutes()
 

@@ -380,8 +380,8 @@ type Server struct {
 
 // Initialise the server's state
 func (server *Server) Initialise(startupOptions *commands.StartupOptions,
-	defaultMaxRunTime int64, maxRunTime int64, defaultMemory int64,
-	maxMemory int64, runDockerImage string, version string) error {
+	defaultMaxRunTime, maxRunTime, defaultMemory, maxMemory int64,
+	runDockerImage string, version string) error {
 	app, err := commands.New(startupOptions)
 	if err != nil {
 		return err
