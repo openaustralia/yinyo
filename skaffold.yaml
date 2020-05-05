@@ -1,6 +1,8 @@
 apiVersion: skaffold/v1
 kind: Config
 build:
+  tagPolicy:
+    sha256: {}
   artifacts:
     - image: openaustralia/yinyo-server
       docker:
