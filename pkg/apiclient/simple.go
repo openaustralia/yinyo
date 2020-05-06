@@ -56,21 +56,30 @@ func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvV
 // It makes a simple common use case a little simpler to implement
 func Simple(scraperDirectory string, clientServerURL string, environment map[string]string,
 	outputFile string, cache bool, callbackURL string, apiKey string, eventCallback func(event protocol.Event) error) error {
+	run, err := SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey)
+	if err != nil {
+		return err
+	}
+	return SimpleConnect(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback)
+}
+
+func SimpleStart(scraperDirectory string, clientServerURL string, environment map[string]string,
+	outputFile string, cache bool, callbackURL string, apiKey string) (RunInterface, error) {
 	client := New(clientServerURL)
 	// Create the run
 	run, err := client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
 	if err != nil {
-		return err
+		return run, err
 	}
 	// Upload the app
 	if err = run.PutAppFromDirectory(scraperDirectory, []string{cacheName}); err != nil {
-		return err
+		return run, err
 	}
 	// Upload the cache
 	if cache {
 		cachePath := filepath.Join(scraperDirectory, cacheName)
 		if err = uploadCacheIfExists(run, cachePath); err != nil {
-			return err
+			return run, err
 		}
 	}
 	// Start the run
@@ -79,14 +88,11 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 		Callback: protocol.Callback{URL: callbackURL},
 		Env:      reformatEnvironmentVariables(environment),
 	})
-	if err != nil {
-		return err
-	}
-	return ConnectToStartedRun(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback)
+	return run, err
 }
 
-// ConnectToStartedRun connects to a run that has been started and handles the rest
-func ConnectToStartedRun(runID string, scraperDirectory string, clientServerURL string, outputFile string, cache bool, eventCallback func(event protocol.Event) error) error {
+// SimpleConnect connects to a run that has been started and handles the rest
+func SimpleConnect(runID string, scraperDirectory string, clientServerURL string, outputFile string, cache bool, eventCallback func(event protocol.Event) error) error {
 	run := &Run{Client: New(clientServerURL), Run: protocol.Run{ID: runID}}
 
 	// Listen for events

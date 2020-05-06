@@ -128,7 +128,7 @@ func run(scraperDirectory string, clientServerURL string, environment map[string
 
 // Reconnect to existing run
 func reconnect(runID string, scraperDirectory string, clientServerURL string, outputFile string, cache bool, showEventsJSON bool) {
-	err := apiclient.ConnectToStartedRun(runID, scraperDirectory, clientServerURL, outputFile, cache, func(event protocol.Event) error { return display(event, showEventsJSON) })
+	err := apiclient.SimpleConnect(runID, scraperDirectory, clientServerURL, outputFile, cache, func(event protocol.Event) error { return display(event, showEventsJSON) })
 	if err != nil {
 		log.Fatal(err)
 	}
