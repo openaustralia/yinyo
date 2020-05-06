@@ -107,13 +107,21 @@ func askForAndSaveAPIKey(clientServerURL string) (string, error) {
 	return apiKey, err
 }
 
+func getAPIKey(clientServerURL string) (string, error) {
+	apiKeys, err := loadAPIKeys()
+	if err != nil {
+		return "", err
+	}
+	apiKey := apiKeys[clientServerURL]
+	return apiKey, nil
+}
+
 func run(scraperDirectory string, clientServerURL string, environment map[string]string,
 	outputFile string, cache bool, callbackURL string, showEventsJSON bool) {
-	apiKeys, err := loadAPIKeys()
+	apiKey, err := getAPIKey(clientServerURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	apiKey := apiKeys[clientServerURL]
 	for {
 		err := apiclient.Simple(
 			scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey,
