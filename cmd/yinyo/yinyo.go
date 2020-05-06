@@ -93,6 +93,20 @@ func loadAPIKeys() (map[string]string, error) {
 	return apiKeys, err
 }
 
+func askForAndSaveAPIKey(clientServerURL string) (string, error) {
+	fmt.Print("Enter your api key: ")
+	var apiKey string
+	fmt.Scanln(&apiKey)
+
+	apiKeys, err := loadAPIKeys()
+	if err != nil {
+		return apiKey, err
+	}
+	apiKeys[clientServerURL] = apiKey
+	err = saveAPIKeys(apiKeys)
+	return apiKey, err
+}
+
 func run(scraperDirectory string, clientServerURL string, environment map[string]string,
 	outputFile string, cache bool, callbackURL string, showEventsJSON bool) {
 	apiKeys, err := loadAPIKeys()
@@ -109,11 +123,7 @@ func run(scraperDirectory string, clientServerURL string, environment map[string
 			// If get unauthorized error back then we should let the user enter their api key and try again
 			// And we should save away the api key (for this particular server) for later use
 			if apiclient.IsUnauthorized(err) {
-				fmt.Print("Enter your api key: ")
-				var apiKey string
-				fmt.Scanln(&apiKey)
-				apiKeys[clientServerURL] = apiKey
-				err = saveAPIKeys(apiKeys)
+				apiKey, err = askForAndSaveAPIKey(clientServerURL)
 				if err != nil {
 					log.Fatal(err)
 				}
