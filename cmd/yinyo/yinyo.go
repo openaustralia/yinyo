@@ -120,6 +120,24 @@ func getAPIKey(clientServerURL string) (string, error) {
 	return apiKey, nil
 }
 
+func start(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, cache bool, callbackURL string) (apiclient.RunInterface, error) {
+	apiKey, err := getAPIKey(clientServerURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for {
+		run, err := apiclient.SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey)
+		if err == nil || !apiclient.IsUnauthorized(err) {
+			return run, err
+		}
+		// If get unauthorized error back then we should let the user enter their api key and try again
+		// And we should save away the api key (for this particular server) for later use
+		apiKey, err = askForAndSaveAPIKey(clientServerURL)
+		if err != nil {
+			return run, err
+		}
+	}
+}
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -134,40 +152,18 @@ func main() {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			scraperDirectory := args[0]
+			eventCallback := func(event protocol.Event) error { return display(event, showEventsJSON) }
 
 			if connectToRunID == "" {
-				apiKey, err := getAPIKey(clientServerURL)
+				run, err := start(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL)
 				if err != nil {
 					log.Fatal(err)
 				}
-				var run apiclient.RunInterface
-				for {
-					run, err = apiclient.SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey)
-					if err != nil {
-						// If get unauthorized error back then we should let the user enter their api key and try again
-						// And we should save away the api key (for this particular server) for later use
-						if apiclient.IsUnauthorized(err) {
-							apiKey, err = askForAndSaveAPIKey(clientServerURL)
-							if err != nil {
-								log.Fatal(err)
-							}
-						} else {
-							log.Fatal(err)
-						}
-					} else {
-						break
-					}
-				}
-				eventCallback := func(event protocol.Event) error { return display(event, showEventsJSON) }
-				err = apiclient.SimpleConnect(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback)
-				if err != nil {
-					log.Fatal(err)
-				}
-			} else {
-				err := apiclient.SimpleConnect(connectToRunID, scraperDirectory, clientServerURL, outputFile, cache, func(event protocol.Event) error { return display(event, showEventsJSON) })
-				if err != nil {
-					log.Fatal(err)
-				}
+				connectToRunID = run.GetID()
+			}
+			err := apiclient.SimpleConnect(connectToRunID, scraperDirectory, clientServerURL, outputFile, cache, eventCallback)
+			if err != nil {
+				log.Fatal(err)
 			}
 		},
 	}
