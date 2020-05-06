@@ -77,8 +77,7 @@ func SimpleStart(scraperDirectory string, clientServerURL string, environment ma
 	}
 	// Upload the cache
 	if cache {
-		cachePath := filepath.Join(scraperDirectory, cacheName)
-		if err = uploadCacheIfExists(run, cachePath); err != nil {
+		if err = uploadCacheIfExists(run, filepath.Join(scraperDirectory, cacheName)); err != nil {
 			return run, err
 		}
 	}
@@ -114,8 +113,7 @@ func SimpleConnect(runID string, scraperDirectory string, clientServerURL string
 	}
 	// Get the build cache
 	if cache {
-		cachePath := filepath.Join(scraperDirectory, cacheName)
-		if err = run.GetCacheToFile(cachePath); err != nil {
+		if err = run.GetCacheToFile(filepath.Join(scraperDirectory, cacheName)); err != nil {
 			return err
 		}
 	}
