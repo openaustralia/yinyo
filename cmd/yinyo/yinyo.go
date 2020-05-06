@@ -140,11 +140,9 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
+				var run apiclient.RunInterface
 				for {
-					err := apiclient.Simple(
-						scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey,
-						func(event protocol.Event) error { return display(event, showEventsJSON) },
-					)
+					run, err = apiclient.SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey)
 					if err != nil {
 						// If get unauthorized error back then we should let the user enter their api key and try again
 						// And we should save away the api key (for this particular server) for later use
@@ -159,6 +157,11 @@ func main() {
 					} else {
 						break
 					}
+				}
+				eventCallback := func(event protocol.Event) error { return display(event, showEventsJSON) }
+				err = apiclient.SimpleConnect(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback)
+				if err != nil {
+					log.Fatal(err)
 				}
 			} else {
 				err := apiclient.SimpleConnect(connectToRunID, scraperDirectory, clientServerURL, outputFile, cache, func(event protocol.Event) error { return display(event, showEventsJSON) })
