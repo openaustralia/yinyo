@@ -93,6 +93,47 @@ func loadAPIKeys() (map[string]string, error) {
 	return apiKeys, err
 }
 
+func run(scraperDirectory string, clientServerURL string, environment map[string]string,
+	outputFile string, cache bool, callbackURL string, showEventsJSON bool) {
+	apiKeys, err := loadAPIKeys()
+	if err != nil {
+		log.Fatal(err)
+	}
+	apiKey := apiKeys[clientServerURL]
+	for {
+		err := apiclient.Simple(
+			scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey,
+			func(event protocol.Event) error { return display(event, showEventsJSON) },
+		)
+		if err != nil {
+			// If get unauthorized error back then we should let the user enter their api key and try again
+			// And we should save away the api key (for this particular server) for later use
+			if apiclient.IsUnauthorized(err) {
+				fmt.Print("Enter your api key: ")
+				var apiKey string
+				fmt.Scanln(&apiKey)
+				apiKeys[clientServerURL] = apiKey
+				err = saveAPIKeys(apiKeys)
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				log.Fatal(err)
+			}
+		} else {
+			break
+		}
+	}
+}
+
+// Reconnect to existing run
+func reconnect(runID string, scraperDirectory string, clientServerURL string, outputFile string, cache bool, showEventsJSON bool) {
+	err := apiclient.ConnectToStartedRun(runID, scraperDirectory, clientServerURL, outputFile, cache, func(event protocol.Event) error { return display(event, showEventsJSON) })
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -109,41 +150,9 @@ func main() {
 			scraperDirectory := args[0]
 
 			if connectToRunID == "" {
-				apiKeys, err := loadAPIKeys()
-				if err != nil {
-					log.Fatal(err)
-				}
-				apiKey := apiKeys[clientServerURL]
-				for {
-					err := apiclient.Simple(
-						scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey,
-						func(event protocol.Event) error { return display(event, showEventsJSON) },
-					)
-					if err != nil {
-						// If get unauthorized error back then we should let the user enter their api key and try again
-						// And we should save away the api key (for this particular server) for later use
-						if apiclient.IsUnauthorized(err) {
-							fmt.Print("Enter your api key: ")
-							var apiKey string
-							fmt.Scanln(&apiKey)
-							apiKeys[clientServerURL] = apiKey
-							err = saveAPIKeys(apiKeys)
-							if err != nil {
-								log.Fatal(err)
-							}
-						} else {
-							log.Fatal(err)
-						}
-					} else {
-						break
-					}
-				}
+				run(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, showEventsJSON)
 			} else {
-				// Reconnect to existing run
-				err := apiclient.ConnectToStartedRun(connectToRunID, scraperDirectory, clientServerURL, outputFile, cache, func(event protocol.Event) error { return display(event, showEventsJSON) })
-				if err != nil {
-					log.Fatal(err)
-				}
+				reconnect(connectToRunID, scraperDirectory, clientServerURL, outputFile, cache, showEventsJSON)
 			}
 		},
 	}
