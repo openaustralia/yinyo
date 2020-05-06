@@ -98,13 +98,17 @@ func askForAndSaveAPIKey(clientServerURL string) (string, error) {
 	var apiKey string
 	fmt.Scanln(&apiKey)
 
+	err := saveAPIKey(clientServerURL, apiKey)
+	return apiKey, err
+}
+
+func saveAPIKey(clientServerURL string, apiKey string) error {
 	apiKeys, err := loadAPIKeys()
 	if err != nil {
-		return apiKey, err
+		return err
 	}
 	apiKeys[clientServerURL] = apiKey
-	err = saveAPIKeys(apiKeys)
-	return apiKey, err
+	return saveAPIKeys(apiKeys)
 }
 
 func getAPIKey(clientServerURL string) (string, error) {
