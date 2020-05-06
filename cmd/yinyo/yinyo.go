@@ -120,13 +120,13 @@ func getAPIKey(clientServerURL string) (string, error) {
 	return apiKey, nil
 }
 
-func start(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, cache bool, callbackURL string) (apiclient.RunInterface, error) {
+func start(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, cache bool, callbackURL string, showProgress bool) (apiclient.RunInterface, error) {
 	apiKey, err := getAPIKey(clientServerURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	for {
-		run, err := apiclient.SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey)
+		run, err := apiclient.SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey, showProgress)
 		if err == nil || !apiclient.IsUnauthorized(err) {
 			return run, err
 		}
@@ -143,7 +143,7 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 
 	var callbackURL, outputFile, clientServerURL, connectToRunID string
-	var showEventsJSON, cache bool
+	var showEventsJSON, cache, disableProgress bool
 	var environment map[string]string
 
 	var rootCmd = &cobra.Command{
@@ -155,13 +155,13 @@ func main() {
 			eventCallback := func(event protocol.Event) error { return display(event, showEventsJSON) }
 
 			if connectToRunID == "" {
-				run, err := start(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL)
+				run, err := start(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, !disableProgress)
 				if err != nil {
 					log.Fatal(err)
 				}
 				connectToRunID = run.GetID()
 			}
-			err := apiclient.SimpleConnect(connectToRunID, scraperDirectory, clientServerURL, outputFile, cache, eventCallback)
+			err := apiclient.SimpleConnect(connectToRunID, scraperDirectory, clientServerURL, outputFile, cache, eventCallback, !disableProgress)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -176,6 +176,7 @@ func main() {
 	rootCmd.Flags().StringToStringVar(&environment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
 	rootCmd.Flags().BoolVar(&showEventsJSON, "allevents", false, "Show the full events output as JSON instead of the default of just showing the log events as text")
 	rootCmd.Flags().BoolVar(&cache, "cache", false, "Enable the download and upload of the build cache")
+	rootCmd.Flags().BoolVar(&disableProgress, "noprogress", false, "Disable messages showing progress")
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

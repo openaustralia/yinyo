@@ -1,7 +1,7 @@
 package apiclient
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -33,7 +33,7 @@ func downloadOutput(run RunInterface, scraperDirectory string, outputFile string
 		err := run.GetOutputToFile(filepath.Join(scraperDirectory, outputFile))
 		if err != nil {
 			if IsNotFound(err) {
-				log.Printf("Warning: output file %v does not exist", outputFile)
+				fmt.Printf("Warning: output file %v does not exist", outputFile)
 			} else {
 				return err
 			}
@@ -55,16 +55,16 @@ func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvV
 // giving you a local callback for every event (including logs). This is used by the command line client
 // It makes a simple common use case a little simpler to implement
 func Simple(scraperDirectory string, clientServerURL string, environment map[string]string,
-	outputFile string, cache bool, callbackURL string, apiKey string, eventCallback func(event protocol.Event) error) error {
-	run, err := SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey)
+	outputFile string, cache bool, callbackURL string, apiKey string, eventCallback func(event protocol.Event) error, showProgress bool) error {
+	run, err := SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey, showProgress)
 	if err != nil {
 		return err
 	}
-	return SimpleConnect(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback)
+	return SimpleConnect(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback, showProgress)
 }
 
 func SimpleStart(scraperDirectory string, clientServerURL string, environment map[string]string,
-	outputFile string, cache bool, callbackURL string, apiKey string) (RunInterface, error) {
+	outputFile string, cache bool, callbackURL string, apiKey string, showProgress bool) (RunInterface, error) {
 	client := New(clientServerURL)
 	// Create the run
 	run, err := client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
@@ -72,14 +72,23 @@ func SimpleStart(scraperDirectory string, clientServerURL string, environment ma
 		return run, err
 	}
 	// Upload the app
+	if showProgress {
+		fmt.Println("[Uploading code]")
+	}
 	if err = run.PutAppFromDirectory(scraperDirectory, []string{cacheName}); err != nil {
 		return run, err
 	}
 	// Upload the cache
 	if cache {
+		if showProgress {
+			fmt.Println("[Uploading build cache]")
+		}
 		if err = uploadCacheIfExists(run, filepath.Join(scraperDirectory, cacheName)); err != nil {
 			return run, err
 		}
+	}
+	if showProgress {
+		fmt.Println("[Starting run]")
 	}
 	// Start the run
 	err = run.Start(&protocol.StartRunOptions{
@@ -91,7 +100,7 @@ func SimpleStart(scraperDirectory string, clientServerURL string, environment ma
 }
 
 // SimpleConnect connects to a run that has been started and handles the rest
-func SimpleConnect(runID string, scraperDirectory string, clientServerURL string, outputFile string, cache bool, eventCallback func(event protocol.Event) error) error {
+func SimpleConnect(runID string, scraperDirectory string, clientServerURL string, outputFile string, cache bool, eventCallback func(event protocol.Event) error, showProgress bool) error {
 	run := &Run{Client: New(clientServerURL), Run: protocol.Run{ID: runID}}
 
 	// Listen for events
@@ -108,11 +117,17 @@ func SimpleConnect(runID string, scraperDirectory string, clientServerURL string
 			return err
 		}
 	}
+	if showProgress {
+		fmt.Println("[Downloading output file]")
+	}
 	if err = downloadOutput(run, scraperDirectory, outputFile); err != nil {
 		return err
 	}
 	// Get the build cache
 	if cache {
+		if showProgress {
+			fmt.Println("[Downloading build cache]")
+		}
 		if err = run.GetCacheToFile(filepath.Join(scraperDirectory, cacheName)); err != nil {
 			return err
 		}
