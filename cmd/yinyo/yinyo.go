@@ -124,7 +124,7 @@ func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
 
-	var callbackURL, outputFile, clientServerURL, connectToRunID string
+	var callbackURL, outputFile, clientServerURL, runID string
 	var showEventsJSON, cache, disableProgress bool
 	var environment map[string]string
 
@@ -136,7 +136,7 @@ func main() {
 			scraperDirectory := args[0]
 			eventCallback := func(event protocol.Event) error { return display(event, showEventsJSON) }
 
-			if connectToRunID == "" {
+			if runID == "" {
 				apiKey, err := getAPIKey(clientServerURL)
 				if err != nil {
 					log.Fatal(err)
@@ -157,13 +157,13 @@ func main() {
 						log.Fatal(err)
 					}
 				}
-				err = apiclient.SimpleStart(run.GetID(), scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, !disableProgress)
+				runID = run.GetID()
+				err = apiclient.SimpleStart(runID, scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, !disableProgress)
 				if err != nil {
 					log.Fatal(err)
 				}
-				connectToRunID = run.GetID()
 			}
-			err := apiclient.SimpleConnect(connectToRunID, scraperDirectory, clientServerURL, outputFile, cache, eventCallback, !disableProgress)
+			err := apiclient.SimpleConnect(runID, scraperDirectory, clientServerURL, outputFile, cache, eventCallback, !disableProgress)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -173,7 +173,7 @@ func main() {
 	rootCmd.Flags().StringVar(&callbackURL, "callback", "", "Optionally provide a callback URL. For every event a POST to the URL will be made. To be able to authenticate the callback you'll need to specify a secret in the URL. Something like http://my-url-endpoint.com?key=special-secret-stuff would do the trick")
 	// TODO: Check that the output file is a relative path and if not error
 	rootCmd.Flags().StringVar(&outputFile, "output", "", "The output is written to the same local directory at the end. The output file path is given relative to the scraper directory")
-	rootCmd.Flags().StringVar(&connectToRunID, "connect", "", "Connect to a run that has already started by giving the run ID")
+	rootCmd.Flags().StringVar(&runID, "connect", "", "Connect to a run that has already started by giving the run ID")
 	rootCmd.Flags().StringVar(&clientServerURL, "server", "http://localhost:8080", "Override yinyo server URL")
 	rootCmd.Flags().StringToStringVar(&environment, "env", map[string]string{}, "Set one or more environment variables (e.g. --env foo=twiddle,bar=blah)")
 	rootCmd.Flags().BoolVar(&showEventsJSON, "allevents", false, "Show the full events output as JSON instead of the default of just showing the log events as text")
