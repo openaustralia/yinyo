@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/protocol"
@@ -164,11 +166,52 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
+
+				// Set up a handler for ctrl+c that will gracefully exit
+				sigs := make(chan os.Signal, 1)
+
+				signal.Notify(sigs, syscall.SIGINT)
+
+				started := false
+				go func() {
+					<-sigs
+					if started {
+						fmt.Println("\n\nTo reconnect to this run:")
+						// We're hacking together the command-line rendering here. I hope there's a more sensible way of doing this with cobra.
+						text := fmt.Sprintf("yinyo %v", scraperDirectory)
+						if cmd.Flag("server").Changed {
+							text += fmt.Sprintf(" --server %v", cmd.Flag("server").Value)
+						}
+						if cmd.Flag("output").Changed {
+							text += fmt.Sprintf(" --output %v", cmd.Flag("output").Value)
+						}
+						if cmd.Flag("cache").Changed {
+							text += fmt.Sprintf(" --cache")
+						}
+						if cmd.Flag("noprogress").Changed {
+							text += fmt.Sprintf(" --noprogress")
+						}
+						text += fmt.Sprintf(" --connect %v", runID)
+						fmt.Println(text)
+					} else {
+						if !disableProgress {
+							fmt.Println("\n\n[Cleaning up]")
+							fmt.Println("[Deleting run]")
+						}
+
+						if err = run.Delete(); err != nil {
+							log.Fatal(err)
+						}
+					}
+					os.Exit(1)
+				}()
+
 				runID = run.GetID()
 				err = apiclient.SimpleStart(runID, scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, !disableProgress)
 				if err != nil {
 					log.Fatal(err)
 				}
+				started = true
 			}
 			err := apiclient.SimpleConnect(runID, scraperDirectory, clientServerURL, outputFile, cache, eventCallback, !disableProgress)
 			if err != nil {
