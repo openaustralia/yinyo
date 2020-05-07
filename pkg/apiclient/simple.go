@@ -133,6 +133,9 @@ func SimpleConnect(runID string, scraperDirectory string, clientServerURL string
 		}
 	}
 	// Delete the run
+	if showProgress {
+		fmt.Println("[Deleting run]")
+	}
 	if err = run.Delete(); err != nil {
 		return err
 	}
