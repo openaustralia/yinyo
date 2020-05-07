@@ -145,6 +145,26 @@ func createRun(clientServerURL string) (apiclient.RunInterface, error) {
 	}
 }
 
+// reconnectCommand returns the command to reconnect to the current run
+func reconnectCommand(cmd *cobra.Command, runID string, scraperDirectory string) string {
+	// We're hacking together the command-line rendering here. I hope there's a more sensible way of doing this with cobra.
+	text := fmt.Sprintf("yinyo %v", scraperDirectory)
+	if cmd.Flag("server").Changed {
+		text += fmt.Sprintf(" --server %v", cmd.Flag("server").Value)
+	}
+	if cmd.Flag("output").Changed {
+		text += fmt.Sprintf(" --output %v", cmd.Flag("output").Value)
+	}
+	if cmd.Flag("cache").Changed {
+		text += fmt.Sprintf(" --cache")
+	}
+	if cmd.Flag("noprogress").Changed {
+		text += fmt.Sprintf(" --noprogress")
+	}
+	text += fmt.Sprintf(" --connect %v", runID)
+	return text
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -177,22 +197,7 @@ func main() {
 					<-sigs
 					if started {
 						fmt.Println("\n\nTo reconnect to this run:")
-						// We're hacking together the command-line rendering here. I hope there's a more sensible way of doing this with cobra.
-						text := fmt.Sprintf("yinyo %v", scraperDirectory)
-						if cmd.Flag("server").Changed {
-							text += fmt.Sprintf(" --server %v", cmd.Flag("server").Value)
-						}
-						if cmd.Flag("output").Changed {
-							text += fmt.Sprintf(" --output %v", cmd.Flag("output").Value)
-						}
-						if cmd.Flag("cache").Changed {
-							text += fmt.Sprintf(" --cache")
-						}
-						if cmd.Flag("noprogress").Changed {
-							text += fmt.Sprintf(" --noprogress")
-						}
-						text += fmt.Sprintf(" --connect %v", runID)
-						fmt.Println(text)
+						fmt.Println(reconnectCommand(cmd, runID, scraperDirectory))
 					} else {
 						if !disableProgress {
 							fmt.Println("\n\n[Cleaning up]")
