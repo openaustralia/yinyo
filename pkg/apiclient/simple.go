@@ -63,6 +63,37 @@ func Simple(scraperDirectory string, clientServerURL string, environment map[str
 	return SimpleConnect(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback, showProgress)
 }
 
+func SimpleStart2(runID string, scraperDirectory string, clientServerURL string, environment map[string]string,
+	outputFile string, cache bool, callbackURL string, showProgress bool) error {
+	run := &Run{Client: New(clientServerURL), Run: protocol.Run{ID: runID}}
+
+	// Upload the app
+	if showProgress {
+		fmt.Println("[Uploading code]")
+	}
+	if err := run.PutAppFromDirectory(scraperDirectory, []string{cacheName}); err != nil {
+		return err
+	}
+	// Upload the cache
+	if cache {
+		if showProgress {
+			fmt.Println("[Uploading build cache]")
+		}
+		if err := uploadCacheIfExists(run, filepath.Join(scraperDirectory, cacheName)); err != nil {
+			return err
+		}
+	}
+	if showProgress {
+		fmt.Println("[Starting run]")
+	}
+	// Start the run
+	return run.Start(&protocol.StartRunOptions{
+		Output:   outputFile,
+		Callback: protocol.Callback{URL: callbackURL},
+		Env:      reformatEnvironmentVariables(environment),
+	})
+}
+
 func SimpleStart(scraperDirectory string, clientServerURL string, environment map[string]string,
 	outputFile string, cache bool, callbackURL string, apiKey string, showProgress bool) (RunInterface, error) {
 	client := New(clientServerURL)
@@ -71,31 +102,7 @@ func SimpleStart(scraperDirectory string, clientServerURL string, environment ma
 	if err != nil {
 		return run, err
 	}
-	// Upload the app
-	if showProgress {
-		fmt.Println("[Uploading code]")
-	}
-	if err = run.PutAppFromDirectory(scraperDirectory, []string{cacheName}); err != nil {
-		return run, err
-	}
-	// Upload the cache
-	if cache {
-		if showProgress {
-			fmt.Println("[Uploading build cache]")
-		}
-		if err = uploadCacheIfExists(run, filepath.Join(scraperDirectory, cacheName)); err != nil {
-			return run, err
-		}
-	}
-	if showProgress {
-		fmt.Println("[Starting run]")
-	}
-	// Start the run
-	err = run.Start(&protocol.StartRunOptions{
-		Output:   outputFile,
-		Callback: protocol.Callback{URL: callbackURL},
-		Env:      reformatEnvironmentVariables(environment),
-	})
+	err = SimpleStart2(run.GetID(), scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, showProgress)
 	return run, err
 }
 
