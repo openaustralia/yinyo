@@ -165,6 +165,23 @@ func reconnectCommand(cmd *cobra.Command, runID string, scraperDirectory string)
 	return text
 }
 
+func cleanup(started bool, cmd *cobra.Command, scraperDirectory string, disableProgress bool, run apiclient.RunInterface) {
+	if started {
+		fmt.Println("\n\nTo reconnect to this run:")
+		fmt.Println(reconnectCommand(cmd, run.GetID(), scraperDirectory))
+	} else {
+		if !disableProgress {
+			fmt.Println("\n\n[Cleaning up]")
+			fmt.Println("[Deleting run]")
+		}
+
+		if err := run.Delete(); err != nil {
+			log.Fatal(err)
+		}
+	}
+	os.Exit(1)
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -195,20 +212,7 @@ func main() {
 				started := false
 				go func() {
 					<-sigs
-					if started {
-						fmt.Println("\n\nTo reconnect to this run:")
-						fmt.Println(reconnectCommand(cmd, runID, scraperDirectory))
-					} else {
-						if !disableProgress {
-							fmt.Println("\n\n[Cleaning up]")
-							fmt.Println("[Deleting run]")
-						}
-
-						if err = run.Delete(); err != nil {
-							log.Fatal(err)
-						}
-					}
-					os.Exit(1)
+					cleanup(started, cmd, scraperDirectory, disableProgress, run)
 				}()
 
 				runID = run.GetID()
