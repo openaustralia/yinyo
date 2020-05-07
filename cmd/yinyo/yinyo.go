@@ -142,20 +142,24 @@ func main() {
 					log.Fatal(err)
 				}
 				var run apiclient.RunInterface
+				client := apiclient.New(clientServerURL)
 				for {
-					run, err = apiclient.SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey, !disableProgress)
+					// Create the run
+					run, err = client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
 					if err == nil {
 						break
 					}
 					if !apiclient.IsUnauthorized(err) {
 						log.Fatal(err)
 					}
-					// If get unauthorized error back then we should let the user enter their api key and try again
-					// And we should save away the api key (for this particular server) for later use
 					apiKey, err = askForAndSaveAPIKey(clientServerURL)
 					if err != nil {
 						log.Fatal(err)
 					}
+				}
+				err = apiclient.SimpleStart(run.GetID(), scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, !disableProgress)
+				if err != nil {
+					log.Fatal(err)
 				}
 				connectToRunID = run.GetID()
 			}

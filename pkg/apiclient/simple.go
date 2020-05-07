@@ -56,14 +56,20 @@ func reformatEnvironmentVariables(environment map[string]string) []protocol.EnvV
 // It makes a simple common use case a little simpler to implement
 func Simple(scraperDirectory string, clientServerURL string, environment map[string]string,
 	outputFile string, cache bool, callbackURL string, apiKey string, eventCallback func(event protocol.Event) error, showProgress bool) error {
-	run, err := SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey, showProgress)
+	client := New(clientServerURL)
+	// Create the run
+	run, err := client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
+	if err != nil {
+		return err
+	}
+	err = SimpleStart(run.GetID(), scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, showProgress)
 	if err != nil {
 		return err
 	}
 	return SimpleConnect(run.GetID(), scraperDirectory, clientServerURL, outputFile, cache, eventCallback, showProgress)
 }
 
-func SimpleStart2(runID string, scraperDirectory string, clientServerURL string, environment map[string]string,
+func SimpleStart(runID string, scraperDirectory string, clientServerURL string, environment map[string]string,
 	outputFile string, cache bool, callbackURL string, showProgress bool) error {
 	run := &Run{Client: New(clientServerURL), Run: protocol.Run{ID: runID}}
 
@@ -92,18 +98,6 @@ func SimpleStart2(runID string, scraperDirectory string, clientServerURL string,
 		Callback: protocol.Callback{URL: callbackURL},
 		Env:      reformatEnvironmentVariables(environment),
 	})
-}
-
-func SimpleStart(scraperDirectory string, clientServerURL string, environment map[string]string,
-	outputFile string, cache bool, callbackURL string, apiKey string, showProgress bool) (RunInterface, error) {
-	client := New(clientServerURL)
-	// Create the run
-	run, err := client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
-	if err != nil {
-		return run, err
-	}
-	err = SimpleStart2(run.GetID(), scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, showProgress)
-	return run, err
 }
 
 // SimpleConnect connects to a run that has been started and handles the rest
