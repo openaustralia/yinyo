@@ -120,24 +120,6 @@ func getAPIKey(clientServerURL string) (string, error) {
 	return apiKey, nil
 }
 
-func start(scraperDirectory string, clientServerURL string, environment map[string]string, outputFile string, cache bool, callbackURL string, showProgress bool) (apiclient.RunInterface, error) {
-	apiKey, err := getAPIKey(clientServerURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for {
-		run, err := apiclient.SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey, showProgress)
-		if err == nil || !apiclient.IsUnauthorized(err) {
-			return run, err
-		}
-		// If get unauthorized error back then we should let the user enter their api key and try again
-		// And we should save away the api key (for this particular server) for later use
-		apiKey, err = askForAndSaveAPIKey(clientServerURL)
-		if err != nil {
-			return run, err
-		}
-	}
-}
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -155,9 +137,25 @@ func main() {
 			eventCallback := func(event protocol.Event) error { return display(event, showEventsJSON) }
 
 			if connectToRunID == "" {
-				run, err := start(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, !disableProgress)
+				apiKey, err := getAPIKey(clientServerURL)
 				if err != nil {
 					log.Fatal(err)
+				}
+				var run apiclient.RunInterface
+				for {
+					run, err = apiclient.SimpleStart(scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, apiKey, !disableProgress)
+					if err == nil {
+						break
+					}
+					if !apiclient.IsUnauthorized(err) {
+						log.Fatal(err)
+					}
+					// If get unauthorized error back then we should let the user enter their api key and try again
+					// And we should save away the api key (for this particular server) for later use
+					apiKey, err = askForAndSaveAPIKey(clientServerURL)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
 				connectToRunID = run.GetID()
 			}
