@@ -120,6 +120,29 @@ func getAPIKey(clientServerURL string) (string, error) {
 	return apiKey, nil
 }
 
+func createRun(clientServerURL string) (apiclient.RunInterface, error) {
+	var run apiclient.RunInterface
+	apiKey, err := getAPIKey(clientServerURL)
+	if err != nil {
+		return run, err
+	}
+	client := apiclient.New(clientServerURL)
+	for {
+		// Create the run
+		run, err = client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
+		if err == nil {
+			return run, err
+		}
+		if !apiclient.IsUnauthorized(err) {
+			return run, err
+		}
+		apiKey, err = askForAndSaveAPIKey(clientServerURL)
+		if err != nil {
+			return run, err
+		}
+	}
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
@@ -137,25 +160,9 @@ func main() {
 			eventCallback := func(event protocol.Event) error { return display(event, showEventsJSON) }
 
 			if runID == "" {
-				apiKey, err := getAPIKey(clientServerURL)
+				run, err := createRun(clientServerURL)
 				if err != nil {
 					log.Fatal(err)
-				}
-				var run apiclient.RunInterface
-				client := apiclient.New(clientServerURL)
-				for {
-					// Create the run
-					run, err = client.CreateRun(protocol.CreateRunOptions{APIKey: apiKey})
-					if err == nil {
-						break
-					}
-					if !apiclient.IsUnauthorized(err) {
-						log.Fatal(err)
-					}
-					apiKey, err = askForAndSaveAPIKey(clientServerURL)
-					if err != nil {
-						log.Fatal(err)
-					}
 				}
 				runID = run.GetID()
 				err = apiclient.SimpleStart(runID, scraperDirectory, clientServerURL, environment, outputFile, cache, callbackURL, !disableProgress)
