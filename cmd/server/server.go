@@ -39,43 +39,50 @@ func memoryStringToBytes(memoryString string) int64 {
 // GitCommit is overridden in the build to give a version number exposed to the user
 var GitCommit = "development"
 
+func buildOptions() commands.StartupOptions {
+	minioOptions := commands.MinioOptions{
+		Host:      getMandatoryEnv("STORE_HOST"),
+		Bucket:    getMandatoryEnv("STORE_BUCKET"),
+		AccessKey: getMandatoryEnv("STORE_ACCESS_KEY"),
+		SecretKey: getMandatoryEnv("STORE_SECRET_KEY"),
+	}
+	var tls bool
+	if os.Getenv("REDIS_TLS") == "true" {
+		tls = true
+	}
+	redisOptions := commands.RedisOptions{
+		Address:  getMandatoryEnv("REDIS_HOST"),
+		Password: getMandatoryEnv("REDIS_PASSWORD"),
+		TLS:      tls,
+	}
+	authenticationURL := os.Getenv("AUTHENTICATION_URL")
+	resourcesAllowedURL := os.Getenv("RESOURCES_ALLOWED_URL")
+	usageURL := os.Getenv("USAGE_URL")
+	options := commands.StartupOptions{
+		Minio:               minioOptions,
+		Redis:               redisOptions,
+		AuthenticationURL:   authenticationURL,
+		ResourcesAllowedURL: resourcesAllowedURL,
+		UsageURL:            usageURL,
+	}
+	return options
+}
+
 func main() {
 	// Show the source of the error with the standard logger. Don't show date & time
 	log.SetFlags(log.Lshortfile)
 
 	var defaultMaxRunTimeString, maxRunTimeString, defaultMemoryString, maxMemoryString string
 
+	options := buildOptions()
+	// TODO: Why is runDockerImage not part of options?
+	runDockerImage := getMandatoryEnv("RUN_DOCKER_IMAGE")
+
 	var rootCmd = &cobra.Command{
 		Use:   "server",
 		Short: "Serves the Yinyo API",
 		Run: func(cmd *cobra.Command, args []string) {
 			server := apiserver.Server{}
-			minioOptions := commands.MinioOptions{
-				Host:      getMandatoryEnv("STORE_HOST"),
-				Bucket:    getMandatoryEnv("STORE_BUCKET"),
-				AccessKey: getMandatoryEnv("STORE_ACCESS_KEY"),
-				SecretKey: getMandatoryEnv("STORE_SECRET_KEY"),
-			}
-			var tls bool
-			if os.Getenv("REDIS_TLS") == "true" {
-				tls = true
-			}
-			redisOptions := commands.RedisOptions{
-				Address:  getMandatoryEnv("REDIS_HOST"),
-				Password: getMandatoryEnv("REDIS_PASSWORD"),
-				TLS:      tls,
-			}
-			authenticationURL := os.Getenv("AUTHENTICATION_URL")
-			resourcesAllowedURL := os.Getenv("RESOURCES_ALLOWED_URL")
-			usageURL := os.Getenv("USAGE_URL")
-			runDockerImage := getMandatoryEnv("RUN_DOCKER_IMAGE")
-			options := commands.StartupOptions{
-				Minio:               minioOptions,
-				Redis:               redisOptions,
-				AuthenticationURL:   authenticationURL,
-				ResourcesAllowedURL: resourcesAllowedURL,
-				UsageURL:            usageURL,
-			}
 			err := server.Initialise(
 				&options,
 				durationStringToSeconds(defaultMaxRunTimeString),
