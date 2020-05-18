@@ -57,21 +57,24 @@ type EventIterator interface {
 
 // AppImplementation holds the state for the application
 type AppImplementation struct {
-	BlobStore         blobstore.BlobStore
-	JobDispatcher     jobdispatcher.Jobs
-	Stream            stream.Stream
-	KeyValueStore     keyvaluestore.KeyValueStore
-	HTTP              *http.Client
-	AuthenticationURL string
-	UsageURL          string
+	BlobStore     blobstore.BlobStore
+	JobDispatcher jobdispatcher.Jobs
+	Stream        stream.Stream
+	KeyValueStore keyvaluestore.KeyValueStore
+	HTTP          *http.Client
+	// TODO: Wrap these three URLs into a new struct
+	AuthenticationURL   string
+	ResourcesAllowedURL string
+	UsageURL            string
 }
 
 // StartupOptions are the options available when initialising the application
 type StartupOptions struct {
-	Minio             MinioOptions
-	Redis             RedisOptions
-	AuthenticationURL string
-	UsageURL          string
+	Minio               MinioOptions
+	Redis               RedisOptions
+	AuthenticationURL   string
+	ResourcesAllowedURL string
+	UsageURL            string
 }
 
 // MinioOptions are the options for the specific blob storage
@@ -126,13 +129,14 @@ func New(startupOptions *StartupOptions) (App, error) {
 	keyValueStore := keyvaluestore.NewRedis(redisClient)
 
 	return &AppImplementation{
-		BlobStore:         storeAccess,
-		JobDispatcher:     jobDispatcher,
-		Stream:            streamClient,
-		KeyValueStore:     keyValueStore,
-		HTTP:              http.DefaultClient,
-		AuthenticationURL: startupOptions.AuthenticationURL,
-		UsageURL:          startupOptions.UsageURL,
+		BlobStore:           storeAccess,
+		JobDispatcher:       jobDispatcher,
+		Stream:              streamClient,
+		KeyValueStore:       keyValueStore,
+		HTTP:                http.DefaultClient,
+		AuthenticationURL:   startupOptions.AuthenticationURL,
+		ResourcesAllowedURL: startupOptions.ResourcesAllowedURL,
+		UsageURL:            startupOptions.UsageURL,
 	}, nil
 }
 
@@ -306,6 +310,44 @@ func (app *AppImplementation) StartRun(runID string, dockerImage string, options
 			return ErrAppNotAvailable
 		}
 		return err
+	}
+	// Now check if the user is allowed the memory and the time
+	// to start this run
+	if app.ResourcesAllowedURL != "" {
+		v := url.Values{}
+		v.Add("run_id", runID)
+		v.Add("time", fmt.Sprint(options.MaxRunTime))
+		v.Add("memory", fmt.Sprint(options.Memory))
+		url := app.ResourcesAllowedURL + "?" + v.Encode()
+		log.Printf("Making a resources allowed request to %v", url)
+
+		resp, err := app.HTTP.Post(url, "application/json", nil)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("Response %v from POST to resources allowed url %v", resp.StatusCode, url)
+		}
+		// TODO: Check the actual response
+		dec := json.NewDecoder(resp.Body)
+		// We're using the same response as with authentication.
+		// TODO: Rename this to something more generic
+		var response authenticationResponse
+		err = dec.Decode(&response)
+		if err != nil {
+			return err
+		}
+		if !response.Allowed {
+			// TODO: Send the message back to the user
+			return ErrNotAllowed
+		}
+
+		// TODO: Do we want to do something with response.Message if allowed?
+
+		err = resp.Body.Close()
+		if err != nil {
+			return err
+		}
 	}
 
 	err = app.newCallbackKey(runID).set(options.Callback.URL)
