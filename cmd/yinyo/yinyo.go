@@ -156,10 +156,10 @@ func reconnectCommand(cmd *cobra.Command, runID string, scraperDirectory string)
 		text += fmt.Sprintf(" --output %v", cmd.Flag("output").Value)
 	}
 	if cmd.Flag("cache").Changed {
-		text += fmt.Sprintf(" --cache")
+		text += " --cache"
 	}
 	if cmd.Flag("noprogress").Changed {
-		text += fmt.Sprintf(" --noprogress")
+		text += " --noprogress"
 	}
 	text += fmt.Sprintf(" --connect %v", runID)
 	return text
