@@ -14,6 +14,7 @@ import (
 	"github.com/felixge/httpsnoop"
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/pkg/commands"
+	"github.com/openaustralia/yinyo/pkg/integrationclient"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
@@ -296,7 +297,7 @@ func (server *Server) recordTraffic(next http.Handler) http.Handler {
 			return
 		}
 		if runID != "" && external {
-			err = server.app.ReportNetworkUsage(runID, "api", uint64(readMeasurer.BytesRead), uint64(m.Written))
+			err = integrationclient.ReportNetworkUsage(runID, "api", uint64(readMeasurer.BytesRead), uint64(m.Written))
 			if err != nil {
 				// TODO: Will this actually work here
 				logAndReturnError(err, w)

@@ -22,6 +22,7 @@ import (
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/openaustralia/yinyo/pkg/archive"
 	"github.com/openaustralia/yinyo/pkg/blobstore"
+	"github.com/openaustralia/yinyo/pkg/integrationclient"
 	"github.com/openaustralia/yinyo/pkg/jobdispatcher"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/protocol"
@@ -45,8 +46,6 @@ type App interface {
 	GetEvents(runID string, lastID string) EventIterator
 	CreateEvent(runID string, event protocol.Event) error
 	IsRunCreated(runID string) (bool, error)
-	ReportNetworkUsage(runID string, source string, in uint64, out uint64) error
-	ReportMemoryUsage(runID string, memory uint64, duration time.Duration) error
 }
 
 // EventIterator is the interface for getting individual events in a list of events
@@ -444,7 +443,7 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 		if err != nil {
 			return err
 		}
-		err := app.ReportNetworkUsage(runID, f.Stage, f.ExitData.Usage.NetworkIn, f.ExitData.Usage.NetworkOut)
+		err := integrationclient.ReportNetworkUsage(runID, f.Stage, f.ExitData.Usage.NetworkIn, f.ExitData.Usage.NetworkOut)
 		if err != nil {
 			return err
 		}
@@ -468,7 +467,7 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 
 		duration := event.Time.Sub(firstTime)
 		// TODO: Convert memory to uint64?
-		err = app.ReportMemoryUsage(runID, uint64(memory), duration)
+		err = integrationclient.ReportMemoryUsage(runID, uint64(memory), duration)
 		if err != nil {
 			return err
 		}
@@ -550,7 +549,7 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		size, err := app.postCallback(callbackURL, event)
 		// Record amount written even if there was an error
 		if size > 0 {
-			err = app.ReportNetworkUsage(runID, "callback", 0, uint64(size))
+			err = integrationclient.ReportNetworkUsage(runID, "callback", 0, uint64(size))
 			if err != nil {
 				return err
 			}
