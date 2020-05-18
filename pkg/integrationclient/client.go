@@ -10,12 +10,49 @@ import (
 	"time"
 )
 
-type AuthenticationResponse struct {
+type authenticationResponse struct {
 	Allowed bool   `json:"allowed"`
 	Message string `json:"message"`
 }
 
 var ErrNotAllowed = errors.New("not allowed")
+
+func Authenticate(authenticationURL string, httpClient *http.Client, runID string, apiKey string) error {
+	if authenticationURL != "" {
+		v := url.Values{}
+		v.Add("api_key", apiKey)
+		v.Add("run_id", runID)
+		url := authenticationURL + "?" + v.Encode()
+		log.Printf("Making an authentication request to %v", url)
+
+		resp, err := httpClient.Post(url, "application/json", nil)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("Response %v from POST to authentication url %v", resp.StatusCode, url)
+		}
+		// TODO: Check the actual response
+		dec := json.NewDecoder(resp.Body)
+		var response authenticationResponse
+		err = dec.Decode(&response)
+		if err != nil {
+			return err
+		}
+		if !response.Allowed {
+			// TODO: Send the message back to the user
+			return ErrNotAllowed
+		}
+
+		// TODO: Do we want to do something with response.Message if allowed?
+
+		err = resp.Body.Close()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func ResourcesAllowed(resourcesAllowedURL string, httpClient *http.Client, runID string, memory int64, maxRunTime int64) error {
 	// Now check if the user is allowed the memory and the time
@@ -39,7 +76,7 @@ func ResourcesAllowed(resourcesAllowedURL string, httpClient *http.Client, runID
 		dec := json.NewDecoder(resp.Body)
 		// We're using the same response as with authentication.
 		// TODO: Rename this to something more generic
-		var response AuthenticationResponse
+		var response authenticationResponse
 		err = dec.Decode(&response)
 		if err != nil {
 			return err

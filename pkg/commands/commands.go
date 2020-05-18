@@ -9,9 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -144,43 +142,14 @@ func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (prot
 	// Generate run ID using uuid
 	runID := uuid.NewV4().String()
 
-	if app.AuthenticationURL != "" {
-		v := url.Values{}
-		v.Add("api_key", options.APIKey)
-		v.Add("run_id", runID)
-		url := app.AuthenticationURL + "?" + v.Encode()
-		log.Printf("Making an authentication request to %v", url)
-
-		resp, err := app.HTTP.Post(url, "application/json", nil)
-		if err != nil {
-			return protocol.Run{}, err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return protocol.Run{}, fmt.Errorf("Response %v from POST to authentication url %v", resp.StatusCode, url)
-		}
-		// TODO: Check the actual response
-		dec := json.NewDecoder(resp.Body)
-		var response integrationclient.AuthenticationResponse
-		err = dec.Decode(&response)
-		if err != nil {
-			return protocol.Run{}, err
-		}
-		if !response.Allowed {
-			// TODO: Send the message back to the user
-			return protocol.Run{}, ErrNotAllowed
-		}
-
-		// TODO: Do we want to do something with response.Message if allowed?
-
-		err = resp.Body.Close()
-		if err != nil {
-			return protocol.Run{}, err
-		}
+	err := integrationclient.Authenticate(app.AuthenticationURL, app.HTTP, runID, options.APIKey)
+	if err != nil {
+		return protocol.Run{}, err
 	}
 
 	// Register in the key-value store that the run has been created
 	// TODO: Error if the key already exists - probably want to use redis SETNX
-	err := app.newCreatedKey(runID).set(true)
+	err = app.newCreatedKey(runID).set(true)
 	return protocol.Run{ID: runID}, err
 }
 
