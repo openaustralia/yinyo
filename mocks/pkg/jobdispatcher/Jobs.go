@@ -9,13 +9,13 @@ type Jobs struct {
 	mock.Mock
 }
 
-// Create provides a mock function with given fields: runID, dockerImage, command, maxRunTime, maxMemory
-func (_m *Jobs) Create(runID string, dockerImage string, command []string, maxRunTime int64, maxMemory int64) error {
-	ret := _m.Called(runID, dockerImage, command, maxRunTime, maxMemory)
+// Create provides a mock function with given fields: runID, dockerImage, command, maxRunTime, memory
+func (_m *Jobs) Create(runID string, dockerImage string, command []string, maxRunTime int64, memory int64) error {
+	ret := _m.Called(runID, dockerImage, command, maxRunTime, memory)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, string, []string, int64, int64) error); ok {
-		r0 = rf(runID, dockerImage, command, maxRunTime, maxMemory)
+		r0 = rf(runID, dockerImage, command, maxRunTime, memory)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -44,6 +44,7 @@ type App interface {
 	GetEvents(runID string, lastID string) EventIterator
 	CreateEvent(runID string, event protocol.Event) error
 	IsRunCreated(runID string) (bool, error)
+	ReportAPINetworkUsage(runID string, in uint64, out uint64) error
 }
 
 // EventIterator is the interface for getting individual events in a list of events
@@ -54,15 +55,12 @@ type EventIterator interface {
 
 // AppImplementation holds the state for the application
 type AppImplementation struct {
-	BlobStore     blobstore.BlobStore
-	JobDispatcher jobdispatcher.Jobs
-	Stream        stream.Stream
-	KeyValueStore keyvaluestore.KeyValueStore
-	HTTP          *http.Client
-	// TODO: Wrap these three URLs into a new struct
-	AuthenticationURL   string
-	ResourcesAllowedURL string
-	UsageURL            string
+	BlobStore         blobstore.BlobStore
+	JobDispatcher     jobdispatcher.Jobs
+	Stream            stream.Stream
+	KeyValueStore     keyvaluestore.KeyValueStore
+	HTTP              *http.Client
+	integrationClient *integrationclient.Client
 }
 
 // StartupOptions are the options available when initialising the application
@@ -125,15 +123,16 @@ func New(startupOptions *StartupOptions) (App, error) {
 
 	keyValueStore := keyvaluestore.NewRedis(redisClient)
 
+	httpClient := http.DefaultClient
+	integrationClient := integrationclient.New(httpClient, startupOptions.AuthenticationURL, startupOptions.ResourcesAllowedURL, startupOptions.UsageURL)
+
 	return &AppImplementation{
-		BlobStore:           storeAccess,
-		JobDispatcher:       jobDispatcher,
-		Stream:              streamClient,
-		KeyValueStore:       keyValueStore,
-		HTTP:                http.DefaultClient,
-		AuthenticationURL:   startupOptions.AuthenticationURL,
-		ResourcesAllowedURL: startupOptions.ResourcesAllowedURL,
-		UsageURL:            startupOptions.UsageURL,
+		BlobStore:         storeAccess,
+		JobDispatcher:     jobDispatcher,
+		Stream:            streamClient,
+		KeyValueStore:     keyValueStore,
+		HTTP:              httpClient,
+		integrationClient: integrationClient,
 	}, nil
 }
 
@@ -142,7 +141,7 @@ func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (prot
 	// Generate run ID using uuid
 	runID := uuid.NewV4().String()
 
-	err := integrationclient.Authenticate(app.AuthenticationURL, app.HTTP, runID, options.APIKey)
+	err := app.integrationClient.Authenticate(runID, options.APIKey)
 	if err != nil {
 		return protocol.Run{}, err
 	}
@@ -275,7 +274,7 @@ func (app *AppImplementation) StartRun(runID string, dockerImage string, options
 		return err
 	}
 
-	err = integrationclient.ResourcesAllowed(app.ResourcesAllowedURL, app.HTTP, runID, options.Memory, options.MaxRunTime)
+	err = app.integrationClient.ResourcesAllowed(runID, options.Memory, options.MaxRunTime)
 	if err != nil {
 		return err
 	}
@@ -374,7 +373,7 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 		if err != nil {
 			return err
 		}
-		err := integrationclient.ReportNetworkUsage(runID, f.Stage, f.ExitData.Usage.NetworkIn, f.ExitData.Usage.NetworkOut)
+		err := app.integrationClient.ReportNetworkUsage(runID, f.Stage, f.ExitData.Usage.NetworkIn, f.ExitData.Usage.NetworkOut)
 		if err != nil {
 			return err
 		}
@@ -398,7 +397,7 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 
 		duration := event.Time.Sub(firstTime)
 		// TODO: Convert memory to uint64?
-		err = integrationclient.ReportMemoryUsage(runID, uint64(memory), duration)
+		err = app.integrationClient.ReportMemoryUsage(runID, uint64(memory), duration)
 		if err != nil {
 			return err
 		}
@@ -480,7 +479,7 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		size, err := app.postCallback(callbackURL, event)
 		// Record amount written even if there was an error
 		if size > 0 {
-			err = integrationclient.ReportNetworkUsage(runID, "callback", 0, uint64(size))
+			err = app.integrationClient.ReportNetworkUsage(runID, "callback", 0, uint64(size))
 			if err != nil {
 				return err
 			}
@@ -490,4 +489,8 @@ func (app *AppImplementation) postCallbackEvent(runID string, event protocol.Eve
 		}
 	}
 	return nil
+}
+
+func (app *AppImplementation) ReportAPINetworkUsage(runID string, in uint64, out uint64) error {
+	return app.integrationClient.ReportNetworkUsage(runID, "api", in, out)
 }

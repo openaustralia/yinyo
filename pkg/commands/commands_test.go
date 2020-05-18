@@ -18,6 +18,7 @@ import (
 	jobdispatchermocks "github.com/openaustralia/yinyo/mocks/pkg/jobdispatcher"
 	keyvaluestoremocks "github.com/openaustralia/yinyo/mocks/pkg/keyvaluestore"
 	streammocks "github.com/openaustralia/yinyo/mocks/pkg/stream"
+	"github.com/openaustralia/yinyo/pkg/integrationclient"
 	"github.com/openaustralia/yinyo/pkg/keyvaluestore"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 )
@@ -48,7 +49,7 @@ func TestStartRun(t *testing.T) {
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
-	app := AppImplementation{JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
+	app := AppImplementation{integrationClient: &integrationclient.Client{}, JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
 	err := app.StartRun(
 		"run-name",
 		"image",
@@ -98,7 +99,7 @@ func TestCreateEvent(t *testing.T) {
 	)
 	httpClient.Transport = roundTripper
 
-	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	app := AppImplementation{integrationClient: &integrationclient.Client{}, Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
 	err := app.CreateEvent("run-name", protocol.NewStartEvent("", "abc", time, "build"))
 	assert.Nil(t, err)
 
@@ -111,7 +112,7 @@ func TestCreateFinishEvent(t *testing.T) {
 	time := time.Now()
 	stream := new(streammocks.Stream)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
+	app := AppImplementation{integrationClient: &integrationclient.Client{}, Stream: stream, KeyValueStore: keyValueStore}
 
 	exitData := protocol.ExitDataStage{ExitCode: 12, Usage: protocol.StageUsage{MaxRSS: 100, NetworkIn: 200, NetworkOut: 300}}
 	event := protocol.NewFinishEvent("", "abc", time, "build", exitData)
@@ -149,7 +150,7 @@ func TestCreateFirstEvent(t *testing.T) {
 func TestCreateLastEvent(t *testing.T) {
 	stream := new(streammocks.Stream)
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore}
+	app := AppImplementation{integrationClient: &integrationclient.Client{}, Stream: stream, KeyValueStore: keyValueStore}
 
 	time := time.Now()
 	event := protocol.NewLastEvent("", "abc", time)
@@ -180,7 +181,7 @@ func TestCreateEventNoCallbackURL(t *testing.T) {
 	roundTripper := new(MockRoundTripper)
 	httpClient.Transport = roundTripper
 
-	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	app := AppImplementation{integrationClient: &integrationclient.Client{}, Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
 	err := app.CreateEvent("run-name", protocol.NewStartEvent("", "abc", time, "build"))
 	assert.Nil(t, err)
 
@@ -221,7 +222,7 @@ func TestCreateEventErrorOneTimeDuringCallback(t *testing.T) {
 	).Once()
 	httpClient.Transport = roundTripper
 
-	app := AppImplementation{Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
+	app := AppImplementation{integrationClient: &integrationclient.Client{}, Stream: stream, KeyValueStore: keyValueStore, HTTP: httpClient}
 	err := app.CreateEvent("run-name", protocol.NewStartEvent("", "abc", time, "build"))
 	assert.Nil(t, err)
 
@@ -485,7 +486,7 @@ func TestGetExitDataRunNotStarted(t *testing.T) {
 
 func TestCreateRun(t *testing.T) {
 	keyValueStore := new(keyvaluestoremocks.KeyValueStore)
-	app := AppImplementation{KeyValueStore: keyValueStore}
+	app := AppImplementation{integrationClient: &integrationclient.Client{}, KeyValueStore: keyValueStore}
 
 	keyValueStore.On("Set", mock.Anything, mock.Anything).Return(nil)
 
@@ -507,7 +508,8 @@ func TestCreateRunWithAuthenticationAllowed(t *testing.T) {
 	roundTripper := new(MockRoundTripper)
 	httpClient.Transport = roundTripper
 
-	app := AppImplementation{AuthenticationURL: "http://foo.com/authenticate", HTTP: httpClient, KeyValueStore: keyValueStore}
+	integrationClient := integrationclient.New(httpClient, "http://foo.com/authenticate", "", "")
+	app := AppImplementation{integrationClient: integrationClient, HTTP: httpClient, KeyValueStore: keyValueStore}
 
 	// Mock a response where the authentication allowed things to go ahead
 	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {
@@ -543,7 +545,8 @@ func TestCreateRunWithAuthenticationNotAllowed(t *testing.T) {
 	roundTripper := new(MockRoundTripper)
 	httpClient.Transport = roundTripper
 
-	app := AppImplementation{AuthenticationURL: "http://foo.com/authenticate", HTTP: httpClient, KeyValueStore: keyValueStore}
+	integrationClient := integrationclient.New(httpClient, "http://foo.com/authenticate", "", "")
+	app := AppImplementation{integrationClient: integrationClient, HTTP: httpClient, KeyValueStore: keyValueStore}
 
 	// Mock a response where the authentication allowed things to go ahead
 	roundTripper.On("RoundTrip", mock.MatchedBy(func(r *http.Request) bool {

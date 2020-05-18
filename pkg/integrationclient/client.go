@@ -17,15 +17,26 @@ type authenticationResponse struct {
 
 var ErrNotAllowed = errors.New("not allowed")
 
-func Authenticate(authenticationURL string, httpClient *http.Client, runID string, apiKey string) error {
-	if authenticationURL != "" {
+type Client struct {
+	httpClient          *http.Client
+	authenticationURL   string
+	resourcesAllowedURL string
+	usageURL            string
+}
+
+func New(httpClient *http.Client, authenticationURL string, resourcesAllowedURL string, usageURL string) *Client {
+	return &Client{httpClient: httpClient, authenticationURL: authenticationURL, resourcesAllowedURL: resourcesAllowedURL}
+}
+
+func (client *Client) Authenticate(runID string, apiKey string) error {
+	if client.authenticationURL != "" {
 		v := url.Values{}
 		v.Add("api_key", apiKey)
 		v.Add("run_id", runID)
-		url := authenticationURL + "?" + v.Encode()
+		url := client.authenticationURL + "?" + v.Encode()
 		log.Printf("Making an authentication request to %v", url)
 
-		resp, err := httpClient.Post(url, "application/json", nil)
+		resp, err := client.httpClient.Post(url, "application/json", nil)
 		if err != nil {
 			return err
 		}
@@ -54,18 +65,18 @@ func Authenticate(authenticationURL string, httpClient *http.Client, runID strin
 	return nil
 }
 
-func ResourcesAllowed(resourcesAllowedURL string, httpClient *http.Client, runID string, memory int64, maxRunTime int64) error {
+func (client *Client) ResourcesAllowed(runID string, memory int64, maxRunTime int64) error {
 	// Now check if the user is allowed the memory and the time
 	// to start this run
-	if resourcesAllowedURL != "" {
+	if client.resourcesAllowedURL != "" {
 		v := url.Values{}
 		v.Add("run_id", runID)
 		v.Add("time", fmt.Sprint(maxRunTime))
 		v.Add("memory", fmt.Sprint(memory))
-		url := resourcesAllowedURL + "?" + v.Encode()
+		url := client.resourcesAllowedURL + "?" + v.Encode()
 		log.Printf("Making a resources allowed request to %v", url)
 
-		resp, err := httpClient.Post(url, "application/json", nil)
+		resp, err := client.httpClient.Post(url, "application/json", nil)
 		if err != nil {
 			return err
 		}
@@ -99,15 +110,17 @@ func ResourcesAllowed(resourcesAllowedURL string, httpClient *http.Client, runID
 // ReportNetworkUsage lets an external system know about some network usage
 // For the time being we're just logging stuff locally to show that it's happening
 // TODO: Will need the reporting URL as well
-func ReportNetworkUsage(runID string, source string, in uint64, out uint64) error {
+func (client *Client) ReportNetworkUsage(runID string, source string, in uint64, out uint64) error {
 	log.Printf("Network Usage: %v source: %v, in: %v, out: %v", runID, source, in, out)
+	log.Printf("TODO: Report usage at %v", client.usageURL)
 	return nil
 }
 
 // ReportMemoryUsage lets an external system know about some memory usage
 // For the time being we're just logging stuff locally to show that it's happening
 // TODO: Will need the reporting URL as well
-func ReportMemoryUsage(runID string, memory uint64, duration time.Duration) error {
+func (client *Client) ReportMemoryUsage(runID string, memory uint64, duration time.Duration) error {
 	log.Printf("Memory Usage: %v memory: %v, duration: %v", runID, memory, duration)
+	log.Printf("TODO: Report usage at %v", client.usageURL)
 	return nil
 }
