@@ -354,6 +354,13 @@ func (app *AppImplementation) StartRun(runID string, dockerImage string, options
 	if err != nil {
 		return err
 	}
+	// We also store the amount of memory allocated in the key-value store because
+	// we want to know this later (for reporting usage) but we don't want to have to
+	// query k8s
+	err = app.newMemoryKey(runID).set(options.Memory)
+	if err != nil {
+		return err
+	}
 
 	// Convert environment variable values to a single string that can be passed
 	// as a flag to wrapper
@@ -452,9 +459,16 @@ func (app *AppImplementation) CreateEvent(runID string, event protocol.Event) er
 		if err != nil {
 			return err
 		}
+		// We also need the amount of memory allocated during the run
+		var memory int64
+		err = app.newMemoryKey(runID).get(&memory)
+		if err != nil {
+			return err
+		}
+
 		duration := event.Time.Sub(firstTime)
-		// TODO: Report the real memory usage
-		err = app.ReportMemoryUsage(runID, 512*1024*1024, duration)
+		// TODO: Convert memory to uint64?
+		err = app.ReportMemoryUsage(runID, uint64(memory), duration)
 		if err != nil {
 			return err
 		}

@@ -43,6 +43,8 @@ func TestStartRun(t *testing.T) {
 	).Return(nil)
 	// Expect that we save the callback url in the key value store
 	keyValueStore.On("Set", "run-name/url", `"http://foo.com"`).Return(nil)
+	// Expect that we save away the amount of memory allocated to the run
+	keyValueStore.On("Set", "run-name/memory", "536870912").Return(nil)
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
@@ -157,6 +159,7 @@ func TestCreateLastEvent(t *testing.T) {
 	keyValueStore.On("Get", "run-name/url").Return("", nil)
 	keyValueStore.On("Get", "run-name/first_time").Return(`"2020-03-11T15:24:30Z"`, nil)
 	keyValueStore.On("Set", "run-name/exit_data/finished", `true`).Return(nil)
+	keyValueStore.On("Get", "run-name/memory").Return("1073741824", nil)
 
 	app.CreateEvent("run-name", event)
 
@@ -301,6 +304,7 @@ func TestDeleteRun(t *testing.T) {
 	keyValueStore.On("Delete", "run-name/url").Return(nil)
 	keyValueStore.On("Delete", "run-name/created").Return(nil)
 	keyValueStore.On("Delete", "run-name/first_time").Return(nil)
+	keyValueStore.On("Delete", "run-name/memory").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/build").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/execute").Return(nil)
 	keyValueStore.On("Delete", "run-name/exit_data/finished").Return(nil)

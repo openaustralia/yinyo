@@ -16,6 +16,10 @@ func (app *AppImplementation) newCallbackKey(runID string) Key {
 	return app.newKey(runID, "url")
 }
 
+func (app *AppImplementation) newMemoryKey(runID string) Key {
+	return app.newKey(runID, "memory")
+}
+
 func (app *AppImplementation) newFirstTimeKey(runID string) Key {
 	return app.newKey(runID, "first_time")
 }
@@ -50,7 +54,11 @@ func (app *AppImplementation) deleteAllKeys(runID string) error {
 	if err != nil {
 		return err
 	}
-	return app.newCreatedKey(runID).delete()
+	err = app.newCreatedKey(runID).delete()
+	if err != nil {
+		return err
+	}
+	return app.newMemoryKey(runID).delete()
 }
 
 type Key struct {
