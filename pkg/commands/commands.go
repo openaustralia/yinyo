@@ -139,11 +139,6 @@ func New(startupOptions *StartupOptions) (App, error) {
 	}, nil
 }
 
-type authenticationResponse struct {
-	Allowed bool   `json:"allowed"`
-	Message string `json:"message"`
-}
-
 // CreateRun creates a run
 func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (protocol.Run, error) {
 	// Generate run ID using uuid
@@ -165,7 +160,7 @@ func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (prot
 		}
 		// TODO: Check the actual response
 		dec := json.NewDecoder(resp.Body)
-		var response authenticationResponse
+		var response integrationclient.AuthenticationResponse
 		err = dec.Decode(&response)
 		if err != nil {
 			return protocol.Run{}, err
@@ -310,43 +305,10 @@ func (app *AppImplementation) StartRun(runID string, dockerImage string, options
 		}
 		return err
 	}
-	// Now check if the user is allowed the memory and the time
-	// to start this run
-	if app.ResourcesAllowedURL != "" {
-		v := url.Values{}
-		v.Add("run_id", runID)
-		v.Add("time", fmt.Sprint(options.MaxRunTime))
-		v.Add("memory", fmt.Sprint(options.Memory))
-		url := app.ResourcesAllowedURL + "?" + v.Encode()
-		log.Printf("Making a resources allowed request to %v", url)
 
-		resp, err := app.HTTP.Post(url, "application/json", nil)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("Response %v from POST to resources allowed url %v", resp.StatusCode, url)
-		}
-		// TODO: Check the actual response
-		dec := json.NewDecoder(resp.Body)
-		// We're using the same response as with authentication.
-		// TODO: Rename this to something more generic
-		var response authenticationResponse
-		err = dec.Decode(&response)
-		if err != nil {
-			return err
-		}
-		if !response.Allowed {
-			// TODO: Send the message back to the user
-			return ErrNotAllowed
-		}
-
-		// TODO: Do we want to do something with response.Message if allowed?
-
-		err = resp.Body.Close()
-		if err != nil {
-			return err
-		}
+	err = integrationclient.ResourcesAllowed(app.ResourcesAllowedURL, app.HTTP, runID, options.Memory, options.MaxRunTime)
+	if err != nil {
+		return err
 	}
 
 	err = app.newCallbackKey(runID).set(options.Callback.URL)
