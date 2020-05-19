@@ -97,7 +97,7 @@ func main() {
 
 	rootCmd.Flags().StringVar(&defaultMaxRunTimeString, "defaultmaxruntime", "1h", "Set the default maximum run time if the user doesn't say")
 	rootCmd.Flags().StringVar(&maxRunTimeString, "maxruntime", "24h", "Set the global maximum run time that all runs can not exceed")
-	rootCmd.Flags().StringVar(&defaultMemoryString, "defaultmemory", "1Gi", "Set the default memory that a run allocates if the user doesn't say")
+	rootCmd.Flags().StringVar(&defaultMemoryString, "defaultmemory", "0.75Gi", "Set the default memory that a run allocates if the user doesn't say")
 	rootCmd.Flags().StringVar(&maxMemoryString, "maxmemory", "1.5Gi", "Set the maximum memory that a run can allocate")
 
 	if err := rootCmd.Execute(); err != nil {
