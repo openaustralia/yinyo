@@ -143,6 +143,9 @@ func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (prot
 
 	err := app.integrationClient.Authenticate(runID, options.APIKey)
 	if err != nil {
+		if errors.Is(err, integrationclient.ErrNotAllowed) {
+			err = ErrNotAllowed
+		}
 		return protocol.Run{}, err
 	}
 
@@ -276,6 +279,9 @@ func (app *AppImplementation) StartRun(runID string, dockerImage string, options
 
 	err = app.integrationClient.ResourcesAllowed(runID, options.Memory, options.MaxRunTime)
 	if err != nil {
+		if errors.Is(err, integrationclient.ErrNotAllowed) {
+			err = ErrNotAllowed
+		}
 		return err
 	}
 
