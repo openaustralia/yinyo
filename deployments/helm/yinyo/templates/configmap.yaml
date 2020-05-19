@@ -6,6 +6,9 @@ data:
   {{- if .Values.authenticationURL }}
   authentication_url: {{ .Values.authenticationURL }}
   {{ end }}
+  {{ - if .Values.resourcesAllowedURL }}
+  resources_allowed_url: {{ .Values.resourcesAllowedURL }}
+  {{ end }}
   {{- if .Values.usageURL }}
   usage_url: {{ .Values.usageURL }}
   {{ end }}
