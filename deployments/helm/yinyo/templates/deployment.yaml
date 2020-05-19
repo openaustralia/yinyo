@@ -70,21 +70,21 @@ spec:
                 configMapKeyRef:
                   name: yinyo-server
                   key: authentication_url
-            {{ end }}
-            {{- if .Values.resourcesAllowedURL -}}
+            {{- end }}
+            {{- if .Values.resourcesAllowedURL }}
             - name: RESOURCES_ALLOWED_URL
               valueFrom:
                 configMapKeyRef:
                   name: yinyo-server
                   key: resources_allowed_url
-            {{ end }}
+            {{- end }}
             {{- if .Values.usageURL }}
             - name: USAGE_URL
               valueFrom:
                 configMapKeyRef:
                   name: yinyo-server
                   key: usage_url
-            {{ end }}
+            {{- end }}
           resources:
             requests:
               cpu: 50m

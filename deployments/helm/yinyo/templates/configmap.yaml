@@ -5,11 +5,11 @@ metadata:
 data:
   {{- if .Values.authenticationURL }}
   authentication_url: {{ .Values.authenticationURL }}
-  {{ end }}
+  {{- end }}
   {{- if .Values.resourcesAllowedURL }}
   resources_allowed_url: {{ .Values.resourcesAllowedURL }}
-  {{ end }}
+  {{- end }}
   {{- if .Values.usageURL }}
   usage_url: {{ .Values.usageURL }}
-  {{ end }}
+  {{- end }}
   run_docker_image: {{ .Values.runner.image }}
