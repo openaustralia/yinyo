@@ -25,7 +25,7 @@ type Client struct {
 }
 
 func New(httpClient *http.Client, authenticationURL string, resourcesAllowedURL string, usageURL string) *Client {
-	return &Client{httpClient: httpClient, authenticationURL: authenticationURL, resourcesAllowedURL: resourcesAllowedURL}
+	return &Client{httpClient: httpClient, authenticationURL: authenticationURL, resourcesAllowedURL: resourcesAllowedURL, usageURL: usageURL}
 }
 
 func (client *Client) Authenticate(runID string, apiKey string) error {
