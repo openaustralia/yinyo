@@ -109,25 +109,28 @@ func (client *Client) ResourcesAllowed(runID string, memory int64, maxRunTime in
 
 // ReportNetworkUsage lets an external system know about some network usage
 func (client *Client) ReportNetworkUsage(runID string, source string, in uint64, out uint64) error {
-	log.Printf("Network Usage: %v source: %v, in: %v, out: %v", runID, source, in, out)
-	if client.usageURL != "" {
-		v := url.Values{}
-		v.Add("run_id", runID)
-		v.Add("source", source)
-		v.Add("in", fmt.Sprint(in))
-		v.Add("out", fmt.Sprint(out))
-		url := client.usageURL + "/network?" + v.Encode()
-		log.Printf("Reporting network usage to %v", url)
-		resp, err := client.httpClient.Post(url, "application/json", nil)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("Response %v from POST to %v", resp.StatusCode, url)
-		}
-		err = resp.Body.Close()
-		if err != nil {
-			return err
+	// No need to report anything if there was no traffic
+	if in > 0 || out > 0 {
+		log.Printf("Network Usage: %v source: %v, in: %v, out: %v", runID, source, in, out)
+		if client.usageURL != "" {
+			v := url.Values{}
+			v.Add("run_id", runID)
+			v.Add("source", source)
+			v.Add("in", fmt.Sprint(in))
+			v.Add("out", fmt.Sprint(out))
+			url := client.usageURL + "/network?" + v.Encode()
+			log.Printf("Reporting network usage to %v", url)
+			resp, err := client.httpClient.Post(url, "application/json", nil)
+			if err != nil {
+				return err
+			}
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("Response %v from POST to %v", resp.StatusCode, url)
+			}
+			err = resp.Body.Close()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
