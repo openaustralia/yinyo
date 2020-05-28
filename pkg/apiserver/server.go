@@ -258,7 +258,7 @@ func logRequests(next http.Handler) http.Handler {
 			source = "internal"
 		}
 		// TODO: Remove logging of r.RemoteAddr - is just there temporarily for debugging
-		log.Println(r.RemoteAddr, source, r.Method, r.RequestURI)
+		log.Println(r.Header.Get("X-Forwarded-For"), r.RemoteAddr, source, r.Method, r.RequestURI)
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
