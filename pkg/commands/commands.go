@@ -67,6 +67,7 @@ type AppImplementation struct {
 type StartupOptions struct {
 	Minio               MinioOptions
 	Redis               RedisOptions
+	RunsNamespace       string
 	AuthenticationURL   string
 	ResourcesAllowedURL string
 	UsageURL            string
@@ -118,7 +119,7 @@ func New(startupOptions *StartupOptions) (App, error) {
 
 	streamClient := stream.NewRedis(redisClient)
 
-	jobDispatcher, err := jobdispatcher.NewKubernetes()
+	jobDispatcher, err := jobdispatcher.NewKubernetes(startupOptions.RunsNamespace)
 	if err != nil {
 		return nil, err
 	}

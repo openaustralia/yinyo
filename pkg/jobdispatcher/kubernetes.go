@@ -12,12 +12,11 @@ import (
 
 type kubernetesClient struct {
 	clientset *kubernetes.Clientset
+	namespace string
 }
 
-const namespace = "yinyo-runs"
-
 // NewKubernetes returns the Kubernetes implementation of Client
-func NewKubernetes() (Jobs, error) {
+func NewKubernetes(namespace string) (Jobs, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -26,7 +25,7 @@ func NewKubernetes() (Jobs, error) {
 	if err != nil {
 		return nil, err
 	}
-	k := &kubernetesClient{clientset: clientset}
+	k := &kubernetesClient{clientset: clientset, namespace: namespace}
 	return k, nil
 }
 
@@ -34,7 +33,7 @@ func NewKubernetes() (Jobs, error) {
 // memory is the amount of memory (in bytes) that is allocated to this job. If more is used it will get killed. Note that this
 // memory is effectively reserved for a job so allocating too much if it's not used is wasteful.
 func (client *kubernetesClient) Create(runID string, dockerImage string, command []string, maxRunTime int64, memory int64) error {
-	jobsClient := client.clientset.BatchV1().Jobs(namespace)
+	jobsClient := client.clientset.BatchV1().Jobs(client.namespace)
 
 	autoMountServiceAccountToken := false
 	// Allow the job to get restarted up to 5 times before it's considered failed
@@ -78,7 +77,7 @@ func (client *kubernetesClient) Create(runID string, dockerImage string, command
 }
 
 func (client *kubernetesClient) Delete(runID string) error {
-	jobsClient := client.clientset.BatchV1().Jobs(namespace)
+	jobsClient := client.clientset.BatchV1().Jobs(client.namespace)
 
 	deletePolicy := metav1.DeletePropagationForeground
 	err := jobsClient.Delete(runID, &metav1.DeleteOptions{

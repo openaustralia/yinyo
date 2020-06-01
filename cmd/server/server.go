@@ -66,6 +66,7 @@ func buildOptions() commands.StartupOptions {
 			TLS:      redisTLS,
 			Database: getMandatoryEnvAsInt("REDIS_DATABASE"),
 		},
+		RunsNamespace:       getMandatoryEnv("RUNS_NAMESPACE"),
 		AuthenticationURL:   os.Getenv("AUTHENTICATION_URL"),
 		ResourcesAllowedURL: os.Getenv("RESOURCES_ALLOWED_URL"),
 		UsageURL:            os.Getenv("USAGE_URL"),
