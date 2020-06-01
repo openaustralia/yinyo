@@ -24,6 +24,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: RUNS_NAMESPACE
+              value: {{ .Values.runNamespace }}
             - name: STORE_HOST
               valueFrom:
                 configMapKeyRef:
