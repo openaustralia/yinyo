@@ -85,6 +85,7 @@ type RedisOptions struct {
 	Address  string
 	Password string
 	TLS      bool
+	Database int
 }
 
 // New initialises the main state of the application
@@ -108,6 +109,7 @@ func New(startupOptions *StartupOptions) (App, error) {
 		Addr:      startupOptions.Redis.Address,
 		Password:  startupOptions.Redis.Password,
 		TLSConfig: tlsConfig,
+		DB:        startupOptions.Redis.Database,
 	})
 	_, err = redisClient.Ping().Result()
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/openaustralia/yinyo/pkg/apiserver"
@@ -18,6 +19,14 @@ func getMandatoryEnv(name string) string {
 		log.Fatalf("environment variable %v was not set", name)
 	}
 	return host
+}
+
+func getMandatoryEnvAsInt(name string) int {
+	value, err := strconv.Atoi(getMandatoryEnv(name))
+	if err != nil {
+		log.Fatalf("environment variable %v needs to be an integer", name)
+	}
+	return value
 }
 
 func durationStringToSeconds(durationString string) int64 {
@@ -55,6 +64,7 @@ func buildOptions() commands.StartupOptions {
 			Address:  getMandatoryEnv("REDIS_HOST"),
 			Password: getMandatoryEnv("REDIS_PASSWORD"),
 			TLS:      redisTLS,
+			Database: getMandatoryEnvAsInt("REDIS_DATABASE"),
 		},
 		AuthenticationURL:   os.Getenv("AUTHENTICATION_URL"),
 		ResourcesAllowedURL: os.Getenv("RESOURCES_ALLOWED_URL"),
