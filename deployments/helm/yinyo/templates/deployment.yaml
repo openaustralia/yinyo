@@ -49,6 +49,11 @@ spec:
                 configMapKeyRef:
                   name: {{ .Release.Name }}-server-redis
                   key: host
+            - name: REDIS_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-server-redis
+                  key: database
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
