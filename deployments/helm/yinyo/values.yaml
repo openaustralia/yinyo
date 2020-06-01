@@ -15,6 +15,7 @@ server:
 runner:
   image: openaustralia/yinyo-run
 runNamespace: yinyo-runs
+clusterRoleName: yinyo-server
 
 imagePullSecrets: []
 nameOverride: ""
