@@ -73,21 +73,21 @@ spec:
             - name: AUTHENTICATION_URL
               valueFrom:
                 configMapKeyRef:
-                  name: yinyo-server
+                  name: {{ .Release.Name }}-server
                   key: authentication_url
             {{- end }}
             {{- if .Values.resourcesAllowedURL }}
             - name: RESOURCES_ALLOWED_URL
               valueFrom:
                 configMapKeyRef:
-                  name: yinyo-server
+                  name: {{ .Release.Name }}-server
                   key: resources_allowed_url
             {{- end }}
             {{- if .Values.usageURL }}
             - name: USAGE_URL
               valueFrom:
                 configMapKeyRef:
-                  name: yinyo-server
+                  name: {{ .Release.Name }}-server
                   key: usage_url
             {{- end }}
           resources:
