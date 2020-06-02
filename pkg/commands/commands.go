@@ -61,6 +61,8 @@ type AppImplementation struct {
 	KeyValueStore     keyvaluestore.KeyValueStore
 	HTTP              *http.Client
 	integrationClient *integrationclient.Client
+	// This is the URL that the wrapper uses to talk back to the server API
+	ServerURL string
 }
 
 // StartupOptions are the options available when initialising the application
@@ -71,6 +73,7 @@ type StartupOptions struct {
 	AuthenticationURL   string
 	ResourcesAllowedURL string
 	UsageURL            string
+	ServerURL           string
 }
 
 // MinioOptions are the options for the specific blob storage
@@ -136,6 +139,7 @@ func New(startupOptions *StartupOptions) (App, error) {
 		KeyValueStore:     keyValueStore,
 		HTTP:              httpClient,
 		integrationClient: integrationClient,
+		ServerURL:         startupOptions.ServerURL,
 	}, nil
 }
 
@@ -318,6 +322,7 @@ func (app *AppImplementation) StartRun(runID string, dockerImage string, options
 		runBinary,
 		runID,
 		"--output", options.Output,
+		"--server", app.ServerURL,
 	}
 	if envString != "" {
 		command = append(command, "--env", envString)

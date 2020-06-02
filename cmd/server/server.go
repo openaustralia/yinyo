@@ -70,6 +70,7 @@ func buildOptions() commands.StartupOptions {
 		AuthenticationURL:   os.Getenv("AUTHENTICATION_URL"),
 		ResourcesAllowedURL: os.Getenv("RESOURCES_ALLOWED_URL"),
 		UsageURL:            os.Getenv("USAGE_URL"),
+		ServerURL:           getMandatoryEnv("SERVER_URL"),
 	}
 }
 

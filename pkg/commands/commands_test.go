@@ -38,7 +38,7 @@ func TestStartRun(t *testing.T) {
 		"Create",
 		"run-name",
 		"image",
-		[]string{"/bin/wrapper", "run-name", "--output", "output.txt", "--env", "FOO=bar"},
+		[]string{"/bin/wrapper", "run-name", "--output", "output.txt", "--server", "http://localhost:8080", "--env", "FOO=bar"},
 		int64(86400),
 		int64(512*1024*1024),
 	).Return(nil)
@@ -49,7 +49,7 @@ func TestStartRun(t *testing.T) {
 	// Expect that we try to get the code just to see if it exists
 	blobStore.On("Get", "run-name/app.tgz").Return(nil, nil)
 
-	app := AppImplementation{integrationClient: &integrationclient.Client{}, JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore}
+	app := AppImplementation{integrationClient: &integrationclient.Client{}, JobDispatcher: job, KeyValueStore: keyValueStore, BlobStore: blobStore, ServerURL: "http://localhost:8080"}
 	err := app.StartRun(
 		"run-name",
 		"image",
