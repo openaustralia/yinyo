@@ -26,6 +26,8 @@ spec:
           env:
             - name: RUNS_NAMESPACE
               value: {{ .Values.runNamespace }}
+            - name: SERVER_URL
+              value: http://{{ .Release.Name }}-server.{{ .Release.Namespace }}:8080
             - name: STORE_HOST
               valueFrom:
                 configMapKeyRef:
