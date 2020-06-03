@@ -137,7 +137,7 @@ func createRun(clientServerURL string) (apiclient.RunInterface, error) {
 			return run, err
 		}
 		// TODO: Display info/error message from server
-		if !errors.Is(err, apiclient.ErrIsUnauthorized) {
+		if !errors.Is(err, apiclient.ErrUnauthorized) {
 			return run, err
 		}
 		apiKey, err = askForAndSaveAPIKey(clientServerURL)

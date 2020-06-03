@@ -33,7 +33,7 @@ func downloadOutput(run RunInterface, scraperDirectory string, outputFile string
 	if outputFile != "" {
 		err := run.GetOutputToFile(filepath.Join(scraperDirectory, outputFile))
 		if err != nil {
-			if errors.Is(err, ErrIsNotFound) {
+			if errors.Is(err, ErrNotFound) {
 				fmt.Printf("Warning: output file %v does not exist", outputFile)
 			} else {
 				return err
