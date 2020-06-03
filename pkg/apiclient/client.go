@@ -64,10 +64,16 @@ func New(url string) *Client {
 }
 
 func checkOK(resp *http.Response) error {
-	if resp.StatusCode == http.StatusOK {
+	switch resp.StatusCode {
+	case http.StatusOK:
 		return nil
+	case http.StatusNotFound:
+		return fmt.Errorf("%w", ErrNotFound)
+	case http.StatusUnauthorized:
+		return fmt.Errorf("%w", ErrUnauthorized)
+	default:
+		return fmt.Errorf("%w", errors.New(resp.Status))
 	}
-	return fmt.Errorf("%w", errors.New(resp.Status))
 }
 
 // ErrNotFound corresponds to a 404
