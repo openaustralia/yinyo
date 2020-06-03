@@ -51,8 +51,7 @@ func (client *Client) Authenticate(runID string, apiKey string) error {
 			return err
 		}
 		if !response.Allowed {
-			// TODO: Send the message back to the user
-			return ErrNotAllowed
+			return fmt.Errorf("%v (%w)", response.Message, ErrNotAllowed)
 		}
 
 		// TODO: Do we want to do something with response.Message if allowed?

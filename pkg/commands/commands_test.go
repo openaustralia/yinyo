@@ -558,13 +558,14 @@ func TestCreateRunWithAuthenticationNotAllowed(t *testing.T) {
 	})).Return(
 		&http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(strings.NewReader(`{"allowed":false}`)),
+			Body:       ioutil.NopCloser(strings.NewReader(`{"allowed":false,"message":"an error"}`)),
 		},
 		nil,
 	)
 
 	_, err := app.CreateRun(protocol.CreateRunOptions{APIKey: "foobar"})
-	assert.Equal(t, ErrNotAllowed, err)
+	assert.True(t, errors.Is(err, integrationclient.ErrNotAllowed))
+	assert.Equal(t, "an error (not allowed)", err.Error())
 
 	roundTripper.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)

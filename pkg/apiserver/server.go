@@ -13,13 +13,14 @@ import (
 	"github.com/felixge/httpsnoop"
 	"github.com/gorilla/mux"
 	"github.com/openaustralia/yinyo/pkg/commands"
+	"github.com/openaustralia/yinyo/pkg/integrationclient"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 )
 
 func (server *Server) createRun(w http.ResponseWriter, r *http.Request) error {
 	createResult, err := server.app.CreateRun(protocol.CreateRunOptions{APIKey: r.URL.Query().Get("api_key")})
 	if err != nil {
-		if errors.Is(err, commands.ErrNotAllowed) {
+		if errors.Is(err, integrationclient.ErrNotAllowed) {
 			return newHTTPError(err, http.StatusUnauthorized, err.Error())
 		}
 		return err

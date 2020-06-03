@@ -150,9 +150,6 @@ func (app *AppImplementation) CreateRun(options protocol.CreateRunOptions) (prot
 
 	err := app.integrationClient.Authenticate(runID, options.APIKey)
 	if err != nil {
-		if errors.Is(err, integrationclient.ErrNotAllowed) {
-			err = ErrNotAllowed
-		}
 		return protocol.Run{}, err
 	}
 
