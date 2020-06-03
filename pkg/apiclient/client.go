@@ -67,20 +67,16 @@ func checkOK(resp *http.Response) error {
 	if resp.StatusCode == http.StatusOK {
 		return nil
 	}
-	return errors.New(resp.Status)
+	return fmt.Errorf("%w", errors.New(resp.Status))
 }
 
-// IsNotFound checks whether a particular error message corresponds to a 404
-func IsNotFound(err error) bool {
-	// TODO: Don't want to depend on a hardcoded string here
-	return (err.Error() == "404 Not Found")
-}
+// ErrIsNotFound corresponds to a 404
+// TODO: Don't want to depend on a hardcoded string here
+var ErrIsNotFound = errors.New("404 Not Found")
 
-// IsUnauthorized checks whether a particular error message corresponds to a 401
-func IsUnauthorized(err error) bool {
-	// TODO: Don't want to depend on a hardcoded string here
-	return (err.Error() == "401 Unauthorized")
-}
+// ErrIsUnauthorized corresponds to a 401
+// TODO: Don't want to depend on a hardcoded string here
+var ErrIsUnauthorized = errors.New("401 Unauthorized")
 
 func checkContentType(resp *http.Response, expected string) error {
 	ct := resp.Header["Content-Type"]

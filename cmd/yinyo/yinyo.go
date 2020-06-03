@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -135,7 +136,8 @@ func createRun(clientServerURL string) (apiclient.RunInterface, error) {
 		if err == nil {
 			return run, err
 		}
-		if !apiclient.IsUnauthorized(err) {
+		// TODO: Display info/error message from server
+		if !errors.Is(err, apiclient.ErrIsUnauthorized) {
 			return run, err
 		}
 		apiKey, err = askForAndSaveAPIKey(clientServerURL)

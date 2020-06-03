@@ -1,6 +1,7 @@
 package apiclient
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -32,7 +33,7 @@ func downloadOutput(run RunInterface, scraperDirectory string, outputFile string
 	if outputFile != "" {
 		err := run.GetOutputToFile(filepath.Join(scraperDirectory, outputFile))
 		if err != nil {
-			if IsNotFound(err) {
+			if errors.Is(err, ErrIsNotFound) {
 				fmt.Printf("Warning: output file %v does not exist", outputFile)
 			} else {
 				return err

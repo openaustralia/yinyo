@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	mocks "github.com/openaustralia/yinyo/mocks/pkg/apiclient"
+	"github.com/openaustralia/yinyo/pkg/apiclient"
 	"github.com/openaustralia/yinyo/pkg/protocol"
 	"github.com/otiai10/copy"
 	"github.com/stretchr/testify/assert"
@@ -133,7 +134,7 @@ func TestFailingBuild(t *testing.T) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
 	})
 	// Let the client know that there is no cache in this case
-	run.On("GetCacheToDirectory", cachePath).Return(errors.New("404 Not Found"))
+	run.On("GetCacheToDirectory", cachePath).Return(apiclient.ErrIsNotFound)
 	run.On("CreateLogEvent", "build", "stderr", "bash: failing_command: command not found").Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
@@ -172,7 +173,7 @@ func TestFailingRun(t *testing.T) {
 		copy.Copy("fixtures/scrapers/hello-world", importPath)
 	})
 	// Let the client know that there is no cache in this case
-	run.On("GetCacheToDirectory", cachePath).Return(errors.New("404 Not Found"))
+	run.On("GetCacheToDirectory", cachePath).Return(apiclient.ErrIsNotFound)
 	run.On("CreateLogEvent", "build", "stdout", "build").Return(10, nil)
 	run.On("CreateFinishEvent", "build", mock.MatchedBy(func(e protocol.ExitDataStage) bool {
 		// Check that the exit codes are something sensible
