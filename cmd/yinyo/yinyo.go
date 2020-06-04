@@ -136,6 +136,8 @@ func createRun(clientServerURL string) (apiclient.RunInterface, error) {
 		if err == nil {
 			return run, err
 		}
+		fmt.Fprintln(os.Stderr, err)
+
 		// TODO: Display info/error message from server
 		if !errors.Is(err, apiclient.ErrUnauthorized) {
 			return run, err

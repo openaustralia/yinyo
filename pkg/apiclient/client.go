@@ -63,26 +63,38 @@ func New(url string) *Client {
 	}
 }
 
+type responseError struct {
+	Error string `json:"error"`
+}
+
 func checkOK(resp *http.Response) error {
-	switch resp.StatusCode {
-	case http.StatusOK:
+	if resp.StatusCode == http.StatusOK {
 		return nil
+	}
+
+	// for the time being just assume that the response is always json here
+	dec := json.NewDecoder(resp.Body)
+	var error responseError
+	err := dec.Decode(&error)
+	if err != nil {
+		return err
+	}
+
+	switch resp.StatusCode {
 	case http.StatusNotFound:
 		return fmt.Errorf("%w", ErrNotFound)
 	case http.StatusUnauthorized:
-		return fmt.Errorf("%w", ErrUnauthorized)
+		return fmt.Errorf("%w: %v", ErrUnauthorized, error.Error)
 	default:
-		return fmt.Errorf("%w", errors.New(resp.Status))
+		return errors.New(resp.Status)
 	}
 }
 
 // ErrNotFound corresponds to a 404
-// TODO: Don't want to depend on a hardcoded string here
-var ErrNotFound = errors.New("404 Not Found")
+var ErrNotFound = errors.New("Not Found")
 
 // ErrUnauthorized corresponds to a 401
-// TODO: Don't want to depend on a hardcoded string here
-var ErrUnauthorized = errors.New("401 Unauthorized")
+var ErrUnauthorized = errors.New("Unauthorized")
 
 func checkContentType(resp *http.Response, expected string) error {
 	ct := resp.Header["Content-Type"]
