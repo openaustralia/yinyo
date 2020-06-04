@@ -92,8 +92,7 @@ func (client *Client) ResourcesAllowed(runID string, memory int64, maxRunTime in
 			return err
 		}
 		if !response.Allowed {
-			// TODO: Send the message back to the user
-			return ErrNotAllowed
+			return fmt.Errorf("%w: %v", ErrNotAllowed, response.Message)
 		}
 
 		// TODO: Do we want to do something with response.Message if allowed?
