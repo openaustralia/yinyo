@@ -565,7 +565,7 @@ func TestCreateRunWithAuthenticationNotAllowed(t *testing.T) {
 
 	_, err := app.CreateRun(protocol.CreateRunOptions{APIKey: "foobar"})
 	assert.True(t, errors.Is(err, integrationclient.ErrNotAllowed))
-	assert.Equal(t, "an error (not allowed)", err.Error())
+	assert.Equal(t, "Not allowed: an error", err.Error())
 
 	roundTripper.AssertExpectations(t)
 	keyValueStore.AssertExpectations(t)

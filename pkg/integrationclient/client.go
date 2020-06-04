@@ -15,7 +15,7 @@ type authenticationResponse struct {
 	Message string `json:"message"`
 }
 
-var ErrNotAllowed = errors.New("not allowed")
+var ErrNotAllowed = errors.New("Not allowed")
 
 type Client struct {
 	httpClient          *http.Client
@@ -51,7 +51,7 @@ func (client *Client) Authenticate(runID string, apiKey string) error {
 			return err
 		}
 		if !response.Allowed {
-			return fmt.Errorf("%v (%w)", response.Message, ErrNotAllowed)
+			return fmt.Errorf("%w: %v", ErrNotAllowed, response.Message)
 		}
 
 		// TODO: Do we want to do something with response.Message if allowed?
