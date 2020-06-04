@@ -283,9 +283,6 @@ func (app *AppImplementation) StartRun(runID string, dockerImage string, options
 
 	err = app.integrationClient.ResourcesAllowed(runID, options.Memory, options.MaxRunTime)
 	if err != nil {
-		if errors.Is(err, integrationclient.ErrNotAllowed) {
-			err = ErrNotAllowed
-		}
 		return err
 	}
 

@@ -137,6 +137,8 @@ func (server *Server) startRun(w http.ResponseWriter, r *http.Request) error {
 	err = server.app.StartRun(runID, server.runDockerImage, options)
 	if errors.Is(err, commands.ErrAppNotAvailable) {
 		err = newHTTPError(err, http.StatusBadRequest, "app needs to be uploaded before starting a run")
+	} else if errors.Is(err, integrationclient.ErrNotAllowed) {
+		err = newHTTPError(err, http.StatusUnauthorized, err.Error())
 	}
 	return err
 }
